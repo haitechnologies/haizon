@@ -49,7 +49,7 @@ class DB
     // ================================
 
     /** Department master data */
-    public const DEPARTMENTS = self::PREFIX . 'departments';
+    public const DEPARTMENTS = self::PREFIX . 'department';
 
     /** Department master data (modern singular) */
     public const DEPARTMENT = self::PREFIX . 'department';
@@ -298,9 +298,6 @@ class DB
 
     /** HS Codes master table */
     public const HS_CODES = self::PREFIX . 'hscodes';
-
-    /** Legacy HS Codes table name (pre-rename) */
-    public const HS_CODES_LEGACY = self::PREFIX . 'hs_codes';
 
     /** @deprecated Decommissioned table */
     public const HS_CODE_TEXTS = self::PREFIX . 'hs_code_texts';

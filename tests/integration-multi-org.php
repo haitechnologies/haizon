@@ -20,7 +20,7 @@ class MultiOrgIntegrationTests
     private $orgScopedTables = [
         'erp_customers', 'erp_customer_contacts', 'erp_customer_addresses',
         'erp_invoices', 'erp_invoice_items',
-        'erp_department', 'erp_departments', 'erp_designations', 'erp_attendance',
+        'erp_department', 'erp_designations', 'erp_attendance',
         'erp_leave_requests', 'erp_leave_types', 'erp_payroll_components',
         'erp_salary_structures', 'erp_employee_salaries', 'erp_payroll_runs',
         'erp_payslips',
@@ -38,7 +38,7 @@ class MultiOrgIntegrationTests
     }
     
     /**
-     * Test 1: Verify all 32 org-scoped tables have organization_id column
+     * Test 1: Verify all 31 org-scoped tables have organization_id column
      */
     public function testOrgIdColumnsExist(): void
     {
@@ -66,7 +66,7 @@ class MultiOrgIntegrationTests
         $this->recordResult(
             "All org-scoped tables have organization_id",
             $pass,
-            "Found: " . count($found) . "/32" . (count($missing) > 0 ? ", Missing: " . implode(', ', $missing) : "")
+            "Found: " . count($found) . "/31" . (count($missing) > 0 ? ", Missing: " . implode(', ', $missing) : "")
         );
     }
     
@@ -247,7 +247,7 @@ class MultiOrgIntegrationTests
         $this->recordResult(
             "Org-scoped tables exist",
             $pass,
-            "$count tables with organization_id (target: 32)"
+            "$count tables with organization_id (target: 31)"
         );
     }
     

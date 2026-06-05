@@ -18,7 +18,7 @@ try {
     
     // Set up a mock/test department to run Datatable on
     $testOrgId = 999;
-    $db->execute("DELETE FROM erp_departments WHERE organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM erp_department WHERE organization_id = :org", ['org' => $testOrgId]);
     
     $db->execute(
         "INSERT INTO erp_department (organization_id, department, publish, created_by) VALUES (:org, 'Test Dept 1', 1, 1)",
@@ -79,7 +79,7 @@ try {
     }
 
     // Clean up departments
-    $db->execute("DELETE FROM erp_departments WHERE organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM erp_department WHERE organization_id = :org", ['org' => $testOrgId]);
 
 
     // Test 5: Verify GeoCountriesDataTable integration
