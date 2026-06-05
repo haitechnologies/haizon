@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 require_once __DIR__ . '/BaseDataTable.php';
 require_once __DIR__ . '/../BadgeHelper.php';
 require_once __DIR__ . '/../ActionButtonHelper.php';
 
 class DepartmentsDataTable extends BaseDataTable {
-    protected $table = DB::DEPARTMENTS;
+    protected $table = DB::DEPARTMENT;
     protected $searchFields = ['department'];
     protected $sortableColumns = [0 => 'id', 1 => 'department', 2 => 'created_at', 3 => 'publish', 4 => 'id'];
 

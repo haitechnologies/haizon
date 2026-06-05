@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 include('admin_elements/admin_header.php');
 
@@ -26,98 +27,65 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 |--------------------------------------------------------------------------
 */
 
+use App\Core\Database;
+use App\Repository\DepartmentRepository;
+use App\Repository\UserRepository;
+use App\Service\DepartmentService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
 
-if (isset($_POST['publish']))       $publish     = 1;
-else $publish = 1;
+$db = new Database();
+$deptRepo = new DepartmentRepository($db);
+$userRepo = new UserRepository($db);
+$deptService = new DepartmentService($deptRepo, $userRepo);
 
-
-/*
-|--------------------------------------------------------------------------
-| 	GET ALL VARIABLES ADD/UPDATE
-|--------------------------------------------------------------------------
-|
-*/
 if ($action == "update_$module" || $action == "add_$module") {
     $department        = e_s__($_POST['department']);
 } else {
     $department        = '';
 }
 
+$publish = 1;
 
-/*
-|--------------------------------------------------------------------------
-| 	UPDATE
-|--------------------------------------------------------------------------
-|
-*/
 if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
-
-
-    if (empty($department)) {
-        $error_message = 'Department is mandatory.';
-    } else if (checkDuplicateRow($tbl_name, 'department', $department) && $department != getTableAttr('department', $tbl_name, $id)) {
-        $error_message = 'Duplicate Department. Please enter different.';
-    } else {
-
-        /* ---------------------- QUERY ---------------------- */
-        $update_row = $mysqli->query("
-										UPDATE `$tbl_name` SET
-											department	        = '" . $department . "',
-											publish 		    = '" . $publish . "'
-										WHERE id=$id");
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            fp__($tbl_name, $id);
-            header("Location:listing_$module.php?success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be updated. Please try again.";
-            //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
-        }
+    try {
+        $deptService->update((int)$id, $department, true);
+        $success_message = "The $module_caption has been updated successfully.";
+        fp__($tbl_name, $id);
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be updated. Please try again.";
     }
-
-    /*
-|--------------------------------------------------------------------------
-| 	ADD
-|--------------------------------------------------------------------------
-|
-*/
 } else if ($action == "add_$module" && granted('create', $module_id)) {
-
-    if (empty($department)) {
-        $error_message = 'Department is mandatory.';
-    } else if (checkDuplicateRow($tbl_name, 'department', $department)) {
-        $error_message = 'Department already exists. Please enter a different one.';
-    } else {
-
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(department, publish) VALUES ('" . $department . "', '" . $publish . "'); ");
-
-        if ($insert_row) {
-            $id = $mysqli->insert_id;
-            fp__($tbl_name, $id);
-            $success_message = "The $module_caption has been saved successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be saved. Please try again.";
-            //header("Location:$module.php?error_message=$error_message");
-        }
+    try {
+        $newDept = $deptService->create($department, $activeOrganizationId, (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0));
+        $id = $newDept->id;
+        fp__($tbl_name, $id);
+        $success_message = "The $module_caption has been saved successfully.";
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be saved. Please try again.";
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| EDIT
-|--------------------------------------------------------------------------
-|
-*/
 if (!empty($id)) {
-
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
-    $row = $result->fetch_array();
-
-    $department       = s__($row['department']);
-    $publish          = s__($row['publish']);
+    try {
+        $dept = $deptService->getById((int)$id);
+        $department = s__($dept->department);
+        $publish = $dept->publish ? 1 : 0;
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    }
 }
+
 
 
 

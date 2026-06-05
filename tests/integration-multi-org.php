@@ -20,7 +20,7 @@ class MultiOrgIntegrationTests
         'erp_customers', 'erp_customer_contacts', 'erp_customer_addresses',
         'erp_customer_comments', 'erp_customer_documents', 'erp_customer_logs',
         'erp_invoices', 'erp_invoice_items',
-        'erp_departments', 'erp_designations', 'erp_attendance',
+        'erp_department', 'erp_departments', 'erp_designations', 'erp_attendance',
         'erp_leave_requests', 'erp_leave_types', 'erp_payroll_components',
         'erp_salary_structures', 'erp_employee_salaries', 'erp_payroll_runs',
         'erp_payslips',

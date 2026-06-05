@@ -59,6 +59,9 @@ class DB {
     /** Department master data */
     public const DEPARTMENTS = self::PREFIX . 'departments';
 
+    /** Department master data (modern singular) */
+    public const DEPARTMENT = self::PREFIX . 'department';
+
     /** Employee designations */
     public const DESIGNATIONS = self::PREFIX . 'designations';
 

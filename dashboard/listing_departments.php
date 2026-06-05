@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 include('admin_elements/admin_header.php');
 $module = 'departments';
 $module_caption = 'Department';
@@ -24,6 +25,17 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 |--------------------------------------------------------------------------
 */
 
+use App\Core\Database;
+use App\Repository\DepartmentRepository;
+use App\Repository\UserRepository;
+use App\Service\DepartmentService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
+$db = new Database();
+$deptRepo = new DepartmentRepository($db);
+$userRepo = new UserRepository($db);
+$deptService = new DepartmentService($deptRepo, $userRepo);
 
 /*
 |--------------------------------------------------------------------------
@@ -32,31 +44,26 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 |
 */
 if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id)) {
-
-    if (is_SuperAdmin()) {
-
-        $cascade   = $mysqli->query("SELECT id FROM `" . tbl_users . "` WHERE department_id=$id Limit 1");
-        if ($cascade->num_rows > 0) {
-            $error_message = "$module_caption is associated with rows in Users Table. ";
-        } else {
-            $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
+    try {
+        if (!is_SuperAdmin()) {
+            $dept = $deptService->getById((int)$id);
+            if ($dept->createdBy !== (int)$session_user_id) {
+                $error_message = "You do not have permission to delete this department.";
+            }
         }
-    } else {
 
-        $cascade   = $mysqli->query("SELECT id FROM `" . tbl_users . "` WHERE department_id=$id Limit 1");
-        if ($cascade->num_rows > 0) {
-            $error_message = "$module_caption is associated with rows in Users Table.";
-        } else {
-            $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND created_by ='" . $session_user_id . "'");
+        if (empty($error_message)) {
+            $deptService->delete((int)$id);
+            $success_message = "Item deleted successfully.";
+            header("Location:listing_$module.php?success_message=$success_message");
+            exit;
         }
-    }
-
-    // success/error message handling
-    if (!empty($error_message)) {
-        // already set above
-    } elseif ($mysqli->affected_rows > 0) {
-        $success_message = "Item deleted successfully.";
-        header("Location:listing_$module.php?success_message=$success_message");
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "An error occurred while deleting the department.";
     }
 }
 
