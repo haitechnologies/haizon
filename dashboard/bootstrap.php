@@ -134,6 +134,29 @@ $container->register(\App\Service\UserService::class, function (\App\Core\Contai
     return new \App\Service\UserService($c->get(\App\Repository\UserRepository::class));
 });
 
+$container->register(\App\Repository\LeaveTypeRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\LeaveTypeRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Repository\LeaveRequestRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\LeaveRequestRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Service\LeaveTypeService::class, function (\App\Core\Container $c) {
+    return new \App\Service\LeaveTypeService(
+        $c->get(\App\Repository\LeaveTypeRepository::class),
+        $c->get(\App\Repository\LeaveRequestRepository::class)
+    );
+});
+
+$container->register(\App\Service\LeaveRequestService::class, function (\App\Core\Container $c) {
+    return new \App\Service\LeaveRequestService(
+        $c->get(\App\Repository\LeaveRequestRepository::class),
+        $c->get(\App\Repository\LeaveTypeRepository::class),
+        $c->get(\App\Repository\UserRepository::class)
+    );
+});
+
 $container->register(\App\Repository\CustomerRepository::class, function (\App\Core\Container $c) {
     return new \App\Repository\CustomerRepository($c->get(\App\Core\Database::class));
 });

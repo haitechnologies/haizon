@@ -1,6 +1,12 @@
 <?php
+declare(strict_types=1);
 
 use App\Core\DB;
+use App\Core\Container;
+use App\Service\LeaveRequestService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
 include('admin_elements/admin_header.php');
 
 $module = 'leave_requests';
@@ -23,12 +29,22 @@ if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
     exit();
 }
 
+$container = Container::getInstance();
+/** @var LeaveRequestService $leaveRequestService */
+$leaveRequestService = $container->get(LeaveRequestService::class);
+
 if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
-    $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
-    if ($mysqli->affected_rows > 0) {
+    try {
+        $leaveRequestService->delete((int)$id, $activeOrganizationId);
         $success_message = "Item deleted successfully.";
         header("Location:listing_$module.php?success_message=$success_message");
         exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "Leave request could not be deleted.";
     }
 }
 ?>
@@ -38,6 +54,13 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
     <div class="content-inner">
         <div class="content">
             <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <?php if (!empty($success_message)) { ?>
+                <div class="alert alert-success"> <?php echo $success_message; ?> </div>
+            <?php } ?>
+            <?php if (!empty($error_message)) { ?>
+                <div class="alert alert-danger"> <?php echo $error_message; ?> </div>
+            <?php } ?>
 
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -61,8 +84,9 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
                             </thead>
                             <tbody>
                                 <?php
-                                $result = $mysqli->query("SELECT * FROM `$tbl_name` ORDER BY id DESC");
-                                while ($row = $result->fetch_array()) {
+                                $requests = $leaveRequestService->list($activeOrganizationId);
+                                foreach ($requests as $requestDto) {
+                                    $row = $requestDto->toArray();
                                 ?>
                                     <tr>
                                         <td><?php echo $row['id']; ?></td>

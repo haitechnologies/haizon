@@ -1,6 +1,14 @@
 <?php
+declare(strict_types=1);
 
 use App\Core\DB;
+use App\Core\Container;
+use App\Core\Database;
+use App\Service\LeaveRequestService;
+use App\Service\LeaveTypeService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
 include('admin_elements/admin_header.php');
 
 $module = 'leave_requests';
@@ -13,62 +21,95 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
+$container = Container::getInstance();
+/** @var LeaveRequestService $leaveRequestService */
+$leaveRequestService = $container->get(LeaveRequestService::class);
+/** @var LeaveTypeService $leaveTypeService */
+$leaveTypeService = $container->get(LeaveTypeService::class);
+/** @var Database $db */
+$db = $container->get(Database::class);
+
 $employee_id = 0;
 $leave_type_id = 0;
 $start_date = '';
 $end_date = '';
-$total_days = 0;
+$total_days = 0.0;
 $reason = '';
 $status = 'pending';
 
 if ($action == "update_$module" || $action == "add_$module") {
-    $employee_id = e_s__($_POST['employee_id'] ?? 0);
-    $leave_type_id = e_s__($_POST['leave_type_id'] ?? 0);
+    $employee_id = (int)($_POST['employee_id'] ?? 0);
+    $leave_type_id = (int)($_POST['leave_type_id'] ?? 0);
     $start_date = e_s__($_POST['start_date'] ?? '');
     $end_date = e_s__($_POST['end_date'] ?? '');
-    $total_days = !empty($_POST['total_days']) ? (float)e_s__($_POST['total_days']) : 0;
+    $total_days = !empty($_POST['total_days']) ? (float)e_s__($_POST['total_days']) : 0.0;
     $reason = e_s__($_POST['reason'] ?? '');
     $status = e_s__($_POST['status'] ?? 'pending');
 }
 
 if ($action == "update_$module" && !empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
-    if (empty($employee_id) || empty($leave_type_id) || empty($start_date) || empty($end_date)) {
-        $error_message = 'Employee, Leave Type, Start and End dates are mandatory.';
-    } else {
-        $update_row = $mysqli->query("UPDATE `$tbl_name` SET employee_id='$employee_id', leave_type_id='$leave_type_id', start_date='$start_date', end_date='$end_date', total_days='$total_days', reason='$reason', status='$status' WHERE id=$id");
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-            exit;
-        } else {
-            $error_message = "The $module_caption could not be updated.";
+    try {
+        $reqData = [
+            'employee_id' => $employee_id,
+            'leave_type_id' => $leave_type_id,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'total_days' => $total_days,
+            'reason' => $reason,
+            'status' => $status,
+        ];
+        if ($status === 'approved') {
+            $reqData['approved_by'] = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
         }
+        $leaveRequestService->update((int)$id, $reqData, $activeOrganizationId);
+        $success_message = "The $module_caption has been updated successfully.";
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be updated.";
     }
 } elseif ($action == "add_$module" && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
-    if (empty($employee_id) || empty($leave_type_id) || empty($start_date) || empty($end_date)) {
-        $error_message = 'Employee, Leave Type, Start and End dates are mandatory.';
-    } else {
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(employee_id, leave_type_id, start_date, end_date, total_days, reason, status) VALUES ('$employee_id', '$leave_type_id', '$start_date', '$end_date', '$total_days', '$reason', '$status')");
-        if ($insert_row) {
-            $success_message = "The $module_caption has been saved successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-            exit;
-        } else {
-            $error_message = "The $module_caption could not be saved.";
+    try {
+        $reqData = [
+            'employee_id' => $employee_id,
+            'leave_type_id' => $leave_type_id,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'total_days' => $total_days,
+            'reason' => $reason,
+            'status' => $status,
+        ];
+        if ($status === 'approved') {
+            $reqData['approved_by'] = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
         }
+        $leaveRequestService->create($reqData, $activeOrganizationId);
+        $success_message = "The $module_caption has been saved successfully.";
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be saved.";
     }
 }
 
 if (!empty($id)) {
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
-    $row = $result->fetch_array();
-    $employee_id = s__($row['employee_id']);
-    $leave_type_id = s__($row['leave_type_id']);
-    $start_date = s__($row['start_date']);
-    $end_date = s__($row['end_date']);
-    $total_days = s__($row['total_days']);
-    $reason = s__($row['reason']);
-    $status = s__($row['status']);
+    try {
+        $reqDto = $leaveRequestService->getById((int)$id, $activeOrganizationId);
+        $employee_id = $reqDto->employeeId;
+        $leave_type_id = $reqDto->leaveTypeId;
+        $start_date = s__($reqDto->startDate);
+        $end_date = s__($reqDto->endDate);
+        $total_days = $reqDto->totalDays;
+        $reason = s__($reqDto->reason ?? '');
+        $status = s__($reqDto->status);
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    }
 }
 ?>
 
@@ -96,8 +137,8 @@ if (!empty($id)) {
                                     <option value="0">Select Employee</option>
                                     <?php
                                     // Show all users regardless of publish status, exclude system/super admins
-                                    $res = $mysqli->query("SELECT u.id, u.full_name, r.role_name FROM `" . DB::USERS . "` u LEFT JOIN `" . DB::ROLES . "` r ON u.role_id = r.id WHERE u.role_id NOT IN (1, 2) ORDER BY u.full_name");
-                                    while ($u = $res->fetch_array()) {
+                                    $res = $db->fetchAll("SELECT u.id, u.full_name, r.role_name FROM `" . DB::USERS . "` u LEFT JOIN `" . DB::ROLES . "` r ON u.role_id = r.id WHERE u.role_id NOT IN (1, 2) ORDER BY u.full_name");
+                                    foreach ($res as $u) {
                                     ?>
                                         <option value="<?php echo $u['id']; ?>" <?php if ($employee_id == $u['id']) echo 'selected'; ?>>
                                             <?php echo $u['full_name'] . (!empty($u['role_name']) ? ' (' . ucfirst($u['role_name']) . ')' : ''); ?>
@@ -113,10 +154,10 @@ if (!empty($id)) {
                                 <select name="leave_type_id" class="form-select" required>
                                     <option value="0">Select</option>
                                     <?php
-                                    $res = $mysqli->query("SELECT id, leave_type FROM `" . DB::LEAVE_TYPES . "` ORDER BY leave_type");
-                                    while ($t = $res->fetch_array()) {
+                                    $typesList = $leaveTypeService->list($activeOrganizationId);
+                                    foreach ($typesList as $t) {
                                     ?>
-                                        <option value="<?php echo $t['id']; ?>" <?php if ($leave_type_id == $t['id']) echo 'selected'; ?>><?php echo $t['leave_type']; ?></option>
+                                        <option value="<?php echo $t->id; ?>" <?php if ($leave_type_id == $t->id) echo 'selected'; ?>><?php echo s__($t->leaveType); ?></option>
                                     <?php } ?>
                                 </select>
                             </div>

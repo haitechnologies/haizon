@@ -1,6 +1,12 @@
 <?php
+declare(strict_types=1);
 
 use App\Core\DB;
+use App\Core\Container;
+use App\Service\LeaveTypeService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
 include('admin_elements/admin_header.php');
 
 $module = 'leave_types';
@@ -23,6 +29,10 @@ if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
     exit();
 }
 
+$container = Container::getInstance();
+/** @var LeaveTypeService $leaveTypeService */
+$leaveTypeService = $container->get(LeaveTypeService::class);
+
 $leave_type = '';
 $max_per_year = 0;
 $paid = 1;
@@ -34,39 +44,40 @@ if ($action == "update_$module" || $action == "add_$module") {
 }
 
 if ($action == "update_$module" && !empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
-    if (empty($leave_type)) {
-        $error_message = 'Leave Type name is mandatory.';
-    } else {
-        $update_row = $mysqli->query("UPDATE `$tbl_name` SET leave_type='$leave_type', max_per_year='$max_per_year', paid='$paid' WHERE id=$id");
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-            exit;
-        } else {
-            $error_message = "The $module_caption could not be updated.";
-        }
+    try {
+        $leaveTypeService->update((int)$id, $leave_type, $max_per_year, $paid === 1, $activeOrganizationId);
+        $success_message = "The $module_caption has been updated successfully.";
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be updated.";
     }
 } elseif ($action == "add_$module" && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
-    if (empty($leave_type)) {
-        $error_message = 'Leave Type name is mandatory.';
-    } else {
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(leave_type, max_per_year, paid) VALUES ('$leave_type', '$max_per_year', '$paid')");
-        if ($insert_row) {
-            $success_message = "The $module_caption has been saved successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-            exit;
-        } else {
-            $error_message = "The $module_caption could not be saved.";
-        }
+    try {
+        $leaveTypeService->create($leave_type, $max_per_year, $paid === 1, $activeOrganizationId);
+        $success_message = "The $module_caption has been saved successfully.";
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be saved.";
     }
 }
 
 if (!empty($id)) {
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
-    $row = $result->fetch_array();
-    $leave_type = s__($row['leave_type']);
-    $max_per_year = s__($row['max_per_year']);
-    $paid = s__($row['paid']);
+    try {
+        $typeDto = $leaveTypeService->getById((int)$id, $activeOrganizationId);
+        $leave_type = s__($typeDto->leaveType);
+        $max_per_year = s__((string)$typeDto->maxPerYear);
+        $paid = s__($typeDto->paid ? '1' : '0');
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    }
 }
 ?>
 

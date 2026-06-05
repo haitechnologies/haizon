@@ -1,6 +1,12 @@
 <?php
+declare(strict_types=1);
 
 use App\Core\DB;
+use App\Core\Container;
+use App\Service\LeaveTypeService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
 include('admin_elements/admin_header.php');
 
 $module = 'leave_types';
@@ -23,12 +29,22 @@ if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
     exit();
 }
 
+$container = Container::getInstance();
+/** @var LeaveTypeService $leaveTypeService */
+$leaveTypeService = $container->get(LeaveTypeService::class);
+
 if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
-    $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
-    if ($mysqli->affected_rows > 0) {
+    try {
+        $leaveTypeService->delete((int)$id, $activeOrganizationId);
         $success_message = "Leave type deleted successfully.";
         header("Location:listing_$module.php?success_message=$success_message");
         exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "Leave type could not be deleted.";
     }
 }
 ?>
@@ -41,6 +57,9 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
 
             <?php if (!empty($success_message)) { ?>
                 <div class="alert alert-success"> <?php echo $success_message; ?> </div>
+            <?php } ?>
+            <?php if (!empty($error_message)) { ?>
+                <div class="alert alert-danger"> <?php echo $error_message; ?> </div>
             <?php } ?>
 
             <div class="card">
@@ -62,8 +81,9 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
                             </thead>
                             <tbody>
                                 <?php
-                                $result = $mysqli->query("SELECT * FROM `$tbl_name` ORDER BY leave_type ASC");
-                                while ($row = $result->fetch_array()) {
+                                $types = $leaveTypeService->list($activeOrganizationId);
+                                foreach ($types as $typeDto) {
+                                    $row = $typeDto->toArray();
                                 ?>
                                     <tr>
                                         <td><?php echo $row['id']; ?></td>
