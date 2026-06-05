@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * UI Design Settings Management Page
  * 

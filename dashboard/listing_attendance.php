@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'attendance';
@@ -64,7 +66,7 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
                                 ?>
                                     <tr>
                                         <td><?php echo $row['id']; ?></td>
-                                        <td><?php echo getTableAttr('full_name', tbl_users, $row['employee_id']); ?></td>
+                                        <td><?php echo getTableAttr('full_name', DB::USERS, $row['employee_id']); ?></td>
                                         <td><?php echo s__($row['work_date']); ?></td>
                                         <td><?php echo s__($row['check_in']); ?></td>
                                         <td><?php echo s__($row['check_out']); ?></td>

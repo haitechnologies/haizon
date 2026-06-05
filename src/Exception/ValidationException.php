@@ -6,7 +6,7 @@ namespace App\Exception;
 
 /**
  * Validation Exception
- * 
+ *
  * Thrown when data validation constraints are violated.
  */
 class ValidationException extends DomainException

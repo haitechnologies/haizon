@@ -1,9 +1,13 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
+use App\Security\ImageUploadHandler;
 include('admin_elements/admin_header.php');
 Roles::requireAdminAccess();
 
 // Load centralized image upload handler
-require_once __DIR__ . '/../classes/ImageUploadHandler.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/ImageUploadHandler.php';
 
 $module 		= 'system_settings';
 $module_caption = 'Global Settings';
@@ -72,37 +76,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Handle delete requests for images
 if (isset($_REQUEST['delete_photo']) && $_REQUEST['delete_photo'] == 1) {
-    $logo = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="logo"'));
+    $logo = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="logo"'));
     if (!empty($logo)) {
         $logoHandler->delete($logo);
-        $mysqli->query("UPDATE `" . tbl_system_settings . "` SET setting_value='' WHERE setting_slug = 'logo'");
+        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'logo'");
         $success_message = 'Logo Deleted Successfully.';
     }
 }
 
 if (isset($_REQUEST['delete_favicon']) && $_REQUEST['delete_favicon'] == 1) {
-    $favicon = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="favicon"'));
+    $favicon = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="favicon"'));
     if (!empty($favicon)) {
         $faviconHandler->delete($favicon);
-        $mysqli->query("UPDATE `" . tbl_system_settings . "` SET setting_value='' WHERE setting_slug = 'favicon'");
+        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'favicon'");
         $success_message = 'Favicon Deleted Successfully.';
     }
 }
 
 if (isset($_REQUEST['delete_amp_logo']) && $_REQUEST['delete_amp_logo'] == 1) {
-    $amp_logo = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="amp_logo"'));
+    $amp_logo = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="amp_logo"'));
     if (!empty($amp_logo)) {
         $ampLogoHandler->delete($amp_logo);
-        $mysqli->query("UPDATE `" . tbl_system_settings . "` SET setting_value='' WHERE setting_slug = 'amp_logo'");
+        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'amp_logo'");
         $success_message = 'AMP Logo Deleted Successfully.';
     }
 }
 
 if (isset($_REQUEST['delete_login_logo']) && $_REQUEST['delete_login_logo'] == 1) {
-    $login_logo = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="login_logo"'));
+    $login_logo = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="login_logo"'));
     if (!empty($login_logo)) {
         $loginLogoHandler->delete($login_logo);
-        $mysqli->query("UPDATE `" . tbl_system_settings . "` SET setting_value='' WHERE setting_slug = 'login_logo'");
+        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'login_logo'");
         $success_message = 'Login Logo Deleted Successfully.';
     }
 }
@@ -115,7 +119,7 @@ if (isset($_REQUEST['delete_login_logo']) && $_REQUEST['delete_login_logo'] == 1
 
 $system_settings_arr = array();
 
-$result_system_settings 	= $mysqli->query("SELECT setting_slug, setting_name, setting_value, hint FROM `" . tbl_system_settings . "`");
+$result_system_settings 	= $mysqli->query("SELECT setting_slug, setting_name, setting_value, hint FROM `" . DB::SYSTEM_SETTINGS . "`");
 while ($row_system_settings = $result_system_settings->fetch_array()) {
 
 	$setting_slug    	= $row_system_settings["setting_slug"];
@@ -356,17 +360,17 @@ function updateSystemColorSetting(&$mysqli, $slug, $value) {
 	$hint = $mysqli->real_escape_string('Auto-created from Global Settings (UI color setting).');
     
     // Check if record exists
-    $checkQuery = "SELECT id FROM " . tbl_system_settings . " WHERE setting_slug = '{$slug}' LIMIT 1";
+    $checkQuery = "SELECT id FROM " . DB::SYSTEM_SETTINGS . " WHERE setting_slug = '{$slug}' LIMIT 1";
     $result = $mysqli->query($checkQuery);
     
     if ($result && $result->num_rows > 0) {
         // Record exists - UPDATE
-        $query = "UPDATE `" . tbl_system_settings . "` 
+        $query = "UPDATE `" . DB::SYSTEM_SETTINGS . "` 
                   SET setting_value = '{$value}' 
                   WHERE setting_slug = '{$slug}'";
 	} else {
 		// Record doesn't exist - INSERT
-		$query = "INSERT INTO `" . tbl_system_settings . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) 
+		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) 
 				  VALUES ('{$slug}', '{$settingName}', '{$value}', '{$hint}', 1, 1, 1, NOW(), NOW())";
 	}
     
@@ -384,17 +388,17 @@ function updateSystemSetting(&$mysqli, $slug, $value, $type = 'text') {
 	$hint = $mysqli->real_escape_string('Auto-created from Global Settings.');
     
     // Check if record exists
-    $checkQuery = "SELECT id FROM " . tbl_system_settings . " WHERE setting_slug = '{$slug}' LIMIT 1";
+    $checkQuery = "SELECT id FROM " . DB::SYSTEM_SETTINGS . " WHERE setting_slug = '{$slug}' LIMIT 1";
     $result = $mysqli->query($checkQuery);
     
     if ($result && $result->num_rows > 0) {
         // Record exists - UPDATE
-        $query = "UPDATE `" . tbl_system_settings . "` 
+        $query = "UPDATE `" . DB::SYSTEM_SETTINGS . "` 
                   SET setting_value = '{$value}' 
                   WHERE setting_slug = '{$slug}'";
 	} else {
 		// Record doesn't exist - INSERT
-		$query = "INSERT INTO `" . tbl_system_settings . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) 
+		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) 
 				  VALUES ('{$slug}', '{$settingName}', '{$value}', '{$hint}', 1, 1, 1, NOW(), NOW())";
 	}
     
@@ -449,69 +453,69 @@ $loginColors = getLoginPageColors();
 // EDIT SECTION (Retrieve current settings)
 // ============================================================================
 
-$software_name		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="software_name"'));
-$company_name		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="company_name"'));
-$phone				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="phone"'));
-$email				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="email"'));
-$website			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="website"'));
-$trn				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="trn"'));
+$software_name		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"'));
+$company_name		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="company_name"'));
+$phone				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="phone"'));
+$email				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="email"'));
+$website			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="website"'));
+$trn				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="trn"'));
 
-$street1			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="street1"'));
-$street2			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="street2"'));
-$city				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="city"'));
-$pobox				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="pobox"'));
-$country			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="country"'));
+$street1			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="street1"'));
+$street2			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="street2"'));
+$city				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="city"'));
+$pobox				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="pobox"'));
+$country			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="country"'));
 
-$social_fb			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="social_fb"'));
-$social_x			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="social_x"'));
-$social_insta		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="social_insta"'));
-$social_gmb			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="social_gmb"'));
+$social_fb			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="social_fb"'));
+$social_x			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="social_x"'));
+$social_insta		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="social_insta"'));
+$social_gmb			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="social_gmb"'));
 
 // New fields
-$global_settings	= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="global_settings"'));
-$login_captcha_threshold = (int) s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="login_captcha_threshold"'));
+$global_settings	= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="global_settings"'));
+$login_captcha_threshold = (int) s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="login_captcha_threshold"'));
 $login_captcha_threshold = ($login_captcha_threshold >= 1 && $login_captcha_threshold <= 10) ? $login_captcha_threshold : 3;
-$amp_logo			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="amp_logo"'));
-$sitemap_root		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_root"'));
-$sitemap_enabled	= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_enabled"'));
-$ai_sitemap_enabled = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="ai_sitemap_enabled"'));
-$sitemap_companies	= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_companies"'));
-$sitemap_blogs		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_blogs"'));
-$sitemap_categories = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_categories"'));
-$sitemap_hs_codes	= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_hs_codes"'));
-$sitemap_amp		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="sitemap_amp"'));
-$seo_hsts_required = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_hsts_required"'));
-$seo_ai_policy_mode = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_ai_policy_mode"'));
+$amp_logo			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="amp_logo"'));
+$sitemap_root		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_root"'));
+$sitemap_enabled	= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_enabled"'));
+$ai_sitemap_enabled = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="ai_sitemap_enabled"'));
+$sitemap_companies	= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_companies"'));
+$sitemap_blogs		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_blogs"'));
+$sitemap_categories = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_categories"'));
+$sitemap_hs_codes	= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_hs_codes"'));
+$sitemap_amp		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="sitemap_amp"'));
+$seo_hsts_required = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_hsts_required"'));
+$seo_ai_policy_mode = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_ai_policy_mode"'));
 $seo_ai_policy_mode = in_array($seo_ai_policy_mode, ['allow', 'block', 'inherit'], true) ? $seo_ai_policy_mode : 'inherit';
 
 // SEO Settings for Public Website
-$seo_meta_title				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_meta_title"'));
-$seo_meta_description		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_meta_description"'));
-$seo_meta_keywords			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_meta_keywords"'));
-$seo_og_title				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_og_title"'));
-$seo_og_description			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_og_description"'));
-$seo_og_image				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_og_image"'));
-$seo_og_type				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_og_type"'));
-$seo_og_url					= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_og_url"'));
-$seo_twitter_card			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_twitter_card"'));
-$seo_twitter_site			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_twitter_site"'));
-$seo_twitter_creator		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_twitter_creator"'));
-$seo_google_analytics		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_google_analytics"'));
-$seo_google_tag_manager		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_google_tag_manager"'));
-$seo_google_site_verification = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_google_site_verification"'));
-$seo_bing_verification		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_bing_verification"'));
-$seo_robots_meta			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_robots_meta"'));
-$seo_canonical_url			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_canonical_url"'));
-$seo_schema_organization	= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="seo_schema_organization"'));
+$seo_meta_title				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_meta_title"'));
+$seo_meta_description		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_meta_description"'));
+$seo_meta_keywords			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_meta_keywords"'));
+$seo_og_title				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_og_title"'));
+$seo_og_description			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_og_description"'));
+$seo_og_image				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_og_image"'));
+$seo_og_type				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_og_type"'));
+$seo_og_url					= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_og_url"'));
+$seo_twitter_card			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_twitter_card"'));
+$seo_twitter_site			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_twitter_site"'));
+$seo_twitter_creator		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_twitter_creator"'));
+$seo_google_analytics		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_google_analytics"'));
+$seo_google_tag_manager		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_google_tag_manager"'));
+$seo_google_site_verification = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_google_site_verification"'));
+$seo_bing_verification		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_bing_verification"'));
+$seo_robots_meta			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_robots_meta"'));
+$seo_canonical_url			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_canonical_url"'));
+$seo_schema_organization	= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="seo_schema_organization"'));
 
-$bank_name			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="bank_name"'));
-$beneficiary		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="beneficiary"'));
-$account_number		= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="account_number"'));
-$iban				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="iban"'));
+$bank_name			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="bank_name"'));
+$beneficiary		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="beneficiary"'));
+$account_number		= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="account_number"'));
+$iban				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="iban"'));
 
-$photo				= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="logo"'));
-$favicon			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="favicon"'));
-$login_logo			= s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="login_logo"'));
+$photo				= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="logo"'));
+$favicon			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="favicon"'));
+$login_logo			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="login_logo"'));
 
 
 /*

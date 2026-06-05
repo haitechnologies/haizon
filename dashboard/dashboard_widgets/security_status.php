@@ -20,8 +20,8 @@ if ($_SESSION['h_role_id'] != 1) {
 }
 
 try {
-    require_once __DIR__ . '/../classes/RateLimiter.php';
-    require_once __DIR__ . '/../classes/DB.php';
+    // Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/RateLimiter.php';
+    // Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
     
     RateLimiter::init($mysqli);
     

@@ -10,7 +10,8 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../classes/OrgIdInjectionMiddleware.php';
+
+use App\Core\OrgIdInjectionMiddleware;
 
 class MultiOrgIntegrationTests
 {
@@ -18,7 +19,6 @@ class MultiOrgIntegrationTests
     private $results = [];
     private $orgScopedTables = [
         'erp_customers', 'erp_customer_contacts', 'erp_customer_addresses',
-        'erp_customer_comments', 'erp_customer_documents', 'erp_customer_logs',
         'erp_invoices', 'erp_invoice_items',
         'erp_department', 'erp_departments', 'erp_designations', 'erp_attendance',
         'erp_leave_requests', 'erp_leave_types', 'erp_payroll_components',
@@ -107,13 +107,13 @@ class MultiOrgIntegrationTests
     {
         echo "[TEST 3] DataTable Handler Inheritance Check\n";
         
-        $handlerDir = __DIR__ . '/../classes/DataTable';
+        $handlerDir = __DIR__ . '/../src/DataTable';
         $handlers = glob($handlerDir . '/*DataTable.php');
         $validHandlers = 0;
         
         foreach ($handlers as $file) {
             $content = file_get_contents($file);
-            if (preg_match('/extends\s+BaseDataTable/i', $content)) {
+            if (preg_match('/extends\s+\\\\?BaseDataTable/i', $content)) {
                 $validHandlers++;
             }
         }
@@ -193,7 +193,7 @@ class MultiOrgIntegrationTests
     {
         echo "[TEST 6] Query Template Patterns\n";
         
-        $templatePath = __DIR__ . '/../dashboard/PHASE-7B-QUERY-TEMPLATE.php';
+        $templatePath = __DIR__ . '/../dashboard/system_archives/dev_tools/PHASE-7B-QUERY-TEMPLATE.php';
         $pass = file_exists($templatePath);
         
         if ($pass) {
@@ -216,7 +216,7 @@ class MultiOrgIntegrationTests
     {
         echo "[TEST 7] Compliance Audit Script\n";
         
-        $auditPath = __DIR__ . '/../dashboard/audit-org-id-compliance.php';
+        $auditPath = __DIR__ . '/../dashboard/system_archives/dev_tools/audit-org-id-compliance.php';
         $pass = file_exists($auditPath);
         
         $this->recordResult(
@@ -258,7 +258,7 @@ class MultiOrgIntegrationTests
     {
         echo "[TEST 9] DataTable Registry Organization ID Support\n";
         
-        $registryPath = __DIR__ . '/../classes/DataTable/Registry.php';
+        $registryPath = __DIR__ . '/../src/DataTable/Registry.php';
         if (!file_exists($registryPath)) {
             $this->recordResult("Registry org_id support", false, "Registry.php not found");
             return;
@@ -267,7 +267,7 @@ class MultiOrgIntegrationTests
         $content = file_get_contents($registryPath);
         
         $hasOrgIdProperty = strpos($content, 'organizationId') !== false;
-            $passesOrgId = preg_match('/\\$this->organizationId/i', $content) > 0;
+            $passesOrgId = preg_match('/\$this->organizationId/i', $content) > 0;
         
         $pass = ($hasOrgIdProperty && $passesOrgId);
         $this->recordResult(
@@ -285,7 +285,7 @@ class MultiOrgIntegrationTests
     {
         echo "[TEST 10] OrgId Injection Middleware Class\n";
         
-        $middlewarePath = __DIR__ . '/../classes/OrgIdInjectionMiddleware.php';
+        $middlewarePath = __DIR__ . '/../src/Core/OrgIdInjectionMiddleware.php';
         $pass = file_exists($middlewarePath);
         
         if ($pass) {

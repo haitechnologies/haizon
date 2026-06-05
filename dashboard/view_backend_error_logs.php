@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
 /*
 |==================================================================================
 | ERROR LOG VIEWER - Phase 4 Implementation

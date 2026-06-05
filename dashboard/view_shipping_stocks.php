@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 require '../vendor/autoload.php';
 
@@ -61,7 +63,7 @@ $out_qty_arr                = array();
 |--------------------------------------------------------------------------
 |
 */
-$created_by = getTableAttr('created_by', tbl_quotations, $id);
+$created_by = getTableAttr('created_by', DB::QUOTATIONS, $id);
 
 if (
     (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
@@ -257,7 +259,7 @@ if (
                                                 <option value='0'>&nbsp;</option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_incoterms  . "` ORDER BY incoterm ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::INCOTERMS  . "` ORDER BY incoterm ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>

@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'payroll_runs';
 $module_caption = 'Payroll Run';
 $tbl_name = DB::PAYROLL_RUNS;

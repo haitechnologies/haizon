@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module = 'statistics';
@@ -46,7 +49,7 @@ $employee_query = "
         COUNT(*) as total,
         SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active,
         SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive
-    FROM `" . tbl_users . "` WHERE id > 1
+    FROM `" . DB::USERS . "` WHERE id > 1
 ";
 $employee_data = $mysqli->query($employee_query)->fetch_assoc();
 $total_employees = $employee_data['total'] ?? 0;
@@ -59,7 +62,7 @@ $today_attendance_query = "
 		SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
 		SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent,
 		SUM(CASE WHEN status = 'leave' THEN 1 ELSE 0 END) as on_leave
-	FROM `" . tbl_attendance . "`
+	FROM `" . DB::ATTENDANCE . "`
 	WHERE work_date = '$today'
 ";
 $today_attendance = $mysqli->query($today_attendance_query)->fetch_assoc();
@@ -68,10 +71,10 @@ $today_absent = $today_attendance['absent'] ?? 0;
 $today_leave = $today_attendance['on_leave'] ?? 0;
 
 // DEPARTMENTS
-$total_departments = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_departments . "`")->fetch_assoc()['count'];
+$total_departments = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::DEPARTMENTS . "`")->fetch_assoc()['count'];
 
 // DESIGNATIONS
-$total_designations = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_designations . "`")->fetch_assoc()['count'];
+$total_designations = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::DESIGNATIONS . "`")->fetch_assoc()['count'];
 
 // LEAVE REQUESTS
 $leave_query = "
@@ -80,7 +83,7 @@ $leave_query = "
 		SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
 		SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
 		SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
-	FROM `" . tbl_leave_requests . "`
+	FROM `" . DB::LEAVE_REQUESTS . "`
 	WHERE start_date >= '$current_month_start' AND end_date <= '$current_month_end'
 ";
 $leave_data = $mysqli->query($leave_query)->fetch_assoc();
@@ -96,7 +99,7 @@ $doc_query = "
 		SUM(CASE WHEN expiry_date != '1970-01-01' AND expiry_date <= '" . date('Y-m-d') . "' THEN 1 ELSE 0 END) as expired,
 		SUM(CASE WHEN expiry_date != '1970-01-01' AND expiry_date BETWEEN '" . date('Y-m-d') . "' AND '" . date('Y-m-d', strtotime('+30 days')) . "' THEN 1 ELSE 0 END) as near_expiry,
 		SUM(CASE WHEN expiry_date != '1970-01-01' AND expiry_date > '" . date('Y-m-d', strtotime('+30 days')) . "' THEN 1 ELSE 0 END) as up_to_date
-	FROM `" . tbl_user_documents . "`
+	FROM `" . DB::USER_DOCUMENTS . "`
 ";
 $doc_data = $mysqli->query($doc_query)->fetch_assoc();
 $total_documents = $doc_data['total'] ?? 0;
@@ -110,7 +113,7 @@ $payslip_query = "
 		COUNT(*) as total,
 		SUM(CASE WHEN status = 'generated' THEN 1 ELSE 0 END) as generated_count,
 		SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) as submitted_count
-	FROM `" . tbl_payslips . "`
+	FROM `" . DB::PAYSLIPS . "`
 	WHERE YEAR(created_at) = YEAR(NOW())
 ";
 $payslip_data = $mysqli->query($payslip_query)->fetch_assoc();
@@ -301,7 +304,7 @@ $attendance_percentage = $total_employees > 0 ? round(($today_present / $total_e
 									</thead>
 									<tbody>
 										<?php
-										$result = $mysqli->query("SELECT u.*, d.department FROM `" . tbl_users . "` u LEFT JOIN `" . tbl_departments . "` d ON u.department_id = d.id WHERE u.id > 1 ORDER BY u.id DESC LIMIT 8");
+										$result = $mysqli->query("SELECT u.*, d.department FROM `" . DB::USERS . "` u LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id WHERE u.id > 1 ORDER BY u.id DESC LIMIT 8");
 										if ($result->num_rows > 0) {
 											while ($row = $result->fetch_array()) {
 												$is_active = $row['is_active'];
@@ -442,7 +445,7 @@ $attendance_percentage = $total_employees > 0 ? round(($today_present / $total_e
 									</thead>
 									<tbody>
 										<?php
-										$result = $mysqli->query("SELECT p.*, u.full_name FROM `" . tbl_payslips . "` p LEFT JOIN `" . tbl_users . "` u ON p.employee_id = u.id ORDER BY p.created_at DESC LIMIT 8");
+										$result = $mysqli->query("SELECT p.*, u.full_name FROM `" . DB::PAYSLIPS . "` p LEFT JOIN `" . DB::USERS . "` u ON p.employee_id = u.id ORDER BY p.created_at DESC LIMIT 8");
 										if ($result->num_rows > 0) {
 											while ($row = $result->fetch_array()) {
 												$status = $row['status'];

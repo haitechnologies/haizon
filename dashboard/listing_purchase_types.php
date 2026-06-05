@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 $module = 'purchase_types';
 $module_caption = 'Purchase Type';

@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'leave_requests';
@@ -64,7 +66,7 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
                                 ?>
                                     <tr>
                                         <td><?php echo $row['id']; ?></td>
-                                        <td><?php echo getTableAttr('full_name', tbl_users, $row['employee_id']); ?></td>
+                                        <td><?php echo getTableAttr('full_name', DB::USERS, $row['employee_id']); ?></td>
                                         <td><?php echo getTableAttr('leave_type', DB::LEAVE_TYPES, $row['leave_type_id']); ?></td>
                                         <td><?php echo s__($row['start_date']); ?></td>
                                         <td><?php echo s__($row['end_date']); ?></td>

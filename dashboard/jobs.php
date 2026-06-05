@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'jobs';
@@ -947,7 +949,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'></option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1 LIMIT 1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1 LIMIT 1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -1001,7 +1003,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1102,7 +1104,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1123,7 +1125,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="tags[]" id="tags[]" class="form-control select" multiple="multiple" data-tags="true">
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_tags = $mysqli->query("SELECT * FROM `" . tbl_setup_tags  . "` WHERE publish=1 AND tag_type = 'jobs' ORDER BY tag");
+                                                $result_tags = $mysqli->query("SELECT * FROM `" . DB::SETUP_TAGS  . "` WHERE publish=1 AND tag_type = 'jobs' ORDER BY tag");
                                                 while ($rows_tags = $result_tags->fetch_array()) {
                                                     // $assigned_to        = s__($rows_tags['full_name']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -1234,7 +1236,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1255,7 +1257,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="services[]" id="services[]" class="form-control select" multiple="multiple" data-tags="true">
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_services = $mysqli->query("SELECT * FROM `" . tbl_items  . "` WHERE publish=1 ORDER BY item_name");
+                                                $result_services = $mysqli->query("SELECT * FROM `" . DB::ITEMS  . "` WHERE publish=1 ORDER BY item_name");
                                                 while ($rows_services = $result_services->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1278,7 +1280,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_incoterms  . "` ORDER BY incoterm ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::INCOTERMS  . "` ORDER BY incoterm ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1371,7 +1373,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <option value='0'>&nbsp;</option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_carriers  . "` ORDER BY carrier_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CARRIERS  . "` ORDER BY carrier_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1990,7 +1992,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value='0'></option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . tbl_commodity_types  . "` WHERE publish=1 ORDER BY commodity_type");
+                                                    $result = $mysqli->query("SELECT * FROM `" . DB::COMMODITY_TYPES  . "` WHERE publish=1 ORDER BY commodity_type");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
@@ -2060,7 +2062,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value='0'></option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . tbl_container_types  . "` WHERE publish=1 ORDER BY container_type");
+                                                    $result = $mysqli->query("SELECT * FROM `" . DB::CONTAINER_TYPES  . "` WHERE publish=1 ORDER BY container_type");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
@@ -2150,9 +2152,9 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
                                                     if (!empty($landing_country)) {
-                                                        $result_ports = $mysqli->query("SELECT * FROM `" . tbl_ports  . "` WHERE publish=1 AND country=$landing_country");
+                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE publish=1 AND country=$landing_country");
                                                     } else {
-                                                        $result_ports = $mysqli->query("SELECT * FROM `" . tbl_ports  . "` WHERE id=0");
+                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE id=0");
                                                     }
 
                                                     while ($rows_ports = $result_ports->fetch_array()) {
@@ -2263,9 +2265,9 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
                                                     if (!empty($destination_country)) {
-                                                        $result_ports = $mysqli->query("SELECT * FROM `" . tbl_ports  . "` WHERE publish=1 AND country=$destination_country");
+                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE publish=1 AND country=$destination_country");
                                                     } else {
-                                                        $result_ports = $mysqli->query("SELECT * FROM `" . tbl_ports  . "` WHERE id=0");
+                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE id=0");
                                                     }
 
                                                     while ($rows_ports = $result_ports->fetch_array()) {

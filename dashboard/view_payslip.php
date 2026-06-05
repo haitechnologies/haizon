@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'payslips';
 $module_caption = 'View Payslip';
 
@@ -35,7 +37,7 @@ $payslip_query = $mysqli->query("
         pr.period_end,
         pr.status as run_status
     FROM `" . DB::PAYSLIPS . "` ps
-    INNER JOIN `" . tbl_users . "` u ON ps.employee_id = u.id
+    INNER JOIN `" . DB::USERS . "` u ON ps.employee_id = u.id
     LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id
     INNER JOIN `" . DB::PAYROLL_RUNS . "` pr ON ps.payroll_run_id = pr.id
     WHERE ps.id = $payslip_id

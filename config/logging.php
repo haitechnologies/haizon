@@ -10,10 +10,10 @@
 $isProduction = isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'production';
 $isDevelopment = !$isProduction;
 
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // Create logger instance (global)
 if (!isset($GLOBALS['frontendLogger'])) {
-    require_once __DIR__ . '/../classes/frontend/ErrorLogger.php';
-    
     $GLOBALS['frontendLogger'] = new FrontendErrorLogger(
         __DIR__ . '/../logs/FRONTEND_ERROR_LOG.txt',
         $isProduction ? 'production' : 'development'

@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'purchase_orders';
@@ -685,7 +687,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'>Please select</option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -795,7 +797,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                             <select class="form-select" name="service[]" id="service<?php echo $purchase_order_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $purchase_order_item; ?>); ">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . tbl_items . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $service_id = $rows['id'];
                                                                 ?>

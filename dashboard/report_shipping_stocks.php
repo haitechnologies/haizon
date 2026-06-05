@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 require '../vendor/autoload.php';
 
@@ -111,7 +113,7 @@ if (!empty($agent_id)) {
 
 
 if (!empty($vehicle_type)) {
-    $search_query .= " AND id IN (SELECT invoice_id FROM " . tbl_invoice_items . " WHERE vehicle_type = $vehicle_type) ";
+    $search_query .= " AND id IN (SELECT invoice_id FROM " . DB::INVOICE_ITEMS . " WHERE vehicle_type = $vehicle_type) ";
 }
 
 if (!empty($driver_assigned)) {
@@ -280,7 +282,7 @@ if ($action == "generate_report") {
                                                 <option value='0'>&nbsp;</option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_incoterms  . "` ORDER BY incoterm ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::INCOTERMS  . "` ORDER BY incoterm ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>

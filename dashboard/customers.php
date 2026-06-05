@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 $dashboardBodyClass = 'page-dashboard-form page-dashboard-customers';
 include('admin_elements/admin_header.php');
 
@@ -32,6 +34,14 @@ $success_message = '';
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
+
+use App\Core\Container;
+use App\Service\CustomerService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
+$container = Container::getInstance();
+$customerService = $container->get(CustomerService::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -184,206 +194,159 @@ if ($action == "update_$module" || $action == "add_$module") {
 
 /*
 |--------------------------------------------------------------------------
-| 	UPDATE
+| 	UPDATE / ADD / EDIT (Modernized)
 |--------------------------------------------------------------------------
-|
 */
 if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
-
-    if (empty($display_name)) {
-        $error_message = 'Company name is mandatory.';
-    } else if (empty($address)) {
-        $error_message = 'Address is mandatory.';
-    } else {
-
-        $customer_owner = (empty($customer_owner) ? '0' : $customer_owner);
-        $customer_status = (empty($customer_status) ? '0' : $customer_status);
-        $customer_source = (empty($customer_status) ? '0' : $customer_status);
-        $service        = (empty($service) ? '0' : $service);
-        $assigned_to    = (empty($assigned_to) ? '0' : $assigned_to);
-        $contacted_date = (empty($contacted_date) ? date('Y-m-d h:i:s', time()) : date('Y-m-d h:i:s', strtotime($contacted_date)));
-        $payment_term   = (empty($payment_term) ? '0' : $payment_term);
-        $tax_treatment  = (empty($tax_treatment) ? '0' : $tax_treatment);
-        $license_number = (empty($license_number) ? '0' : $license_number);
-        $license_expiry = (empty($license_expiry) ? '1970-01-01' : processDateDtoY($license_expiry));
-        $currency       = (empty($currency) ? '0' : $currency);
-        $exchange_rate  = (empty($exchange_rate) ? '0' : $exchange_rate);
-        $sales_person   = (empty($sales_person) ? '0' : $sales_person);
-        $cs_agent       = (empty($cs_agent) ? '0' : $cs_agent);
-        $rating         = (empty($rating) ? '0' : $rating);
-
-        /* ---------------------- QUERY ---------------------- */
-        $update_row = $mysqli->query("
-										UPDATE `" . DB::CUSTOMERS . "` SET
-											
-                                            customer_owner			= '" . $customer_owner . "',
-                                            payment_term			= '" . $payment_term . "',
-                                            
-                                            customer_status			= '" . $customer_status . "',
-											customer_source			= '" . $customer_source . "',
-											assigned_to			    = '" . $assigned_to . "',
-											
-                                            customer_type			= '" . $customer_type . "',
-											salutation			    = '" . $salutation . "',
-											first_name			    = '" . $first_name . "',
-											last_name			    = '" . $last_name . "',
-											display_name			= '" . $display_name . "',
-											address			        = '" . $address . "',
-											email			        = '" . $email . "',
-											phone			        = '" . $phone . "',
-											mobile			        = '" . $mobile . "',
-											
-                                            tax_treatment		    = '" . $tax_treatment . "',
-                                            trn			            = '" . $trn . "',
-                                            license_number			= '" . $license_number . "',
-                                            license_expiry			= '" . $license_expiry . "',
-                                            currency			    = '" . $currency . "',
-                                            exchange_rate			= '" . $exchange_rate . "',
-                                            
-                                            sales_person			= '" . $sales_person . "',
-                                            cs_agent			    = '" . $cs_agent . "',
-                                            lead_category			= '" . $lead_category . "',
-                                            rating			        = '" . $rating . "',
-											
-                                            contacted_date			= '" . $contacted_date . "',
-											description			    = '" . $description . "',
-											tags			        = '" . $tags_string . ",',
-                                            
-											website			        = '" . $website . "',
-											department			    = '" . $department . "',
-											designation			    = '" . $designation . "',
-											x			            = '" . $x . "',
-											facebook			    = '" . $facebook . "',
-											instagram			    = '" . $instagram . "'
-											
-										WHERE id=$id");
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            fp__(DB::CUSTOMERS, $id);
-            // Customer Logs
-            updateCustomerLogs($customer_id, 'customer', 'updated');
-            // header("Location:listing_$module.php?success_message=$success_message");
-            header("Location:customer_overview.php?customer_id=$id&success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be updated. Please try again.";
-            //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
-        }
+    try {
+        $data = [
+            'customer_owner' => $customer_owner,
+            'payment_term' => $payment_term,
+            'customer_status' => $customer_status,
+            'customer_source' => $customer_source,
+            'assigned_to' => $assigned_to,
+            'customer_type' => $customer_type,
+            'salutation' => $salutation,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'display_name' => $display_name,
+            'address' => $address,
+            'email' => $email,
+            'phone' => $phone,
+            'mobile' => $mobile,
+            'tax_treatment' => $tax_treatment,
+            'trn' => $trn,
+            'license_number' => $license_number,
+            'license_expiry' => $license_expiry,
+            'currency' => $currency,
+            'exchange_rate' => $exchange_rate,
+            'sales_person' => $sales_person,
+            'cs_agent' => $cs_agent,
+            'lead_category' => $lead_category,
+            'rating' => $rating,
+            'contacted_date' => $contacted_date,
+            'description' => $description,
+            'tags' => $tags_string,
+            'website' => $website,
+            'department' => $department,
+            'designation' => $designation,
+            'x' => $x,
+            'facebook' => $facebook,
+            'instagram' => $instagram,
+            'is_active' => $is_active === 1,
+            'publish' => $is_active === 1,
+        ];
+        $customerService->updateCustomer((int)$id, $data, $activeOrganizationId, (int)$session_user_id);
+        $success_message = "The $module_caption has been updated successfully.";
+        fp__(DB::CUSTOMERS, $id);
+        header("Location:customer_overview.php?customer_id=$id&success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be updated. Please try again.";
     }
-
-    /*
-|--------------------------------------------------------------------------
-| 	ADD
-|--------------------------------------------------------------------------
-|
-*/
 } else if ($action == "add_$module" && granted('create', $module_id)) {
-
-
-    if (empty($display_name)) {
-        $error_message = 'Company name is mandatory.';
-    } else if (empty($address)) {
-        $error_message = 'Address name is mandatory.';
-    } else {
-
-        $customer_owner = (empty($customer_owner) ? '0' : $customer_owner);
-        $customer_status = (empty($customer_status) ? '0' : $customer_status);
-        $customer_source = (empty($customer_status) ? '0' : $customer_status);
-        $service        = (empty($service) ? '0' : $service);
-        $assigned_to    = (empty($assigned_to) ? '0' : $assigned_to);
-        $contacted_date = (empty($contacted_date) ? date('Y-m-d h:i:s', time()) : date('Y-m-d h:i:s', strtotime($contacted_date)));
-        $payment_term   = (empty($payment_term) ? '0' : $payment_term);
-        $tax_treatment  = (empty($tax_treatment) ? '0' : $tax_treatment);
-        $license_number = (empty($license_number) ? '0' : $license_number);
-        $license_expiry = (empty($license_expiry) ? '1970-01-01' : processDateDtoY($license_expiry));
-        $currency       = (empty($currency) ? '0' : $currency);
-        $exchange_rate  = (empty($exchange_rate) ? '0' : $exchange_rate);
-        $sales_person   = (empty($sales_person) ? '0' : $sales_person);
-        $cs_agent       = (empty($cs_agent) ? '0' : $cs_agent);
-        $rating         = (empty($rating) ? '0' : $rating);
-
-
-        $insert_row = $mysqli->query("INSERT INTO `" . DB::CUSTOMERS . "`(customer_type, customer_owner, payment_term, customer_status, customer_source, assigned_to, salutation, first_name, last_name, display_name, address, email, phone, mobile, tax_treatment, trn, license_number, license_expiry, currency, exchange_rate, sales_person, cs_agent, lead_category, rating, contacted_date, description, tags, website, department, designation, x, facebook, instagram) VALUES ('" . $customer_type . "', '" . $customer_owner . "', '" . $payment_term . "', '" . $customer_status . "', '" . $customer_source . "', '" . $assigned_to . "', '" . $salutation . "', '" . $first_name . "', '" . $last_name . "', '" . $display_name . "', '" . $address . "', '" . $email . "', '" . $phone . "', '" . $mobile . "', '" . $tax_treatment . "', '" . $trn . "', '" . $license_number . "', '" . $license_expiry . "', '" . $currency . "', '" . $exchange_rate . "', '" . $sales_person . "', '" . $cs_agent . "', '" . $lead_category . "', '" . $rating . "', '" . $contacted_date . "', '" . $description . "', '" . $tags_string . ",',  '" . $website . "', '" . $department . "', '" . $designation . "', '" . $x . "', '" . $facebook . "', '" . $instagram . "'); ");
-
-
-        if ($insert_row) {
-            $id = $mysqli->insert_id;
-            $success_message = "The $module_caption has been saved successfully.";
-            fp__(DB::CUSTOMERS, $id);
-            // Customer Logs
-            updateCustomerLogs($customer_id, 'customer', 'created');
-            ////////////////////////////////////////////////////////////////////////
-            // header("Location:listing_$module.php?success_message=$success_message");
-            header("Location:customer_overview.php?customer_id=$id&success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be saved. Please try again.";
-            // header("Location:$module.php?error_message=$error_message");
-        }
+    try {
+        $data = [
+            'customer_owner' => $customer_owner,
+            'payment_term' => $payment_term,
+            'customer_status' => $customer_status,
+            'customer_source' => $customer_source,
+            'assigned_to' => $assigned_to,
+            'customer_type' => $customer_type,
+            'salutation' => $salutation,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'display_name' => $display_name,
+            'address' => $address,
+            'email' => $email,
+            'phone' => $phone,
+            'mobile' => $mobile,
+            'tax_treatment' => $tax_treatment,
+            'trn' => $trn,
+            'license_number' => $license_number,
+            'license_expiry' => $license_expiry,
+            'currency' => $currency,
+            'exchange_rate' => $exchange_rate,
+            'sales_person' => $sales_person,
+            'cs_agent' => $cs_agent,
+            'lead_category' => $lead_category,
+            'rating' => $rating,
+            'contacted_date' => $contacted_date,
+            'description' => $description,
+            'tags' => $tags_string,
+            'website' => $website,
+            'department' => $department,
+            'designation' => $designation,
+            'x' => $x,
+            'facebook' => $facebook,
+            'instagram' => $instagram,
+            'is_active' => $is_active === 1,
+            'publish' => $is_active === 1,
+        ];
+        $newCustomer = $customerService->createCustomer($data, $activeOrganizationId, (int)$session_user_id);
+        $id = $newCustomer->id;
+        $success_message = "The $module_caption has been saved successfully.";
+        fp__(DB::CUSTOMERS, $id);
+        header("Location:customer_overview.php?customer_id=$id&success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be saved. Please try again.";
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| EDIT
-|--------------------------------------------------------------------------
-|
-*/
 if (!empty($id)) {
+    try {
+        $customerObj = $customerService->getCustomer((int)$id, $activeOrganizationId);
 
-    $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` WHERE id=$id");
-    $row = $result->fetch_array();
+        $customer_owner         = (string)$customerObj->customerOwner;
+        $payment_term           = (string)$customerObj->paymentTerm;
+        $customer_status        = (string)$customerObj->customerStatus;
+        $customer_source        = (string)$customerObj->customerSource;
+        $assigned_to            = (string)$customerObj->assignedTo;
+        $customer_type          = $customerObj->customerType;
+        $salutation             = (string)$customerObj->salutation;
+        $first_name             = (string)$customerObj->firstName;
+        $last_name              = (string)$customerObj->lastName;
+        $display_name           = $customerObj->displayName;
+        $address                = $customerObj->address;
+        $email                  = (string)$customerObj->email;
+        $phone                  = (string)$customerObj->phone;
+        $mobile                 = (string)$customerObj->mobile;
+        $tax_treatment          = (string)$customerObj->taxTreatment;
+        $trn                    = (string)$customerObj->trn;
+        $license_number         = (string)$customerObj->licenseNumber;
+        $license_expiry         = $customerObj->licenseExpiry === '1970-01-01' ? '' : processDateYtoD($customerObj->licenseExpiry);
+        $currency               = (string)$customerObj->currency;
+        $exchange_rate          = (string)$customerObj->exchangeRate;
+        $sales_person           = (string)$customerObj->salesPerson;
+        $cs_agent               = (string)$customerObj->csAgent;
+        $lead_category          = (string)$customerObj->leadCategory;
+        $rating                 = (string)$customerObj->rating;
+        $contacted_date         = $customerObj->contactedDate ? processDateTimeYtoD($customerObj->contactedDate) : '';
+        $description            = (string)$customerObj->description;
 
-    $customer_owner         = s__($row['customer_owner']);
-    $payment_term           = s__($row['payment_term']);
+        $tags                   = (string)$customerObj->tags;
+        $tags_arr               = [];
+        if ($tags !== '') {
+            $tags_arr           = explode(',', $tags);
+        }
 
-    $customer_status        = s__($row['customer_status']);
-    $customer_source        = s__($row['customer_source']);
-    $assigned_to            = s__($row['assigned_to']);
-
-    $customer_type          = s__($row['customer_type']);
-    $salutation             = s__($row['salutation']);
-    $first_name             = s__($row['first_name']);
-    $last_name              = s__($row['last_name']);
-    // $company_name           = s__($row['company_name']);
-    $display_name           = s__($row['display_name']);
-    $address                = s__($row['address']);
-    $email                  = s__($row['email']);
-    $phone                  = s__($row['phone']);
-    $mobile                 = s__($row['mobile']);
-
-    $tax_treatment          = s__($row['tax_treatment']);
-    $trn                    = s__($row['trn']);
-    $license_number         = s__($row['license_number']);
-    $license_expiry         = s__($row['license_expiry']);
-    $license_expiry         = ($license_expiry == '1970-01-01' ? '' : processDateYtoD($license_expiry));
-
-    $currency               = s__($row['currency']);
-    $exchange_rate          = s__($row['exchange_rate']);
-
-    $sales_person           = s__($row['sales_person']);
-    $cs_agent               = s__($row['cs_agent']);
-    $lead_category          = s__($row['lead_category']);
-    $rating                 = s__($row['rating']);
-
-    $contacted_date         = s__($row['contacted_date']);
-    $contacted_date         = processDateTimeYtoD($contacted_date);
-
-    $description            = s__($row['description']);
-
-    // -- Tags
-    $tags                   = s__($row['tags']);
-    $tags_arr               = array();
-    if ($tags != NULL) {
-        $tags_arr               = explode(',', $tags);
+        $website                = (string)$customerObj->website;
+        $department             = (string)$customerObj->department;
+        $designation            = (string)$customerObj->designation;
+        $x                      = (string)$customerObj->x;
+        $facebook               = (string)$customerObj->facebook;
+        $instagram              = (string)$customerObj->instagram;
+        $is_active              = $customerObj->publish ? 1 : 0;
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
     }
-
-    $website                = s__($row['website']);
-    $department             = s__($row['department']);
-    $designation            = s__($row['designation']);
-    $x                      = s__($row['x']);
-    $facebook               = s__($row['facebook']);
-    $instagram              = s__($row['instagram']);
-    $is_active                = s__($row['publish']);
 }
 
 /*
@@ -581,7 +544,7 @@ if (!empty($id)) {
                                         <select name="tags[]" id="tags[]" class="form-control select" multiple="multiple" data-tags="true">
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_tags = $mysqli->query("SELECT * FROM `" . tbl_setup_tags  . "` WHERE is_active=1 AND tag_type='customers' ORDER BY tag");
+                                            $result_tags = $mysqli->query("SELECT * FROM `" . DB::SETUP_TAGS  . "` WHERE is_active=1 AND tag_type='customers' ORDER BY tag");
                                             while ($rows_tags = $result_tags->fetch_array()) {
                                                 // $assigned_to        = s__($rows_tags['full_name']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -609,7 +572,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_statuses = $mysqli->query("SELECT * FROM `" . tbl_setup_statuses  . "` WHERE is_active=1 AND status_type='customers' ORDER BY status");
+                                                $result_statuses = $mysqli->query("SELECT * FROM `" . DB::SETUP_STATUSES  . "` WHERE is_active=1 AND status_type='customers' ORDER BY status");
                                                 while ($rows_statuses = $result_statuses->fetch_array()) {
                                                     // $customer_status        = s__($rows_statuses['customer_status']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -635,7 +598,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_sources = $mysqli->query("SELECT * FROM `" . tbl_setup_sources  . "` WHERE is_active=1 AND source_type='customers' ORDER BY source");
+                                                $result_sources = $mysqli->query("SELECT * FROM `" . DB::SETUP_SOURCES  . "` WHERE is_active=1 AND source_type='customers' ORDER BY source");
                                                 while ($rows_sources = $result_sources->fetch_array()) {
                                                     // $customer_source        = s__($rows_sources['customer_source']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -662,7 +625,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // $assigned_to        = s__($rows_users['full_name']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -710,7 +673,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // $assigned_to        = s__($rows_users['full_name']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -749,7 +712,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_tax_treatment = $mysqli->query("SELECT * FROM `" . tbl_tax_treatments  . "` WHERE publish=1 ORDER BY id ASC");
+                                            $result_tax_treatment = $mysqli->query("SELECT * FROM `" . DB::TAX_TREATMENTS  . "` WHERE publish=1 ORDER BY id ASC");
                                             while ($rows_tax_treatment = $result_tax_treatment->fetch_array()) {
                                                 // $tax_treatment        = s__($rows_tax_treatment['tax_treatment']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -794,7 +757,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_currency = $mysqli->query("SELECT * FROM `" . tbl_currencies  . "` WHERE publish=1 ORDER BY id ASC");
+                                            $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE publish=1 ORDER BY id ASC");
                                             while ($rows_currency = $result_currency->fetch_array()) {
                                                 // $currency        = s__($rows_currency['currency']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -850,7 +813,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                            $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                             while ($rows_users = $result_users->fetch_array()) {
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>
@@ -886,7 +849,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                            $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                             while ($rows_users = $result_users->fetch_array()) {
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>

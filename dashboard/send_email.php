@@ -1,9 +1,12 @@
 <?php
 
+
+use App\Core\DB;
+use App\Service\SMTPMailer;
 include('admin_elements/admin_header.php');
 
-require_once __DIR__ . '/../classes/EmailProviderManager.php';
-require_once __DIR__ . '/../classes/SMTPMailer.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailProviderManager.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/SMTPMailer.php';
 
 $module = '';
 $module_catpion = '';
@@ -86,11 +89,11 @@ $doc_date   = s__($row[$pfx . '_date']   ?? '');
 
 // 1. Determine Identity Keys based on Module Type ('customer' or 'vendor')
 $contact_id_col = ($type === 'vendor') ? 'vendor_id' : 'customer_id';
-$vendors_table_name = defined('tbl_vendors') ? constant('tbl_vendors') : ($tbl_prefix . 'vendors');
-$customers_table_name = defined('tbl_customers') ? constant('tbl_customers') : ($tbl_prefix . 'customers');
+$vendors_table_name = defined('DB::VENDORS') ? constant('DB::VENDORS') : ($tbl_prefix . 'vendors');
+$customers_table_name = defined('DB::CUSTOMERS') ? constant('DB::CUSTOMERS') : ($tbl_prefix . 'customers');
 $contact_table  = ($type === 'vendor') ? $vendors_table_name : $customers_table_name;
 
-// 2. Fetch the Primary ID from the Module Table (e.g., fetch vendor_id from tbl_purchase_orders)
+// 2. Fetch the Primary ID from the Module Table (e.g., fetch vendor_id from DB::PURCHASE_ORDERS)
 $contact_id = getTableAttr($contact_id_col, $tbl_name, $id);
 
 // 3. Retrieve Name and Email from the Target Table
@@ -141,8 +144,8 @@ if ($action == 'send_email' && !empty($id)) {
     $row = $result->fetch_array();
 
     $customer_id            = s__($row['customer_id']);
-    $display_name           = getTableAttr('display_name', tbl_customers, $customer_id);
-    // $email                  = getTableAttr('email', tbl_customers, $customer_id);
+    $display_name           = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
+    // $email                  = getTableAttr('email', DB::CUSTOMERS, $customer_id);
     // $send_to                = $email;
 
     $doc_no                 = s__($row[$pfx . '_no'] ?? $id);
@@ -283,7 +286,7 @@ if ($action == 'send_email' && !empty($id)) {
                     <div class="col-lg-6">
                         <div class="card">
 
-                            <?php $from = getTableAttrV('email', tbl_email_providers, "is_primary = 1"); ?>
+                            <?php $from = getTableAttrV('email', DB::EMAIL_PROVIDERS, "is_primary = 1"); ?>
                             <div class="card-body">
 
                                 <div class="row mb-2">

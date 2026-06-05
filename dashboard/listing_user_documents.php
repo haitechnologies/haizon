@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'user_documents';
@@ -148,7 +150,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
                         <?php
                         // ------------------------------------------------------------------------------------------------
-                        $result = $mysqli->query("SELECT * FROM `" . tbl_document_categories . "` WHERE publish=1 AND document_category_type='employees' ORDER BY document_category LIMIT 50");
+                        $result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE publish=1 AND document_category_type='employees' ORDER BY document_category LIMIT 50");
                         while ($rows = $result->fetch_array()) {
                             $document_category = $rows['id'];
                             // ------------------------------------------------------------------------------------------------

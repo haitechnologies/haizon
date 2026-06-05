@@ -6,11 +6,11 @@ namespace App\Repository;
 
 use App\Core\Database;
 use App\Model\Department;
-use DB;
+use App\Core\DB;
 
 /**
  * Department Repository
- * 
+ *
  * Handles PDO-based data access for erp_department table.
  * Adheres strictly to PSR.md rules: no raw SQL, no SELECT *, no string interpolation.
  */
@@ -34,7 +34,7 @@ class DepartmentRepository
         $sql = "SELECT id, organization_id, department, publish, created_at, updated_at, created_by 
                 FROM `erp_department` 
                 WHERE id = :id";
-        
+
         $row = $this->db->fetchOne($sql, ['id' => $id]);
         if ($row === null) {
             return null;
@@ -55,7 +55,7 @@ class DepartmentRepository
                 FROM `erp_department` 
                 WHERE organization_id = :organization_id 
                 ORDER BY department ASC";
-        
+
         $rows = $this->db->fetchAll($sql, ['organization_id' => $organizationId]);
         $departments = [];
         foreach ($rows as $row) {
@@ -107,7 +107,7 @@ class DepartmentRepository
     {
         $sql = "INSERT INTO `erp_department` (organization_id, department, publish, created_by) 
                 VALUES (:organization_id, :department, :publish, :created_by)";
-        
+
         $params = [
             'organization_id' => $dept->organizationId,
             'department' => $dept->department,
@@ -130,7 +130,7 @@ class DepartmentRepository
                     publish = :publish, 
                     created_by = :created_by 
                 WHERE id = :id";
-        
+
         $params = [
             'organization_id' => $dept->organizationId,
             'department' => $dept->department,

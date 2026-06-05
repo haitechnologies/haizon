@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 include('admin_elements/only_systemadmin.php');
 $module = 'accounts_report_categories';
@@ -31,10 +33,10 @@ $success_message = '';
 //     //SUPERADMIN CAN DELETE ANY DATA
 //     if ($_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1') {
 //         // echo "DELETE FROM `$tbl_name` WHERE id=$id";
-//         // echo "DELETE FROM `" .tbl_module_permissions. "` WHERE module_id=$id";
+//         // echo "DELETE FROM `" .DB::MODULE_PERMISSIONS. "` WHERE module_id=$id";
 
 //         $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
-//         $result = $mysqli->query("DELETE FROM `" . tbl_module_permissions . "` WHERE module_id=$id");
+//         $result = $mysqli->query("DELETE FROM `" . DB::MODULE_PERMISSIONS . "` WHERE module_id=$id");
 //     }
 
 
@@ -64,7 +66,7 @@ if ($action == "delete_module_permissions" && !empty($id) && !empty($module_id))
 
     //SUPERADMIN CAN DELETE ANY DATA
     if ($_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1') {
-        $result = $mysqli->query("DELETE FROM `" . tbl_module_permissions . "` WHERE id=$id AND module_id=$module_id");
+        $result = $mysqli->query("DELETE FROM `" . DB::MODULE_PERMISSIONS . "` WHERE id=$id AND module_id=$module_id");
     }
 
     if ($result) {

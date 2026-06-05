@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * AJAX Company Email History Endpoint
  *

@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * AJAX Email History Details Endpoint
  *
@@ -57,19 +59,16 @@ try {
                 eh.created_at,
                 eh.updated_at,
                 CASE
-                    WHEN du.id IS NOT NULL OR (eh.campaign_id IS NOT NULL AND eh.campaign_id > 0) THEN 'Dashboard'
-                    WHEN fu.id IS NOT NULL THEN 'Website'
+                    WHEN du.id IS NOT NULL THEN 'Dashboard'
                     ELSE 'Website'
                 END AS source_label,
-                ec.name AS campaign_name,
+                '-' AS campaign_name,
                 ep.provider_name,
                 ep.email AS provider_email,
                 u.full_name AS user_name,
                 u.email AS user_email
             FROM `" . DB::EMAIL_HISTORY . "` eh
             LEFT JOIN `" . DB::USERS . "` du ON du.id = eh.user_id
-            LEFT JOIN `" . DB::FRONTEND_USERS . "` fu ON fu.id = eh.user_id
-            LEFT JOIN `" . DB::EMAIL_CAMPAIGNS . "` ec ON ec.id = eh.campaign_id
             LEFT JOIN `" . DB::EMAIL_PROVIDERS . "` ep ON ep.id = eh.provider_id
             LEFT JOIN `" . DB::USERS . "` u ON u.id = eh.user_id
             WHERE eh.id = ?

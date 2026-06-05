@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'shipping_advices';
@@ -540,8 +542,8 @@ if ($total_rows == 0) $total_rows = 1;
                                     <?php
                                     // -------------------------------------------------------------------------------------------------
                                     $customer_details = '';
-                                    // $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` WHERE publish=1 ORDER BY id DESC");
-                                    $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` ORDER BY id DESC");
+                                    // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE publish=1 ORDER BY id DESC");
+                                    $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                     while ($rows = $result->fetch_array()) {
                                         $display_name           = $rows["display_name"];
                                         // -------------------------------------------------------------------------------------------------
@@ -572,7 +574,7 @@ if ($total_rows == 0) $total_rows = 1;
                                 <select name="warehouse_id" id="warehouse_id" class="form-select">
                                     <option value='0'>Please select</option>
                                     <?php
-                                    $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1");
+                                    $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
                                     while ($rows = $result->fetch_array()) {
                                         $warehouse_name = $rows["warehouse_name"];
                                     ?>
@@ -679,7 +681,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                             <select class="form-select" name="coo[]" id="coo<?php echo $shipping_invoice_item; ?>">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . tbl_geo_countries . "` WHERE publish=1 ORDER BY country_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::GEO_COUNTRIES . "` WHERE publish=1 ORDER BY country_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $country_id = $rows['id'];
                                                                 ?>

@@ -1,10 +1,12 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 // ACCOUNTING JOURNAL MANAGER INTEGRATION
 // =====================================================================
-require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
+// Removed legacy require for autoloader compatibility: require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
 
 $module             = 'expenses';
 $module_caption     = 'Expense';
@@ -739,7 +741,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $customer_details = '';
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` ORDER BY id DESC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $display_name           = $rows["display_name"];
                                                     // -------------------------------------------------------------------------------------------------

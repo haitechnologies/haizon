@@ -1,9 +1,54 @@
 <?php
+use App\Core\DB;
 // error_reporting(E_ALL);
 // ini_set('display_errors', 1);
 
 include_once('../config/globals.php');
 include_once('../config/database.php');
+include_once('admin_elements/error_logger.php');
+
+// Register custom error/exception/shutdown handlers for AJAX (returning JSON on exceptions/fatals)
+if (function_exists('custom_error_handler')) {
+    set_error_handler('custom_error_handler');
+}
+
+set_exception_handler(function (\Throwable $exception) {
+    log_error('[AJAX:internal_request] Exception: ' . $exception->getMessage(), 'ERROR', $exception->getFile(), $exception->getLine(), [
+        'module' => 'internal_request',
+        'module_slug' => 'ajax',
+        'stack_trace' => $exception->getTraceAsString(),
+    ]);
+    
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+    }
+    echo json_encode(['success' => false, 'error' => 'Internal Server Error']);
+    exit;
+});
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        log_error('[AJAX:internal_request] Fatal Error: ' . $error['message'], 'CRITICAL', $error['file'], $error['line'], [
+            'module' => 'internal_request',
+            'module_slug' => 'ajax',
+        ]);
+        
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+            http_response_code(500);
+        }
+        echo json_encode(['success' => false, 'error' => 'Internal Server Error']);
+        exit;
+    }
+});
 
 
 /*

@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\DataTable\Registry;
 /**
  * DataTable Dispatcher - Phase 3B Live Testing
  * 
@@ -124,8 +127,6 @@ function emit_json_and_exit(array $payload, int $statusCode = 200): void {
 // Load core config for early request handling before bootstrap orchestration.
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/globals.php';
-require_once __DIR__ . '/../classes/DataTable/BaseDataTable.php';
-require_once __DIR__ . '/../classes/DataTable/Registry.php';
 
 $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
 
@@ -141,35 +142,6 @@ log_error('[DataTableDispatcher] Paging request', 'DEBUG', __FILE__, __LINE__, [
     'length' => (int)($requestData['length'] ?? 0),
 ]);
 
-// Special action: IP country lookup (used by listing_ip_countries.php)
-if (!empty($requestData['action']) && $requestData['action'] === 'lookup_ip_country') {
-    $ipNumeric = isset($requestData['ip_numeric']) ? (int)$requestData['ip_numeric'] : 0;
-
-    if ($ipNumeric > 0) {
-        $sql = "SELECT *, INET_NTOA(ip_start) as ip_start_addr, INET_NTOA(ip_end) as ip_end_addr "
-             . "FROM `" . DB::IP_COUNTRIES . "` "
-             . "WHERE {$ipNumeric} >= ip_start AND {$ipNumeric} <= ip_end LIMIT 1";
-        $result = $conn->query($sql);
-
-        if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            emit_json_and_exit([
-                'success' => true,
-                'data' => $row
-            ]);
-        } else {
-            emit_json_and_exit([
-                'success' => false,
-                'message' => 'No country found for this IP address'
-            ]);
-        }
-    } else {
-        emit_json_and_exit([
-            'success' => false,
-            'message' => 'Invalid IP address'
-        ]);
-    }
-}
 
 // Extract module parameter (required)
 $module = !empty($requestData['module']) ? strtolower($requestData['module']) : null;
@@ -323,8 +295,11 @@ try {
     // Get active organization ID for multi-tenant filtering
     $activeOrganizationId = dashboardGetActiveOrganizationId();
     
+    // Retrieve App\Core\Database from Container
+    $db = \App\Core\Container::getInstance()->get(\App\Core\Database::class);
+    
     // Initialize registry with user and organization context
-    $registry = new DataTableRegistry($conn, $userId, $roleId, $activeOrganizationId);
+    $registry = new Registry($db, $userId, $roleId, $activeOrganizationId);
     
     // Check if module is registered
     if (!$registry->isRegistered($module)) {
@@ -345,32 +320,21 @@ try {
         ], 404);
     }
 
-    // Load only the requested handler class file. This prevents unrelated
-    // handler parse/type errors from taking down all DataTable endpoints.
+    // Verify the requested handler class exists in autoload system.
     $handlerClass = $registry->getHandlerClass($module);
     if (!empty($handlerClass) && !class_exists($handlerClass)) {
-        $handlerFile = __DIR__ . '/../classes/DataTable/' . $handlerClass . '.php';
-        if (is_file($handlerFile)) {
-            if (function_exists('opcache_invalidate')) {
-                @opcache_invalidate($handlerFile, true);
-            }
-            require_once $handlerFile;
-        } else {
-            log_error('[DataTableDispatcher] Handler file missing for module ' . $module, 'ERROR', __FILE__, __LINE__, [
-                'module' => $module,
-                'module_slug' => 'datatables',
-                'entrypoint_type' => 'datatable',
-                'handler_file' => $handlerFile,
-            ]);
-            emit_json_and_exit([
-                'error' => 'Handler file not found',
-                'success' => false,
-                'data' => [],
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'draw' => (int)($requestData['draw'] ?? 1)
-            ], 500);
-        }
+        log_error('[DataTableDispatcher] Handler class missing for module ' . $module, 'ERROR', __FILE__, __LINE__, [
+            'module' => $module,
+            'handler_class' => $handlerClass,
+        ]);
+        emit_json_and_exit([
+            'error' => 'Handler class not found',
+            'success' => false,
+            'data' => [],
+            'recordsTotal' => 0,
+            'recordsFiltered' => 0,
+            'draw' => (int)($requestData['draw'] ?? 1)
+        ], 500);
     }
     
     // Get handler and process request

@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 require_once __DIR__ . '/../config/session.php';
 
 header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
@@ -10,6 +12,19 @@ ob_start();
 startDashboardSession();
 include('../config/globals.php');
 include('../config/database.php');
+include('admin_elements/error_logger.php');
+
+// Register custom error/exception/shutdown handlers
+if (function_exists('custom_error_handler')) {
+	set_error_handler('custom_error_handler');
+}
+if (function_exists('custom_exception_handler')) {
+	set_exception_handler('custom_exception_handler');
+}
+if (function_exists('handle_fatal_error')) {
+	register_shutdown_function('handle_fatal_error');
+}
+
 include('admin_elements/grab_vars.php');
 
 // Initialize CSRF token for authentication page
@@ -93,8 +108,8 @@ if ($action == 'reset_password') {
         $message = 'New Password and Confirm New Password Mismatch!';
     } else {
 
-        $email      = getTableAttrV("email", tbl_users, " activation_code = '" . $activation_code . "' ");
-        $id         = getTableAttrV("id", tbl_users, " activation_code = '" . $activation_code . "' ");
+        $email      = getTableAttrV("email", DB::USERS, " activation_code = '" . $activation_code . "' ");
+        $id         = getTableAttrV("id", DB::USERS, " activation_code = '" . $activation_code . "' ");
 
         $token = hash("sha512", 'bushogai' . $id);
 
@@ -105,10 +120,10 @@ if ($action == 'reset_password') {
         |
         */
         if ($activation_code == $token) {
-            $mysqli->query("UPDATE `" . tbl_users . "` SET password = '" . password_hash($new_password, PASSWORD_DEFAULT) . "' WHERE activation_code = '" . $activation_code . "' AND id = '" . $id . "'  AND email = '" . $email . "' ");
+            $mysqli->query("UPDATE `" . DB::USERS . "` SET password = '" . password_hash($new_password, PASSWORD_DEFAULT) . "' WHERE activation_code = '" . $activation_code . "' AND id = '" . $id . "'  AND email = '" . $email . "' ");
 
             // -- Clear activation code
-            $mysqli->query("UPDATE `" . tbl_users . "` SET activation_code = '' WHERE activation_code = '" . rand(111111, 9999999999) . "' AND id = '" . $id . "'  AND email = '" . $email . "' ");
+            $mysqli->query("UPDATE `" . DB::USERS . "` SET activation_code = '' WHERE activation_code = '" . rand(111111, 9999999999) . "' AND id = '" . $id . "'  AND email = '" . $email . "' ");
             
             // -- Redirect to index page
             header('location:login.php?message=New Password has been updated.');
@@ -166,7 +181,7 @@ if ($action == 'reset_password') {
 
                     <?php
                     // ---------------------------------- LOGO ---------------------------------- 
-                    $logo        = getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="logo"');
+                    $logo        = getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="logo"');
 
                     if (!empty($logo) && file_exists('../uploads/global_settings/thumbs/' . $logo)) {
                         $display_logo = '../uploads/global_settings/' . s__($logo);
@@ -182,7 +197,7 @@ if ($action == 'reset_password') {
 
                     <?php
                     //echo getTableAttr('company_name', tbl_global_settings, 1); 
-                    $software_name        = getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="software_name"');
+                    $software_name        = getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"');
                     echo s__($software_name);
                     ?>
 
@@ -212,7 +227,7 @@ if ($action == 'reset_password') {
 
                         <?php
                         // echo getTableAttr('company_name', tbl_global_settings, 1);
-                        // $software_name		= getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="software_name"');
+                        // $software_name		= getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"');
                         // echo s__($software_name);
                         ?>
 

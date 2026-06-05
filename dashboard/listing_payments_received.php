@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 $module = 'payments_received';
 $module_caption = 'Payment Received';
@@ -36,7 +38,7 @@ if (($action == "delete_payments_received" && !empty($id)) && granted('delete', 
 
     if (is_SystemAdmin() || is_SuperAdmin()) {
 
-        // $mysqli->query("DELETE FROM `" . tbl_payment_received_items . "` WHERE payment_received_id=$id");
+        // $mysqli->query("DELETE FROM `" . DB::table('payment_received_items') . "` WHERE payment_received_id=$id");
         $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id ");
 
         // DELETE JOURNAL ENTRY
@@ -47,7 +49,7 @@ if (($action == "delete_payments_received" && !empty($id)) && granted('delete', 
         }
     } else {
 
-        // $mysqli->query("DELETE FROM `" . tbl_invoice_items . "` WHERE invoice_id=$id");
+        // $mysqli->query("DELETE FROM `" . DB::INVOICE_ITEMS . "` WHERE invoice_id=$id");
         $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND created_by='" . $session_user_id . "'");
 
         // DELETE JOURNAL ENTRY

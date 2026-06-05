@@ -1,11 +1,13 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 // =========================================================================
 // ACCOUNTING JOURNAL MANAGER INTEGRATION
 // =========================================================================
-require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
+// Removed legacy require for autoloader compatibility: require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
 require_once(__DIR__ . '/../config/accounting.php');
 
 $module             = 'payments_made';
@@ -161,7 +163,7 @@ if ($action == "update_$module" && !empty($id)) {
                 $updated_row    = 0;
                 $inserted_row   = 0;
 
-                $tbl_payment_made_items = tbl_payment_made_items;
+                $tbl_payment_made_items = DB::table('payment_made_items');
 
                 for ($payment_item = 1; $payment_item <= $total_rows; $payment_item++) {
 
@@ -324,7 +326,7 @@ if ($action == "update_$module" && !empty($id)) {
                     }
 
                     // SAVE ITEMS
-                    $tbl_payment_made_items = tbl_payment_made_items;
+                    $tbl_payment_made_items = DB::table('payment_made_items');
                     $item_amount_paid_on_formatted = !empty($item_amount_paid_on) ? processDateDtoY($item_amount_paid_on) : NULL;
                     $insert_row = $mysqli->query("INSERT INTO `$tbl_payment_made_items`(payment_id, purchase_id, amount_paid_on, amount_paid) VALUES ('" . $payment_id . "', '" . $item_id . "', '" . $item_amount_paid_on_formatted . "', '" . $item_amount_paid . "'); ");
 
@@ -417,7 +419,7 @@ if (
     $payment_date       = processDateYtoD($payment_date);
 
     // TOTAL ITEMS
-    $tbl_payment_made_items = tbl_payment_made_items;
+    $tbl_payment_made_items = DB::table('payment_made_items');
     $result_payment_items       = $mysqli->query("SELECT * FROM `$tbl_payment_made_items` WHERE payment_id=$id");
     $total_rows                 = $result_payment_items->num_rows;
 
@@ -559,7 +561,7 @@ if (
                                         <div class="col-lg-9">
                                             <select class="form-select" name="payment_method" id="payment_method">
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_payment_methods  . "` WHERE publish=1 ORDER BY payment_method");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_METHODS  . "` WHERE publish=1 ORDER BY payment_method");
                                                 while ($rows = $result->fetch_array()) {
                                                 ?>
                                                     <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $payment_method) { ?>selected <?php } else if ($rows['id'] == $payment_method) { ?>selected <?php } ?>>
@@ -667,7 +669,7 @@ if (
                                             $purchase_grand_total       = $unpaid_purchases[$i]['grand_total'];
 
                                             // GET PAID AMOUNT
-                                            $tbl_payment_made_items = tbl_payment_made_items;
+                                            $tbl_payment_made_items = DB::table('payment_made_items');
                                             $result_amount_paid = $mysqli->query("
                                                 SELECT COALESCE(SUM(amount_paid), 0) as total_paid
                                                 FROM `$tbl_payment_made_items`

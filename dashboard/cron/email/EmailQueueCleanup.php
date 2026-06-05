@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * Email Queue Cleanup
  * 
@@ -61,7 +63,7 @@ class EmailQueueCleanup extends CronJobBase {
         
         // Delete old sent items
         $sentResult = $this->safeQuery(
-            "DELETE FROM `" . tbl_email_queue . "` 
+            "DELETE FROM `" . DB::EMAIL_QUEUE . "` 
             WHERE status = 'sent' 
             AND updated_at < DATE_SUB(NOW(), INTERVAL {$this->retentionDays} DAY)"
         );
@@ -70,7 +72,7 @@ class EmailQueueCleanup extends CronJobBase {
         
         // Delete old failed items
         $failedResult = $this->safeQuery(
-            "DELETE FROM `" . tbl_email_queue . "` 
+            "DELETE FROM `" . DB::EMAIL_QUEUE . "` 
             WHERE status = 'failed' 
             AND updated_at < DATE_SUB(NOW(), INTERVAL {$this->retentionDays} DAY)"
         );
@@ -98,7 +100,7 @@ class EmailQueueCleanup extends CronJobBase {
         
         // Delete very old history records (keep opened/clicked longer for analytics)
         $result = $this->safeQuery(
-            "DELETE FROM `" . tbl_email_history . "` 
+            "DELETE FROM `" . DB::EMAIL_HISTORY . "` 
             WHERE sent_at < DATE_SUB(NOW(), INTERVAL {$this->historyRetentionDays} DAY)
             AND status IN ('sent', 'failed')"
         );
@@ -123,7 +125,7 @@ class EmailQueueCleanup extends CronJobBase {
                 COUNT(*) as count,
                 MIN(created_at) as oldest,
                 MAX(created_at) as newest
-            FROM `" . tbl_email_queue . "`
+            FROM `" . DB::EMAIL_QUEUE . "`
             GROUP BY status"
         );
         
@@ -146,7 +148,7 @@ class EmailQueueCleanup extends CronJobBase {
                 ROUND(((data_length + index_length) / 1024 / 1024), 2) AS 'size_mb'
             FROM information_schema.TABLES
             WHERE table_schema = DATABASE()
-            AND table_name = '" . tbl_email_queue . "'"
+            AND table_name = '" . DB::EMAIL_QUEUE . "'"
         );
         
         if ($sizeResult && $row = $sizeResult->fetch_array(MYSQLI_ASSOC)) {
@@ -161,8 +163,8 @@ class EmailQueueCleanup extends CronJobBase {
         $this->log('Optimizing tables...', 'INFO');
         
         $tables = [
-            tbl_email_queue,
-            tbl_email_history
+            DB::EMAIL_QUEUE,
+            DB::EMAIL_HISTORY
         ];
         
         foreach ($tables as $table) {
@@ -188,7 +190,7 @@ class EmailQueueCleanup extends CronJobBase {
         // Count items by status in queue
         $queueStats = $this->safeQuery(
             "SELECT status, COUNT(*) as count 
-            FROM `" . tbl_email_queue . "` 
+            FROM `" . DB::EMAIL_QUEUE . "` 
             GROUP BY status"
         );
         
@@ -200,7 +202,7 @@ class EmailQueueCleanup extends CronJobBase {
         
         // Count history items
         $historyCount = $this->safeQuery(
-            "SELECT COUNT(*) as count FROM `" . tbl_email_history . "`"
+            "SELECT COUNT(*) as count FROM `" . DB::EMAIL_HISTORY . "`"
         );
         
         if ($historyCount) {

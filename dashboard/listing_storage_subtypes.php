@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 $module = 'storage_subtypes';
 $module_caption = 'Storage Subtype';

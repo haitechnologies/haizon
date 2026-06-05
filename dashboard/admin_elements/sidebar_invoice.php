@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 /*
 |--------------------------------------------------------------------------
 | SEARCH QUERY & ORDERING
@@ -105,8 +107,8 @@ $payment_term_cache = [];
                                                                                     i.invoice_date, i.grand_total, i.payment_term,
                                                                                     0 AS total_paid,
                                                                                     i.invoice_date AS due_date
-                                                                     FROM `" . tbl_invoices . "` i
-                                                                     LEFT JOIN `" . tbl_customers . "` c ON i.customer_id = c.id
+                                                                     FROM `" . DB::INVOICES . "` i
+                                                                     LEFT JOIN `" . DB::CUSTOMERS . "` c ON i.customer_id = c.id
                                                                      WHERE i.id > 0 AND i.customer_id != ''";
 
                     $where_status = '';
@@ -134,7 +136,7 @@ $payment_term_cache = [];
                     // Render rows
                     while ($row = $result_side->fetch_array()) {
                         $isSelected = ($row['id'] == $current_id) ? 'table-primary shadow-sm' : '';
-                        $display_name = getTableAttr('display_name', tbl_customers, $row['customer_id']);
+                        $display_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
                         
                         // Calculate display info
                         $display_due_days = '';

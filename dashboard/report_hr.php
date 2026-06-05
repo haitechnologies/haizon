@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'hr_reports';
 $module_caption = 'HR Reports';
 $error_message = '';
@@ -24,14 +26,14 @@ $dept_query = $mysqli->query("
     SELECT
         d.department,
         COUNT(u.id) as employee_count
-    FROM `" . tbl_departments . "` d
-    LEFT JOIN `" . tbl_users . "` u ON d.id = u.department_id AND u.is_active = 1 AND u.id > 1
+    FROM `" . DB::DEPARTMENTS . "` d
+    LEFT JOIN `" . DB::USERS . "` u ON d.id = u.department_id AND u.is_active = 1 AND u.id > 1
     GROUP BY d.id, d.department
     ORDER BY employee_count DESC
 ");
 
 // Get total employees
-$total_employees_query = $mysqli->query("SELECT COUNT(*) as total FROM `" . tbl_users . "` WHERE id > 1 AND is_active = 1");
+$total_employees_query = $mysqli->query("SELECT COUNT(*) as total FROM `" . DB::USERS . "` WHERE id > 1 AND is_active = 1");
 $total_employees = $total_employees_query->fetch_assoc()['total'];
 
 // Get payroll summary

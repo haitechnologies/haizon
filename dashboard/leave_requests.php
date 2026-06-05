@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'leave_requests';
@@ -94,7 +96,7 @@ if (!empty($id)) {
                                     <option value="0">Select Employee</option>
                                     <?php
                                     // Show all users regardless of publish status, exclude system/super admins
-                                    $res = $mysqli->query("SELECT u.id, u.full_name, r.role_name FROM `" . tbl_users . "` u LEFT JOIN `" . tbl_roles . "` r ON u.role_id = r.id WHERE u.role_id NOT IN (1, 2) ORDER BY u.full_name");
+                                    $res = $mysqli->query("SELECT u.id, u.full_name, r.role_name FROM `" . DB::USERS . "` u LEFT JOIN `" . DB::ROLES . "` r ON u.role_id = r.id WHERE u.role_id NOT IN (1, 2) ORDER BY u.full_name");
                                     while ($u = $res->fetch_array()) {
                                     ?>
                                         <option value="<?php echo $u['id']; ?>" <?php if ($employee_id == $u['id']) echo 'selected'; ?>>

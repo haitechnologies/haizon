@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'warehouses';
@@ -354,9 +356,9 @@ $photo = getTableAttr('photo', $tbl_name, $id);
                                             <option value='0'>Please select</option>
                                             <?php
                                             if (!empty($country)) {
-                                                $result_states = $mysqli->query("SELECT * FROM `" . tbl_geo_states  . "` WHERE publish=1 AND country_id=$country");
+                                                $result_states = $mysqli->query("SELECT * FROM `" . DB::GEO_STATES  . "` WHERE publish=1 AND country_id=$country");
                                             } else {
-                                                $result_states = $mysqli->query("SELECT * FROM `" . tbl_geo_states  . "` WHERE id=0");
+                                                $result_states = $mysqli->query("SELECT * FROM `" . DB::GEO_STATES  . "` WHERE id=0");
                                             }
 
                                             while ($rows_states = $result_states->fetch_array()) {

@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'customers';
@@ -32,7 +34,7 @@ if (isset($_POST['customer_id']))           $customer_id     = e_s__($_POST['cus
 
 
 //VERIFY IF IS VALID 
-$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . tbl_customers . "` WHERE id='" . $customer_id . "'");
+$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . DB::CUSTOMERS . "` WHERE id='" . $customer_id . "'");
 if ($rs_customer_valid->num_rows == 0) header("Location:listing_customers.php");
 
 
@@ -51,18 +53,18 @@ if (!empty($id)) {
     $row = $result->fetch_array();
 
     $customer_owner             = s__($row['customer_owner']);
-    $customer_owner             = getTableAttr('full_name', tbl_users, $customer_owner);
+    $customer_owner             = getTableAttr('full_name', DB::USERS, $customer_owner);
 
     $payment_term               = s__($row['payment_term']);
 
     $customer_status            = s__($row['customer_status']);
-    $customer_status            = getTableAttr('status', tbl_setup_statuses, $customer_status);
+    $customer_status            = getTableAttr('status', DB::SETUP_STATUSES, $customer_status);
 
     $customer_source            = s__($row['customer_source']);
-    $customer_source            = getTableAttr('source', tbl_setup_sources, $customer_source);
+    $customer_source            = getTableAttr('source', DB::SETUP_SOURCES, $customer_source);
 
     $assigned_to                = s__($row['assigned_to']);
-    $assigned_to                = getTableAttr('full_name', tbl_users, $assigned_to);
+    $assigned_to                = getTableAttr('full_name', DB::USERS, $assigned_to);
 
     // $customer_type              = s__($row['customer_type']);
     $salutation                 = ((!empty($row['salutation']) ? ucwords(s__($row['salutation'])) : ''));
@@ -82,14 +84,14 @@ if (!empty($id)) {
     $license_expiry         = ($license_expiry == '1970-01-01' ? '' : processDateYtoD($license_expiry));
 
     $currency               = s__($row['currency']);
-    $currency               = getTableAttr("currency", tbl_currencies, $currency);
+    $currency               = getTableAttr("currency", DB::CURRENCIES, $currency);
     $exchange_rate          = s__($row['exchange_rate']);
 
     $sales_person           = s__($row['sales_person']);
-    $sales_person           = getTableAttr("full_name", tbl_users, $sales_person);
+    $sales_person           = getTableAttr("full_name", DB::USERS, $sales_person);
 
     $cs_agent               = s__($row['cs_agent']);
-    $cs_agent               = getTableAttr("full_name", tbl_users, $cs_agent);
+    $cs_agent               = getTableAttr("full_name", DB::USERS, $cs_agent);
 
     $lead_category          = s__($row['lead_category']);
     $rating                 = s__($row['rating']);
@@ -110,7 +112,7 @@ if (!empty($id)) {
         // $tags_captions = '';
 
         foreach ($tags_arr as $tag_id) {
-            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', tbl_setup_tags, $tag_id) . '</span> &nbsp;';
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
         }
     }
 
@@ -195,7 +197,7 @@ if (!empty($id)) {
     } */
 </style>
 
-<div class="sidebar sidebar-secondary sidebar-expand-lg">
+<aside class="sidebar sidebar-secondary sidebar-expand-lg" aria-label="Secondary Navigation">
 
     <!-- Expand button -->
     <button type="button" class="btn btn-sidebar-expand sidebar-control sidebar-secondary-toggle h-100">
@@ -208,7 +210,7 @@ if (!empty($id)) {
     <?php include('admin_elements/sidebar_customer.php'); ?>
     <!-- /sidebar content -->
 
-</div>
+</aside>
 
 <div class="content-wrapper">
 

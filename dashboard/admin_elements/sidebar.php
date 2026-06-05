@@ -144,15 +144,7 @@ $menuConfig = [
                 'condition' => function() { return hasModuleAccess('inquiries'); }
             ],
 
-            [
-                'key' => 'searches',
-                'href' => 'listing_searches.php',
-                'label' => 'Search Analytics',
-                'icon' => 'ph-magnifying-glass',
-                'pages' => ['listing_searches.php'],
-                'condition' => function() { return has_full_access(); },
-                'hidden' => true
-            ]
+            // Decommissioned: Searches
         ]
     ],
     'shipping' => [
@@ -492,7 +484,7 @@ $menuConfig = [
                 'href' => '#hs-codes-submenu',
                 'label' => 'HS Codes',
                 'icon' => 'ph-barcode',
-                'pages' => ['listing_hscodes.php', 'hscodes.php', 'hscode_detail.php', 'listing_hscodesmappings.php', 'listing_hs_code_sets.php', 'hs_code_sets.php', 'listing_hs_code_texts.php', 'hs_code_texts.php', 'listing_category_hs_codes.php'],
+                'pages' => ['listing_hscodes.php', 'hscodes.php', 'hscode_detail.php', 'listing_hscodesmappings.php', 'listing_category_hs_codes.php'],
                 'type' => 'submenu',
                 'condition' => function() { return has_full_access() && hasModuleAccess('hscodes'); }
             ]
@@ -501,33 +493,7 @@ $menuConfig = [
     'content' => [
         'label' => 'Content',
         'items' => [
-            [
-                'key' => 'blogs',
-                'href' => 'listing_blogs.php',
-                'label' => 'Blog Posts',
-                'icon' => 'ph-note-pencil',
-                'pages' => ['listing_blogs.php', 'blogs.php'],
-                'condition' => function() { return has_full_access() && hasModuleAccess('blogs'); },
-                'hidden' => true
-            ],
-            [
-                'href' => 'listing_guest_posts.php',
-                    'key' => 'guest_posts',
-                'label' => 'Guest Posts',
-                'icon' => 'ph-user-list',
-                'pages' => ['listing_guest_posts.php'],
-                    'condition' => function() { return has_full_access() && hasModuleAccess('blogs'); },
-                    'hidden' => true
-            ],
-            [
-                'key' => 'blog_categories',
-                'href' => 'listing_blog_categories.php',
-                'label' => 'Blog Categories',
-                'icon' => 'ph-folder-open',
-                'pages' => ['listing_blog_categories.php', 'blog_categories.php', 'blog_category_detail.php'],
-                'condition' => function() { return has_full_access() && hasModuleAccess('blog_categories'); },
-                'hidden' => true
-            ],
+            // Decommissioned: blogs, guest_posts, blog_categories
             [
                 'key' => 'pages',
                 'href' => 'listing_pages.php',
@@ -537,18 +503,9 @@ $menuConfig = [
                 'condition' => function() { return has_full_access() && hasModuleAccess('pages'); },
                 'hidden' => true
             ],
-            [
-                'key' => 'frontend_users',
-                'href' => 'listing_frontend_users.php',
-                'label' => 'Frontend Users',
-                'icon' => 'ph-user-circle',
-                'pages' => ['listing_frontend_users.php', 'frontend_user_detail.php'],
-                'condition' => function() { return hasModuleAccess('frontend_users'); },
-                'hidden' => true
-            ],
             // User Favorites link moved to setup.php
         ]
-    ],
+     ],
     // 'data' section moved to setup.php
     // 'admin' section moved to setup.php
 ];
@@ -558,7 +515,7 @@ $menuConfig = [
 // ============================================================================
 
 // Get list of items hidden by user from system settings
-$defaultHiddenItems = ['blogs', 'guest_posts', 'blog_categories', 'pages', 'frontend_users', 'searches'];
+$defaultHiddenItems = ['pages'];
 $hiddenItemsJson = getSystemSetting('sidebar_hidden_items', json_encode($defaultHiddenItems));
 $storedHiddenItems = json_decode($hiddenItemsJson, true);
 $userHiddenItems = array_values(array_unique(array_merge($defaultHiddenItems, is_array($storedHiddenItems) ? $storedHiddenItems : [])));
@@ -615,8 +572,7 @@ $sectionSystemMap = [
                                 $hsPgs = ['listing_hscodes.php','hscodes.php','hscode_detail.php'];
                                 echo '<li class="nav-item"><a href="listing_hscodes.php" class="nav-link ' . (isMenuActive($hsPgs) ? 'active' : '') . '"><i class="ph-barcode"></i><span>HS Codes</span></a></li>';
                                 echo '<li class="nav-item"><a href="listing_hscodesmappings.php" class="nav-link ' . ($current_page === 'listing_hscodesmappings.php' ? 'active' : '') . '"><i class="ph-link"></i><span>Mappings</span></a></li>';
-                                echo '<li class="nav-item"><a href="listing_hs_code_sets.php" class="nav-link ' . (isMenuActive(['listing_hs_code_sets.php','hs_code_sets.php']) ? 'active' : '') . '"><i class="ph-stack"></i><span>HS Code Sets</span></a></li>';
-                                echo '<li class="nav-item"><a href="listing_hs_code_texts.php" class="nav-link ' . (isMenuActive(['listing_hs_code_texts.php','hs_code_texts.php']) ? 'active' : '') . '"><i class="ph-book-open"></i><span>HS Code Texts</span></a></li>';
+                                // Decommissioned: HS Code Sets & HS Code Texts
                                 echo '<li class="nav-item"><a href="listing_category_hs_codes.php" class="nav-link ' . ($current_page === 'listing_category_hs_codes.php' ? 'active' : '') . '"><i class="ph-tag"></i><span>Category HS Codes</span></a></li>';
                             endif;
                             if ($sectionKey === 'shipping' && $item['label'] === 'Shipping Master Data'):

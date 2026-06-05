@@ -10,7 +10,8 @@ scripts/.env
 # ============================================================
 # DEPENDENCY DIRECTORIES (generated, not committed)
 # ============================================================
-vendor/
+/vendor/
+/dashboard/vendor/
 .venv/
 
 # Force-include specific dashboard DataTables vendor assets needed in production

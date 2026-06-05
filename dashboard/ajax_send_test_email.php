@@ -1,5 +1,8 @@
 <?php
-require_once __DIR__ . '/../classes/DB.php';
+
+use App\Core\DB;
+use App\Service\SMTPMailer;
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
 /**
  * AJAX Handler: Send Test Email
  * Sends a test email immediately using SMTP provider settings (no queue/cron)
@@ -18,8 +21,8 @@ if (!isset($session_user_id) || empty($session_user_id)) {
 }
 
 // Include required files
-require_once __DIR__ . '/../classes/EmailProviderManager.php';
-require_once __DIR__ . '/../classes/SMTPMailer.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailProviderManager.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/SMTPMailer.php';
 
 // CSRF Token validation
 $csrf_token = $_POST['csrf_token'] ?? '';

@@ -6,7 +6,7 @@ namespace App\Model;
 
 /**
  * Department DTO
- * 
+ *
  * Readonly data transfer object representing a department record.
  * Adheres strictly to PSR.md rules.
  */

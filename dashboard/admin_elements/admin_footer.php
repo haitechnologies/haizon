@@ -1,3 +1,7 @@
+<?php declare(strict_types=1); 
+use App\Core\DB;
+use App\Security\Roles;
+?>
   
 
 <script type="text/javascript">
@@ -420,7 +424,7 @@ if (adminFooterTableExists($mysqli, DB::BACKEND_ERROR_LOGS)) {
 $footerProfileName = trim((string)($session_full_name ?? 'User'));
 $footerProfilePhoto = $base_url . '/images/no-image-profile-photo.png';
 if (!empty($session_user_id) && function_exists('getTableAttr')) {
-  $footerPhotoFile = (string)getTableAttr('photo', tbl_users, $session_user_id);
+  $footerPhotoFile = (string)getTableAttr('photo', DB::USERS, $session_user_id);
   if ($footerPhotoFile !== '' && file_exists('../uploads/users/thumbs/' . $footerPhotoFile)) {
     $footerProfilePhoto = $base_url . '/uploads/users/thumbs/' . $footerPhotoFile;
   }

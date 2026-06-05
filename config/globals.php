@@ -1,5 +1,8 @@
 <?php
 
+use App\Core\DB;
+use App\Security\Roles;
+
 // Base URLs (frontend + dashboard).
 if (!isset($base_url) || $base_url === '') {
   $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -1048,7 +1051,7 @@ if (!function_exists('getModuleIdBySlug')) {
       return;
     }
 
-    $user_id = (int)getTableAttrv('id', tbl_users, "email = '" . $email . "'");
+    $user_id = (int)getTableAttrv('id', DB::USERS, "email = '" . $email . "'");
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $created_at = date("Y-m-d H:i:s");
@@ -1075,7 +1078,7 @@ if (!function_exists('getModuleIdBySlug')) {
     */
     function updateLeadLogs($lead_id, $module, $record_id, $action) {
       $mysqli = $GLOBALS['DB']['MSQLI'];
-      $table = defined('tbl_entity_logs') ? constant('tbl_entity_logs') : 'erp_entity_logs';
+      $table = defined('DB::ENTITY_LOGS') ? constant('DB::ENTITY_LOGS') : 'erp_entity_logs';
 
       if (!empty($lead_id) && !empty($module) && !empty($action)) {
         $mysqli->query("INSERT INTO `" . $table . "` (entity_type, entity_id, record_id, module, action, created_at) VALUES ('lead', '" . $lead_id . "', '" . $record_id . "', '" . $module . "', '" . $action . "', '" . date('Y-m-d H:i:s') . "')");
@@ -1091,7 +1094,7 @@ if (!function_exists('getModuleIdBySlug')) {
     */
     function updateCustomerLogs($customer_id, $module, $action) {
       $mysqli = $GLOBALS['DB']['MSQLI'];
-      $table = defined('tbl_entity_logs') ? constant('tbl_entity_logs') : 'erp_entity_logs';
+      $table = defined('DB::ENTITY_LOGS') ? constant('DB::ENTITY_LOGS') : 'erp_entity_logs';
 
       if (!empty($customer_id) && !empty($module) && !empty($action)) {
         $mysqli->query("INSERT INTO `" . $table . "` (entity_type, entity_id, module, action, created_at) VALUES ('customer', '" . $customer_id . "', '" . $module . "', '" . $action . "', '" . date('Y-m-d H:i:s') . "')");
@@ -1130,7 +1133,7 @@ if (!function_exists('getModuleIdBySlug')) {
       return;
     }
 
-    $user_id  = (int)getTableAttrv('id', tbl_users, "email = '" . $email . "'");
+    $user_id  = (int)getTableAttrv('id', DB::USERS, "email = '" . $email . "'");
     if ($user_id <= 0) {
       return;
     }
@@ -2453,294 +2456,7 @@ function getReferralStats($company_id) {
     ];
 }
 
-/**
- * Queue an email for sending
- * 
- * Adds an email to the queue to be processed by the background processor.
- * Supports multiple recipient types, templating, and scheduling.
- *
- * @global mysqli $conn Database connection
- * @param string $to_email Recipient email address
- * @param string $template_name Template identifier (e.g., 'welcome', 'verify', 'referral')
- * @param array $variables Template variables to replace
- * @param int $company_id Optional company ID for context
- * @param int $user_id Optional user ID for context
- * @param string $send_at Optional ISO timestamp to schedule send (default: now)
- * @return array Result with success status and email_id
- */
-function queueEmail($to_email, $template_name, $variables = [], $company_id = null, $user_id = null, $send_at = null) {
-    global $conn;
-    
-    // Validate email
-    if (!filter_var($to_email, FILTER_VALIDATE_EMAIL)) {
-        return ['success' => false, 'message' => 'Invalid email address'];
-    }
-    
-    // Get template ID
-    $template_name = $conn->real_escape_string($template_name);
-    $templateQuery = "SELECT id FROM " . DB::EMAIL_TEMPLATES . 
-                     " WHERE template_name = '{$template_name}' AND active = 1 LIMIT 1";
-    $templateResult = $conn->query($templateQuery);
-    
-    if (!$templateResult || $templateResult->num_rows == 0) {
-        return ['success' => false, 'message' => 'Template not found or inactive'];
-    }
-    
-    $template = $templateResult->fetch_assoc();
-    $template_id = $template['id'];
-    
-    // Serialize variables
-    $variables_json = json_encode($variables);
-    
-    // Set schedule time (default to now)
-    $send_at = $send_at ?? date('Y-m-d H:i:s');
-    
-    // Insert into queue
-    $insertQuery = "INSERT INTO " . DB::EMAIL_QUEUE . " 
-                    (to_email, template_id, variables, company_id, user_id, scheduled_at, status, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())";
-    
-    $stmt = $conn->prepare($insertQuery);
-    if ($stmt) {
-        $status = 'pending';
-        $stmt->bind_param("sisiss", $to_email, $template_id, $variables_json, $company_id, $user_id, $send_at);
-        
-        if ($stmt->execute()) {
-            return ['success' => true, 'email_id' => $conn->insert_id, 'queue_count' => 1];
-        }
-    }
-    
-    return ['success' => false, 'message' => 'Failed to queue email'];
-}
 
-/**
- * Process email queue (called by cron job)
- * 
- * Processes pending emails from the queue that are scheduled to send.
- * Updates status to sent/failed and logs results.
- *
- * @global mysqli $conn Database connection
- * @param int $limit Maximum emails to process in one run (default: 50)
- * @param int $retry_limit How many times to retry failed emails
- * @return array Statistics: processed, sent, failed, skipped
- */
-function processEmailQueue($limit = 50, $retry_limit = 3) {
-    global $conn;
-    
-    $stats = ['processed' => 0, 'sent' => 0, 'failed' => 0, 'skipped' => 0];
-    
-    // Get pending emails that are ready to send
-    $query = "SELECT eq.*, et.subject, et.body, et.from_name, et.from_email
-              FROM " . DB::EMAIL_QUEUE . " eq
-              LEFT JOIN " . DB::EMAIL_TEMPLATES . " et ON eq.template_id = et.id
-              WHERE eq.status = 'pending' 
-              AND eq.scheduled_at <= NOW()
-              AND eq.retry_count < {$retry_limit}
-              ORDER BY eq.scheduled_at ASC
-              LIMIT {$limit}";
-    
-    $result = $conn->query($query);
-    
-    if (!$result) {
-        return $stats;
-    }
-    
-
-    // --- TITAN EMAIL RATE LIMITS (Free Plan) ---
-    // Domain: 1000/hour, 2000/day; Mailbox: 50/hour, 100/day
-    $isTitan = false;
-    $smtpHost = $_ENV['MAIL_SMTP_HOST'] ?? '';
-    if (stripos($smtpHost, 'titan.email') !== false) {
-      $isTitan = true;
-    }
-
-    // Only enforce if Titan
-    $now = date('Y-m-d H:i:s');
-    $hourAgo = date('Y-m-d H:i:s', strtotime('-1 hour'));
-    $dayAgo = date('Y-m-d H:i:s', strtotime('-1 day'));
-
-    // Get domain from from_email (assume all emails use same domain)
-    $fromDomain = '';
-    if ($isTitan) {
-      $fromEmail = $_ENV['MAIL_FROM_ADDRESS'] ?? '';
-      if (preg_match('/@([A-Za-z0-9.-]+)$/', $fromEmail, $m)) {
-        $fromDomain = strtolower($m[1]);
-      }
-    }
-
-    // Pre-calculate counts for domain and mailbox
-    $domainHourCount = $domainDayCount = 0;
-    $mailboxHourCounts = $mailboxDayCounts = [];
-    if ($isTitan && $fromDomain) {
-      // Domain counts
-      $q = "SELECT COUNT(*) as cnt FROM " . DB::EMAIL_HISTORY . " WHERE status = 'sent' AND from_email LIKE '%@" . $conn->real_escape_string($fromDomain) . "' AND sent_at >= ?";
-      $stmt = $conn->prepare($q);
-      $stmt->bind_param('s', $hourAgo);
-      $stmt->execute();
-      $res = $stmt->get_result();
-      $domainHourCount = (int)($res->fetch_assoc()['cnt'] ?? 0);
-      $stmt->close();
-
-      $q = "SELECT COUNT(*) as cnt FROM " . DB::EMAIL_HISTORY . " WHERE status = 'sent' AND from_email LIKE '%@" . $conn->real_escape_string($fromDomain) . "' AND sent_at >= ?";
-      $stmt = $conn->prepare($q);
-      $stmt->bind_param('s', $dayAgo);
-      $stmt->execute();
-      $res = $stmt->get_result();
-      $domainDayCount = (int)($res->fetch_assoc()['cnt'] ?? 0);
-      $stmt->close();
-
-      // Mailbox counts (all mailboxes for this domain)
-      $q = "SELECT from_email, COUNT(*) as cnt FROM " . DB::EMAIL_HISTORY . " WHERE status = 'sent' AND from_email LIKE '%@" . $conn->real_escape_string($fromDomain) . "' AND sent_at >= ? GROUP BY from_email";
-      // Hour
-      $stmt = $conn->prepare($q);
-      $stmt->bind_param('s', $hourAgo);
-      $stmt->execute();
-      $res = $stmt->get_result();
-      while ($row = $res->fetch_assoc()) {
-        $mailboxHourCounts[strtolower($row['from_email'])] = (int)$row['cnt'];
-      }
-      $stmt->close();
-      // Day
-      $stmt = $conn->prepare($q);
-      $stmt->bind_param('s', $dayAgo);
-      $stmt->execute();
-      $res = $stmt->get_result();
-      while ($row = $res->fetch_assoc()) {
-        $mailboxDayCounts[strtolower($row['from_email'])] = (int)$row['cnt'];
-      }
-      $stmt->close();
-    }
-
-    while ($email = $result->fetch_assoc()) {
-      $stats['processed']++;
-      try {
-        // --- ENFORCE TITAN RATE LIMITS ---
-        if ($isTitan && $fromDomain) {
-          $fromEmail = strtolower($email['from_email']);
-          // Check domain limits
-          if ($domainHourCount >= 1000) {
-            // Block for this hour
-            $updateQuery = "UPDATE " . DB::EMAIL_QUEUE . " SET status = 'error', last_error = 'Titan domain hourly limit exceeded (1000/hr)' WHERE id = " . $email['id'];
-            $conn->query($updateQuery);
-            $stats['skipped']++;
-            continue;
-          }
-          if ($domainDayCount >= 2000) {
-            $updateQuery = "UPDATE " . DB::EMAIL_QUEUE . " SET status = 'error', last_error = 'Titan domain daily limit exceeded (2000/day)' WHERE id = " . $email['id'];
-            $conn->query($updateQuery);
-            $stats['skipped']++;
-            continue;
-          }
-          // Check mailbox limits
-          $mh = $mailboxHourCounts[$fromEmail] ?? 0;
-          $md = $mailboxDayCounts[$fromEmail] ?? 0;
-          if ($mh >= 50) {
-            $updateQuery = "UPDATE " . DB::EMAIL_QUEUE . " SET status = 'error', last_error = 'Titan mailbox hourly limit exceeded (50/hr)' WHERE id = " . $email['id'];
-            $conn->query($updateQuery);
-            $stats['skipped']++;
-            continue;
-          }
-          if ($md >= 100) {
-            $updateQuery = "UPDATE " . DB::EMAIL_QUEUE . " SET status = 'error', last_error = 'Titan mailbox daily limit exceeded (100/day)' WHERE id = " . $email['id'];
-            $conn->query($updateQuery);
-            $stats['skipped']++;
-            continue;
-          }
-          // If passed, increment counters for next emails in this batch
-          $domainHourCount++;
-          $domainDayCount++;
-          $mailboxHourCounts[$fromEmail] = $mh + 1;
-          $mailboxDayCounts[$fromEmail] = $md + 1;
-        }
-
-        // Parse template variables
-        $variables = json_decode($email['variables'], true) ?? [];
-        // Replace variables in subject and body
-        $subject = $email['subject'];
-        $body = $email['body'];
-        foreach ($variables as $key => $value) {
-          $subject = str_replace("{{" . $key . "}}", $value, $subject);
-          $body = str_replace("{{" . $key . "}}", $value, $body);
-        }
-        // Send email
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-        $headers .= "From: " . $email['from_name'] . " <" . $email['from_email'] . ">\r\n";
-        $headers .= "Reply-To: " . $email['from_email'] . "\r\n";
-        // $sent = mail($email['to_email'], $subject, $body, $headers); // DISABLED: SMTP only
-        $sent = false;
-        if ($sent) {
-          // Update status to sent
-          $updateQuery = "UPDATE " . DB::EMAIL_QUEUE . " 
-                   SET status = 'sent', sent_at = NOW() 
-                   WHERE id = " . $email['id'];
-          $conn->query($updateQuery);
-          // Log to email history
-          $historyQuery = "INSERT INTO " . DB::EMAIL_HISTORY . " 
-                  (email_id, to_email, template_id, status, sent_at, company_id, user_id)
-                  VALUES (?, ?, ?, 'sent', NOW(), ?, ?)";
-          $stmt = $conn->prepare($historyQuery);
-          if ($stmt) {
-            $stmt->bind_param("isiii", $email['id'], $email['to_email'], $email['template_id'], 
-                      $email['company_id'], $email['user_id']);
-            $stmt->execute();
-          }
-          $stats['sent']++;
-        } else {
-          // Increment retry count
-          $retryQuery = "UPDATE " . DB::EMAIL_QUEUE . " 
-                  SET retry_count = retry_count + 1, last_error = 'Mail function failed'
-                  WHERE id = " . $email['id'];
-          $conn->query($retryQuery);
-          $stats['failed']++;
-        }
-      } catch (Exception $e) {
-        // Handle exceptions
-        $errorMsg = $conn->real_escape_string($e->getMessage());
-        $updateQuery = "UPDATE " . DB::EMAIL_QUEUE . " 
-                 SET status = 'error', last_error = '{$errorMsg}', retry_count = retry_count + 1
-                 WHERE id = " . $email['id'];
-        $conn->query($updateQuery);
-        $stats['failed']++;
-      }
-    }
-    
-    return $stats;
-}
-
-/**
- * Send bulk emails (e.g., newsletters)
- * 
- * Queue multiple emails at once for the same template.
- *
- * @global mysqli $conn Database connection
- * @param array $recipients Array of ['email' => 'user@example.com', 'variables' => [...]]
- * @param string $template_name Template to use
- * @param string $send_at Optional schedule time
- * @return array Statistics: queued, failed
- */
-function sendBulkEmails($recipients, $template_name, $send_at = null) {
-    global $conn;
-    
-    $stats = ['queued' => 0, 'failed' => 0];
-    
-    foreach ($recipients as $recipient) {
-        $email = $recipient['email'];
-        $variables = $recipient['variables'] ?? [];
-        $company_id = $recipient['company_id'] ?? null;
-        $user_id = $recipient['user_id'] ?? null;
-        
-        $result = queueEmail($email, $template_name, $variables, $company_id, $user_id, $send_at);
-        
-        if ($result['success']) {
-            $stats['queued']++;
-        } else {
-            $stats['failed']++;
-        }
-    }
-    
-    return $stats;
-}
 
 /**
  * Send email immediately (for critical emails)
@@ -3069,5 +2785,41 @@ if (!function_exists('bulk_set_is_active')) {
         
         $query = "UPDATE `$table` SET is_active = $status WHERE id IN ($ids_str)";
         return $conn->query($query);
+    }
+}
+
+/**
+ * Set a success message to be flashed on the next page load.
+ */
+if (!function_exists('flash_success')) {
+    function flash_success(string $message): void {
+        \App\Core\FlashMessage::success($message);
+    }
+}
+
+/**
+ * Set an error message to be flashed on the next page load.
+ */
+if (!function_exists('flash_error')) {
+    function flash_error(string $message): void {
+        \App\Core\FlashMessage::error($message);
+    }
+}
+
+/**
+ * Set an info message to be flashed on the next page load.
+ */
+if (!function_exists('flash_info')) {
+    function flash_info(string $message): void {
+        \App\Core\FlashMessage::info($message);
+    }
+}
+
+/**
+ * Set a warning message to be flashed on the next page load.
+ */
+if (!function_exists('flash_warning')) {
+    function flash_warning(string $message): void {
+        \App\Core\FlashMessage::warning($message);
     }
 }

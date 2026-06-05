@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * Minimal Admin Header for CSV Export
  * 

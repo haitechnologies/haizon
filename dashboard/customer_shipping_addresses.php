@@ -2,8 +2,17 @@
 
 include('admin_elements/admin_header.php');
 
+use App\Core\Container;
+use App\Service\CustomerService;
+use App\Exception\NotFoundException;
+use App\Exception\ValidationException;
+use App\Core\Roles;
+
+$container = Container::getInstance();
+$customerService = $container->get(CustomerService::class);
+
 $module = 'customer_addresses';
-$module_caption = 'Billing Address';
+$module_caption = 'Shipping Address';
 $tbl_name = $tbl_prefix . $module;
 $error_message = '';
 $success_message = '';
@@ -58,27 +67,18 @@ if ($id <= 0) {
     exit;
 }
 
-
-//VERIFY IF CUSTOMER IS VALID 
-$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . tbl_customers . "` WHERE id=" . (int)$id);
-if (!$rs_customer_valid || $rs_customer_valid->num_rows == 0) {
+try {
+    $customerObj = $customerService->getCustomer((int)$id, $activeOrganizationId);
+} catch (NotFoundException $e) {
     header("Location:listing_customers.php");
     exit;
 }
-
 
 //---------------
 if (isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
     $id     = (int)$_REQUEST['id'];
 }
 
-
-
-/*
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
 
 
 /*
@@ -119,45 +119,53 @@ if ($action == "update_$module") {
 |
 */
 if ($action == "update_$module" && !empty($customer_id) && granted('edit', $module_id)) {
+    try {
+        $shipping_country = ((empty($shipping_country)) ? '0' : $shipping_country);
+        $addresses = $customerService->getAddressesByCustomer((int)$customer_id, $activeOrganizationId);
+        
+        $existing = null;
+        foreach ($addresses as $addr) {
+            if ($addr->type === 'shipping') {
+                $existing = $addr;
+                break;
+            }
+        }
 
-    $shipping_country = ((empty($shipping_country)) ? '0' : $shipping_country);
-    $rs_shipping     = $mysqli->query("SELECT * FROM `$tbl_name` WHERE customer_id=$customer_id AND type='shipping' ");
+        if ($existing === null) {
+            $customerService->createAddress([
+                'customer_id' => $customer_id,
+                'type' => 'shipping',
+                'attention' => $shipping_attention,
+                'country' => $shipping_country,
+                'address_line1' => $shipping_address_line1,
+                'address_line2' => $shipping_address_line2,
+                'city' => $shipping_city,
+                'state' => $shipping_state,
+                'zipcode' => $shipping_zipcode,
+                'phone' => $shipping_phone,
+                'fax' => $shipping_fax
+            ], $activeOrganizationId, $session_user_id);
+        } else {
+            $customerService->updateAddress($existing->id, [
+                'attention' => $shipping_attention,
+                'country' => $shipping_country,
+                'address_line1' => $shipping_address_line1,
+                'address_line2' => $shipping_address_line2,
+                'city' => $shipping_city,
+                'state' => $shipping_state,
+                'zipcode' => $shipping_zipcode,
+                'phone' => $shipping_phone,
+                'fax' => $shipping_fax
+            ], $activeOrganizationId, $session_user_id);
+        }
 
-    // IF EXISTS - UPDATE
-    /* ---------------------- QUERY ---------------------- */
-    if ($rs_shipping->num_rows == 0) {
-
-        $query = $mysqli->query("INSERT INTO `$tbl_name` (customer_id, type, attention, country, address_line1, address_line2, city, state, zipcode, phone, fax)  VALUES ('$customer_id', 'shipping', '$shipping_attention', '$shipping_country', '$shipping_address_line1', '$shipping_address_line2', '$shipping_city', '$shipping_state', '$shipping_zipcode', '$shipping_phone', '$shipping_fax') ");
-
-        // IF DOES NOT EXIST - INSERT
-        /* ---------------------- QUERY ---------------------- */
-    } else {
-
-        $query = $mysqli->query("
-                UPDATE `$tbl_name` SET
-                    attention				= '" . $shipping_attention . "',
-                    country					= '" . $shipping_country . "',
-                    address_line1			= '" . $shipping_address_line1 . "',
-                    address_line2			= '" . $shipping_address_line2 . "',
-                    city					= '" . $shipping_city . "',
-                    state					= '" . $shipping_state . "',
-                    zipcode					= '" . $shipping_zipcode . "',
-                    phone					= '" . $shipping_phone . "',
-                    fax					    = '" . $shipping_fax . "'
-                WHERE customer_id=$customer_id AND type='shipping' ");
-    }
-
-
-    if ($query) {
-        $id = $mysqli->insert_id;
         $success_message = "The $module_caption has been updated successfully.";
-        fp__($tbl_name, $id);
-
-        // header("Location:listing_$module.php?customer_id=$customer_id&success_message=$success_message");
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=$success_message");
-    } else {
-        $error_message = "The $module_caption could not be updated. Please try again.";
-        //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
+        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = implode(' ', $e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 }
 
@@ -169,20 +177,32 @@ if ($action == "update_$module" && !empty($customer_id) && granted('edit', $modu
 */
 
 if ($action == "edit_$module" && !empty($customer_id)) {
+    try {
+        $addresses = $customerService->getAddressesByCustomer((int)$customer_id, $activeOrganizationId);
+        $row_shipping = null;
+        foreach ($addresses as $addr) {
+            if ($addr->type === 'shipping') {
+                $row_shipping = $addr;
+                break;
+            }
+        }
 
-    $rs_shipping     = $mysqli->query("SELECT * FROM `$tbl_name` WHERE customer_id=$customer_id AND type='shipping' ");
-    $row_shipping    = $rs_shipping->fetch_array();
-
-    $shipping_attention      = (!empty($row_shipping['attention']) ? s__($row_shipping['attention']) : '');
-    $shipping_country        = (!empty($row_shipping['country']) ? s__($row_shipping['country']) : '');
-    $shipping_address_line1  = (!empty($row_shipping['address_line1']) ? s__($row_shipping['address_line1']) : '');
-    $shipping_address_line2  = (!empty($row_shipping['address_line2']) ? s__($row_shipping['address_line2']) : '');
-    $shipping_city           = (!empty($row_shipping['city']) ? s__($row_shipping['city']) : '');
-    $shipping_state          = (!empty($row_shipping['state']) ? s__($row_shipping['state']) : '');
-    $shipping_zipcode        = (!empty($row_shipping['zipcode']) ? s__($row_shipping['zipcode']) : '');
-    $shipping_phone          = (!empty($row_shipping['phone']) ? s__($row_shipping['phone']) : '');
-    $shipping_fax            = (!empty($row_shipping['fax']) ? s__($row_shipping['fax']) : '');
+        if ($row_shipping !== null) {
+            $shipping_attention      = s__($row_shipping->attention);
+            $shipping_country        = (string)$row_shipping->country;
+            $shipping_address_line1  = s__($row_shipping->addressLine1);
+            $shipping_address_line2  = s__($row_shipping->addressLine2);
+            $shipping_city           = s__($row_shipping->city);
+            $shipping_state          = s__($row_shipping->state);
+            $shipping_zipcode        = s__($row_shipping->zipcode);
+            $shipping_phone          = s__($row_shipping->phone);
+            $shipping_fax            = s__($row_shipping->fax);
+        }
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
+    }
 }
+?>
 
 /*
 |--------------------------------------------------------------------------
@@ -191,7 +211,7 @@ if ($action == "edit_$module" && !empty($customer_id)) {
 */
 ?>
 
-<div class="sidebar sidebar-secondary sidebar-expand-lg">
+<aside class="sidebar sidebar-secondary sidebar-expand-lg" aria-label="Secondary Navigation">
 
     <!-- Expand button -->
     <button type="button" class="btn btn-sidebar-expand sidebar-control sidebar-secondary-toggle h-100">
@@ -204,7 +224,7 @@ if ($action == "edit_$module" && !empty($customer_id)) {
     <?php include('admin_elements/sidebar_customer.php'); ?>
     <!-- /sidebar content -->
 
-</div>
+</aside>
 
 <div class="content-wrapper">
 

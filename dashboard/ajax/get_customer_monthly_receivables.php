@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 // Start output buffering to catch any unwanted output
 ob_start();
 
@@ -10,6 +12,51 @@ ini_set('display_errors', 0);
 error_reporting(E_ALL);
 ini_set('log_errors', 1);
 
+require_once __DIR__ . '/../admin_elements/error_logger.php';
+
+// Register custom error/exception/shutdown handlers for AJAX (returning JSON on exceptions/fatals)
+if (function_exists('custom_error_handler')) {
+    set_error_handler('custom_error_handler');
+}
+
+set_exception_handler(function (\Throwable $exception) {
+    log_error('[AJAX:get_customer_monthly_receivables] Exception: ' . $exception->getMessage(), 'ERROR', $exception->getFile(), $exception->getLine(), [
+        'module' => 'customer',
+        'module_slug' => 'customer',
+        'stack_trace' => $exception->getTraceAsString(),
+    ]);
+    
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+    }
+    echo json_encode(['success' => false, 'error' => 'Internal Server Error', 'months' => []]);
+    exit;
+});
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        log_error('[AJAX:get_customer_monthly_receivables] Fatal Error: ' . $error['message'], 'CRITICAL', $error['file'], $error['line'], [
+            'module' => 'customer',
+            'module_slug' => 'customer',
+        ]);
+        
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+            http_response_code(500);
+        }
+        echo json_encode(['success' => false, 'error' => 'Internal Server Error', 'months' => []]);
+        exit;
+    }
+});
+
 // Initialize response
 $response = array('success' => false, 'months' => [], 'error' => '');
 
@@ -17,7 +64,7 @@ try {
     // Include required files in correct order
     require_once('../../config/globals.php');
     require_once('../../config/database.php');
-    require_once('../../classes/Exception.php');
+    // Removed legacy require for autoloader compatibility: require_once('../../classes/Exception.php');
     
     // Verify user is logged in after loading config
     if (!isset($_SESSION[$project_pre]['DASHBOARD']['user_id'])) {
@@ -110,7 +157,12 @@ try {
     $response['success'] = true;
     $response['months'] = $months_result;
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    log_error('[AJAX:get_customer_monthly_receivables] ' . $e->getMessage(), 'ERROR', $e->getFile(), $e->getLine(), [
+        'module' => 'customer',
+        'module_slug' => 'customer',
+        'stack_trace' => $e->getTraceAsString(),
+    ]);
     $response['error'] = $e->getMessage();
     $response['success'] = false;
 }

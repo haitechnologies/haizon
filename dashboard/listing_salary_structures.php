@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'salary_structures';
 $module_caption = 'Salary Structures';
 $tbl_name = DB::SALARY_STRUCTURES;
@@ -63,7 +65,7 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
                                 ?>
                                     <tr>
                                         <td><?php echo $row['id']; ?></td>
-                                        <td><?php echo getTableAttr('full_name', tbl_users, $row['employee_id']); ?></td>
+                                        <td><?php echo getTableAttr('full_name', DB::USERS, $row['employee_id']); ?></td>
                                         <td><?php echo getTableAttr('component_name', DB::PAYROLL_COMPONENTS, $row['component_id']); ?></td>
                                         <td><?php echo number_format($row['amount'], 2); ?></td>
                                         <td><?php echo ($row['effective_from'] && $row['effective_from'] != '0000-00-00') ? processDateYtoD($row['effective_from']) : '-'; ?></td>

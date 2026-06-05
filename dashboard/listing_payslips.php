@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'payslips';
 $module_caption = 'Payslips';
 $tbl_name = DB::PAYSLIPS;
@@ -57,7 +59,7 @@ if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
                                         pr.period_start,
                                         pr.period_end
                                     FROM `$tbl_name` ps
-                                    INNER JOIN `" . tbl_users . "` u ON ps.employee_id = u.id
+                                    INNER JOIN `" . DB::USERS . "` u ON ps.employee_id = u.id
                                     LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id
                                     INNER JOIN `" . DB::PAYROLL_RUNS . "` pr ON ps.payroll_run_id = pr.id
                                     ORDER BY ps.id DESC

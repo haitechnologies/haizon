@@ -1,6 +1,9 @@
+<?php declare(strict_types=1); 
+use App\Core\DB;
+?>
 	<!-- Footer -->
 
-	<div class="navbar navbar-sm navbar-footer border-top">
+	<footer class="navbar navbar-sm navbar-footer border-top" role="contentinfo">
 		<div class="container-fluid">
 
 			<span class="text-info mt-1">
@@ -58,7 +61,7 @@
 			<ul class="nav">
                 <!-- Last Login -->
                 <?php
-                $lastLogin = getTableAttrV('last_login', tbl_users, " email = '" . addslashes($session_email ?? '') . "' ");
+                $lastLogin = getTableAttrV('last_login', DB::USERS, " email = '" . addslashes($session_email ?? '') . "' ");
                 $loginText = $lastLogin ? date('M j, Y g:i A', strtotime($lastLogin)) : 'Never';
                 ?>
                 <li class="nav-item">
@@ -101,7 +104,7 @@
 				</li> -->
 			</ul>
 		</div>
-	</div>
+	</footer>
 
 	<!-- 	
 	<div class="navbar navbar-sm navbar-footer border-top mt-3">

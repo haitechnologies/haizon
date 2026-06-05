@@ -1,4 +1,6 @@
 <?php
+
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 $module = 'sitemap';
 $module_caption = 'Dashboard Sitemap';
@@ -13,8 +15,7 @@ $sitemap = [
         ['name'=>'Dashboard Sitemap','url'=>'dashboard_sitemap.php']
     ],
     'Business Directory' => [
-        ['name'=>'Inquiries','url'=>'listing_inquiries.php'],
-        ['name'=>'Search Analytics','url'=>'listing_searches.php']
+        ['name'=>'Inquiries','url'=>'listing_inquiries.php']
     ],
     'Category Taxonomy (New System)' => [
         ['name'=>'Categories','url'=>'listing_categories.php'],
@@ -52,55 +53,32 @@ $sitemap = [
         ['name'=>'Add/Edit Organization','url'=>'organizations.php']
     ],
     'Content Management' => [
-        ['name'=>'Blog Categories','url'=>'listing_blog_categories.php'],
-        ['name'=>'Add/Edit Blog Category','url'=>'blog_categories.php'],
-        ['name'=>'Blog Posts','url'=>'listing_blogs.php'],
-        ['name'=>'Add/Edit Blog Post','url'=>'blogs.php'],
         ['name'=>'Pages','url'=>'listing_pages.php'],
         ['name'=>'Add/Edit Page','url'=>'pages.php'],
         ['name'=>'Banned Words','url'=>'listing_banned_words.php'],
         ['name'=>'Add/Edit Banned Word','url'=>'banned_words.php']
     ],
     'Email Marketing' => [
-        ['name'=>'Email Campaigns','url'=>'listing_email_campaigns.php'],
-        ['name'=>'Add/Edit Campaign','url'=>'email_campaigns.php'],
-        ['name'=>'Email Templates','url'=>'listing_email_templates.php'],
-        ['name'=>'Add/Edit Template','url'=>'email_templates.php'],
-        ['name'=>'Email Targets','url'=>'listing_email_targets.php'],
-        ['name'=>'Add/Edit Target','url'=>'email_targets.php'],
         ['name'=>'Email Providers','url'=>'listing_email_providers.php'],
         ['name'=>'Add/Edit Provider','url'=>'email_providers.php'],
         ['name'=>'Email History','url'=>'listing_email_history.php'],
         ['name'=>'Email Queue','url'=>'listing_email_queue.php'],
-        ['name'=>'Email Events','url'=>'listing_email_events.php'],
-        ['name'=>'Email Bounces','url'=>'listing_email_bounces.php'],
-        ['name'=>'Email Unsubscribes','url'=>'listing_email_unsubscribes.php'],
-        ['name'=>'Email Sends','url'=>'listing_email_sends.php'],
-        ['name'=>'Email Automation Rules','url'=>'listing_email_automation_rules.php'],
-        ['name'=>'Email Automation Queue','url'=>'listing_email_automation_queue.php'],
         ['name'=>'Email Queue Worker','url'=>'email_queue_worker.php']
     ],
     'Master Data & Configuration' => [
         ['name'=>'Geo Countries','url'=>'listing_geo_countries.php'],
         ['name'=>'Geo States','url'=>'listing_geo_states.php'],
         ['name'=>'Geo Cities','url'=>'listing_geo_cities.php'],
-        ['name'=>'HS Code Sets','url'=>'listing_hs_code_sets.php'],
-        ['name'=>'HS Code Texts','url'=>'listing_hs_code_texts.php'],
         ['name'=>'Category HS Codes','url'=>'listing_category_hs_codes.php']
     ],
     'Advanced Features' => [
-        ['name'=>'System Settings','url'=>'listing_system_settings.php'],
-        ['name'=>'Email Automation Advanced','url'=>'listing_email_automation_advanced.php']
+        ['name'=>'System Settings','url'=>'listing_system_settings.php']
     ],
     'Reports & Analytics' => [
         ['name'=>'Reports Hub','url'=>'reports.php'],
         ['name'=>'Sales Summary','url'=>'report_sales_summary.php'],
         ['name'=>'Sales by Customer','url'=>'report_sales_by_customer.php'],
         ['name'=>'Sales by Item','url'=>'report_sales_by_item.php']
-    ],
-    'Geographic Data' => [
-        ['name'=>'IP Countries','url'=>'listing_ip_countries.php'],
-        ['name'=>'Add/Edit IP Country','url'=>'ip_countries.php']
     ],
     'Setup & Configuration' => [
         ['name'=>'Setup Overview','url'=>'setup.php'],
@@ -121,8 +99,6 @@ $sitemap = [
     ],
     'System Administration' => [
         ['name'=>'Users','url'=>'listing_users.php'],
-        ['name'=>'Frontend Users','url'=>'listing_frontend_users.php'],
-        ['name'=>'Frontend User Searches','url'=>'listing_frontend_user_searches.php'],
         ['name'=>'Add/Edit User','url'=>'users.php'],
         ['name'=>'User Details','url'=>'user.php','id'=>1],
         ['name'=>'Profile','url'=>'profile.php'],
@@ -145,9 +121,7 @@ $sitemap = [
     ],
     'Logs & Debugging' => [
         ['name'=>'View Error Logs','url'=>'view_backend_error_logs.php'],
-        ['name'=>'View Frontend Error Logs','url'=>'view_frontend_error_logs.php'],
-        ['name'=>'Email Tracker','url'=>'email_tracker.php'],
-        ['name'=>'Email Click Tracking','url'=>'email_click.php']
+        ['name'=>'View Frontend Error Logs','url'=>'view_frontend_error_logs.php']
     ],
     'Authentication' => [
         ['name'=>'Login','url'=>'login.php'],

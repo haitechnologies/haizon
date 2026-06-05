@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'quotations';
@@ -874,8 +876,8 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $customer_details = '';
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` WHERE publish=1 AND approved=1 ORDER BY id DESC");
-                                                // $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` ORDER BY id DESC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE publish=1 AND approved=1 ORDER BY id DESC");
+                                                // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // $display_name           = $rows["display_name"];
                                                     // -------------------------------------------------------------------------------------------------
@@ -895,7 +897,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <option value='0'>Please select</option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_leads = $mysqli->query("SELECT id, display_name FROM `" . tbl_leads  . "` ORDER BY id DESC");
+                                                $result_leads = $mysqli->query("SELECT id, display_name FROM `" . DB::LEADS  . "` ORDER BY id DESC");
                                                 while ($rows_leads = $result_leads->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1002,7 +1004,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="sales_person" id="sales_person" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -1039,7 +1041,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'></option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -1078,7 +1080,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="shipper_id" id="shipper_id" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_shippers  . "` WHERE publish=1 ORDER BY shipper_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::SHIPPERS  . "` WHERE publish=1 ORDER BY shipper_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $shipper_name = $rows["shipper_name"];
                                                 ?>
@@ -1270,7 +1272,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="consignee_id" id="consignee_id" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_consignees  . "` WHERE publish=1 ORDER BY consignee_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE publish=1 ORDER BY consignee_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $consignee_name = $rows["consignee_name"];
                                                 ?>
@@ -2309,7 +2311,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                                 <select class="form-select" name="service[]" id="service<?php echo $quotation_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $quotation_item; ?>); ">
                                                                     <option value="0"></option>
                                                                     <?php
-                                                                    $result = $mysqli->query("SELECT * FROM `" . tbl_items . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                    $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
                                                                     while ($rows = $result->fetch_array()) {
                                                                         $service_id = $rows['id'];
                                                                     ?>

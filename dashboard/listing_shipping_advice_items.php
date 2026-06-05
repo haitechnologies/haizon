@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 $module = 'shipping_advice_items';
 $module_caption = 'Shipping Advice Items';

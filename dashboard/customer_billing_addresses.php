@@ -2,6 +2,15 @@
 
 include('admin_elements/admin_header.php');
 
+use App\Core\Container;
+use App\Service\CustomerService;
+use App\Exception\NotFoundException;
+use App\Exception\ValidationException;
+use App\Core\Roles;
+
+$container = Container::getInstance();
+$customerService = $container->get(CustomerService::class);
+
 $module = 'customer_addresses';
 $module_caption = 'Billing Address';
 $tbl_name = $tbl_prefix . $module;
@@ -58,27 +67,18 @@ if ($id <= 0) {
     exit;
 }
 
-
-//VERIFY IF CUSTOMER IS VALID 
-$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . tbl_customers . "` WHERE id=" . (int)$id);
-if (!$rs_customer_valid || $rs_customer_valid->num_rows == 0) {
+try {
+    $customerObj = $customerService->getCustomer((int)$id, $activeOrganizationId);
+} catch (NotFoundException $e) {
     header("Location:listing_customers.php");
     exit;
 }
-
 
 //---------------
 if (isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
     $id     = (int)$_REQUEST['id'];
 }
 
-
-
-/*
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
 
 
 /*
@@ -119,45 +119,53 @@ if ($action == "update_$module") {
 |
 */
 if ($action == "update_$module" && !empty($customer_id) && granted('edit', $module_id)) {
+    try {
+        $billing_country = ((empty($billing_country)) ? '0' : $billing_country);
+        $addresses = $customerService->getAddressesByCustomer((int)$customer_id, $activeOrganizationId);
+        
+        $existing = null;
+        foreach ($addresses as $addr) {
+            if ($addr->type === 'billing') {
+                $existing = $addr;
+                break;
+            }
+        }
 
-    $billing_country = ((empty($billing_country)) ? '0' : $billing_country);
-    $rs_billing     = $mysqli->query("SELECT * FROM `$tbl_name` WHERE customer_id=$customer_id AND type='billing' ");
+        if ($existing === null) {
+            $customerService->createAddress([
+                'customer_id' => $customer_id,
+                'type' => 'billing',
+                'attention' => $billing_attention,
+                'country' => $billing_country,
+                'address_line1' => $billing_address_line1,
+                'address_line2' => $billing_address_line2,
+                'city' => $billing_city,
+                'state' => $billing_state,
+                'zipcode' => $billing_zipcode,
+                'phone' => $billing_phone,
+                'fax' => $billing_fax
+            ], $activeOrganizationId, $session_user_id);
+        } else {
+            $customerService->updateAddress($existing->id, [
+                'attention' => $billing_attention,
+                'country' => $billing_country,
+                'address_line1' => $billing_address_line1,
+                'address_line2' => $billing_address_line2,
+                'city' => $billing_city,
+                'state' => $billing_state,
+                'zipcode' => $billing_zipcode,
+                'phone' => $billing_phone,
+                'fax' => $billing_fax
+            ], $activeOrganizationId, $session_user_id);
+        }
 
-    // IF EXISTS - UPDATE
-    /* ---------------------- QUERY ---------------------- */
-    if ($rs_billing->num_rows == 0) {
-
-        $query = $mysqli->query("INSERT INTO `$tbl_name` (customer_id, type, attention, country, address_line1, address_line2, city, state, zipcode, phone, fax)  VALUES ('$customer_id', 'billing', '$billing_attention', '$billing_country', '$billing_address_line1', '$billing_address_line2', '$billing_city', '$billing_state', '$billing_zipcode', '$billing_phone', '$billing_fax') ");
-
-        // IF DOES NOT EXIST - INSERT
-        /* ---------------------- QUERY ---------------------- */
-    } else {
-
-        $query = $mysqli->query("
-                UPDATE `$tbl_name` SET
-                    attention				= '" . $billing_attention . "',
-                    country					= '" . $billing_country . "',
-                    address_line1			= '" . $billing_address_line1 . "',
-                    address_line2			= '" . $billing_address_line2 . "',
-                    city					= '" . $billing_city . "',
-                    state					= '" . $billing_state . "',
-                    zipcode					= '" . $billing_zipcode . "',
-                    phone					= '" . $billing_phone . "',
-                    fax					    = '" . $billing_fax . "'
-                WHERE customer_id=$customer_id AND type='billing' ");
-    }
-
-
-    if ($query) {
-        $id = $mysqli->insert_id;
         $success_message = "The $module_caption has been updated successfully.";
-        fp__($tbl_name, $id);
-
-        // header("Location:listing_$module.php?customer_id=$customer_id&success_message=$success_message");
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=$success_message");
-    } else {
-        $error_message = "The $module_caption could not be updated. Please try again.";
-        //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
+        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = implode(' ', $e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 }
 
@@ -169,20 +177,32 @@ if ($action == "update_$module" && !empty($customer_id) && granted('edit', $modu
 */
 
 if ($action == "edit_$module" && !empty($customer_id)) {
+    try {
+        $addresses = $customerService->getAddressesByCustomer((int)$customer_id, $activeOrganizationId);
+        $row_billing = null;
+        foreach ($addresses as $addr) {
+            if ($addr->type === 'billing') {
+                $row_billing = $addr;
+                break;
+            }
+        }
 
-    $rs_billing     = $mysqli->query("SELECT * FROM `$tbl_name` WHERE customer_id=$customer_id AND type='billing' ");
-    $row_billing    = $rs_billing->fetch_array();
-
-    $billing_attention      = (!empty($row_billing['attention']) ? s__($row_billing['attention']) : '');
-    $billing_country        = (!empty($row_billing['country']) ? s__($row_billing['country']) : '');
-    $billing_address_line1  = (!empty($row_billing['address_line1']) ? s__($row_billing['address_line1']) : '');
-    $billing_address_line2  = (!empty($row_billing['address_line2']) ? s__($row_billing['address_line2']) : '');
-    $billing_city           = (!empty($row_billing['city']) ? s__($row_billing['city']) : '');
-    $billing_state          = (!empty($row_billing['state']) ? s__($row_billing['state']) : '');
-    $billing_zipcode        = (!empty($row_billing['zipcode']) ? s__($row_billing['zipcode']) : '');
-    $billing_phone          = (!empty($row_billing['phone']) ? s__($row_billing['phone']) : '');
-    $billing_fax            = (!empty($row_billing['fax']) ? s__($row_billing['fax']) : '');
+        if ($row_billing !== null) {
+            $billing_attention      = s__($row_billing->attention);
+            $billing_country        = (string)$row_billing->country;
+            $billing_address_line1  = s__($row_billing->addressLine1);
+            $billing_address_line2  = s__($row_billing->addressLine2);
+            $billing_city           = s__($row_billing->city);
+            $billing_state          = s__($row_billing->state);
+            $billing_zipcode        = s__($row_billing->zipcode);
+            $billing_phone          = s__($row_billing->phone);
+            $billing_fax            = s__($row_billing->fax);
+        }
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
+    }
 }
+?>
 
 /*
 |--------------------------------------------------------------------------
@@ -191,7 +211,7 @@ if ($action == "edit_$module" && !empty($customer_id)) {
 */
 ?>
 
-<div class="sidebar sidebar-secondary sidebar-expand-lg">
+<aside class="sidebar sidebar-secondary sidebar-expand-lg" aria-label="Secondary Navigation">
 
     <!-- Expand button -->
     <button type="button" class="btn btn-sidebar-expand sidebar-control sidebar-secondary-toggle h-100">
@@ -204,7 +224,7 @@ if ($action == "edit_$module" && !empty($customer_id)) {
     <?php include('admin_elements/sidebar_customer.php'); ?>
     <!-- /sidebar content -->
 
-</div>
+</aside>
 
 <div class="content-wrapper">
 

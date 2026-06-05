@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 // Clean-up audit - Only shows REAL field mismatches (not form control buttons or false parameters)
 require_once __DIR__ . '/../config/database.php';
 

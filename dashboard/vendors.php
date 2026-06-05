@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module                 = 'vendors';
@@ -567,7 +569,7 @@ if (!empty($id)) {
                                         <select name="tags[]" id="tags[]" class="form-control select" multiple="multiple" data-tags="true">
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_tags = $mysqli->query("SELECT * FROM `" . tbl_setup_tags  . "` WHERE publish=1 AND tag_type='vendors' ORDER BY tag");
+                                            $result_tags = $mysqli->query("SELECT * FROM `" . DB::SETUP_TAGS  . "` WHERE publish=1 AND tag_type='vendors' ORDER BY tag");
                                             while ($rows_tags = $result_tags->fetch_array()) {
                                                 // $assigned_to        = s__($rows_tags['full_name']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -595,7 +597,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_statuses = $mysqli->query("SELECT * FROM `" . tbl_setup_statuses  . "` WHERE publish=1 AND status_type='vendors' ORDER BY status");
+                                                $result_statuses = $mysqli->query("SELECT * FROM `" . DB::SETUP_STATUSES  . "` WHERE publish=1 AND status_type='vendors' ORDER BY status");
                                                 while ($rows_statuses = $result_statuses->fetch_array()) {
                                                     // $vendor_status        = s__($rows_statuses['vendor_status']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -621,7 +623,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_sources = $mysqli->query("SELECT * FROM `" . tbl_setup_sources  . "` WHERE publish=1 AND source_type='vendors' ORDER BY source");
+                                                $result_sources = $mysqli->query("SELECT * FROM `" . DB::SETUP_SOURCES  . "` WHERE publish=1 AND source_type='vendors' ORDER BY source");
                                                 while ($rows_sources = $result_sources->fetch_array()) {
                                                     // $vendor_source        = s__($rows_sources['vendor_source']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -648,7 +650,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // $assigned_to        = s__($rows_users['full_name']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -696,7 +698,7 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                                $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                                 while ($rows_users = $result_users->fetch_array()) {
                                                     // $assigned_to        = s__($rows_users['full_name']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -858,7 +860,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                            $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                             while ($rows_users = $result_users->fetch_array()) {
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>
@@ -894,7 +896,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_users = $mysqli->query("SELECT * FROM `" . tbl_users  . "` WHERE is_active=1 ORDER BY full_name");
+                                            $result_users = $mysqli->query("SELECT * FROM `" . DB::USERS  . "` WHERE is_active=1 ORDER BY full_name");
                                             while ($rows_users = $result_users->fetch_array()) {
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>

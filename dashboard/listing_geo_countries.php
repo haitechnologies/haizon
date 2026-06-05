@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * Geo Countries Listing Page
  * 

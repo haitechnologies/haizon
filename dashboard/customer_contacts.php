@@ -1,6 +1,17 @@
 <?php
 
+
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
+
+use App\Core\Container;
+use App\Service\CustomerService;
+use App\Exception\NotFoundException;
+use App\Exception\ValidationException;
+use App\Core\Roles;
+
+$container = Container::getInstance();
+$customerService = $container->get(CustomerService::class);
 
 $module = 'customer_contacts';
 $module_caption = 'Contact Person';
@@ -42,24 +53,29 @@ $customer_id = '';
 if (isset($_REQUEST['customer_id']))        $customer_id     = e_s__($_REQUEST['customer_id']);
 if (isset($_POST['customer_id']))           $customer_id     = e_s__($_POST['customer_id']);
 
+try {
+    $customerObj = $customerService->getCustomer((int)$customer_id, $activeOrganizationId);
+} catch (NotFoundException $e) {
+    header("Location:listing_customers.php");
+    exit;
+}
 
-//VERIFY IF IS VALID 
-$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . tbl_customers . "` WHERE id='". $customer_id."'");
-if ($rs_customer_valid->num_rows == 0) header("Location:listing_customers.php");
-
+// IDOR PROTECTION: Verify access permission
+$module_id = getModuleIdBySlug('customers', $mysqli);
+if (!granted('view', $module_id)) {
+    if ($_SESSION['h_role_id'] != Roles::SYSTEM_ADMIN) {
+        $isOwner = (int)$customerObj->createdBy === (int)$session_user_id || (int)$customerObj->customerOwner === (int)$session_user_id;
+        if (!$isOwner) {
+            header("Location:listing_customers.php?error_message=Access denied");
+            exit;
+        }
+    }
+}
 
 //---------------
 $contact_id = 0;
 if (isset($_REQUEST['contact_id']))        $contact_id     = e_s__($_REQUEST['contact_id']);
 if (isset($_POST['contact_id']))           $contact_id     = e_s__($_POST['contact_id']);
-
-
-/*
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
-
 
 
 /*
@@ -93,36 +109,28 @@ if ($action == "update_$module" || $action == "add_$module") {
 |
 */
 if (($action == "delete_$module" && !empty($customer_id)) && granted('delete', $module_id)) {
+    try {
+        $contacts = $customerService->getContactsByCustomer((int)$customer_id, $activeOrganizationId);
+        $targetContact = null;
+        foreach ($contacts as $c) {
+            if ($c->id === (int)$contact_id) {
+                $targetContact = $c;
+                break;
+            }
+        }
+        if ($targetContact === null) {
+            throw new NotFoundException("Contact not found.");
+        }
+        
+        // Authorization check: Superadmin or owner who created the contact
+        if (!Roles::hasFullAccess($session_role_id) && $targetContact->createdBy !== (int)$session_user_id) {
+            throw new \Exception("Access denied.");
+        }
 
-    //SUPERADMIN CAN DELETE ANY DATA
-    if (Roles::hasFullAccess($session_role_id)) {
-
-        $stmt = $mysqli->prepare("DELETE FROM `$tbl_name` WHERE id=?");
-        $stmt->bind_param("i", $contact_id);
-        $result = $stmt->execute();
-        $stmt->close();
-
-        // Customer Logs
-        updateCustomerLogs($customer_id, 'contacts', 'deleted');
-
-
-        //ADMIN CAN DELETE ONLY HIS/HER DATA
-    } else {
-        $stmt = $mysqli->prepare("DELETE FROM `$tbl_name` WHERE id=? AND created_by=?");
-        $stmt->bind_param("ii", $contact_id, $session_user_id);
-        $result = $stmt->execute();
-        $stmt->close();
-
-        // Customer Logs
-        updateCustomerLogs($customer_id, 'contacts', 'deleted');
-    }
-
-
-    if ($result) {
+        $customerService->deleteContact((int)$contact_id, $activeOrganizationId);
         $success_message = "$module_caption Deleted Successfully.";
-        // header("Location:listing_$module.php?page=$page&success_message=$success_message");
-    } else {
-        $error_message = "Sorry! $module Could Not Be Deleted.";
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 }
 
@@ -134,78 +142,44 @@ if (($action == "delete_$module" && !empty($customer_id)) && granted('delete', $
 |
 */
 if ($action == "update_$module" && !empty($customer_id) && granted('edit', $module_id)) {
+    try {
+        $customerService->updateContact((int)$contact_id, [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'position' => $position,
+            'email' => $email,
+            'phone' => $phone,
+            'notes' => $notes
+        ], $activeOrganizationId, $session_user_id);
 
-
-    if (empty($first_name)) {
-        $error_message = 'First name is mandatory.';
-    } else if (empty($last_name)) {
-        $error_message = 'Last name is mandatory.';
-    } else if (empty($email)) {
-        $error_message = 'Email is mandatory.';
-    } else {
-
-
-        /* ---------------------- QUERY ---------------------- */
-        $update_row = $mysqli->query("
-                                    UPDATE `$tbl_name` SET
-                                        first_name					= '" . $first_name . "',
-										last_name					= '" . $last_name . "',
-										position					= '" . $position . "',
-										email				        = '" . $email . "',
-										phone				        = '" . $phone . "',
-										notes				        = '" . $notes . "'
-                                    WHERE id=$contact_id");
-        if ($update_row) {
-
-            $success_message = "The $module_caption has been updated successfully.";
-            fp__($tbl_name, $contact_id);
-
-            // Customer Logs
-            updateCustomerLogs($customer_id, 'contact', 'updated');
-            // header("Location:listing_$module.php?customer_id=$customer_id&success_message=$success_message");
-            header("Location:customer_overview.php?customer_id=$customer_id&success_message=$success_message");
-            
-        } else {
-            $error_message = "The $module_caption could not be updated. Please try again.";
-            //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
-        }
+        $success_message = "The $module_caption has been updated successfully.";
+        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = implode(' ', $e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
-
-    /*
-|--------------------------------------------------------------------------
-| 	ADD
-|--------------------------------------------------------------------------
-|
-*/
 } else if ($action == "add_$module" && granted('create', $module_id)) {
+    try {
+        $customerService->createContact([
+            'customer_id' => $customer_id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'position' => $position,
+            'email' => $email,
+            'phone' => $phone,
+            'notes' => $notes,
+            'is_primary' => true
+        ], $activeOrganizationId, $session_user_id);
 
-    if (empty($first_name)) {
-        $error_message = 'First name is mandatory.';
-    } else if (empty($last_name)) {
-        $error_message = 'Last name is mandatory.';
-    } else if (empty($email)) {
-        $error_message = 'Email is mandatory.';
-    } else {
-
-        /* ---------------------- QUERY ---------------------- */
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(is_primary, customer_id, first_name, last_name, position, email, phone, notes) VALUES ('1', '" . $customer_id . "', '" . $first_name . "', '" . $last_name . "', '" . $position . "', '" . $email . "', '" . $phone . "', '" . $notes . "'); ");
-
-        if ($insert_row) {
-
-
-
-            $contact_id = $mysqli->insert_id;
-            $success_message = "The $module_caption has been saved successfully.";
-            fp__($tbl_name, $contact_id);
-
-            // Customer Logs
-            updateCustomerLogs($customer_id, 'contact', 'added');
-            // header("Location:listing_$module.php?customer_id=$customer_id&success_message=$success_message");
-            header("Location:customer_overview.php?customer_id=$customer_id&success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be saved. Please try again.";
-            //header("Location:$module.php?error_message=$error_message");
-        }
+        $success_message = "The $module_caption has been saved successfully.";
+        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = implode(' ', $e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 }
 
@@ -219,18 +193,31 @@ if ($action == "update_$module" && !empty($customer_id) && granted('edit', $modu
 */
 
 if ($action == "edit_$module" && !empty($contact_id) && !empty($customer_id)) {
+    try {
+        $contacts = $customerService->getContactsByCustomer((int)$customer_id, $activeOrganizationId);
+        $contactObj = null;
+        foreach ($contacts as $c) {
+            if ($c->id === (int)$contact_id) {
+                $contactObj = $c;
+                break;
+            }
+        }
+        if ($contactObj === null) {
+            throw new NotFoundException("Contact not found.");
+        }
 
-    $result = $mysqli->query("SELECT * FROM `".tbl_customer_contacts."` WHERE id=$contact_id AND customer_id=$customer_id");
-    $row = $result->fetch_array();
-
-    $first_name         = s__($row['first_name']);
-    $last_name          = s__($row['last_name']);
-    $position           = s__($row['position']);
-    $email              = s__($row['email']);
-    $phone              = s__($row['phone']);
-    $notes              = s__($row['notes']);
-    $is_active = s__($row['publish']);
+        $first_name         = s__($contactObj->firstName);
+        $last_name          = s__($contactObj->lastName);
+        $position           = s__($contactObj->position);
+        $email              = s__($contactObj->email);
+        $phone              = s__($contactObj->phone);
+        $notes              = s__($contactObj->notes);
+        $is_active          = s__($contactObj->publish);
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
+    }
 }
+?>
 
 
 
@@ -243,7 +230,7 @@ if ($action == "edit_$module" && !empty($contact_id) && !empty($customer_id)) {
 
 ?>
 
-<div class="sidebar sidebar-secondary sidebar-expand-lg">
+<aside class="sidebar sidebar-secondary sidebar-expand-lg" aria-label="Secondary Navigation">
 
     <!-- Expand button -->
     <button type="button" class="btn btn-sidebar-expand sidebar-control sidebar-secondary-toggle h-100">
@@ -256,7 +243,7 @@ if ($action == "edit_$module" && !empty($contact_id) && !empty($customer_id)) {
     <?php include('admin_elements/sidebar_customer.php'); ?>
     <!-- /sidebar content -->
 
-</div>
+</aside>
 
 <div class="content-wrapper">
 

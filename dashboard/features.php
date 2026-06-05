@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'statistics';
@@ -147,7 +149,7 @@ $success_message = '';
 						<h1>
 							<?php
 							//echo getTableAttr('company_name', tbl_global_settings, 1); 
-							$software_name		= getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="software_name"');
+							$software_name		= getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"');
 							echo s__($software_name);
 							?>
 						</h1>

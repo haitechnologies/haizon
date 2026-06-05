@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * System Settings Listing Page
  * 

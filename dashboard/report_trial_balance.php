@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 // Force opcache clear for this file
 if (function_exists('opcache_invalidate')) {
     opcache_invalidate(__FILE__, true);

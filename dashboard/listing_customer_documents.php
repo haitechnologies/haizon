@@ -1,7 +1,11 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
+use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 $module             = 'customer_documents';
 $module_caption     = 'Document';
@@ -328,8 +332,8 @@ $total_up_to_date = 0;
                                                         $document_id             = $row_customer_documents["id"];
 
                                                         $document_category  = s__($row_customer_documents['document_category']);
-                                                        if (defined('tbl_document_categories')) {
-                                                            $document_category_table = constant('tbl_document_categories');
+                                                        if (defined('DB::DOCUMENT_CATEGORIES')) {
+                                                            $document_category_table = constant('DB::DOCUMENT_CATEGORIES');
                                                             $document_category  = getTableAttr('document_category', $document_category_table, $document_category);
                                                         }
 

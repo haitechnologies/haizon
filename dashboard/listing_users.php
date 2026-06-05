@@ -1,5 +1,15 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
+
+use App\Core\Container;
+use App\Service\UserService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
+$container = Container::getInstance();
+$userService = $container->get(UserService::class);
 
 $module = 'users';
 $module_caption = 'Users';
@@ -28,10 +38,13 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 */
 if (($action == "publish_$module" && !empty($id))) {
 
-    if (publish($module_caption, $tbl_name, $id))
-        $success_message = "$module_caption Published Successfully.";
-    else
-        $error_message = "Sorry! $module Could Not Be Published.";
+    if (publish($module_caption, $tbl_name, $id)) {
+        $success_message = "Employee account activated successfully.";
+        flash_success($success_message);
+    } else {
+        $error_message = "Unable to activate employee account. Please try again.";
+        flash_error($error_message);
+    }
 
     /*
 |--------------------------------------------------------------------------
@@ -40,10 +53,13 @@ if (($action == "publish_$module" && !empty($id))) {
 */
 } else if (($action == "unpublish_$module" && !empty($id))) {
 
-    if (unpublish($module_caption, $tbl_name, $id))
-        $success_message = "$module_caption Un-Published Successfully.";
-    else
-        $error_message = "Sorry! $module Could Not Be Un-Published.";
+    if (unpublish($module_caption, $tbl_name, $id)) {
+        $success_message = "Employee account deactivated successfully.";
+        flash_success($success_message);
+    } else {
+        $error_message = "Unable to deactivate employee account. Please try again.";
+        flash_error($error_message);
+    }
 
     /*
 |--------------------------------------------------------------------------
@@ -51,33 +67,27 @@ if (($action == "publish_$module" && !empty($id))) {
 |--------------------------------------------------------------------------
 */
 } else if (($action == "delete_$module" && !empty($id))) {
-    // Users use role-based permissions (has_full_access/is_hr checked at top)
-
-    // Protect super-admin: user ID 1 must never be deleted
-    if ((int)$id === 1) {
-        $error_message = "The primary administrator account cannot be deleted.";
-    } else {
-    // Get photo before deletion
-    $photo = getTableAttr('photo', $tbl_name, $id);
-    
-    $result = DeletionManager::delete(
-        $tbl_name,
-        $id,
-        $session_user_id,
-        ['verify_field' => 'full_name', 'item_label' => 'User', 'module_slug' => 'users']
-    );
-    
-    if ($result['success']) {
-        // Delete user photo if exists
+    try {
+        $user = $userService->getById((int)$id);
+        $photo = $user->photo;
+        $userService->delete((int)$id);
+        
         if (!empty($photo)) {
             delete_photo($photo, $photo_upload_path, '1');     // DELETE THUMB
             delete_photo($photo, $photo_upload_path, '0');     // DELETE PHOTO
         }
-        $success_message = $result['message'];
-    } else {
-        $error_message = $result['message'];
+        $success_message = "Employee account deleted successfully.";
+        flash_success($success_message);
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+        flash_error($error_message);
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+        flash_error($error_message);
+    } catch (\Throwable $e) {
+        $error_message = "Unable to delete employee account. Please try again.";
+        flash_error($error_message);
     }
-    } // end not-ID-1 guard
 }
 
 ?>

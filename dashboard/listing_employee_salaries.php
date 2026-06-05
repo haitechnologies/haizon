@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'employee_salaries';
 $module_caption = 'Employee Salaries';
 $error_message = '';
@@ -54,7 +56,7 @@ if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
                                 // Get all active employees
                                 $employees_query = $mysqli->query("
                                     SELECT u.id, u.full_name, d.department
-                                    FROM `" . tbl_users . "` u
+                                    FROM `" . DB::USERS . "` u
                                     LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id
                                     WHERE u.id > 1 AND u.is_active = 1
                                     ORDER BY u.full_name ASC

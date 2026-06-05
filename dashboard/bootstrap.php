@@ -1,4 +1,10 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
+use App\Core\DeletionManager;
+use App\Security\SystemEntitlements;
+use App\Service\SMTPMailer;
 require_once __DIR__ . '/../config/session.php';
 /*
 |--------------------------------------------------------------------------
@@ -87,15 +93,70 @@ startDashboardSession();
 header("Content-Type: text/html; charset=utf-8");
 require_once('../config/globals.php');
 require_once('../config/database.php');
-require_once('../classes/OrganizationMembershipManager.php');
-require_once('../classes/SystemEntitlements.php');
-require_once('../classes/EmailQueue.php');
-require_once('../classes/SMTPMailer.php');
 
 // Ensure shared mail/database services can resolve the active DB handle in dashboard context.
 if (!isset($GLOBALS['conn']) && isset($mysqli) && $mysqli instanceof mysqli) {
     $GLOBALS['conn'] = $mysqli;
 }
+
+// Initialize Dependency Injection Container
+$container = \App\Core\Container::getInstance();
+
+$container->register(\App\Core\Database::class, function () {
+    return new \App\Core\Database();
+});
+
+$container->register(\App\Repository\UserRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\UserRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Repository\DepartmentRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\DepartmentRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Service\DepartmentService::class, function (\App\Core\Container $c) {
+    return new \App\Service\DepartmentService(
+        $c->get(\App\Repository\DepartmentRepository::class),
+        $c->get(\App\Repository\UserRepository::class)
+    );
+});
+
+$container->register(\App\Repository\DesignationRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\DesignationRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Service\DesignationService::class, function (\App\Core\Container $c) {
+    return new \App\Service\DesignationService($c->get(\App\Repository\DesignationRepository::class));
+});
+
+
+$container->register(\App\Service\UserService::class, function (\App\Core\Container $c) {
+    return new \App\Service\UserService($c->get(\App\Repository\UserRepository::class));
+});
+
+$container->register(\App\Repository\CustomerRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\CustomerRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Service\CustomerService::class, function (\App\Core\Container $c) {
+    return new \App\Service\CustomerService($c->get(\App\Repository\CustomerRepository::class));
+});
+
+$container->register(\App\Service\DashboardService::class, function () {
+    return new \App\Service\DashboardService();
+});
+
+$container->register(\App\Repository\InvoiceRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\InvoiceRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Service\InvoiceService::class, function (\App\Core\Container $c) {
+    return new \App\Service\InvoiceService(
+        $c->get(\App\Repository\InvoiceRepository::class),
+        $c->get(\App\Repository\CustomerRepository::class),
+        $c->get(\App\Core\Database::class)
+    );
+});
 
 // Initialize dashboard error logging (only for dashboard pages)
 require_once(__DIR__ . '/admin_elements/error_logger.php');
@@ -117,8 +178,7 @@ if (function_exists('handle_fatal_error')) {
 }
 
 // Initialize Deletion Manager (centralized deletion handling)
-require_once('../classes/DeletionManager.php');
-DeletionManager::init($mysqli, $project_pre);
+\App\Core\DeletionManager::init($mysqli, $project_pre);
 
 include('../config/images.php');
 include('admin_elements/security.php');

@@ -1,9 +1,13 @@
 <?php
 
+
+use App\Core\DB;
+use App\Core\DeletionManager;
+use App\Service\SMTPMailer;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/EmailQueue.php';
-require_once __DIR__ . '/../classes/EmailProviderManager.php';
-require_once __DIR__ . '/../classes/SMTPMailer.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailQueue.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailProviderManager.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/SMTPMailer.php';
 
 // SMTPMailer resolves DB-backed provider through $GLOBALS['conn'].
 if (!isset($GLOBALS['conn']) || !($GLOBALS['conn'] instanceof mysqli)) {

@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 Roles::requireAdminAccess();
 $module = 'roles';
@@ -66,13 +69,13 @@ if (($action == "publish_$module" && !empty($id))) {
 		
 		if (Roles::isSuperAdmin(Roles::getCurrentRoleId())) {
 			// Delete all permissions for this role (correct: use role_id, not id)
-			$stmt = $mysqli->prepare("DELETE FROM " . tbl_permissions . " WHERE role_id = ?");
+			$stmt = $mysqli->prepare("DELETE FROM " . DB::PERMISSIONS . " WHERE role_id = ?");
 			$stmt->bind_param('i', $id);
 			$stmt->execute();
 			$stmt->close();
 			
 			// Delete the role itself
-			$stmt = $mysqli->prepare("DELETE FROM " . tbl_roles . " WHERE id = ?");
+			$stmt = $mysqli->prepare("DELETE FROM " . DB::ROLES . " WHERE id = ?");
 			$stmt->bind_param('i', $id);
 			$stmt->execute();
 			$affected_rows = $stmt->affected_rows;
@@ -81,13 +84,13 @@ if (($action == "publish_$module" && !empty($id))) {
 		} else {
 			// Non-super admin can only delete their own roles
 			// First delete permissions for this role
-			$stmt = $mysqli->prepare("DELETE FROM " . tbl_permissions . " WHERE role_id = ?");
+			$stmt = $mysqli->prepare("DELETE FROM " . DB::PERMISSIONS . " WHERE role_id = ?");
 			$stmt->bind_param('i', $id);
 			$stmt->execute();
 			$stmt->close();
 			
 			// Then delete the role (only if created by current user)
-			$stmt = $mysqli->prepare("DELETE FROM " . tbl_roles . " WHERE id = ? AND created_by = ?");
+			$stmt = $mysqli->prepare("DELETE FROM " . DB::ROLES . " WHERE id = ? AND created_by = ?");
 			$stmt->bind_param('ii', $id, $session_user_id);
 			$stmt->execute();
 			$affected_rows = $stmt->affected_rows;

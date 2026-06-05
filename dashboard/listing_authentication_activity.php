@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 Roles::requireSystemAdmin();
 

@@ -1,4 +1,6 @@
 <?php
+
+use App\Security\Roles;
 /*
 |==================================================================================
 | FRONTEND ERROR LOG VIEWER - Admin Dashboard
@@ -30,7 +32,7 @@ if (!Roles::hasFullAccess($session_role_id)) {
 // Load FrontendErrorLogger class if not already loaded
 $logger_class_exists = class_exists('FrontendErrorLogger');
 if (!$logger_class_exists && file_exists(__DIR__ . '/../classes/frontend/ErrorLogger.php')) {
-    require_once __DIR__ . '/../classes/frontend/ErrorLogger.php';
+    // Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/frontend/ErrorLogger.php';
     $logger_class_exists = class_exists('FrontendErrorLogger');
 }
 

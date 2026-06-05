@@ -1,7 +1,11 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
+use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 $module             = 'invoices';
 $module_caption     = 'Invoice';
@@ -112,64 +116,33 @@ if ($page_no) {
 |
 */
 if (($action == "delete_$module" && !empty($id))) {
-
     // INPUT VALIDATION: Validate invoice ID
     $idResult = InputValidator::integer($id, 1);
     if (!$idResult['valid']) {
         $error_message = "Invalid invoice ID: " . $idResult['error'];
     } else {
         $validInvoiceId = $idResult['value'];
-        
-        //SUPERADMIN CAN DELETE ANY DATA
-        if (Roles::hasFullAccess($session_role_id)) {
-
-            // Cascading delete with prepared statements
-            $stmtItems = $mysqli->prepare("DELETE FROM `" . tbl_invoice_items . "` WHERE invoice_id=?");
-            $stmtItems->bind_param("i", $validInvoiceId);
+        try {
+            $invoiceService = \App\Core\Container::getInstance()->get(\App\Service\InvoiceService::class);
             
-            $stmt = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id=? AND invoice_status!='confirmed'");
-            $stmt->bind_param("i", $validInvoiceId);
-            
-            if ($stmtItems->execute() && $stmt->execute()) {
-                $success_message = "$module_caption Deleted Successfully.";
-                header("Location:listing_$module.php?id=$customer_id&success_message=$success_message");
-            } else {
-                $error_message = "Database error: " . $stmt->error;
-                log_error("Delete failed for invoice $validInvoiceId: " . $stmt->error, 'ERROR', __FILE__, __LINE__);
-            }
-            $stmtItems->close();
-            $stmt->close();
-
-            //ADMIN CAN DELETE ONLY HIS/HER DATA
-        } else {
-            // Verify ownership before deleting
-            $ownershipCheck = $mysqli->prepare("SELECT id, created_by FROM `" . $tbl_name . "` WHERE id=? AND created_by=?");
-            $ownershipCheck->bind_param("is", $validInvoiceId, $_SESSION[$project_pre]['admin_id']);
-            $ownershipCheck->execute();
-            $ownershipResult = $ownershipCheck->get_result();
-            $ownershipCheck->close();
-            
-            if ($ownershipResult->num_rows === 0) {
-                $error_message = "You do not have permission to delete this invoice";
-                log_error("IDOR attempt: User " . $_SESSION[$project_pre]['admin_id'] . " tried to delete invoice $validInvoiceId", 'WARNING', __FILE__, __LINE__);
-            } else {
-                // Cascading delete with prepared statements
-                $stmtItems = $mysqli->prepare("DELETE FROM `" . tbl_invoice_items . "` WHERE invoice_id=?");
-                $stmtItems->bind_param("i", $validInvoiceId);
-                
-                $stmt = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id=? AND invoice_status!='confirmed' AND created_by=?");
-                $stmt->bind_param("is", $validInvoiceId, $_SESSION[$project_pre]['admin_id']);
-                
-                if ($stmtItems->execute() && $stmt->execute()) {
-                    $success_message = "$module_caption Deleted Successfully.";
-                    header("Location:listing_$module.php?id=$customer_id&success_message=$success_message");
-                } else {
-                    $error_message = "Database error: " . $stmt->error;
-                    log_error("Delete failed for invoice $validInvoiceId: " . $stmt->error, 'ERROR', __FILE__, __LINE__);
+            // Check ownership if not superadmin
+            if (!Roles::hasFullAccess($session_role_id)) {
+                $invoice = $invoiceService->getInvoice($validInvoiceId, $activeOrganizationId);
+                if ($invoice->createdBy !== (int)$session_user_id) {
+                    throw new \Exception("You do not have permission to delete this invoice");
                 }
-                $stmtItems->close();
-                $stmt->close();
             }
+
+            if ($invoiceService->deleteInvoice($validInvoiceId, $activeOrganizationId)) {
+                $success_message = "$module_caption Deleted Successfully.";
+                header("Location:listing_customer_invoices.php?customer_id=$customer_id&success_message=$success_message");
+                exit;
+            } else {
+                $error_message = "Sorry! $module Could Not Be Deleted.";
+            }
+        } catch (\Throwable $e) {
+            $error_message = $e->getMessage();
+            log_error("Delete failed for invoice $validInvoiceId: " . $e->getMessage(), 'ERROR', __FILE__, __LINE__);
         }
     }
 }
@@ -191,12 +164,25 @@ else $is_active = 0;
 |
 */
 
+$db = \App\Core\Container::getInstance()->get(\App\Core\Database::class);
+
 //COUNT QUERY
-$result         = $mysqli->query("SELECT id FROM `" . tbl_invoices . "` WHERE id>0 AND customer_id=$customer_id ");
-$total_pages      = $result->num_rows;
+$countRow = $db->fetchOne(
+    "SELECT COUNT(id) as cnt FROM `erp_invoices` WHERE customer_id = :customer_id AND organization_id = :org_id",
+    ['customer_id' => $customer_id, 'org_id' => $activeOrganizationId]
+);
+$total_pages = (int)($countRow['cnt'] ?? 0);
 
 //NORMAL QUERY
-$result_customer_invoices = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id>0 AND customer_id=$customer_id ORDER BY id DESC LIMIT $start, $limit");
+$result_customer_invoices = $db->fetchAll(
+    "SELECT * FROM `erp_invoices` WHERE customer_id = :customer_id AND organization_id = :org_id ORDER BY id DESC LIMIT :start, :limit",
+    [
+        'customer_id' => $customer_id,
+        'org_id' => $activeOrganizationId,
+        'start' => (int)$start,
+        'limit' => (int)$limit
+    ]
+);
 
 
 
@@ -291,12 +277,12 @@ $result_customer_invoices = $mysqli->query("SELECT * FROM `" . tbl_invoices . "`
                                             $serial_no = ($page_no - 1) * $limit + 1;
 
                                             // ---------------------------------------------------------------------------------------
-                                            while ($row = $result_customer_invoices->fetch_array(MYSQLI_ASSOC)) {
+                                            foreach ($result_customer_invoices as $row) {
 
                                                 $id                     = $row["id"];
 
                                                 $customer_id            = s__($row['customer_id']);
-                                                $display_name           = getTableAttr('display_name', tbl_customers, $customer_id);
+                                                $display_name           = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
 
                                                 $invoice_no             = s__($row['invoice_no']);
                                                 $invoice_date           = s__($row['invoice_date']);

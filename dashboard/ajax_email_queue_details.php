@@ -1,11 +1,13 @@
 <?php
+
+use App\Core\DB;
 /**
  * AJAX Handler: Email Queue Details
  * Returns detailed information for a queue item in HTML format.
  */
 
 require_once __DIR__ . '/bootstrap.php';
-require_once __DIR__ . '/../classes/DB.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

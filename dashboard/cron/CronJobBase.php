@@ -66,6 +66,15 @@ abstract class CronJobBase {
         $loggerPath = __DIR__ . '/../admin_elements/error_logger.php';
         if (file_exists($loggerPath)) {
             require_once $loggerPath;
+            if (function_exists('custom_error_handler')) {
+                set_error_handler('custom_error_handler');
+            }
+            if (function_exists('custom_exception_handler')) {
+                set_exception_handler('custom_exception_handler');
+            }
+            if (function_exists('handle_fatal_error')) {
+                register_shutdown_function('handle_fatal_error');
+            }
         }
     }
     
@@ -214,7 +223,7 @@ abstract class CronJobBase {
             $this->log('Starting ' . $this->getJobName(), 'START');
             $this->execute();
             $this->log('Completed ' . $this->getJobName() . ' - ' . $this->getSummary(), 'END');
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->log('Fatal error: ' . $e->getMessage(), 'ERROR');
             $this->log('Stack trace: ' . $e->getTraceAsString(), 'ERROR');
             $this->incrementErrors();

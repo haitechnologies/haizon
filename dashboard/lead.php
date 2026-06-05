@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'leads';
@@ -156,16 +158,16 @@ if (!empty($id)) {
 
 
     $lead_owner             = s__($row['lead_owner']);
-    $lead_owner             = getTableAttr('full_name', tbl_users, $lead_owner);
+    $lead_owner             = getTableAttr('full_name', DB::USERS, $lead_owner);
 
     $lead_status            = s__($row['lead_status']);
-    $lead_status            = getTableAttr('status', tbl_setup_statuses, $lead_status);
+    $lead_status            = getTableAttr('status', DB::SETUP_STATUSES, $lead_status);
 
     $lead_source            = s__($row['lead_source']);
-    $lead_source            = getTableAttr('source', tbl_setup_sources, $lead_source);
+    $lead_source            = getTableAttr('source', DB::SETUP_SOURCES, $lead_source);
 
     $assigned_to            = s__($row['assigned_to']);
-    $assigned_to            = getTableAttr('full_name', tbl_users, $assigned_to);
+    $assigned_to            = getTableAttr('full_name', DB::USERS, $assigned_to);
 
     $lead_type              = s__($row['lead_type']);
     $salutation             = ((!empty($row['salutation']) ? ucwords(s__($row['salutation'])) : ''));
@@ -194,7 +196,7 @@ if (!empty($id)) {
         // $tags_captions = '';
 
         foreach ($tags_arr as $tag_id) {
-            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', tbl_setup_tags, $tag_id) . '</span> &nbsp;';
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
         }
     }
 
@@ -204,13 +206,13 @@ if (!empty($id)) {
     $street2                = s__($row['street2']);
     $city                   = s__($row['city']);
     $state                  = s__($row['state']);
-    $state                  = getTableAttr('state_name', tbl_geo_states, $state);
+    $state                  = getTableAttr('state_name', DB::GEO_STATES, $state);
     $pobox                  = s__($row['pobox']);
     $country                = s__($row['country']);
-    $country                = getTableAttr('country_name', tbl_geo_countries, $country);
+    $country                = getTableAttr('country_name', DB::GEO_COUNTRIES, $country);
 
     $service                = s__($row['service']);
-    $service_name           = getTableAttr('item_name', tbl_items, $service);
+    $service_name           = getTableAttr('item_name', DB::ITEMS, $service);
 
     $website                = s__($row['website']);
     $department             = s__($row['department']);

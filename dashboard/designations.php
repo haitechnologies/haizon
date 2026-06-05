@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'designations';
@@ -22,84 +26,71 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
-
-
-if (isset($_POST['publish']))       $publish     = 1;
-else $publish = 0;
-
-
-/*
-|--------------------------------------------------------------------------
-| 	GET ALL VARIABLES ADD/UPDATE
+| SERVICES & DEPENDENCIES
 |--------------------------------------------------------------------------
 |
 */
+use App\Core\Container;
+use App\Core\Database;
+use App\Service\DesignationService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
+$container = Container::getInstance();
+$designationService = $container->get(DesignationService::class);
+
 if ($action == "update_$module" || $action == "add_$module") {
-    $designation        = e_s__($_POST['designation']);
+    $designation = e_s__($_POST['designation'] ?? '');
+    $publish     = isset($_POST['publish']) ? 1 : 0;
 } else {
-    $designation        = '';
+    $designation = '';
+    $publish     = 0;
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| 	UPDATE
+|   UPDATE
 |--------------------------------------------------------------------------
 |
 */
 if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
-
-
-    if (empty($designation)) {
-        $error_message = 'Designation is mandatory.';
-    } else if (checkDuplicateRow($tbl_name, 'designation', $designation) && $designation != getTableAttr('designation', $tbl_name, $id)) {
-        $error_message = 'Duplicate Designation. Please enter different.';
-    } else {
-
-        /* ---------------------- QUERY ---------------------- */
-        $update_row = $mysqli->query("
-										UPDATE `$tbl_name` SET
-											designation	        = '" . $designation . "',
-											publish 		    = '" . $publish . "'
-										WHERE id=$id");
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            fp__($tbl_name, $id);
-            header("Location:listing_$module.php?success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be updated. Please try again.";
-            //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
-        }
+    try {
+        $designationService->update((int)$id, $designation, $publish === 1);
+        $success_message = "The $module_caption has been updated successfully.";
+        fp__($tbl_name, $id);
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be updated. Please try again.";
     }
 
     /*
 |--------------------------------------------------------------------------
-| 	ADD
+|   ADD
 |--------------------------------------------------------------------------
 |
 */
-} else if ($action == "add_$module" && granted('create', $module_id)) {
-
-    if (empty($designation)) {
-        $error_message = 'Designation is mandatory.';
-    } else if (checkDuplicateRow($tbl_name, 'designation', $designation)) {
-        $error_message = 'Designation already exists. Please enter a different one.';
-    } else {
-
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(designation, publish) VALUES ('" . $designation . "', '" . $publish . "'); ");
-
-        if ($insert_row) {
-            $id = $mysqli->insert_id;
-            fp__($tbl_name, $id);
-            $success_message = "The $module_caption has been saved successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be saved. Please try again.";
-            //header("Location:$module.php?error_message=$error_message");
-        }
+} elseif ($action == "add_$module" && granted('create', $module_id)) {
+    try {
+        $newDesg = $designationService->create(
+            $designation,
+            $activeOrganizationId,
+            (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0)
+        );
+        $id = $newDesg->id;
+        fp__($tbl_name, $id);
+        $success_message = "The $module_caption has been saved successfully.";
+        header("Location:listing_$module.php?success_message=$success_message");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (\Throwable $e) {
+        $error_message = "The $module_caption could not be saved. Please try again.";
     }
 }
 
@@ -110,27 +101,23 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 |--------------------------------------------------------------------------
 |
 */
-if (!empty($id)) {
-
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
-    $row = $result->fetch_array();
-
-    $designation       = s__($row['designation']);
-    $publish           = s__($row['publish']);
+if (!empty($id) && $action !== "update_$module") {
+    try {
+        $desg = $designationService->getById((int)$id);
+        $designation = s__($desg->designation);
+        $publish = $desg->publish ? 1 : 0;
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    }
 }
 
-
-
-/*
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
-
+$formTitle = (($action == "edit_$module" || $action == "update_$module") && !empty($id)) ? 'Edit' : 'New';
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>"
+          name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php"
+          enctype="multipart/form-data">
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
             <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
@@ -143,10 +130,13 @@ if (!empty($id)) {
             <div class="page-header-content d-lg-flex border-top">
                 <div class="row mt-3">
                     <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+                        <h5 class="ms-2"><?php echo $formTitle . ' ' . $module_caption; ?></h5>
                     </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
+                    <a href="#breadcrumb_elements"
+                       class="btn btn-light align-self-center collapsed d-lg-none
+                              border-transparent rounded-pill p-0 ms-auto"
+                       data-bs-toggle="collapse">
                         <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
                     </a>
                 </div>
@@ -154,7 +144,11 @@ if (!empty($id)) {
 
                 <div class="p-3 rounded mt-1">
                     <div class="form-check form-check-inline form-switch">
-                        <input type="checkbox" class="form-check-input form-check-input-success" name="publish" id="publish" <?php if ($publish == '1') { ?>checked="checked" <?php } ?>>
+                        <input type="checkbox" class="form-check-input form-check-input-success"
+                               name="publish" id="publish"
+                               <?php if ($publish == '1') :
+                                    ?>checked="checked"<?php
+                               endif; ?>>
                         <label class="form-check-label" for="sc_r_success">Publish</label>
                     </div>
                 </div>
@@ -167,7 +161,8 @@ if (!empty($id)) {
                                 <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
                             <?php } ?>
 
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                            <a href="listing_<?php echo $module; ?>.php"
+                               class="btn btn-light btn-sm">Cancel</a>
                         </div>
                     </div>
                 </div>
@@ -186,10 +181,13 @@ if (!empty($id)) {
                     <div class="content clearfix">
 
                         <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Designation:*</span></label>
+                            <label class="col-lg-3 col-form-label">
+                                <span class="text-danger">Designation:*</span>
+                            </label>
 
                             <div class="col-lg-9">
-                                <input required type="text" name="designation" id="designation" value="<?php echo $designation; ?>" class="form-control">
+                                <input required type="text" name="designation" id="designation"
+                                       value="<?php echo $designation; ?>" class="form-control">
                             </div>
                         </div>
 

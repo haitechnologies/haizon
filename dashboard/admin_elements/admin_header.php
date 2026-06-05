@@ -1,4 +1,7 @@
-<?php
+<?php declare(strict_types=1);
+
+use App\Core\DB;
+use App\Security\Roles;
 require_once __DIR__ . '/../bootstrap.php';
 
 // Initialize CSRF token for all forms
@@ -269,24 +272,6 @@ $current_page = basename(parse_url($page_url, PHP_URL_PATH) ?? '');
 $base_url = $base_url ?? ($admin_base_url ?? '');
 
 $emailModuleLinks = [
-	[
-		'module' => 'email_campaigns',
-		'href' => 'listing_email_campaigns.php',
-		'label' => 'Campaigns',
-		'icon' => 'ph-envelope-open',
-	],
-	[
-		'module' => 'email_templates',
-		'href' => 'listing_email_templates.php',
-		'label' => 'Templates',
-		'icon' => 'ph-file-doc',
-	],
-	[
-		'module' => 'email_targets',
-		'href' => 'listing_email_targets.php',
-		'label' => 'Segments',
-		'icon' => 'ph-target',
-	],
 	[
 		'module' => 'email_providers',
 		'href' => 'listing_email_providers.php',
@@ -575,6 +560,7 @@ if (!function_exists('renderEmailQuickbar')) {
 	}
 	?>
 
+	<link href="<?php echo $base_url; ?>/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 	<link href="<?php echo $admin_base_url; ?>/assets/fonts/inter/inter.css" rel="stylesheet" type="text/css">
 	<link href="<?php echo $admin_base_url; ?>/assets/icons/phosphor/styles.min.css" rel="stylesheet" type="text/css">
 	<link href="<?php echo $admin_base_url; ?>/assets/assets_custom/css/all.min.css" id="stylesheet" rel="stylesheet" type="text/css">
@@ -583,7 +569,7 @@ if (!function_exists('renderEmailQuickbar')) {
 
 	<!-- Core JS files -->
 	<script src="<?php echo $admin_base_url; ?>/assets/assets_custom/js/ui-preferences.js"></script>
-	<script src="<?php echo $admin_base_url; ?>/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+	<script src="<?php echo $base_url; ?>/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 	<!-- /core JS files -->
 
 	<!-- Google Charts Library -->
@@ -592,7 +578,7 @@ if (!function_exists('renderEmailQuickbar')) {
 	<script src="<?php echo $admin_base_url; ?>/assets/js/vendor/pickers/datepicker.min.js"></script>
 
 	<link rel="stylesheet" href="<?php echo $admin_base_url; ?>/assets/custom_css/jquery-ui.css">
-	<script src="<?php echo $admin_base_url; ?>/assets/custom_js/jquery-3.6.0.js"></script>
+	<script src="<?php echo $base_url; ?>/assets/vendor/jquery/jquery.min.js"></script>
 	<script src="<?php echo $admin_base_url; ?>/assets/custom_js/jquery-ui.js"></script>
 	<script src="<?php echo $admin_base_url; ?>/assets/custom_js/jquery.inputmask.bundle.js"></script>
 
@@ -1168,8 +1154,10 @@ if (!function_exists('renderEmailQuickbar')) {
 
 <body class="hai-dashboard responsive-bootstrap-redesign<?php echo $dashboardBodyClass !== '' ? ' ' . htmlspecialchars($dashboardBodyClass, ENT_QUOTES) : ''; ?>" data-session-user-id="<?php echo $session_user_id; ?>" data-session-role-id="<?php echo $session_role_id; ?>">
 
-	<!-- Main navbar -->
-	<nav class="navbar navbar-dark navbar-expand-lg navbar-static border-bottom border-bottom-white border-opacity-10" role="navigation" aria-label="Main navigation">
+	<!-- Main header wrapper -->
+	<header class="main-header">
+		<!-- Main navbar -->
+		<nav class="navbar navbar-dark navbar-expand-lg navbar-static border-bottom border-bottom-white border-opacity-10" role="navigation" aria-label="Main navigation">
 		<!-- <div class="navbar navbar-expand-lg navbar-static border-bottom border-bottom-black border-opacity-10" style="background-color: #F0F0F0;"> -->
 		<div class="container-fluid">
 			<div class="d-flex d-lg-none me-2">
@@ -1204,7 +1192,7 @@ if (!function_exists('renderEmailQuickbar')) {
 
 					<?php
 					//echo getTableAttr('company_name', tbl_global_settings, 1); 
-					$software_name        = getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="software_name"');
+					$software_name        = getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"');
 					echo s__($software_name);
 
 					?>
@@ -1451,7 +1439,7 @@ if (!function_exists('renderEmailQuickbar')) {
 					<a href="#" class="navbar-nav-link d-flex align-items-center rounded-pill p-1" data-bs-toggle="offcanvas" data-bs-target="#accountPanel" title="Account">
 						<?php
 						// -- Profile Photo --
-						$pp = getTableAttr('photo', tbl_users, $session_user_id);
+						$pp = getTableAttr('photo', DB::USERS, $session_user_id);
 
 						if (!empty($pp) && file_exists('../uploads/users/thumbs/' . $pp)) {
 							$pp = $base_url . '/uploads/users/thumbs/' . $pp;
@@ -1477,6 +1465,7 @@ if (!function_exists('renderEmailQuickbar')) {
 		</div>
 	</nav>
 	<!-- /main navbar -->
+	</header>
 
 
 	<!-- Page content -->

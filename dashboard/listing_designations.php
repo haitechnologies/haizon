@@ -1,4 +1,9 @@
 <?php
+
+declare(strict_types=1);
+
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 $module = 'designations';
 $module_caption = 'Designation';
@@ -20,9 +25,19 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 
 /*
 |--------------------------------------------------------------------------
+| SERVICES & DEPENDENCIES
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
+|
 */
+use App\Core\Container;
+use App\Core\Database;
+use App\Service\DesignationService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
+
+$container   = Container::getInstance();
+$db          = $container->get(Database::class);
+$designationService = $container->get(DesignationService::class);
 
 
 /*
@@ -31,24 +46,26 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 |--------------------------------------------------------------------------
 |
 */
-if (($action == "delete_$module" && !empty($id))) {
+if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id)) {
+    try {
+        if (!is_SuperAdmin()) {
+            $desg = $designationService->getById((int)$id);
+            if ($desg->createdBy !== (int)$session_user_id) {
+                $error_message = "You do not have permission to delete this designation.";
+            }
+        }
 
-    //SUPERADMIN CAN DELETE ANY DATA
-    if ($_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1') {
-
-        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
-
-        //ADMIN CAN DELETE ONLY HIS/HER DATA
-    } else {
-
-        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND created_by='" . $_SESSION[$project_pre]['admin_id'] . "'");
-    }
-
-
-    if ($result) {
-        $success_message = "$module_caption Deleted Successfully.";
-        header("Location:listing_$module.php?page=$page&success_message=$success_message");
-    } else {
+        if (empty($error_message)) {
+            $designationService->delete((int)$id);
+            $success_message = "$module_caption Deleted Successfully.";
+            header("Location:listing_$module.php?success_message=$success_message");
+            exit;
+        }
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
         $error_message = "Sorry! $module Could Not Be Deleted.";
     }
 }
@@ -57,7 +74,7 @@ if (($action == "delete_$module" && !empty($id))) {
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
-*/
+|*/
 ?>
 
 <div class="content-wrapper">
@@ -73,7 +90,9 @@ if (($action == "delete_$module" && !empty($id))) {
         <div class="card">
             <div class="card-body">
                 <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
+                <table id="grid-<?php echo $module; ?>"
+                       class="custom_datatables datatable-professional display responsive no-wrap table-hover"
+                       width="100%">
                     <thead>
                         <tr>
                             <th width="40">SR.</th>

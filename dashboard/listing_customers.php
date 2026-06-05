@@ -1,7 +1,9 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 $module = 'customers';
 $module_caption = 'Customer';
@@ -36,121 +38,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($action)) {
 }
 
 
+use App\Core\Container;
+use App\Service\CustomerService;
+use App\Exception\NotFoundException;
+use App\Exception\ValidationException;
+
+$container = Container::getInstance();
+$customerService = $container->get(CustomerService::class);
+
 /*
 |--------------------------------------------------------------------------
+| DELETE (Modernized)
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
-
-
-
-/*
-|--------------------------------------------------------------------------
-| DELETE
-|--------------------------------------------------------------------------
-|
 */
 if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id)) {
+    try {
+        $customerObj = $customerService->getCustomer((int)$id, $activeOrganizationId);
 
-	// INPUT VALIDATION: Validate customer ID
-	$idResult = InputValidator::integer($id, 1);
-	if (!$idResult['valid']) {
-		$error_message = "Invalid customer ID: " . $idResult['error'];
-	} else {
-		$customerId = $idResult['value'];
-		
-		// IDOR PROTECTION: Check ownership (unless system admin)
-		$canDelete = has_full_access();
-		if (!$canDelete) {
-			$canDelete = checkOwnership($tbl_name, $customerId, 'user_id');
-		}
-		
-		if (!$canDelete) {
-			$error_message = "You do not have permission to delete this customer";
-			log_error("IDOR attempt: User $session_user_id tried to delete customer $customerId", 'WARNING', __FILE__, __LINE__);
-		} else {
-			// Perform cascading delete with prepared statements
-			if (has_full_access()) {
+        $canDelete = has_full_access() || (int)$customerObj->createdBy === (int)$session_user_id || (int)$customerObj->customerOwner === (int)$session_user_id;
 
-				// --- Delete Customer Addresses
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE customer_id=?");
-				$stmt->bind_param("i", $customerId);
-				$stmt->execute();
-				$stmt->close();
-
-				// --- Delete Customer Contacts
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=?");
-				$stmt->bind_param("i", $customerId);
-				$stmt->execute();
-				$stmt->close();
-
-				// --- Delete Customer Notes (entity_notes)
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::ENTITY_NOTES . "` WHERE entity_type='customer' AND entity_id=?");
-				$stmt->bind_param("i", $customerId);
-				$stmt->execute();
-				$stmt->close();
-
-				// erp_customer_attachments dropped — no attachment cleanup needed
-
-				// --- Delete Customer Activity Logs (entity_logs)
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::ENTITY_LOGS . "` WHERE entity_type='customer' AND entity_id=?");
-				$stmt->bind_param("i", $customerId);
-				$stmt->execute();
-				$stmt->close();
-
-				// --- Delete Customer
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMERS . "` WHERE id=?");
-				$stmt->bind_param("i", $customerId);
-				$stmt->execute();
-				$stmt->close();
-				
-			} else {
-				// Non-admin users: only delete their own records
-
-				// --- Delete Customer Addresses
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE customer_id=? AND created_by=?");
-				$stmt->bind_param("ii", $customerId, $session_user_id);
-				$stmt->execute();
-				$stmt->close();
-
-				// --- Delete Customer Contacts
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=? AND created_by=?");
-				$stmt->bind_param("ii", $customerId, $session_user_id);
-				$stmt->execute();
-				$stmt->close();
-
-				// --- Delete Customer Notes (entity_notes)
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::ENTITY_NOTES . "` WHERE entity_type='customer' AND entity_id=? AND created_by=?");
-				$stmt->bind_param("ii", $customerId, $session_user_id);
-				$stmt->execute();
-				$stmt->close();
-
-				// erp_customer_attachments dropped — no attachment cleanup needed
-
-				// --- Delete Customer Activity Logs (entity_logs)
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::ENTITY_LOGS . "` WHERE entity_type='customer' AND entity_id=? AND created_by=?");
-				$stmt->bind_param("ii", $customerId, $session_user_id);
-				$stmt->execute();
-				$stmt->close();
-
-				// --- Delete Customer
-				$stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMERS . "` WHERE id=? AND created_by=?");
-				$stmt->bind_param("ii", $customerId, $session_user_id);
-				$stmt->execute();
-				$stmt->close();
-			}
-			
-			$success_message = "Customer deleted successfully";
-		}
-	}
-
-
-	if ($mysqli->affected_rows > 0) {
-		$success_message = "Item deleted successfully.";
-		header("Location:listing_$module.php?success_message=$success_message");
-	} else {
-		$error_message = "Action denied. You are not authorized to delete this record.";
-	}
+        if (!$canDelete) {
+            $error_message = "You do not have permission to delete this customer";
+            log_error("IDOR attempt: User $session_user_id tried to delete customer $id", 'WARNING', __FILE__, __LINE__);
+        } else {
+            $customerService->deleteCustomer((int)$id, $activeOrganizationId);
+            $success_message = "Customer deleted successfully.";
+            header("Location:listing_$module.php?success_message=" . urlencode($success_message));
+            exit;
+        }
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error_message = "An error occurred while deleting the customer.";
+    }
 }
 
 /*

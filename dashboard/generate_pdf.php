@@ -1,9 +1,24 @@
 <?php
+
+use App\Core\DB;
 require_once __DIR__ . '/../config/session.php';
 startDashboardSession();
 header("Content-Type: text/html; charset=utf-8");
 require('../config/globals.php');
 require('../config/database.php');
+include('admin_elements/error_logger.php');
+
+// Register custom error/exception/shutdown handlers
+if (function_exists('custom_error_handler')) {
+	set_error_handler('custom_error_handler');
+}
+if (function_exists('custom_exception_handler')) {
+	set_exception_handler('custom_exception_handler');
+}
+if (function_exists('handle_fatal_error')) {
+	register_shutdown_function('handle_fatal_error');
+}
+
 include('../config/images.php');
 include('admin_elements/security.php');
 include('admin_elements/grab_vars.php');
@@ -264,7 +279,7 @@ $row_bg = 'background-color: #dce9f7;';
 
 if (!empty($id)) {
 
-    $result = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id=$id");
+    $result = $mysqli->query("SELECT * FROM `" . DB::INVOICES . "` WHERE id=$id");
     $row = $result->fetch_array();
 
     $client_id              = s__($row['client_id']);
@@ -320,7 +335,7 @@ if (!empty($id)) {
     $item_row = '';
 
     // ------------------ TOTAL INVOICE ITEMS ------------------
-    $result_invoice_items     = $mysqli->query("SELECT * FROM `" . tbl_invoice_items . "` WHERE invoice_id=$id");
+    $result_invoice_items     = $mysqli->query("SELECT * FROM `" . DB::INVOICE_ITEMS . "` WHERE invoice_id=$id");
     $total_rows                 = $result_invoice_items->num_rows;
 
     if ($total_rows > 0) {

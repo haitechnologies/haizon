@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'departments';
@@ -27,17 +29,15 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 |--------------------------------------------------------------------------
 */
 
+use App\Core\Container;
 use App\Core\Database;
-use App\Repository\DepartmentRepository;
-use App\Repository\UserRepository;
 use App\Service\DepartmentService;
 use App\Exception\ValidationException;
 use App\Exception\NotFoundException;
 
-$db = new Database();
-$deptRepo = new DepartmentRepository($db);
-$userRepo = new UserRepository($db);
-$deptService = new DepartmentService($deptRepo, $userRepo);
+$container   = Container::getInstance();
+$db          = $container->get(Database::class);
+$deptService = $container->get(DepartmentService::class);
 
 if ($action == "update_$module" || $action == "add_$module") {
     $department        = e_s__($_POST['department']);

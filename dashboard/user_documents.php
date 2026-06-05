@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module                 = 'user_documents';
@@ -286,7 +288,7 @@ if (!empty($id)) {
                                         <select class="form-select" name="user" id="user">
                                             <option value='0'>Please select</option>
                                             <?php
-                                            $result = $mysqli->query("SELECT * FROM `" . tbl_users . "` WHERE is_active=1 ORDER BY full_name");
+                                            $result = $mysqli->query("SELECT * FROM `" . DB::USERS . "` WHERE is_active=1 ORDER BY full_name");
                                             while ($rows = $result->fetch_array()) {
                                             ?>
                                                 <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $user) { ?>selected <?php } else if ($rows['id'] == $user) { ?>selected <?php } ?>>
@@ -303,7 +305,7 @@ if (!empty($id)) {
                                         <select class="form-select" name="document_category" id="document_category">
                                             <option value='0'>Please select</option>
                                             <?php
-                                            $result = $mysqli->query("SELECT * FROM `" . tbl_document_categories . "` WHERE publish=1 AND document_category_type='employees' ORDER BY document_category");
+                                            $result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE publish=1 AND document_category_type='employees' ORDER BY document_category");
                                             while ($rows = $result->fetch_array()) {
                                             ?>
                                                 <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $document_category) { ?>selected <?php } else if ($rows['id'] == $document_category) { ?>selected <?php } ?>>

@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'jobs';
@@ -168,7 +170,7 @@ if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'account
     if ($tags != NULL) {
         $tags_arr               = explode(',', $tags);
         foreach ($tags_arr as $tag_id) {
-            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', tbl_setup_tags, $tag_id) . '</span> &nbsp;';
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
         }
     }
 
@@ -184,7 +186,7 @@ if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'account
         // $services_captions = '';
 
         foreach ($services_arr as $service_id) {
-            $services_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('item_name', tbl_items, $service_id) . '</span> &nbsp;';
+            $services_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('item_name', DB::ITEMS, $service_id) . '</span> &nbsp;';
         }
     }
 
@@ -417,7 +419,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <div class="row">
                                         <label class="col-lg-3 col-form-label"><span class="text-danger">Warehouse:*</span></label>
                                         <div class="col-lg-9 mt-2">
-                                            <?php echo getTableAttr('warehouse_name', tbl_warehouses, $warehouse_id); ?>
+                                            <?php echo getTableAttr('warehouse_name', DB::WAREHOUSES, $warehouse_id); ?>
                                         </div>
                                     </div>
 
@@ -445,7 +447,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <div class="row">
                                         <label class="col-lg-3 col-form-label">Sales Person: </label>
                                         <div class="col-lg-9 mt-2">
-                                            <?php echo getTableAttr('full_name', tbl_users, $sales_person); ?>
+                                            <?php echo getTableAttr('full_name', DB::USERS, $sales_person); ?>
                                         </div>
                                     </div>
 
@@ -495,7 +497,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <div class="row">
                                         <label class="col-lg-3 col-form-label"><span class="text-danger">Job Owner:*</span></label>
                                         <div class="col-lg-9 mt-2">
-                                            <?php echo getTableAttr('full_name', tbl_users, $job_owner); ?>
+                                            <?php echo getTableAttr('full_name', DB::USERS, $job_owner); ?>
                                         </div>
                                     </div>
 
@@ -573,7 +575,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <div class="row">
                                         <label class="col-lg-3 col-form-label">CS Agent: </label>
                                         <div class="col-lg-9 mt-2">
-                                            <?php echo getTableAttr('full_name', tbl_users, $cs_agent); ?>
+                                            <?php echo getTableAttr('full_name', DB::USERS, $cs_agent); ?>
 
                                         </div>
                                     </div>
@@ -588,7 +590,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <div class="row">
                                         <label class="col-lg-3 col-form-label">Incoterms: </label>
                                         <div class="col-lg-9 mt-2">
-                                            <?php echo getTableAttr('incoterm', tbl_incoterms, $incoterm); ?>
+                                            <?php echo getTableAttr('incoterm', DB::INCOTERMS, $incoterm); ?>
                                         </div>
                                     </div>
 
@@ -659,7 +661,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <div class="row">
                                         <label class="col-lg-3 col-form-label">Carrier Name: </label>
                                         <div class="col-lg-9 mt-2">
-                                            <?php echo getTableAttr('carrier_name', tbl_carriers, $carrier); ?>
+                                            <?php echo getTableAttr('carrier_name', DB::CARRIERS, $carrier); ?>
                                         </div>
                                     </div>
 
@@ -936,7 +938,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Commodity Type: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('commodity_type', tbl_commodity_types, $commodity_type); ?>
+                                                <?php echo getTableAttr('commodity_type', DB::COMMODITY_TYPES, $commodity_type); ?>
                                             </div>
                                         </div>
 
@@ -973,7 +975,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Container Type: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('container_type', tbl_container_types, $container_type); ?>
+                                                <?php echo getTableAttr('container_type', DB::CONTAINER_TYPES, $container_type); ?>
                                             </div>
                                         </div>
 
@@ -1023,14 +1025,14 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Landing Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $landing_country); ?>
+                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $landing_country); ?>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Port of Landing (POL): </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('port_name', tbl_ports, $landing_port); ?>
+                                                <?php echo getTableAttr('port_name', DB::PORTS, $landing_port); ?>
                                             </div>
                                         </div>
 
@@ -1065,7 +1067,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Billing Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $billing_country); ?>
+                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $billing_country); ?>
                                             </div>
                                         </div>
 
@@ -1088,14 +1090,14 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Destination Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $destination_country); ?>
+                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $destination_country); ?>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Port of Destination (POD): </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('port_name', tbl_ports, $destination_port); ?>
+                                                <?php echo getTableAttr('port_name', DB::PORTS, $destination_port); ?>
                                             </div>
                                         </div>
 
@@ -1131,7 +1133,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Shipping Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $shipping_country); ?>
+                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $shipping_country); ?>
                                             </div>
                                         </div>
 
@@ -1227,7 +1229,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Created By: </label>
                                             <div class="col-lg-9 mt-1">
-                                                <input type="text" class="form-control" value="<?php echo getTableAttr('full_name', tbl_users, $created_by); ?>" disabled>
+                                                <input type="text" class="form-control" value="<?php echo getTableAttr('full_name', DB::USERS, $created_by); ?>" disabled>
                                             </div>
                                         </div>
 

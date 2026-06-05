@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\DataTable;
+
+use App\Core\DB;
+use App\Helper\BadgeHelper;
+use App\Helper\ActionButtonHelper;
+
+class PaymentMethodsDataTable extends BaseDataTable
+{
+    protected $table = DB::PAYMENT_METHODS;
+    protected $searchFields = ['payment_method'];
+    protected $sortableColumns = [
+        0 => 'id', 1 => 'payment_method', 2 => 'created_at', 3 => 'is_active', 4 => 'id'
+    ];
+
+    protected function formatRow($row, $requestData = [])
+    {
+        $id = (int)$row['id'];
+        $paymentMethod = htmlspecialchars($row['payment_method'] ?? '');
+        $publish = (int)$row['is_active'];
+        $createdAt = $row['created_at'] ?? '';
+
+        $publishBadge = $publish == 0 ? BadgeHelper::danger('Inactive') : BadgeHelper::success('Active');
+
+        $timeAgoStr = '';
+        if (!empty($createdAt)) {
+            $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
+        }
+
+        return [
+            $id,
+            $paymentMethod,
+            $timeAgoStr,
+            $publishBadge,
+            $this->getActionButtons($id, 'payment_methods', $publish)
+        ];
+    }
+
+    protected function getActionButtons($id, $module, $publish)
+    {
+        $actions = '';
+        if (function_exists('granted_') && granted_('edit', $module)) {
+            $actions .= ActionButtonHelper::editButton($id, 'payment_methods.php', $module, 'Edit', false);
+        }
+        if (function_exists('granted_') && granted_('delete', $module)) {
+            $actions .= ' ' . ActionButtonHelper::deleteButton($id, $module);
+        }
+        return $actions;
+    }
+}

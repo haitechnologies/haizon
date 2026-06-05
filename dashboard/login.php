@@ -1,5 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 
+
+use App\Core\DB;
 require_once __DIR__ . '/../config/session.php';
 
 header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
@@ -15,12 +17,23 @@ include('../config/globals.php');
 include('../config/database.php');
 include('admin_elements/error_logger.php');
 
+// Register custom error/exception/shutdown handlers
+if (function_exists('custom_error_handler')) {
+	set_error_handler('custom_error_handler');
+}
+if (function_exists('custom_exception_handler')) {
+	set_exception_handler('custom_exception_handler');
+}
+if (function_exists('handle_fatal_error')) {
+	register_shutdown_function('handle_fatal_error');
+}
+
 $isLiveServer = function_exists('isRemote') ? isRemote() : false;
 
 // Initialize Rate Limiter for login protection
-require_once __DIR__ . '/../classes/RateLimiter.php';
-require_once __DIR__ . '/../classes/DB.php';
-require_once __DIR__ . '/../classes/TOTPAuthenticator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/RateLimiter.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/TOTPAuthenticator.php';
 RateLimiter::init($mysqli);
 
 $module = 'users';
@@ -155,7 +168,7 @@ if ($action == 'login' && empty($email)) {
 	| Using prepared statements to prevent SQL injection
 	------------------------------------- 
 	*/
-		$stmt = $mysqli->prepare("SELECT * FROM `" . tbl_users . "` WHERE email = ? AND can_access_system = '1' AND is_active = '1' LIMIT 1");
+		$stmt = $mysqli->prepare("SELECT * FROM `" . DB::USERS . "` WHERE email = ? AND can_access_system = '1' AND is_active = '1' LIMIT 1");
 		$stmt->bind_param('s', $email);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -182,7 +195,7 @@ if ($action == 'login' && empty($email)) {
 				// Upgrade hash cost/algorithm if needed after valid password.
 				if (password_needs_rehash($hash, PASSWORD_DEFAULT)) {
 					$rehash = password_hash($password, PASSWORD_DEFAULT);
-					$rehashStmt = $mysqli->prepare("UPDATE `" . tbl_users . "` SET password = ? WHERE id = ? LIMIT 1");
+					$rehashStmt = $mysqli->prepare("UPDATE `" . DB::USERS . "` SET password = ? WHERE id = ? LIMIT 1");
 					if ($rehashStmt) {
 						$userId = (int)$row['id'];
 						$rehashStmt->bind_param('si', $rehash, $userId);
@@ -221,7 +234,7 @@ if ($action == 'login' && empty($email)) {
 						if (!empty($consume['valid'])) {
 							$mfaPassed = true;
 							$remainingCodesJson = json_encode($consume['remaining']);
-							$updateRecoveryStmt = $mysqli->prepare("UPDATE `" . tbl_users . "` SET mfa_recovery_codes = ? WHERE id = ? LIMIT 1");
+							$updateRecoveryStmt = $mysqli->prepare("UPDATE `" . DB::USERS . "` SET mfa_recovery_codes = ? WHERE id = ? LIMIT 1");
 							if ($updateRecoveryStmt) {
 								$userId = (int)$row['id'];
 								$updateRecoveryStmt->bind_param('si', $remainingCodesJson, $userId);
@@ -247,7 +260,7 @@ if ($action == 'login' && empty($email)) {
 				log_user_login($email);
 
 				// Update last login using prepared statement
-				$stmt = $mysqli->prepare("UPDATE `" . tbl_users . "` SET last_login = NOW() WHERE email = ?");
+				$stmt = $mysqli->prepare("UPDATE `" . DB::USERS . "` SET last_login = NOW() WHERE email = ?");
 				$stmt->bind_param('s', $email);
 				$stmt->execute();
 				$stmt->close();
@@ -301,6 +314,7 @@ if ($action == 'login' && empty($email)) {
 
 	<link rel="shortcut icon" href="../<?php echo getSystemFavicon(); ?>" type="image/x-icon" />
 	<!-- Global stylesheets -->
+	<link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 	<link href="assets/fonts/inter/inter.css" rel="stylesheet" type="text/css">
 	<link href="assets/icons/phosphor/styles.min.css" rel="stylesheet" type="text/css">
 	<link href="assets/assets_custom/css/all.min.css" id="stylesheet" rel="stylesheet" type="text/css">
@@ -308,7 +322,7 @@ if ($action == 'login' && empty($email)) {
 
 	<!-- Core JS files -->
 	<script src="assets/assets_custom/js/ui-preferences.js"></script>
-	<script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+	<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 	<!-- /core JS files -->
 
 	<!-- Theme JS files -->
@@ -323,43 +337,45 @@ $loginColors = getLoginPageColors();
 ?>
 <body style="background-color: <?php echo $loginColors['form_bg']; ?>;">
 
-	<!-- Main navbar -->
-	<div class="navbar navbar-static py-2" style="background-color: <?php echo $loginColors['header_bg']; ?>; color: <?php echo $loginColors['header_text']; ?>"><!-- #FF6600-->
-		<div class="container-fluid">
-			<div class="navbar-brand">
-							<a href="login.php" class="d-inline-flex align-items-center" style="color: <?php echo $loginColors['header_text']; ?>;">
-					<!-- <img src="assets/images/logo_text_light.svg" class="d-none d-sm-inline-block h-16px ms-3" alt=""> -->
-					<!-- <img src="../images/logo.png" alt=""> -->
+	<!-- Main header -->
+	<header class="main-header">
+		<nav class="navbar navbar-static py-2" style="background-color: <?php echo $loginColors['header_bg']; ?>; color: <?php echo $loginColors['header_text']; ?>;" role="navigation" aria-label="Login Header"><!-- #FF6600-->
+			<div class="container-fluid">
+				<div class="navbar-brand">
+								<a href="login.php" class="d-inline-flex align-items-center" style="color: <?php echo $loginColors['header_text']; ?>;">
+						<!-- <img src="assets/images/logo_text_light.svg" class="d-none d-sm-inline-block h-16px ms-3" alt=""> -->
+						<!-- <img src="../images/logo.png" alt=""> -->
 
-					<?php
-					// ---------------------------------- LOGO ---------------------------------- 
-				// Use login-specific logo if available, otherwise fallback to main logo
-				$login_logo = getSystemSetting('login_logo', '');
-				$logo = getSystemSetting('logo', '');
-				$software_name = getSystemSetting('software_name', 'Admin Dashboard');
+						<?php
+						// ---------------------------------- LOGO ---------------------------------- 
+					// Use login-specific logo if available, otherwise fallback to main logo
+					$login_logo = getSystemSetting('login_logo', '');
+					$logo = getSystemSetting('logo', '');
+					$software_name = getSystemSetting('software_name', 'Admin Dashboard');
 
-				// First priority: login_logo, second: logo, fallback: default
-				$logo_to_use = !empty($login_logo) ? $login_logo : $logo;
+					// First priority: login_logo, second: logo, fallback: default
+					$logo_to_use = !empty($login_logo) ? $login_logo : $logo;
 
-				if (!empty($logo_to_use) && file_exists('../uploads/system_settings/' . $logo_to_use)) {
-					$display_logo = '../uploads/system_settings/' . htmlspecialchars($logo_to_use);
-					} else {
-						$display_logo = '../images/default_logo.png';
-					}
-					// ----------------------------------------------------------------------------- 
-					?>
-				<img src="<?php echo $display_logo; ?>" alt="Logo"> &nbsp; 
-				<?php echo htmlspecialchars($software_name); ?>
+					if (!empty($logo_to_use) && file_exists('../uploads/system_settings/' . $logo_to_use)) {
+						$display_logo = '../uploads/system_settings/' . htmlspecialchars($logo_to_use);
+						} else {
+							$display_logo = '../images/default_logo.png';
+						}
+						// ----------------------------------------------------------------------------- 
+						?>
+					<img src="<?php echo $display_logo; ?>" alt="Logo"> &nbsp; 
+					<?php echo htmlspecialchars($software_name); ?>
 
-				</a>
+					</a>
+				</div>
 			</div>
-		</div>
-	</div>
-	<!-- /main navbar -->
+		</nav>
+	</header>
+	<!-- /main header -->
 
 
-	<!-- Page content -->
-	<div class="page-content">
+	<!-- Page content wrapper -->
+	<main class="page-content" role="main">
 
 		<!-- Main content -->
 		<div class="content-wrapper">
@@ -378,7 +394,7 @@ $loginColors = getLoginPageColors();
 
 						<?php
 						//echo getTableAttr('company_name', tbl_global_settings, 1); 
-						// $software_name		= getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="software_name"');
+						// $software_name		= getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"');
 						// echo s__($software_name);
 						?>
 
@@ -494,7 +510,7 @@ $loginColors = getLoginPageColors();
 
 
 				<!-- Footer -->
-				<div class="navbar navbar-sm navbar-footer border-top">
+				<footer class="navbar navbar-sm navbar-footer border-top" role="contentinfo">
 					<div class="container-fluid">
 						<span>&copy; <?php echo date('Y'); ?></span>
 
@@ -509,7 +525,7 @@ $loginColors = getLoginPageColors();
 							</li>
 						</ul> -->
 					</div>
-				</div>
+				</footer>
 				<!-- /footer -->
 
 			</div>
@@ -518,7 +534,7 @@ $loginColors = getLoginPageColors();
 		</div>
 		<!-- /main content -->
 
-	</div>
+	</main>
 	<!-- /page content -->
 
 </body>

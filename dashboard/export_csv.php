@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * CSV Export Handler
  * 
@@ -9,8 +11,8 @@
  */
 
 require_once __DIR__ . '/admin_elements/admin_header_minimal.php';
-require_once __DIR__ . '/../classes/CSVExporter.php';
-require_once __DIR__ . '/../classes/DB.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/CSVExporter.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -54,9 +56,6 @@ switch ($module) {
         exportEmailHistory($exporter, $mysqli, $filters);
         break;
     
-    case 'blogs':
-        exportBlogs($exporter, $mysqli, $filters);
-        break;
     
     case 'inquiries':
         exportInquiries($exporter, $mysqli, $filters);
@@ -70,45 +69,21 @@ switch ($module) {
         exportCustomerDocuments($exporter, $mysqli, $filters);
         break;
     
-    case 'frontend_users':
-        exportFrontendUsers($exporter, $mysqli, $filters);
-        break;
-    
-    case 'blog_categories':
-        exportBlogCategories($exporter, $mysqli, $filters);
-        break;
     
     case 'categories':
         exportCategories($exporter, $mysqli, $filters);
         break;
     
-    case 'email_templates':
-        exportEmailTemplates($exporter, $mysqli, $filters);
-        break;
     
     case 'authentication_activity':
         exportAuthenticationActivity($exporter, $mysqli, $filters);
         break;
     
-    case 'email_campaigns':
-        exportEmailCampaigns($exporter, $mysqli, $filters);
-        break;
     
     case 'email_queue':
         exportEmailQueue($exporter, $mysqli, $filters);
         break;
     
-    case 'email_sends':
-        exportEmailSends($exporter, $mysqli, $filters);
-        break;
-    
-    case 'email_bounces':
-        exportEmailBounces($exporter, $mysqli, $filters);
-        break;
-    
-    case 'email_unsubscribes':
-        exportEmailUnsubscribes($exporter, $mysqli, $filters);
-        break;
     
     case 'geo_cities':
         exportGeoCities($exporter, $mysqli, $filters);
@@ -126,105 +101,7 @@ switch ($module) {
         die('Export not implemented for this module');
 }
 
-/**
- * Export Frontend Users
- */
-function exportFrontendUsers($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            id,
-            full_name,
-            email,
-            mobile,
-            company_name,
-            city,
-            country,
-            email_verified,
-            is_active,
-            last_login_at,
-            created_at
-        FROM `" . DB::FRONTEND_USERS . "`
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (!empty($filters['search'])) {
-        $search = $mysqli->real_escape_string($filters['search']);
-        $query .= " AND (full_name LIKE '%{$search}%' OR email LIKE '%{$search}%')";
-    }
-    
-    if (isset($filters['email_verified']) && $filters['email_verified'] !== '') {
-        $query .= " AND email_verified = " . (int)$filters['email_verified'];
-    }
-    
-    if (isset($filters['is_active']) && $filters['is_active'] !== '') {
-        $query .= " AND is_active = " . (int)$filters['is_active'];
-    }
-    
-    $query .= " ORDER BY id DESC LIMIT 50000";
-    
-    $columns = ['id', 'full_name', 'email', 'mobile', 'company_name', 'city', 'country', 'email_verified', 'is_active', 'last_login_at', 'created_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'full_name' => 'Full Name',
-        'email' => 'Email',
-        'mobile' => 'Mobile',
-        'company_name' => 'Company',
-        'city' => 'City',
-        'country' => 'Country',
-        'email_verified' => 'Email Verified',
-        'is_active' => 'Active',
-        'last_login_at' => 'Last Login',
-        'created_at' => 'Registered Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'frontend_users', $columns, $columnHeaders);
-}
 
-/**
- * Export Blog Categories
- */
-function exportBlogCategories($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            id,
-            category_name,
-            slug,
-            description,
-            display_order,
-            is_active,
-            created_at,
-            updated_at
-        FROM `" . DB::BLOG_CATEGORIES . "`
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (!empty($filters['search'])) {
-        $search = $mysqli->real_escape_string($filters['search']);
-        $query .= " AND (category_name LIKE '%{$search}%' OR description LIKE '%{$search}%')";
-    }
-    
-    if (isset($filters['is_active']) && $filters['is_active'] !== '') {
-        $query .= " AND is_active = " . (int)$filters['is_active'];
-    }
-    
-    $query .= " ORDER BY display_order ASC, id DESC LIMIT 50000";
-    
-    $columns = ['id', 'category_name', 'slug', 'description', 'display_order', 'is_active', 'created_at', 'updated_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'category_name' => 'Category Name',
-        'slug' => 'Slug',
-        'description' => 'Description',
-        'display_order' => 'Display Order',
-        'is_active' => 'Active',
-        'created_at' => 'Created Date',
-        'updated_at' => 'Updated Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'blog_categories', $columns, $columnHeaders);
-}
 
 /**
  * Export Categories (Business Categories)
@@ -276,51 +153,6 @@ function exportCategories($exporter, $mysqli, $filters) {
     $exporter->exportFromQuery($query, 'categories', $columns, $columnHeaders);
 }
 
-/**
- * Export Email Templates
- */
-function exportEmailTemplates($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            id,
-            template_name,
-            template_slug,
-            subject,
-            body,
-            is_default,
-            is_system,
-            created_at,
-            updated_at
-        FROM `" . DB::EMAIL_TEMPLATES . "`
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (!empty($filters['search'])) {
-        $search = $mysqli->real_escape_string($filters['search']);
-        $query .= " AND (template_name LIKE '%{$search}%' OR subject LIKE '%{$search}%')";
-    }
-    
-    if (isset($filters['is_default']) && $filters['is_default'] !== '') {
-        $query .= " AND is_default = " . (int)$filters['is_default'];
-    }
-    
-    $query .= " ORDER BY id DESC LIMIT 50000";
-    
-    $columns = ['id', 'template_name', 'template_slug', 'subject', 'is_default', 'is_system', 'created_at', 'updated_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'template_name' => 'Template Name',
-        'template_slug' => 'Slug',
-        'subject' => 'Subject',
-        'is_default' => 'Default',
-        'is_system' => 'System Template',
-        'created_at' => 'Created Date',
-        'updated_at' => 'Updated Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'email_templates', $columns, $columnHeaders);
-}
 
 /**
  * Export Authentication Activity
@@ -371,58 +203,6 @@ function exportAuthenticationActivity($exporter, $mysqli, $filters) {
     $exporter->exportFromQuery($query, 'authentication_activity', $columns, $columnHeaders);
 }
 
-/**
- * Export Email Campaigns
- */
-function exportEmailCampaigns($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            id,
-            campaign_name,
-            campaign_code,
-            campaign_description,
-            campaign_type,
-            subject_line,
-            sender_name,
-            sender_email,
-            is_active,
-            scheduled_at,
-            sent_at,
-            created_at,
-            updated_at
-        FROM `" . DB::EMAIL_CAMPAIGNS . "`
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (!empty($filters['search'])) {
-        $search = $mysqli->real_escape_string($filters['search']);
-        $query .= " AND (campaign_name LIKE '%{$search}%' OR campaign_code LIKE '%{$search}%')";
-    }
-    
-    if (isset($filters['is_active']) && $filters['is_active'] !== '') {
-        $query .= " AND is_active = " . (int)$filters['is_active'];
-    }
-    
-    $query .= " ORDER BY id DESC LIMIT 50000";
-    
-    $columns = ['id', 'campaign_name', 'campaign_code', 'campaign_type', 'subject_line', 'sender_name', 'sender_email', 'is_active', 'scheduled_at', 'sent_at', 'created_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'campaign_name' => 'Campaign Name',
-        'campaign_code' => 'Campaign Code',
-        'campaign_type' => 'Type',
-        'subject_line' => 'Subject',
-        'sender_name' => 'Sender Name',
-        'sender_email' => 'Sender Email',
-        'is_active' => 'Active',
-        'scheduled_at' => 'Scheduled',
-        'sent_at' => 'Sent At',
-        'created_at' => 'Created Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'email_campaigns', $columns, $columnHeaders);
-}
 
 /**
  * Export Email Queue
@@ -431,7 +211,7 @@ function exportEmailQueue($exporter, $mysqli, $filters) {
     $query = "
         SELECT 
             eq.id,
-            ec.campaign_name,
+            '' AS campaign_name,
             eq.recipient_email,
             eq.recipient_name,
             eq.status,
@@ -441,7 +221,6 @@ function exportEmailQueue($exporter, $mysqli, $filters) {
             eq.created_at,
             eq.updated_at
         FROM `" . DB::EMAIL_QUEUE . "` eq
-        LEFT JOIN `" . DB::EMAIL_CAMPAIGNS . "` ec ON eq.campaign_id = ec.id
         LEFT JOIN `" . DB::EMAIL_PROVIDERS . "` ep ON eq.provider_id = ep.id
         WHERE 1=1
     ";
@@ -476,122 +255,6 @@ function exportEmailQueue($exporter, $mysqli, $filters) {
     $exporter->exportFromQuery($query, 'email_queue', $columns, $columnHeaders);
 }
 
-/**
- * Export Email Sends
- */
-function exportEmailSends($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            es.id,
-            ec.campaign_name,
-            ep.provider_name,
-            es.queued_count,
-            es.sent_count,
-            es.failed_count,
-            es.completed_at,
-            es.created_at
-        FROM `" . DB::EMAIL_SENDS . "` es
-        LEFT JOIN `" . DB::EMAIL_CAMPAIGNS . "` ec ON es.campaign_id = ec.id
-        LEFT JOIN `" . DB::EMAIL_PROVIDERS . "` ep ON es.provider_id = ep.id
-        WHERE 1=1
-        ORDER BY es.id DESC
-        LIMIT 50000
-    ";
-    
-    $columns = ['id', 'campaign_name', 'provider_name', 'queued_count', 'sent_count', 'failed_count', 'completed_at', 'created_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'campaign_name' => 'Campaign',
-        'provider_name' => 'Provider',
-        'queued_count' => 'Queued',
-        'sent_count' => 'Sent',
-        'failed_count' => 'Failed',
-        'completed_at' => 'Completed At',
-        'created_at' => 'Created Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'email_sends', $columns, $columnHeaders);
-}
-
-/**
- * Export Email Bounces
- */
-function exportEmailBounces($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            id,
-            email,
-            bounce_type,
-            bounce_reason,
-            bounced_at,
-            created_at
-        FROM `" . DB::EMAIL_BOUNCES . "`
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (!empty($filters['search'])) {
-        $search = $mysqli->real_escape_string($filters['search']);
-        $query .= " AND email LIKE '%{$search}%'";
-    }
-    
-    if (!empty($filters['bounce_type'])) {
-        $type = $mysqli->real_escape_string($filters['bounce_type']);
-        $query .= " AND bounce_type = '{$type}'";
-    }
-    
-    $query .= " ORDER BY id DESC LIMIT 50000";
-    
-    $columns = ['id', 'email', 'bounce_type', 'bounce_reason', 'bounced_at', 'created_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'email' => 'Email',
-        'bounce_type' => 'Type',
-        'bounce_reason' => 'Reason',
-        'bounced_at' => 'Bounced At',
-        'created_at' => 'Recorded Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'email_bounces', $columns, $columnHeaders);
-}
-
-/**
- * Export Email Unsubscribes
- */
-function exportEmailUnsubscribes($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            id,
-            email,
-            unsubscribe_reason,
-            ip_address,
-            user_agent,
-            unsubscribed_at,
-            created_at
-        FROM `" . DB::EMAIL_UNSUBSCRIBES . "`
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (!empty($filters['search'])) {
-        $search = $mysqli->real_escape_string($filters['search']);
-        $query .= " AND email LIKE '%{$search}%'";
-    }
-    
-    $query .= " ORDER BY id DESC LIMIT 50000";
-    
-    $columns = ['id', 'email', 'unsubscribe_reason', 'ip_address', 'unsubscribed_at', 'created_at'];
-    $columnHeaders = [
-        'id' => 'ID',
-        'email' => 'Email',
-        'unsubscribe_reason' => 'Reason',
-        'ip_address' => 'IP Address',
-        'unsubscribed_at' => 'Unsubscribed At',
-        'created_at' => 'Recorded Date'
-    ];
-    
-    $exporter->exportFromQuery($query, 'email_unsubscribes', $columns, $columnHeaders);
-}
 /**
  * Export Customers
  */
@@ -730,38 +393,6 @@ function exportEmailHistory($exporter, $mysqli, $filters) {
 }
 
 /**
- * Export Blogs
- */
-function exportBlogs($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-            b.id,
-            b.title,
-            b.slug,
-            bc.category_name AS category,
-            b.author_name,
-            b.is_active,
-            b.is_featured,
-            b.views_count,
-            b.published_at,
-            b.created_at
-        FROM `" . DB::BLOGS . "` b
-        LEFT JOIN `" . DB::BLOG_CATEGORIES . "` bc ON b.category_id = bc.id
-        WHERE 1=1
-    ";
-    
-    // Apply filters
-    if (isset($filters['is_active']) && $filters['is_active'] !== '') {
-        $query .= " AND b.is_active = " . (int)$filters['is_active'];
-    }
-    
-    $query .= " ORDER BY b.id DESC LIMIT 50000";
-    
-    $columns = ['id', 'title', 'slug', 'category', 'author_name', 'is_active', 'is_featured', 'views_count', 'published_at', 'created_at'];
-    
-    $exporter->exportFromQuery($query, 'blogs', $columns);
-}
-/**
  * Export Inquiries (Contact Form Submissions)
  */
 function exportInquiries($exporter, $mysqli, $filters) {
@@ -857,11 +488,8 @@ function exportCustomerContacts($exporter, $mysqli, $filters) {
  * Export Customer Documents
  */
 function exportCustomerDocuments($exporter, $mysqli, $filters) {
-    $query = "
-        SELECT 
-        // erp_customer_documents table decommissioned — export returns empty result
-        return;
-    $exporter->exportFromQuery('SELECT 1 WHERE 0', 'customer_documents', [], []);
+    // erp_customer_documents table decommissioned — export returns empty result
+    return;
 }
 
 /**

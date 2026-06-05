@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Core\DB;
+use App\Core\DeletionManager;
 /*
 |--------------------------------------------------------------------------
 | BOOTSTRAP CORE DEPENDENCIES (before any output)
@@ -244,7 +247,7 @@ if (($_POST['action'] ?? null) == 'update_inquiries' && !empty($_POST['id'])) {
 
 	// Send email if direction is outbound
 	if ($direction === 'outbound' && filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
-		require_once __DIR__ . '/../classes/EmailQueue.php';
+		// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailQueue.php';
 		$emailQueue = new EmailQueue($mysqli);
 
 		$emailBody = '<div style="font-family:Arial,sans-serif;font-size:15px;color:#333;line-height:1.6;">'
@@ -368,7 +371,7 @@ if (($action == "publish_$module" && !empty($id)) && $error_message === '') {
 |--------------------------------------------------------------------------
 */
 } else if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id) && $error_message === '') {
-	require_once __DIR__ . '/../classes/DeletionManager.php';
+	// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DeletionManager.php';
 	$result = DeletionManager::delete(
 		$tbl_name,
 		$id,

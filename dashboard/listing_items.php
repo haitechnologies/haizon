@@ -1,6 +1,9 @@
 <?php
+
+use App\Core\DB;
+use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 $module = 'items';
 $module_caption = 'Item';

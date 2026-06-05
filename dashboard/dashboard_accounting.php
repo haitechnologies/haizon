@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module = 'statistics';
@@ -59,11 +62,11 @@ $due_date_over_45_to = date('d-m-Y', strtotime('-46 days'));
 $ar_report_link_over_45 = 'report_ar_aging_details.php?action=run_report&date_from=' . $due_date_over_45_from . '&date_to=' . $due_date_over_45_to . '&report_basis=accrual';
 
 // INVOICES METRICS
-$total_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "`")->fetch_assoc()['count'];
-$invoices_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
-$draft_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_status='draft'")->fetch_assoc()['count'];
-$sent_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_status='sent'")->fetch_assoc()['count'];
-$paid_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_status='paid'")->fetch_assoc()['count'];
+$total_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::INVOICES . "`")->fetch_assoc()['count'];
+$invoices_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::INVOICES . "` WHERE invoice_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+$draft_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::INVOICES . "` WHERE invoice_status='draft'")->fetch_assoc()['count'];
+$sent_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::INVOICES . "` WHERE invoice_status='sent'")->fetch_assoc()['count'];
+$paid_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::INVOICES . "` WHERE invoice_status='paid'")->fetch_assoc()['count'];
 
 // REVENUE CALCULATION
 $revenue_query = "
@@ -72,7 +75,7 @@ $revenue_query = "
         SUM(CASE WHEN invoice_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as current_month_revenue,
         SUM(CASE WHEN invoice_date BETWEEN '$last_month_start' AND '$last_month_end' THEN grand_total ELSE 0 END) as last_month_revenue,
         SUM(CASE WHEN invoice_date >= '$current_year_start' THEN grand_total ELSE 0 END) as year_revenue
-    FROM `" . tbl_invoices . "`
+    FROM `" . DB::INVOICES . "`
     WHERE invoice_status IN ('sent', 'paid')
 ";
 $revenue_data = $mysqli->query($revenue_query)->fetch_assoc();
@@ -90,7 +93,7 @@ $ar_query = "
         SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) BETWEEN 16 AND 30 THEN grand_total ELSE 0 END) as ar_16_30,
         SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) BETWEEN 31 AND 45 THEN grand_total ELSE 0 END) as ar_31_45,
         SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) > 45 THEN grand_total ELSE 0 END) as ar_over_45
-    FROM `" . tbl_invoices . "`
+    FROM `" . DB::INVOICES . "`
     WHERE invoice_status = 'sent'
 ";
 $ar_data = $mysqli->query($ar_query)->fetch_assoc();
@@ -103,8 +106,8 @@ $ar_31_45 = $ar_data['ar_31_45'] ?? 0;
 $ar_over_45 = $ar_data['ar_over_45'] ?? 0;
 
 // EXPENSES METRICS
-$total_expenses = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_expenses . "`")->fetch_assoc()['count'];
-$expenses_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_expenses . "` WHERE expense_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+$total_expenses = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::EXPENSES . "`")->fetch_assoc()['count'];
+$expenses_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::EXPENSES . "` WHERE expense_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
 
 // EXPENSE AMOUNT CALCULATION
 $expense_query = "
@@ -113,7 +116,7 @@ $expense_query = "
         SUM(CASE WHEN expense_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as current_month_expenses,
         SUM(CASE WHEN expense_date BETWEEN '$last_month_start' AND '$last_month_end' THEN grand_total ELSE 0 END) as last_month_expenses,
         SUM(CASE WHEN expense_date >= '$current_year_start' THEN grand_total ELSE 0 END) as year_expenses
-    FROM `" . tbl_expenses . "`
+    FROM `" . DB::EXPENSES . "`
 ";
 $expense_data = $mysqli->query($expense_query)->fetch_assoc();
 $total_expense_amount = $expense_data['total_expenses'] ?? 0;
@@ -126,7 +129,7 @@ $year_expenses = $expense_data['year_expenses'] ?? 0;
 $ap_query = "
     SELECT 
         SUM(grand_total) as total_ap
-    FROM `" . tbl_expenses . "`
+    FROM `" . DB::EXPENSES . "`
 ";
 $ap_data = $mysqli->query($ap_query)->fetch_assoc();
 $total_ap = $ap_data['total_ap'] ?? 0;
@@ -139,7 +142,7 @@ $payments_received_query = "
         COUNT(*) as count,
         SUM(total_amount_received) as total_amount,
         SUM(CASE WHEN payment_date BETWEEN '$current_month_start' AND '$current_month_end' THEN total_amount_received ELSE 0 END) as month_amount
-    FROM `" . tbl_payments_received . "`
+    FROM `" . DB::PAYMENTS_RECEIVED . "`
 ";
 $payments_received_data = $mysqli->query($payments_received_query)->fetch_assoc();
 $total_payments_received = $payments_received_data['count'] ?? 0;
@@ -152,12 +155,12 @@ $year_profit = $year_revenue - $year_expenses;
 $profit_margin = $current_month_revenue > 0 ? round(($current_month_profit / $current_month_revenue) * 100, 1) : 0;
 
 // CUSTOMERS & VENDORS
-$total_customers = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_customers . "`")->fetch_assoc()['count'];
-$total_vendors = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_vendors . "`")->fetch_assoc()['count'];
+$total_customers = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::CUSTOMERS . "`")->fetch_assoc()['count'];
+$total_vendors = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::VENDORS . "`")->fetch_assoc()['count'];
 
 // BANKS & ACCOUNTS
-$total_banks = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_banks . "`")->fetch_assoc()['count'];
-$total_accounts = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_accounts . "`")->fetch_assoc()['count'];
+$total_banks = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::BANKS . "`")->fetch_assoc()['count'];
+$total_accounts = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::ACCOUNTS . "`")->fetch_assoc()['count'];
 
 // GROWTH CALCULATIONS
 $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $last_month_revenue) / $last_month_revenue) * 100, 1) : 0;
@@ -456,10 +459,10 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 										</thead>
 										<tbody>
 											<?php
-											$result = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` ORDER BY id DESC LIMIT 8");
+											$result = $mysqli->query("SELECT * FROM `" . DB::INVOICES . "` ORDER BY id DESC LIMIT 8");
 											if ($result->num_rows > 0) {
 												while ($row = $result->fetch_array()) {
-													$customer_name = getTableAttr('display_name', tbl_customers, $row['customer_id']);
+													$customer_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
 													$status = $row['invoice_status'];
 													$status_class = $status == 'paid' ? 'success' : ($status == 'sent' ? 'warning' : 'secondary');
 											?>
@@ -515,10 +518,10 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 										</thead>
 										<tbody>
 											<?php
-											$result = $mysqli->query("SELECT * FROM `" . tbl_expenses . "` ORDER BY id DESC LIMIT 8");
+											$result = $mysqli->query("SELECT * FROM `" . DB::EXPENSES . "` ORDER BY id DESC LIMIT 8");
 											if ($result->num_rows > 0) {
 												while ($row = $result->fetch_array()) {
-													$vendor_name = getTableAttr('display_name', tbl_vendors, $row['vendor_id']);
+													$vendor_name = getTableAttr('display_name', DB::VENDORS, $row['vendor_id']);
 											$status = 'recorded';  // Default status since expenses table doesn't have status field
 											$status_class = 'info';
 													$reference = !empty($row['reference_no']) ? $row['reference_no'] : 'EXP-' . $row['id'];

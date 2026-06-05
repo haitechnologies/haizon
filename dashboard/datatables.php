@@ -16,8 +16,8 @@ exit;
 // Load dependencies
 require('../config/globals.php');
 require('../config/database.php');
-require('../classes/DataTable/BaseDataTable.php');
-require('../classes/DataTable/Registry.php');
+// Removed legacy require for autoloader compatibility: require('../classes/DataTable/BaseDataTable.php');
+// Removed legacy require for autoloader compatibility: require('../classes/DataTable/Registry.php');
 
 
 // Ensure JSON response

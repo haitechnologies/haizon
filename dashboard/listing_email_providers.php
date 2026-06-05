@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Core\DB;
+use App\Core\DeletionManager;
 include('admin_elements/admin_header.php');
 
 $module = 'email_providers';

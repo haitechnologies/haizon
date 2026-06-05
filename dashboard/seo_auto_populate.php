@@ -12,6 +12,18 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/globals.php';
+require_once __DIR__ . '/admin_elements/error_logger.php';
+
+// Register custom error/exception/shutdown handlers for CLI execution
+if (function_exists('custom_error_handler')) {
+    set_error_handler('custom_error_handler');
+}
+if (function_exists('custom_exception_handler')) {
+    set_exception_handler('custom_exception_handler');
+}
+if (function_exists('handle_fatal_error')) {
+    register_shutdown_function('handle_fatal_error');
+}
 
 class SEOAutoPopulator {
     private $conn;

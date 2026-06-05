@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * Category HS Codes (Harmonized System) Listing Page
  */

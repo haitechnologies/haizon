@@ -79,6 +79,26 @@ class CronJobScheduler {
     public function __construct() {
         $this->mysqli = $GLOBALS['DB']['MSQLI'];
         $this->validateCLI();
+        $this->bootstrapErrorLogger();
+    }
+
+    /**
+     * Load central dashboard error logger when available.
+     */
+    protected function bootstrapErrorLogger() {
+        $loggerPath = __DIR__ . '/../admin_elements/error_logger.php';
+        if (file_exists($loggerPath)) {
+            require_once $loggerPath;
+            if (function_exists('custom_error_handler')) {
+                set_error_handler('custom_error_handler');
+            }
+            if (function_exists('custom_exception_handler')) {
+                set_exception_handler('custom_exception_handler');
+            }
+            if (function_exists('handle_fatal_error')) {
+                register_shutdown_function('handle_fatal_error');
+            }
+        }
     }
     
     /**
@@ -145,12 +165,12 @@ class CronJobScheduler {
         }
         
         echo "\n";
-        echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n";
+        echo "â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• \n";
         echo "Running job: $jobName\n";
         echo "Class: {$job['class']}\n";
         echo "File: {$job['path']}\n";
         echo "Schedule: {$job['schedule']}\n";
-        echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n";
+        echo "â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• \n";
         echo "\n";
         
         // Include and run the job

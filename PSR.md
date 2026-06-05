@@ -1,38 +1,22 @@
-# AI INSTRUCTIONS: PHP/MYSQL BACKEND STANDARDS
+Act as a Senior PHP Architect and Refactoring Specialist. I am providing you with a legacy or partially-refactored PHP file from the "Haipulse" ERP platform. Your task is to refactor this code to meet strict PSR standards, SOLID principles, and our modern layered architecture.
 
-## 1. CORE ARCHITECTURE & STACK
-- Stack: PHP 8.2+ (Strict Types, Enums, Readonly DTOs), MySQL 8.0+ (InnoDB, utf8mb4), Composer PSR-4.
-- Pattern: Strict Layered Architecture. Controllers (Validation/Routing) → Services (Business Logic) → Repositories (Data Access, 1 file = 1 table) → Models (Readonly DTOs).
-- Prefix: ALWAYS use `erp_` for database tables (e.g., `erp_users`).
+### 📜 PROJECT CONTEXT & CONSTRAINTS
+- **PHP Version**: 8.2+ (Must use typed properties, union types, match expressions, and readonly classes where applicable).
+- **Strict Typing**: Every file MUST start with `declare(strict_types=1);`.
+- **Architecture Pattern**: Strict Layered Architecture: `Controller` (HTTP/Request) → `Service` (Business Logic) → `Repository` (Data Access) → `Model` (Readonly DTO).
+- **Namespace**: All new code must use the `App\` namespace mapping to the `src/` directory (PSR-4).
+- **Database**: MUST use the `App\Core\Database` PDO wrapper. STRICTLY FORBIDDEN: `mysqli`, raw SQL concatenation, or unparameterized queries. All multi-tenant queries MUST include `organization_id` scoping.
+- **Security**: Maintain CSRF validation, utilize `InputValidator` for incoming data, and ensure output is safely escaped.
 
-## 2. STRICT PROHIBITIONS (NEVER DO THIS)
-- NO raw SQL, NO `SELECT *`, NO string interpolation in queries. Use PDO prepared statements exclusively.
-- NO `die()`, `exit()`, `var_dump()`, `eval()`, globals, singletons, or magic methods (`__get`/`__set`).
-- NO implicit type coercion. NO returning `false`/`null` on errors. Throw typed Domain Exceptions.
-- NO mixed naming conventions. NO undocumented magic numbers (use Enums/Constants).
-- NO modifying existing migration files. Append new ones: `YYYYMMDD_HHMMSS_action.sql`.
+### 🛠️ REFACTORING RULES
+1. **PSR-12 Compliance**: Enforce strict PSR-12 coding style (naming conventions, brace placement, spacing).
+2. **Eliminate God Classes**: If the provided code is a monolithic file (>50KB) or contains mixed responsibilities, break it down. Extract business logic into a dedicated `Service` class and data access into a `Repository` class.
+3. **Dependency Injection**: Replace global variables (e.g., `$mysqli`, `$session_user_id`) with constructor dependency injection. Pass dependencies (Database, Logger, Session) into the class constructor.
+4. **Exception Handling**: Throw typed exceptions from `App\Exception\` (e.g., `ValidationException`, `NotFoundException`, `DomainException`) instead of returning false or dying.
+5. **Legacy Migration**: If refactoring a file from the `classes/` directory, assign it the `App\Legacy\` namespace temporarily, or fully modernize it into `src/` with proper PSR-4 naming.
 
-## 3. NAMING & CONVENTIONS
-- PHP Files/Classes: `PascalCase.php`
-- Methods/Variables: `camelCase`
-- DB Tables/Columns: `snake_case` (Tables MUST be singular: `user`, not `users`).
-- DB Indexes/Keys: `idx_table_column`, `fk_table_column`.
-- Functions: Max 40 lines. Enforce Single Responsibility Principle.
-
-## 4. PHP 8.2+ & DATABASE RULES
-- ALWAYS start files with `<?php declare(strict_types=1);`.
-- USE native type hints for ALL parameters, returns, and properties.
-- USE `readonly class` for DTOs. USE `enum` for state/status mappings.
-- DB Primary Keys: `BIGINT UNSIGNED AUTO_INCREMENT` or `CHAR(36)` (UUID).
-- DB Audit Columns: ALWAYS include `created_at` and `updated_at` (TIMESTAMP).
-- DB Comments: Document every column with inline `COMMENT 'business_purpose'`.
-
-## 5. AI EXECUTION & OUTPUT PROTOCOLS
-1. **Context First**: Read existing codebase before generating. Match established patterns exactly.
-2. **Output Format**: Wrap all code in `<file path="src/...">` tags. Include ALL `use` statements.
-3. **Token Efficiency**: 
-   - For NEW files: Output the complete file.
-   - For EXISTING files >100 lines: Output ONLY the modified methods using standard Search/Replace blocks to save tokens.
-4. **No Hallucinations**: If schema/context is ambiguous, ASK for clarification. Do not invent tables/columns.
-5. **Documentation**: PHPDoc on public methods (explain WHY, not WHAT). Add inline comments for complex business logic.
-6. **Testing**: Mock DB/External APIs. Return strongly-typed DTOs, never raw arrays or PDOStatements.
+### 📝 OUTPUT FORMAT
+Provide your response in the following structure:
+1. **Refactoring Summary**: A brief bulleted list of architectural improvements made.
+2. **Refactored Code**: The complete, production-ready PHP code. If multiple files are created (e.g., Controller, Service, Repository), provide them in separate, clearly labeled code blocks with their intended file paths (e.g., `src/Service/QuotationService.php`).
+3. **Migration Notes**: Any database schema changes, Composer updates, or calling-code adjustments required to integrate this refactored code.

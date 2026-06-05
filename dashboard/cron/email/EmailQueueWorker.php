@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Service\SMTPMailer;
 /**
  * Email Marketing Queue Worker
  * 
@@ -12,8 +15,8 @@
 
 require_once __DIR__ . '/../../../config/globals.php';
 require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../classes/EmailProviderManager.php';
-require_once __DIR__ . '/../../../classes/SMTPMailer.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../../../classes/EmailProviderManager.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../../../classes/SMTPMailer.php';
 require_once __DIR__ . '/../CronJobBase.php';
 
 class EmailQueueWorker extends CronJobBase {
@@ -44,7 +47,7 @@ class EmailQueueWorker extends CronJobBase {
 
         // Process queue in batches
         $queued = $this->safeQuery(
-            "SELECT * FROM `" . tbl_email_queue . "` 
+            "SELECT * FROM `" . DB::EMAIL_QUEUE . "` 
             WHERE status IN ('pending', 'queued')
                OR (status = 'retry' AND (next_retry_at IS NULL OR next_retry_at <= NOW()))
             ORDER BY priority ASC, created_at ASC 
@@ -120,7 +123,7 @@ class EmailQueueWorker extends CronJobBase {
                 if ($result['success']) {
                     // Update queue item as sent
                     $this->safeQuery(
-                        "UPDATE `" . tbl_email_queue . "` SET 
+                        "UPDATE `" . DB::EMAIL_QUEUE . "` SET 
                         status = 'sent',
                         provider_id = " . (int)$providerId . ",
                         attempts = " . (int)$attempts . ",
@@ -133,10 +136,10 @@ class EmailQueueWorker extends CronJobBase {
 
                     // Update history
                     $this->safeQuery(
-                        "INSERT INTO `" . tbl_email_history . "` 
+                        "INSERT INTO `" . DB::EMAIL_HISTORY . "` 
                         (campaign_id, recipient_email, company_id, provider_id, status, sent_at, message_id, tracking_id, subject, from_name, from_email)
                         VALUES (
-                            " . ($campaignId ? $campaignId : 'NULL') . ",
+                            NULL,
                             '" . $this->mysqli->real_escape_string($recipientEmail) . "',
                             NULL,
                             $providerId,
@@ -149,15 +152,6 @@ class EmailQueueWorker extends CronJobBase {
                             '" . $this->mysqli->real_escape_string($payload['from_email'] ?? '') . "'
                         )"
                     );
-
-                    // Update campaign stats
-                    if (!empty($campaignId)) {
-                        $this->safeQuery(
-                            "UPDATE `" . tbl_email_campaigns . "` SET 
-                            sent_count = sent_count + 1
-                            WHERE id = " . (int)$campaignId
-                        );
-                    }
 
                     $this->log("Sent to $recipientEmail [Campaign: $campaignId, Provider: $providerId]", 'SUCCESS');
                     $processed++;
@@ -178,7 +172,7 @@ class EmailQueueWorker extends CronJobBase {
                     $nextRetry = date('Y-m-d H:i:s', strtotime("+$retryDelay seconds"));
 
                     $this->safeQuery(
-                        "UPDATE `" . tbl_email_queue . "` SET 
+                        "UPDATE `" . DB::EMAIL_QUEUE . "` SET 
                         status = 'retry',
                         attempts = " . (int)$attempts . ",
                         retries = " . (int)$attempts . ",
@@ -192,7 +186,7 @@ class EmailQueueWorker extends CronJobBase {
                 } else {
                     // Max retries reached, mark as failed
                     $this->safeQuery(
-                        "UPDATE `" . tbl_email_queue . "` SET 
+                        "UPDATE `" . DB::EMAIL_QUEUE . "` SET 
                         status = 'failed',
                         attempts = " . (int)$attempts . ",
                         retries = " . (int)$attempts . ",
@@ -201,21 +195,12 @@ class EmailQueueWorker extends CronJobBase {
                         WHERE id = " . (int)$queueId
                     );
 
-                    // Update campaign failed count
-                    if (!empty($campaignId)) {
-                        $this->safeQuery(
-                            "UPDATE `" . tbl_email_campaigns . "` SET 
-                            failed_count = failed_count + 1
-                            WHERE id = " . (int)$campaignId
-                        );
-                    }
-
                     // Log history as failed
                     $this->safeQuery(
-                        "INSERT INTO `" . tbl_email_history . "` 
+                        "INSERT INTO `" . DB::EMAIL_HISTORY . "` 
                         (campaign_id, recipient_email, status, error_message, created_at)
                         VALUES (
-                            " . ($campaignId ? $campaignId : 'NULL') . ",
+                            NULL,
                             '" . $this->mysqli->real_escape_string($recipientEmail) . "',
                             'failed',
                             '" . $this->mysqli->real_escape_string($errorMsg) . "',
@@ -241,7 +226,7 @@ class EmailQueueWorker extends CronJobBase {
         $manager = new EmailProviderManager($mysqli);
         
         $result = $this->safeQuery(
-            "SELECT * FROM `" . tbl_email_providers . "` 
+            "SELECT * FROM `" . DB::EMAIL_PROVIDERS . "` 
             WHERE is_active = 1 
             ORDER BY weight DESC, last_used_at ASC"
         );
@@ -300,7 +285,7 @@ class EmailQueueWorker extends CronJobBase {
         // Check daily limit
         if (!empty($provider['daily_limit'])) {
             $dailyResult = $this->safeQuery(
-                "SELECT COUNT(*) as cnt FROM `" . tbl_email_history . "` 
+                "SELECT COUNT(*) as cnt FROM `" . DB::EMAIL_HISTORY . "` 
                 WHERE provider_id = " . $provider['id'] . "
                 AND DATE(sent_at) = CURDATE()"
             );
@@ -317,7 +302,7 @@ class EmailQueueWorker extends CronJobBase {
         // Check per-minute limit
         if (!empty($provider['per_minute_limit'])) {
             $minuteResult = $this->safeQuery(
-                "SELECT COUNT(*) as cnt FROM `" . tbl_email_history . "` 
+                "SELECT COUNT(*) as cnt FROM `" . DB::EMAIL_HISTORY . "` 
                 WHERE provider_id = " . $provider['id'] . "
                 AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)"
             );
@@ -344,25 +329,7 @@ class EmailQueueWorker extends CronJobBase {
      */
     private function sendEmail($provider, $recipient, $payload) {
         try {
-            // Add tracking pixel
-            $trackingId = $payload['tracking_id'] ?? bin2hex(random_bytes(16));
             $htmlBody = $payload['html_body'] ?? '';
-            if (!empty($trackingId)) {
-                $baseUrl = '';
-                if (!empty($GLOBALS['SETTINGS']) && is_array($GLOBALS['SETTINGS']) && !empty($GLOBALS['SETTINGS']['BASE_URL'])) {
-                    $baseUrl = rtrim((string)$GLOBALS['SETTINGS']['BASE_URL'], '/');
-                } elseif (!empty($GLOBALS['base_url'])) {
-                    $baseUrl = rtrim((string)$GLOBALS['base_url'], '/');
-                }
-
-                if ($baseUrl === '') {
-                    $baseUrl = 'https://haipulse.com';
-                }
-
-                $trackingUrl = $baseUrl . "/dashboard/email_tracker.php?id=$trackingId";
-                $htmlBody .= "\n<img src=\"$trackingUrl\" width=\"1\" height=\"1\" alt=\"\" />";
-            }
-
             $mailer = new SMTPMailer();
             $headers = [
                 'provider_id' => (int)($provider['id'] ?? 0),
@@ -383,7 +350,7 @@ class EmailQueueWorker extends CronJobBase {
                 return [
                     'success' => true,
                     'messageId' => '',
-                    'trackingId' => $trackingId
+                    'trackingId' => ''
                 ];
             } else {
                 return [

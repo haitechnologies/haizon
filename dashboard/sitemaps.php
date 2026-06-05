@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 // Use existing module slug to avoid permission lookup warnings.
@@ -36,13 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             $settingSlug = 'master_sitemap_filename';
             $escapedSlug = $mysqli->real_escape_string($settingSlug);
 
-            $existsResult = $mysqli->query("SELECT id FROM `" . tbl_system_settings . "` WHERE setting_slug='" . $escapedSlug . "' LIMIT 1");
+            $existsResult = $mysqli->query("SELECT id FROM `" . DB::SYSTEM_SETTINGS . "` WHERE setting_slug='" . $escapedSlug . "' LIMIT 1");
             $settingExists = ($existsResult && $existsResult->num_rows > 0);
 
             if ($settingExists) {
-                $saveResult = $mysqli->query("UPDATE `" . tbl_system_settings . "` SET setting_value='" . $escapedFilename . "', updated_at=NOW(), updated_by='" . (int)$session_user_id . "' WHERE setting_slug='" . $escapedSlug . "'");
+                $saveResult = $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='" . $escapedFilename . "', updated_at=NOW(), updated_by='" . (int)$session_user_id . "' WHERE setting_slug='" . $escapedSlug . "'");
             } else {
-                $saveResult = $mysqli->query("INSERT INTO `" . tbl_system_settings . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) VALUES ('" . $escapedSlug . "', 'Master Sitemap Filename', '" . $escapedFilename . "', 'Custom filename used for the primary sitemap endpoint', 1, '" . (int)$session_user_id . "', '" . (int)$session_user_id . "', NOW(), NOW())");
+                $saveResult = $mysqli->query("INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) VALUES ('" . $escapedSlug . "', 'Master Sitemap Filename', '" . $escapedFilename . "', 'Custom filename used for the primary sitemap endpoint', 1, '" . (int)$session_user_id . "', '" . (int)$session_user_id . "', NOW(), NOW())");
             }
 
             if ($saveResult) {
@@ -62,8 +64,7 @@ $baseUrl = '../'; // Relative to dashboard/
 $sitemapConfig = [
     'sitemap_enabled' => (int)getSystemSetting('sitemap_enabled', 1),
     'ai_sitemap_enabled' => (int)getSystemSetting('ai_sitemap_enabled', 1),
-    'sitemap_companies' => (int)getSystemSetting('sitemap_companies', 1),
-    'sitemap_blogs' => (int)getSystemSetting('sitemap_blogs', 1),
+    // Decommissioned: sitemap_companies & sitemap_blogs
     'sitemap_categories' => (int)getSystemSetting('sitemap_categories', 1),
     'sitemap_hs_codes' => (int)getSystemSetting('sitemap_hs_codes', 1),
     'sitemap_amp' => (int)getSystemSetting('sitemap_amp', 0),
@@ -108,20 +109,7 @@ $sitemapFiles = [
         'type' => 'XML',
         'setting_key' => 'ai_sitemap_enabled'
     ],
-    [
-        'name' => 'Companies Sitemap',
-        'url_path' => 'sitemap-companies.xml',
-        'handler_file' => 'sitemap-companies.php',
-        'type' => 'XML',
-        'setting_key' => 'sitemap_companies'
-    ],
-    [
-        'name' => 'Blog Sitemap',
-        'url_path' => 'sitemap-blog.xml',
-        'handler_file' => 'sitemap-blog.php',
-        'type' => 'XML',
-        'setting_key' => 'sitemap_blogs'
-    ],
+    // Decommissioned: Companies & Blog sitemaps
     [
         'name' => 'Categories Sitemap',
         'url_path' => 'sitemap-categories.xml',
@@ -351,8 +339,7 @@ unset($file);
                             <i class="ph-warning-circle me-2"></i>
                             <strong>Action Required:</strong> Implement IndexNow API integration to notify search engines when:
                             <ul class="mb-0 mt-2 small">
-                                <li>New company is added</li>
-                                <li>Blog post is published</li>
+                                <!-- Decommissioned: company and blog items -->
                                 <li>HS code is updated</li>
                                 <li>Any content is modified or deleted</li>
                             </ul>
@@ -638,9 +625,7 @@ unset($file);
                     <div class="col-md-6">
                         <h6 class="mb-2">Available AMP Pages:</h6>
                         <ul class="list-unstyled mb-0">
-                            <li><i class="ph-check-circle text-success me-2"></i>Blog Details AMP</li>
-                            <li><i class="ph-check-circle text-success me-2"></i>Blog Listing AMP</li>
-                            <li><i class="ph-check-circle text-success me-2"></i>Company Details AMP</li>
+                            <!-- Decommissioned: Blog and Company AMP pages -->
                             <li><i class="ph-check-circle text-success me-2"></i>HS Code Details AMP</li>
                             <li><i class="ph-check-circle text-success me-2"></i>HS Codes Listing AMP</li>
                             <li><i class="ph-check-circle text-success me-2"></i>Listings AMP</li>

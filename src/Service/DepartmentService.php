@@ -12,7 +12,7 @@ use App\Exception\ValidationException;
 
 /**
  * Department Service
- * 
+ *
  * Implements business logic for managing departments.
  */
 class DepartmentService

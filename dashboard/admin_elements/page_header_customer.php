@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 /* -------------------------------------------------------------------------- */
 
 $customer_id = 0;
@@ -15,13 +18,13 @@ if ($customer_id <= 0) {
 }
 
 
-$customer_type  = getTableAttr('customer_type', tbl_customers, $customer_id);
-$display_name   = getTableAttr('display_name', tbl_customers, $customer_id);
-$approved       = getTableAttr('approved', tbl_customers, $customer_id);
-$approved_at    = getTableAttr('approved_at', tbl_customers, $customer_id);
-$publish        = getTableAttr('publish', tbl_customers, $customer_id);
-$created_at     = getTableAttr('created_at', tbl_customers, $customer_id);
-$created_by     = getTableAttr('created_by', tbl_customers, $customer_id);
+$customer_type  = getTableAttr('customer_type', DB::CUSTOMERS, $customer_id);
+$display_name   = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
+$approved       = getTableAttr('approved', DB::CUSTOMERS, $customer_id);
+$approved_at    = getTableAttr('approved_at', DB::CUSTOMERS, $customer_id);
+$publish        = getTableAttr('publish', DB::CUSTOMERS, $customer_id);
+$created_at     = getTableAttr('created_at', DB::CUSTOMERS, $customer_id);
+$created_by     = getTableAttr('created_by', DB::CUSTOMERS, $customer_id);
 
 /*
     |--------------------------------------------------------------------------
@@ -126,7 +129,7 @@ $created_by     = getTableAttr('created_by', tbl_customers, $customer_id);
 
 
                                     <?php
-                                    $customer_active_status = getTableAttr('publish', tbl_customers, $customer_id);
+                                    $customer_active_status = getTableAttr('publish', DB::CUSTOMERS, $customer_id);
                                     if ($customer_active_status == 1) {
                                     ?>
                                         <a class="dropdown-item" href="customer_overview.php?action=mark_as_inactive&customer_id=<?php echo $customer_id; ?>">

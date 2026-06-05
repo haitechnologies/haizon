@@ -9,7 +9,6 @@
  */
 
 // Require dependencies
-require_once __DIR__ . '/../classes/EmailQueue.php';
 require_once __DIR__ . '/database.php';
 
 /**

@@ -1,4 +1,6 @@
 <?php
+
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module = 'statistics';
@@ -56,8 +58,6 @@ $setupSections = [
 		'icon' => 'ph-envelope-simple',
 		'links' => [
 			['href' => 'listing_email_providers.php', 'label' => 'Email Providers', 'desc' => 'SMTP/provider configuration and credentials.', 'icon' => 'ph-envelope-simple', 'visible' => setupCanSee('email_providers')],
-			['href' => 'listing_email_templates.php', 'label' => 'Email Templates', 'desc' => 'Template management for automated communications.', 'icon' => 'ph-file-doc', 'visible' => setupCanSee('email_templates')],
-			['href' => 'listing_email_targets.php', 'label' => 'Email Segments', 'desc' => 'Targeting lists and audience segments.', 'icon' => 'ph-target', 'visible' => setupCanSee('email_targets')],
 			['href' => 'listing_disposable_email_domains.php', 'label' => 'Disposable Email Domains', 'desc' => 'Block throwaway domains to reduce abuse.', 'icon' => 'ph-shield-slash', 'visible' => setupCanSee('disposable_email_domains')],
 			['href' => 'listing_banned_words.php', 'label' => 'Banned Words', 'desc' => 'Filter prohibited terms across content inputs.', 'icon' => 'ph-prohibit', 'visible' => setupCanSee('banned_words')],
 		],

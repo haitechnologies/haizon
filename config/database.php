@@ -152,10 +152,9 @@ $conn = $mysqli;
 require_once __DIR__ . '/globals.php';
 
 // Initialize database schema (create missing tables if needed)
-require_once __DIR__ . '/../classes/DatabaseSchemaInitializer.php';
 $autoInitSchemaEnv = strtolower((string)$getEnv('DB_AUTO_INIT_SCHEMA', isRemote() ? 'false' : 'true'));
 if ($autoInitSchemaEnv === 'true' || $autoInitSchemaEnv === '1' || $autoInitSchemaEnv === 'yes') {
-	DatabaseSchemaInitializer::init($mysqli);
+	\App\Core\DatabaseSchemaInitializer::init($mysqli);
 }
 
 // Ensure connections are explicitly released even on abrupt request endings.
@@ -248,12 +247,12 @@ if (!empty($_ENV['FORCE_HTTPS']) && $_ENV['FORCE_HTTPS'] === 'true' && (empty($_
 /*
 |--------------------------------------------------------------------------
 | 	LOAD DATABASE TABLE REGISTRY CLASS
+/*
 |--------------------------------------------------------------------------
 | Load the modern DB class which provides IDE autocomplete and type safety
 | for all database table names without requiring database queries
 */
 
-require_once __DIR__ . '/../classes/DB.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -263,7 +262,6 @@ require_once __DIR__ . '/../classes/DB.php';
 | and eliminates hardcoded role IDs throughout the application
 */
 
-require_once __DIR__ . '/../classes/Roles.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -285,170 +283,8 @@ require_once __DIR__ . '/uae_geo_constants.php';
 | Migration: Replace tbl_users with DB::USERS throughout the codebase
 */
 
-// User & Authentication Tables
-define('tbl_users', DB::USERS);
-define('tbl_roles', DB::ROLES);
-define('tbl_permissions', DB::PERMISSIONS);
-define('tbl_module_permissions', DB::MODULE_PERMISSIONS);
-
-// System & Configuration Tables
-define('tbl_system_settings', DB::SYSTEM_SETTINGS);
-define('tbl_modules', DB::MODULES);
-define('tbl_error_log_status', DB::ERROR_LOG_STATUS);
-define('tbl_backend_error_logs', DB::BACKEND_ERROR_LOGS);
-define('tbl_backend_log_coverage', DB::BACKEND_LOG_COVERAGE);
-define('tbl_email_providers', DB::EMAIL_PROVIDERS);
-define('tbl_email_campaigns', DB::EMAIL_CAMPAIGNS);
-define('tbl_email_templates', DB::EMAIL_TEMPLATES);
-define('tbl_email_targets', DB::EMAIL_TARGETS);
-define('tbl_email_history', DB::EMAIL_HISTORY);
-define('tbl_email_queue', DB::EMAIL_QUEUE);
-define('tbl_email_unsubscribes', DB::EMAIL_UNSUBSCRIBES);
-define('tbl_email_bounces', DB::EMAIL_BOUNCES);
-define('tbl_email_events', DB::EMAIL_EVENTS);
-define('tbl_email_sends', DB::EMAIL_SENDS);
-
-// CRM - Customer Management Tables
-define('tbl_customers', DB::CUSTOMERS);
-define('tbl_customer_contacts', DB::CUSTOMER_CONTACTS);
-define('tbl_customer_addresses', DB::CUSTOMER_ADDRESSES);
-// tbl_customer_comments, tbl_customer_attachments, tbl_customer_documents, tbl_customer_logs removed (tables merged/dropped)
-define('tbl_entity_logs', DB::ENTITY_LOGS);
-define('tbl_entity_notes', DB::ENTITY_NOTES);
-
-// Sales & Invoicing Tables
-define('tbl_invoices', DB::INVOICES);
-define('tbl_invoice_items', DB::INVOICE_ITEMS);
-
-// Payments & Financial Tables
-define('tbl_payment_methods', DB::PAYMENT_METHODS);
-
-// Geography & Location Tables
-define('tbl_geo_countries', DB::GEO_COUNTRIES);
-define('tbl_geo_states', DB::GEO_STATES);
-define('tbl_geo_cities', DB::GEO_CITIES);
-
-// Inventory & Organization Tables
-define('tbl_items', DB::ITEMS);
-define('tbl_organizations', DB::ORGANIZATIONS);
-
-// Shipping & Logistics Tables
-define('tbl_shipping_customers', DB::SHIPPING_CUSTOMERS);
-define('tbl_shipping_advices', DB::SHIPPING_ADVICES);
-define('tbl_shipping_advice_items', DB::SHIPPING_ADVICE_ITEMS);
-define('tbl_shipping_invoices', DB::SHIPPING_INVOICES);
-define('tbl_shipping_invoice_items', DB::SHIPPING_INVOICE_ITEMS);
-define('tbl_shipping_stocks', DB::SHIPPING_STOCKS);
-define('tbl_ports', DB::PORTS);
-define('tbl_carriers', DB::CARRIERS);
-define('tbl_consignees', DB::CONSIGNEES);
-define('tbl_shippers', DB::SHIPPERS);
-
-// HR & Payroll Tables
-define('tbl_departments', DB::DEPARTMENTS);
-define('tbl_designations', DB::DESIGNATIONS);
-define('tbl_user_documents', DB::USER_DOCUMENTS);
-define('tbl_attendance', DB::ATTENDANCE);
-define('tbl_leave_requests', DB::LEAVE_REQUESTS);
-define('tbl_leave_types', DB::LEAVE_TYPES);
-define('tbl_payroll_components', DB::PAYROLL_COMPONENTS);
-define('tbl_salary_structures', DB::SALARY_STRUCTURES);
-define('tbl_employee_salaries', DB::EMPLOYEE_SALARIES);
-define('tbl_payroll_runs', DB::PAYROLL_RUNS);
-define('tbl_payslips', DB::PAYSLIPS);
-
-// Accounting - Chart of Accounts
-define('tbl_accounts', DB::ACCOUNTS);
-define('tbl_accounts_report_categories', DB::ACCOUNTS_REPORT_CATEGORIES);
-define('tbl_accounts_report_subcategories', DB::ACCOUNTS_REPORT_SUBCATEGORIES);
-
-// Accounting - Journals
-define('tbl_journals', DB::JOURNALS);
-define('tbl_journal_items', DB::JOURNAL_ITEMS);
-
-// Accounting - Sales Transactions
-define('tbl_quotations', DB::QUOTATIONS);
-define('tbl_quotation_items', DB::QUOTATION_ITEMS);
-define('tbl_sale_orders', DB::SALE_ORDERS);
-define('tbl_sale_order_items', DB::SALE_ORDER_ITEMS);
-define('tbl_sale_types', DB::SALE_TYPES);
-define('tbl_payments_received', DB::PAYMENTS_RECEIVED);
-define('tbl_payment_received_items', DB::table('payment_received_items'));
-define('tbl_credit_notes', DB::CREDIT_NOTES);
-define('tbl_credit_note_items', DB::CREDIT_NOTE_ITEMS);
-
-// Accounting - Purchase Transactions
-define('tbl_vendors', DB::VENDORS);
-define('tbl_vendor_contacts', DB::VENDOR_CONTACTS);
-define('tbl_purchases', DB::PURCHASES);
-define('tbl_purchase_items', DB::PURCHASE_ITEMS);
-define('tbl_purchase_orders', DB::PURCHASE_ORDERS);
-define('tbl_purchase_order_items', DB::PURCHASE_ORDER_ITEMS);
-define('tbl_purchase_types', DB::PURCHASE_TYPES);
-define('tbl_payments_made', DB::PAYMENTS_MADE);
-define('tbl_payment_made_items', DB::table('payment_made_items'));
-define('tbl_debit_notes', DB::DEBIT_NOTES);
-define('tbl_debit_note_items', DB::DEBIT_NOTE_ITEMS);
-
-// Accounting - Expenses
-define('tbl_expenses', DB::EXPENSES);
-
-// Accounting - Banking & Finance Setup
-define('tbl_banks', DB::BANKS);
-define('tbl_tax_treatments', DB::TAX_TREATMENTS);
-define('tbl_payment_terms', DB::PAYMENT_TERMS);
-define('tbl_currencies', DB::CURRENCIES);
-
-// CRM - Leads
-define('tbl_leads', DB::LEADS);
-// tbl_lead_notes and tbl_lead_logs merged into tbl_entity_notes / tbl_entity_logs
-define('tbl_lead_attachments', DB::LEAD_ATTACHMENTS);
-// tbl_lead_quotations and tbl_lead_quotation_items removed (tables decommissioned)
-
-// CRM - Projects & Jobs
-define('tbl_projects', DB::PROJECTS);
-define('tbl_jobs', DB::JOBS);
-define('tbl_job_statuses', DB::JOB_STATUSES);
-
-// Operational Setup
-define('tbl_incoterms', DB::INCOTERMS);
-define('tbl_exit_points', DB::EXIT_POINTS);
-define('tbl_container_types', DB::CONTAINER_TYPES);
-define('tbl_commodity_types', DB::COMMODITY_TYPES);
-
-// Warehouse & Storage Setup
-define('tbl_warehouses', DB::WAREHOUSES);
-define('tbl_storage_types', DB::STORAGE_TYPES);
-define('tbl_storage_subtypes', DB::STORAGE_SUBTYPES);
-
-// Product / Service Setup
-define('tbl_units', DB::UNITS);
-// tbl_services, tbl_service_types removed (tables decommissioned)
-
-// Setup Groups & Document Management
-define('tbl_setup_groups', DB::SETUP_GROUPS);
-define('tbl_document_categories', DB::DOCUMENT_CATEGORIES);
-// tbl_documents removed (table decommissioned)
-
-// Setup & Master Data Tables
-define('tbl_setup_sources', DB::SETUP_SOURCES);
-define('tbl_setup_statuses', DB::SETUP_STATUSES);
-define('tbl_setup_tags', DB::SETUP_TAGS);
-define('tbl_banned_words', DB::BANNED_WORDS);
-define('tbl_blog_categories', DB::BLOG_CATEGORIES);
-define('tbl_blogs', DB::BLOGS);
-define('tbl_pages', DB::PAGES);
-define('tbl_ip_countries', DB::IP_COUNTRIES);
-// tbl_company_sources removed (table decommissioned)
-
-// Alerts & Notifications
-define('tbl_alerts', DB::ALERTS);
-
-// Search & Analytics
-define('tbl_searches', DB::SEARCHES);
-define('tbl_inquiries', DB::INQUIRIES);
-
-// Legacy Frontend Tables (haipulse_ prefix) — all removed; tables were dropped.
+// Note: Legacy tbl_ constants have been deprecated and completely removed.
+// All code has been migrated to DB:: class constants.
 
 
 // config.php

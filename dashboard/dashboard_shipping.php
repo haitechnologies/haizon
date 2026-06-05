@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module = 'statistics';
@@ -37,32 +40,32 @@ $last_month_start = date('Y-m-01', strtotime('-1 month'));
 $last_month_end = date('Y-m-t', strtotime('-1 month'));
 
 // QUOTATIONS METRICS
-$total_quotations = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_quotations . "`")->fetch_assoc()['count'];
-$quotations_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_quotations . "` WHERE quotation_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
-$quotations_last_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_quotations . "` WHERE quotation_date BETWEEN '$last_month_start' AND '$last_month_end'")->fetch_assoc()['count'];
-$quotations_pending = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_quotations . "` WHERE quotation_status='1'")->fetch_assoc()['count'];
-$quotations_approved = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_quotations . "` WHERE quotation_status='2'")->fetch_assoc()['count'];
+$total_quotations = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::QUOTATIONS . "`")->fetch_assoc()['count'];
+$quotations_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::QUOTATIONS . "` WHERE quotation_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+$quotations_last_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::QUOTATIONS . "` WHERE quotation_date BETWEEN '$last_month_start' AND '$last_month_end'")->fetch_assoc()['count'];
+$quotations_pending = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::QUOTATIONS . "` WHERE quotation_status='1'")->fetch_assoc()['count'];
+$quotations_approved = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::QUOTATIONS . "` WHERE quotation_status='2'")->fetch_assoc()['count'];
 
 // SALE ORDERS METRICS
-$total_sale_orders = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_sale_orders . "`")->fetch_assoc()['count'];
-$sale_orders_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_sale_orders . "` WHERE sale_order_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
-$sale_orders_confirmed = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_sale_orders . "` WHERE sale_order_status='3'")->fetch_assoc()['count'];
-$sale_orders_pending = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_sale_orders . "` WHERE sale_order_status IN ('1','2')")->fetch_assoc()['count'];
+$total_sale_orders = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALE_ORDERS . "`")->fetch_assoc()['count'];
+$sale_orders_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALE_ORDERS . "` WHERE sale_order_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+$sale_orders_confirmed = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALE_ORDERS . "` WHERE sale_order_status='3'")->fetch_assoc()['count'];
+$sale_orders_pending = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALE_ORDERS . "` WHERE sale_order_status IN ('1','2')")->fetch_assoc()['count'];
 
 // JOBS METRICS
-$total_jobs = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_jobs . "`")->fetch_assoc()['count'];
-$jobs_active = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_jobs . "` WHERE job_status NOT IN ('5','6')")->fetch_assoc()['count'];
-$jobs_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_jobs . "` WHERE created_at BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+$total_jobs = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::JOBS . "`")->fetch_assoc()['count'];
+$jobs_active = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::JOBS . "` WHERE job_status NOT IN ('5','6')")->fetch_assoc()['count'];
+$jobs_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::JOBS . "` WHERE created_at BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
 
 // SHIPPING STOCK METRICS
-$total_shipping_advices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_shipping_advices . "`")->fetch_assoc()['count'];
-$total_shipping_stocks = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_shipping_stocks . "`")->fetch_assoc()['count'];
+$total_shipping_advices = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SHIPPING_ADVICES . "`")->fetch_assoc()['count'];
+$total_shipping_stocks = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SHIPPING_STOCKS . "`")->fetch_assoc()['count'];
 
 // HS CODES & REFERENCE DATA
 $total_hscodes = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::HS_CODES . "`")->fetch_assoc()['count'];
-$total_ports = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_ports . "`")->fetch_assoc()['count'];
-$total_carriers = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_carriers . "`")->fetch_assoc()['count'];
-$total_containers = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_container_types . "`")->fetch_assoc()['count'];
+$total_ports = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::PORTS . "`")->fetch_assoc()['count'];
+$total_carriers = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::CARRIERS . "`")->fetch_assoc()['count'];
+$total_containers = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::CONTAINER_TYPES . "`")->fetch_assoc()['count'];
 
 // TOP HS CODES (most recently added)
 $top_hscodes_query = "
@@ -77,10 +80,10 @@ $top_hscodes = $mysqli->query($top_hscodes_query);
 // TOP DESTINATIONS
 $top_destinations_query = "
     SELECT DISTINCT p.port_name, p.port_code, c.country_name,
-           (SELECT COUNT(*) FROM `" . tbl_quotations . "` q WHERE q.destination_port = p.id) +
-           (SELECT COUNT(*) FROM `" . tbl_sale_orders . "` s WHERE s.destination_port = p.id) as shipment_count
-    FROM `" . tbl_ports . "` p
-    LEFT JOIN `" . tbl_geo_countries . "` c ON p.country_id = c.id
+           (SELECT COUNT(*) FROM `" . DB::QUOTATIONS . "` q WHERE q.destination_port = p.id) +
+           (SELECT COUNT(*) FROM `" . DB::SALE_ORDERS . "` s WHERE s.destination_port = p.id) as shipment_count
+    FROM `" . DB::PORTS . "` p
+    LEFT JOIN `" . DB::GEO_COUNTRIES . "` c ON p.country_id = c.id
     WHERE p.publish = 1
     ORDER BY shipment_count DESC
     LIMIT 5
@@ -93,7 +96,7 @@ $revenue_query = "
         SUM(grand_total) as total_revenue,
         SUM(CASE WHEN sale_order_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as current_month_revenue,
         SUM(CASE WHEN sale_order_date BETWEEN '$last_month_start' AND '$last_month_end' THEN grand_total ELSE 0 END) as last_month_revenue
-    FROM `" . tbl_sale_orders . "`
+    FROM `" . DB::SALE_ORDERS . "`
     WHERE sale_order_status = '3'
 ";
 $revenue_data = $mysqli->query($revenue_query)->fetch_assoc();
@@ -283,10 +286,10 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 											<table class="table table-hover">
 												<tbody>
 													<?php
-													$result = $mysqli->query("SELECT * FROM `" . tbl_quotations . "` ORDER BY id DESC LIMIT 5");
+													$result = $mysqli->query("SELECT * FROM `" . DB::QUOTATIONS . "` ORDER BY id DESC LIMIT 5");
 													if ($result->num_rows > 0) {
 														while ($row = $result->fetch_array()) {
-															$customer_name = getTableAttr('display_name', tbl_customers, $row['customer_id']);
+															$customer_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
 															$status_class = $row['quotation_status'] == '2' ? 'success' : ($row['quotation_status'] == '1' ? 'warning' : 'secondary');
 															$status_text = $row['quotation_status'] == '2' ? 'Approved' : ($row['quotation_status'] == '1' ? 'Pending' : 'Draft');
 													?>
@@ -333,10 +336,10 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 											<table class="table table-hover">
 												<tbody>
 													<?php
-													$result = $mysqli->query("SELECT * FROM `" . tbl_sale_orders . "` ORDER BY id DESC LIMIT 5");
+													$result = $mysqli->query("SELECT * FROM `" . DB::SALE_ORDERS . "` ORDER BY id DESC LIMIT 5");
 													if ($result->num_rows > 0) {
 														while ($row = $result->fetch_array()) {
-															$customer_name = getTableAttr('display_name', tbl_customers, $row['customer_id']);
+															$customer_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
 															$status_class = $row['sale_order_status'] == '3' ? 'success' : ($row['sale_order_status'] == '2' ? 'warning' : 'info');
 															$status_text = $row['sale_order_status'] == '3' ? 'Confirmed' : ($row['sale_order_status'] == '2' ? 'Waiting' : 'Requested');
 													?>
@@ -393,11 +396,11 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 										</thead>
 										<tbody>
 											<?php
-											$result = $mysqli->query("SELECT * FROM `" . tbl_jobs . "` WHERE job_status NOT IN ('5','6') ORDER BY id DESC LIMIT 8");
+											$result = $mysqli->query("SELECT * FROM `" . DB::JOBS . "` WHERE job_status NOT IN ('5','6') ORDER BY id DESC LIMIT 8");
 											if ($result->num_rows > 0) {
 												while ($row = $result->fetch_array()) {
-													$customer_name = getTableAttr('display_name', tbl_customers, $row['customer_id']);
-													$status_name = getTableAttr('job_status', tbl_job_statuses, $row['job_status']);
+													$customer_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
+													$status_name = getTableAttr('job_status', DB::JOB_STATUSES, $row['job_status']);
 											?>
 												<tr>
 													<td class="py-2">
@@ -445,7 +448,7 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 									</div>
 									<div class="card-body">
 										<?php
-										$result = $mysqli->query("SELECT * FROM `" . tbl_shipping_advices . "` ORDER BY id DESC LIMIT 5");
+										$result = $mysqli->query("SELECT * FROM `" . DB::SHIPPING_ADVICES . "` ORDER BY id DESC LIMIT 5");
 										if ($result->num_rows > 0) {
 											while ($rows = $result->fetch_array()) {
 												$invoice_date = date("d M Y", strtotime($rows['invoice_date']));
@@ -484,11 +487,11 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 									</div>
 									<div class="card-body">
 										<?php
-										$result = $mysqli->query("SELECT * FROM `" . tbl_shipping_stocks . "` ORDER BY invoice_date DESC LIMIT 5");
+										$result = $mysqli->query("SELECT * FROM `" . DB::SHIPPING_STOCKS . "` ORDER BY invoice_date DESC LIMIT 5");
 										if ($result->num_rows > 0) {
 											while ($rows = $result->fetch_array()) {
-												$consignee_name = getTableAttr("consignee_name", tbl_consignees, $rows['consignee_id']);
-												$destination_port_name = getTableAttr("port_name", tbl_ports, $rows['destination_port']);
+												$consignee_name = getTableAttr("consignee_name", DB::CONSIGNEES, $rows['consignee_id']);
+												$destination_port_name = getTableAttr("port_name", DB::PORTS, $rows['destination_port']);
 												$invoice_date = date("d M Y", strtotime($rows['invoice_date']));
 										?>
 											<div class="d-flex align-items-start mb-3 pb-3 border-bottom">

@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * ErrorLogger Class - Centralized Error Logging System
  * 

@@ -1,7 +1,11 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
+use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 $module             = 'customer_contacts';
 $module_caption     = 'Contact';
@@ -184,11 +188,11 @@ else $is_active = 0;
 */
 
 //COUNT QUERY
-$result         = $mysqli->query("SELECT id FROM `" . tbl_customer_contacts . "` WHERE id>0 AND customer_id=$customer_id ");
+$result         = $mysqli->query("SELECT id FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id>0 AND customer_id=$customer_id ");
 $total_pages      = $result->num_rows;
 
 //NORMAL QUERY
-$result_customer_contacts = $mysqli->query("SELECT * FROM `" . tbl_customer_contacts . "` WHERE id>0 AND customer_id=$customer_id ORDER BY id DESC LIMIT $start, $limit");
+$result_customer_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id>0 AND customer_id=$customer_id ORDER BY id DESC LIMIT $start, $limit");
 
 
 

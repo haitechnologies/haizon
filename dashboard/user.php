@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module             = 'users';
@@ -24,14 +26,18 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 
 
 // ------------------ CHECK IF ID IS VALID ----------------
-$rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_users . "` WHERE id ='" . $id . "' ");
-if ($rs_valid->num_rows == 0) {
+$userService = \App\Core\Container::getInstance()->get(\App\Service\UserService::class);
+try {
+    $user = $userService->getById((int)$id);
+} catch (\App\Exception\NotFoundException $e) {
     header("Location:listing_users.php?error_message=User Information is not accessible");
+    exit;
 }
 
 // -- System Admin
 if (!Roles::isSystemAdmin($_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? null) && $id == 1) {
     header("Location:listing_users.php?error_message=Only System Admin has the rights to access this User.");
+    exit;
 }
 
 
@@ -55,25 +61,19 @@ if (isset($_REQUEST['selected_tab']) && !empty($_REQUEST['selected_tab']))
 |
 */
 if (!empty($id)) {
+    $role_id                    = $user->roleId;
+    $full_name                  = htmlspecialchars($user->fullName);
+    $email                      = htmlspecialchars($user->email);
+    $contact1                   = htmlspecialchars($user->contact1 ?? '');
+    $contact2                   = htmlspecialchars($user->contact2 ?? '');
+    $address                    = htmlspecialchars($user->address ?? '');
 
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
-    $row = $result->fetch_array();
+    $dob                        = $user->dob ? processDateYtoD($user->dob) : '';
 
-    $role_id                    = s__($row['role_id']);
-    $full_name                  = s__($row['full_name']);
-    $email                      = s__($row['email']);
-    $contact1                   = s__($row['contact1']);
-    $contact2                   = s__($row['contact2']);
-    $address                    = s__($row['address']);
-
-    $dob                        = s__($row['dob']);
-    $dob                        = processDateYtoD($dob);
-
-    $can_access_system          = s__($row['can_access_system']);
-    $is_active                  = s__($row['is_active']);
+    $can_access_system          = $user->canAccessSystem ? 1 : 0;
+    $is_active                  = $user->isActive ? 1 : 0;
+    $photo                      = $user->photo;
 }
-
-$photo = getTableAttr('photo', $tbl_name, $id);
 
 
 

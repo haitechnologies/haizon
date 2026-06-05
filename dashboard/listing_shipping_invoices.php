@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 $module = 'shipping_invoices';
 $module_caption = 'Shipping Invoice';
@@ -51,16 +53,16 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 
 // if ($action == 'send_email' && !empty($id)) {
 
-//     $quotation_date     = getTableAttr('quotation_date', tbl_quotations, $id);
+//     $quotation_date     = getTableAttr('quotation_date', DB::QUOTATIONS, $id);
 //     $quotation_date     = processDateYtoD($quotation_date);
-//     $pax                = getTableAttr('pax', tbl_quotations, $id);
-//     $quotation_status   = getTableAttr('quotation_status', tbl_quotations, $id);
+//     $pax                = getTableAttr('pax', DB::QUOTATIONS, $id);
+//     $quotation_status   = getTableAttr('quotation_status', DB::QUOTATIONS, $id);
 //     $quotation_status   = normalQuotationStatus($quotation_status);
 
-//     $client_id      = getTableAttr('client_id', tbl_quotations, $id);
+//     $client_id      = getTableAttr('client_id', DB::QUOTATIONS, $id);
 //     $client_name    = getTableAttr('partner_name', tbl_tpartners, $client_id);
 
-//     $agent_id       = getTableAttr('agent_id', tbl_quotations, $id);
+//     $agent_id       = getTableAttr('agent_id', DB::QUOTATIONS, $id);
 //     $agent_name     = getTableAttr('full_name', tbl_booking_agents, $agent_id);
 //     $agent_email    = getTableAttr('email', tbl_booking_agents, $agent_id);
 
@@ -119,7 +121,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 
 //         $mail->isHTML(true);
 
-//         $pdf   = getTableAttr('pdf', tbl_quotations, $id);
+//         $pdf   = getTableAttr('pdf', DB::QUOTATIONS, $id);
 
 //         //Attachments
 //         // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments

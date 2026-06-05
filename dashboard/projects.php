@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'projects';
@@ -426,7 +428,7 @@ if (
                                     if (!empty($job_id)) {
                                         $warehouse_id_for_job = getTableAttr('warehouse_id', DB::JOBS, $job_id);
                                         if (!empty($warehouse_id_for_job)) {
-                                            $job_display = getTableAttr('warehouse_name', tbl_warehouses, $warehouse_id_for_job);
+                                            $job_display = getTableAttr('warehouse_name', DB::WAREHOUSES, $warehouse_id_for_job);
                                         }
                                     }
 

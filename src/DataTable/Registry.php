@@ -1,0 +1,335 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\DataTable;
+
+use App\Core\Database;
+use App\Core\DB;
+
+/**
+ * DataTable Handler Registry
+ *
+ * Manages registration and loading of DataTable handlers
+ * Maps module names to their corresponding handler classes
+ *
+ * @package App\DataTable
+ */
+class Registry
+{
+    /**
+     * Handler registry mapping
+     * @var array
+     */
+    private static array $handlers = [];
+
+    /**
+     * Database connection wrapper
+     * @var Database
+     */
+    private Database $db;
+
+    /**
+     * Current user ID
+     * @var int|null
+     */
+    private ?int $userId = null;
+
+    /**
+     * Current user role ID
+     * @var int|null
+     */
+    private ?int $roleId = null;
+
+    /**
+     * Current organization ID
+     * @var int|null
+     */
+    private ?int $organizationId = null;
+
+    /**
+     * Constructor
+     *
+     * @param mixed $db Database connection
+     * @param int|null $userId Current user ID
+     * @param int|null $roleId Current user role ID
+     * @param int|null $organizationId Current organization ID
+     */
+    public function __construct(mixed $db, ?int $userId = null, ?int $roleId = null, ?int $organizationId = null)
+    {
+        if ($db instanceof Database) {
+            $this->db = $db;
+        } else {
+            $this->db = new Database();
+        }
+
+        $this->userId = $userId;
+        $this->roleId = $roleId;
+        $this->organizationId = $organizationId;
+        $this->registerDefaultHandlers();
+    }
+
+    /**
+     * Register a DataTable handler
+     *
+     * @param string $module Module name (e.g., 'customers', 'invoices')
+     * @param string $handlerClass Handler class name (e.g., 'CustomersDataTable')
+     * @return void
+     */
+    public function register(string $module, string $handlerClass): void
+    {
+        self::$handlers[strtolower($module)] = $handlerClass;
+    }
+
+    /**
+     * Register multiple handlers at once
+     *
+     * @param array $handlers Array of ['module' => 'HandlerClass']
+     * @return void
+     */
+    public function registerMultiple(array $handlers): void
+    {
+        foreach ($handlers as $module => $handlerClass) {
+            $this->register($module, $handlerClass);
+        }
+    }
+
+    /**
+     * Get handler for a module
+     *
+     * @param string $module Module name
+     * @return BaseDataTable|null Handler instance or null if not found
+     */
+    public function getHandler(string $module): ?BaseDataTable
+    {
+        $module = strtolower($module);
+
+        $this->ensureModuleRegistration($module);
+
+        // Check if module is registered
+        if (!isset(self::$handlers[$module])) {
+            error_log("DataTable: Unknown module '{$module}'");
+            return null;
+        }
+
+        $handlerClass = self::$handlers[$module];
+
+        $this->ensureHandlerClassLoaded($handlerClass);
+
+        // Check if class exists
+        if (!class_exists($handlerClass)) {
+            error_log("DataTable: Handler class '{$handlerClass}' not found for module '{$module}'");
+            return null;
+        }
+
+        try {
+            // Instantiate handler with dependencies
+            return new $handlerClass($this->db, $this->userId, $this->roleId, $this->organizationId);
+        } catch (\Throwable $e) {
+            error_log("DataTable: Failed to instantiate handler for module '{$module}' [" . get_class($e) . "]: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Process a DataTable request
+     *
+     * @param string $module Module name
+     * @param array $requestData Request data
+     * @return array Response data
+     */
+    public function process(string $module, array $requestData): array
+    {
+        // Get handler
+        $handler = $this->getHandler($module);
+
+        if (!$handler) {
+            return [
+                'success' => false,
+                'error' => "No handler found for module '{$module}'",
+                'data' => [],
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0
+            ];
+        }
+
+        // Process request
+        return $handler->process($requestData);
+    }
+
+    /**
+     * Check if a module handler is registered
+     *
+     * @param string $module Module name
+     * @return bool
+     */
+    public function isRegistered(string $module): bool
+    {
+        $module = strtolower($module);
+        $this->ensureModuleRegistration($module);
+        return isset(self::$handlers[$module]);
+    }
+
+    /**
+     * Get registered handler class name for a module.
+     *
+     * @param string $module Module name
+     * @return string|null Handler class name or null when not registered
+     */
+    public function getHandlerClass(string $module): ?string
+    {
+        $module = strtolower($module);
+        $this->ensureModuleRegistration($module);
+        return self::$handlers[$module] ?? null;
+    }
+
+    /**
+     * Get list of all registered modules
+     *
+     * @return array Module names
+     */
+    public function getRegisteredModules(): array
+    {
+        return array_keys(self::$handlers);
+    }
+
+    /**
+     * Register default handlers
+     *
+     * Registers all available DataTable handlers
+     */
+    private function registerDefaultHandlers(): void
+    {
+        // Phase 2 Week 1: Core module handlers (completed)
+        $this->register('listing_customers', CustomersDataTable::class);
+        $this->register('listing_invoices', InvoicesDataTable::class);
+        $this->register('listing_users', UsersDataTable::class);
+        $this->register('listing_departments', DepartmentsDataTable::class);
+
+        // Phase 2 Week 2: Category, Content & Setup handlers (completed)
+        $this->register('listing_categories', CategoriesDataTable::class);
+        $this->register('listing_subcategories', SubcategoriesDataTable::class);
+        $this->register('listing_pages', PagesDataTable::class);
+        $this->register('listing_items', ItemsDataTable::class);
+        $this->register('listing_hscodes', HSCodesDataTable::class);
+        $this->register('listing_roles', RolesDataTable::class);
+        $this->register('listing_company_categories', CompanyCategoriesDataTable::class);
+        $this->register('listing_organizations', OrganizationsDataTable::class);
+        $this->register('listing_setup_sources', SetupSourcesDataTable::class);
+        $this->register('listing_setup_statuses', SetupStatusesDataTable::class);
+        $this->register('listing_modules', ModulesDataTable::class);
+
+        // Phase 2 Week 2: Email & Audit handlers (completed)
+        $this->register('listing_inquiries', InquiriesDataTable::class);
+        $this->register('listing_alerts', AlertsDataTable::class);
+        $this->register('listing_email_providers', EmailProvidersDataTable::class);
+        $this->register('listing_authentication_activity', AuthenticationActivityDataTable::class);
+
+        // Phase 2 Final: Last handlers (completed)
+        $this->register('listing_setup_tags', SetupTagsDataTable::class);
+        $this->register('listing_banned_words', BannedWordsDataTable::class);
+        $this->register('listing_email_history', EmailHistoryDataTable::class);
+        $this->register('listing_email_queue', EmailQueueDataTable::class);
+
+        // Phase 4: Master Data & Configuration handlers
+        $this->register('listing_geo_countries', GeoCountriesDataTable::class);
+        $this->register('listing_geo_states', GeoStatesDataTable::class);
+        $this->register('listing_geo_cities', GeoCitiesDataTable::class);
+        $this->register('listing_category_hs_codes', CategoryHSCodesDataTable::class);
+
+        // Phase 5: Advanced Features & Automation handlers
+        $this->register('listing_system_settings', SystemSettingsDataTable::class);
+
+        // Phase 3 Final: Customer & Payment handlers (completed)
+        $this->register('listing_payment_methods', PaymentMethodsDataTable::class);
+        $this->register('listing_customer_contacts', CustomerContactsDataTable::class);
+        $this->register('listing_customer_documents', CustomerDocumentsDataTable::class);
+        $this->register('listing_customer_addresses', CustomerAddressesDataTable::class);
+
+        // Shipping module listings
+        $this->register('listing_shipping_advices', ShippingAdvicesDataTable::class);
+        $this->register('listing_shipping_invoices', ShippingInvoicesDataTable::class);
+        $this->register('listing_shipping_stocks', ShippingStocksDataTable::class);
+        $this->register('listing_ports', PortsDataTable::class);
+        $this->register('listing_carriers', CarriersDataTable::class);
+        $this->register('listing_consignees', ConsigneesDataTable::class);
+        $this->register('listing_shippers', ShippersDataTable::class);
+
+        // Phase 6: SEO & Utilities
+        $this->register('sitemaps', SitemapsDataTable::class);
+
+        // Security & Spam Prevention
+        $this->register('listing_disposable_email_domains', DisposableEmailDomainsDataTable::class);
+    }
+
+    /**
+     * Load handlers from configuration
+     *
+     * @param array $config Configuration array of handlers
+     * @return void
+     */
+    public function loadFromConfig(array $config): void
+    {
+        $this->registerMultiple($config);
+    }
+
+    /**
+     * Get handler statistics
+     *
+     * @return array Statistics
+     */
+    public function getStatistics(): array
+    {
+        return [
+            'total_handlers' => count(self::$handlers),
+            'registered_modules' => $this->getRegisteredModules()
+        ];
+    }
+
+    /**
+     * Resolve handler class using the listing module naming convention.
+     */
+    private function resolveHandlerClassFromModule(string $module): ?string
+    {
+        if (strpos($module, 'listing_') !== 0) {
+            return null;
+        }
+
+        $baseModule = substr($module, 8);
+        if ($baseModule === '') {
+            return null;
+        }
+
+        $classBase = str_replace(' ', '', ucwords(str_replace('_', ' ', $baseModule)));
+        $handlerClass = 'App\\DataTable\\' . $classBase . 'DataTable';
+
+        if (!class_exists($handlerClass)) {
+            return null;
+        }
+
+        return $handlerClass;
+    }
+
+    /**
+     * Register convention-resolved handlers into the runtime map when available.
+     */
+    private function ensureModuleRegistration(string $module): void
+    {
+        if (isset(self::$handlers[$module])) {
+            return;
+        }
+
+        $resolvedHandlerClass = $this->resolveHandlerClassFromModule($module);
+        if ($resolvedHandlerClass !== null) {
+            $this->register($module, $resolvedHandlerClass);
+        }
+    }
+
+    /**
+     * Load handler class file on demand for convention-based handlers.
+     */
+    private function ensureHandlerClassLoaded(string $handlerClass): void
+    {
+        // Handled by Composer autoloading
+    }
+}

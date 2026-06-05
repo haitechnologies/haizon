@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module                 = 'lead_notes';
@@ -275,7 +277,7 @@ if ($action == "edit_$module" && !empty($note_id) && !empty($lead_id)) {
                                     // ======================================================
                                 ?>
                                     <div class="mb-3">
-                                        <a href="user.php?id=<?php echo $rows['created_by']; ?>"><?php echo getTableAttr('full_name', tbl_users, $rows['created_by']) ?></a> <br />
+                                        <a href="user.php?id=<?php echo $rows['created_by']; ?>"><?php echo getTableAttr('full_name', DB::USERS, $rows['created_by']) ?></a> <br />
                                         <small>Note Added: <?php echo date("d F Y h:i", strtotime($rows['created_at'])); ?></span></small> <br /><br />
                                         <?php echo $rows['notes']; ?>
 

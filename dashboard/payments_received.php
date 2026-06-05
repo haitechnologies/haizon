@@ -1,11 +1,13 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 // =========================================================================
 // ACCOUNTING JOURNAL MANAGER INTEGRATION
 // =========================================================================
-require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
+// Removed legacy require for autoloader compatibility: require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
 require_once(__DIR__ . '/../config/accounting.php');
 
 $module             = 'payments_received';
@@ -62,11 +64,11 @@ if (isset($_REQUEST['post_invoice_id']) && !empty($_REQUEST['post_invoice_id']))
 // if (isset($_POST['invoice_id']))           $invoice_id     = e_s__($_POST['invoice_id']);
 
 
-$invoice_no     = getTableAttr('invoice_no', tbl_invoices, $post_invoice_id);
-$invoice_status = getTableAttr('invoice_status', tbl_invoices, $post_invoice_id);
+$invoice_no     = getTableAttr('invoice_no', DB::INVOICES, $post_invoice_id);
+$invoice_status = getTableAttr('invoice_status', DB::INVOICES, $post_invoice_id);
 
 if (!empty($post_invoice_id)) {
-    $customer_id = getTableAttr('customer_id', tbl_invoices, $post_invoice_id);
+    $customer_id = getTableAttr('customer_id', DB::INVOICES, $post_invoice_id);
 }
 
 /*
@@ -207,27 +209,27 @@ if ($action == "update_$module" && !empty($id)) {
                     // Process Updated Items
                     if (!empty($item_id) && !empty($item_amount_received)) {
 
-                        $update_row = $mysqli->query("UPDATE `" . tbl_payment_received_items . "` SET 
+                        $update_row = $mysqli->query("UPDATE `" . DB::table('payment_received_items') . "` SET 
                                                             invoice_id              = '" . $item_id . "',
                                                             amount_received_on      = '" . $item_amount_received_on . "',
                                                             amount_received         = '" . $item_amount_received . "' 
                                                         WHERE id=$item_id");
 
                         if ($update_row) $updated_row++;
-                        fp__(tbl_payment_received_items, $item_id);
+                        fp__(DB::table('payment_received_items'), $item_id);
 
                         // Process New Items
                     } else if (empty($item_id) && !empty($item_amount_received)) {
 
-                        $insert_row = $mysqli->query("INSERT INTO `" . tbl_payment_received_items . "`(payment_id, invoice_id, amount_received_on, amount_received) VALUES ('" . $payment_id . "', '" . $item_id . "', '" . $item_amount_received_on . "', '" . $item_amount_received . "'); ");
+                        $insert_row = $mysqli->query("INSERT INTO `" . DB::table('payment_received_items') . "`(payment_id, invoice_id, amount_received_on, amount_received) VALUES ('" . $payment_id . "', '" . $item_id . "', '" . $item_amount_received_on . "', '" . $item_amount_received . "'); ");
 
                         if ($insert_row) $inserted_row++;
-                        fp__(tbl_payment_received_items, $mysqli->insert_id);
+                        fp__(DB::table('payment_received_items'), $mysqli->insert_id);
 
                         // Process Deleted Items
                     } else if (!empty($item_id) && empty($item_amount_received)) {
 
-                        $mysqli->query("DELETE FROM `" . tbl_payment_received_items . "` WHERE id=$item_id");
+                        $mysqli->query("DELETE FROM `" . DB::table('payment_received_items') . "` WHERE id=$item_id");
                     }
                     // ---------------------------------------------
 
@@ -261,7 +263,7 @@ if ($action == "update_$module" && !empty($id)) {
 
                     if (!empty($deposit_to) && !empty($ar_account['id'])) {
                         $journal = new AccountingJournalManager($mysqli);
-                        $customer_name = getTableAttr('display_name', tbl_customers, $customer_id);
+                        $customer_name = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
 
                         $journal_entries = array(
                             array(
@@ -376,10 +378,10 @@ if ($action == "update_$module" && !empty($id)) {
                     }
 
                     // SAVE ITEMS
-                    $insert_row = $mysqli->query("INSERT INTO `" . tbl_payment_received_items . "`(payment_id, invoice_id, amount_received_on, amount_received) VALUES ('" . $payment_id . "', '" . $item_id . "', '" . $item_amount_received_on . "', '" . $item_amount_received . "'); ");
+                    $insert_row = $mysqli->query("INSERT INTO `" . DB::table('payment_received_items') . "`(payment_id, invoice_id, amount_received_on, amount_received) VALUES ('" . $payment_id . "', '" . $item_id . "', '" . $item_amount_received_on . "', '" . $item_amount_received . "'); ");
 
                     if ($insert_row) $inserted_row++;
-                    fp__(tbl_payment_received_items, $mysqli->insert_id);
+                    fp__(DB::table('payment_received_items'), $mysqli->insert_id);
                     // -------------------------------------------------------
 
                     // ------------ DEBIT -------------> Specific payment Account (payment ↑)
@@ -406,7 +408,7 @@ if ($action == "update_$module" && !empty($id)) {
 
                     if (!empty($deposit_to) && !empty($ar_account['id'])) {
                         $journal = new AccountingJournalManager($mysqli);
-                        $customer_name = getTableAttr('display_name', tbl_customers, $customer_id);
+                        $customer_name = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
 
                         $journal_entries = array(
                             array(
@@ -481,7 +483,7 @@ if (
     $payment_date       = processDateYtoD($payment_date);
 
     // ------------------ TOTAL ITEMS ------------------
-    $result_payment_items       = $mysqli->query("SELECT * FROM `" . tbl_payment_received_items . "` WHERE payment_id=$id");
+    $result_payment_items       = $mysqli->query("SELECT * FROM `" . DB::table('payment_received_items') . "` WHERE payment_id=$id");
     $total_rows                 = $result_payment_items->num_rows;
 
     if ($total_rows > 0) {
@@ -579,7 +581,7 @@ if (
                                         <div class="col-lg-9">
                                             <?php if (!empty($id) || !empty($post_invoice_id)) { ?>
                                                 <input type="hidden" class="form-control" name="customer_id" id="customer_id" value="<?php echo $customer_id; ?>">
-                                                <input type="text" readonly class="form-control bg-light" name="" id="" value="<?php echo getTableAttr('display_name', tbl_customers, $customer_id); ?>">
+                                                <input type="text" readonly class="form-control bg-light" name="" id="" value="<?php echo getTableAttr('display_name', DB::CUSTOMERS, $customer_id); ?>">
                                             <?php } else { ?>
 
                                                 <select name="customer_id" id="customer_id" class="form-control select" onchange="if(this.value > 0) { window.location.href='?mod=payments_received&customer_id=' + this.value; }">
@@ -587,7 +589,7 @@ if (
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
                                                     $customer_details = '';
-                                                    $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` ORDER BY id DESC");
+                                                    $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                                     while ($rows = $result->fetch_array()) {
                                                         $display_name           = $rows["display_name"];
                                                         // -------------------------------------------------------------------------------------------------
@@ -639,7 +641,7 @@ if (
                                                 <!-- <option value='0'></option> -->
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_payment_methods  . "` WHERE publish=1 ORDER BY payment_method");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_METHODS  . "` WHERE publish=1 ORDER BY payment_method");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -744,7 +746,7 @@ if (
                                     // =============================================================================
 
                                     if (!empty($invoice_id)) {
-                                        $customer_id = getTableAttr('customer_id', tbl_invoices, $invoice_id);
+                                        $customer_id = getTableAttr('customer_id', DB::INVOICES, $invoice_id);
                                     }
 
                                     // --- ADD THIS BLOCK HERE ---
@@ -752,7 +754,7 @@ if (
                                     if ($customer_id > 0) {
                                         // Fetch invoices for this customer (optionally restricted to a single invoice)
                                         $sql_invoices = "SELECT id, invoice_no, invoice_date, grand_total, 
-                                                        (grand_total - IFNULL((SELECT SUM(amount_received) FROM " . tbl_payment_received_items . " WHERE invoice_id = i.id), 0)) as balance_due 
+                                                        (grand_total - IFNULL((SELECT SUM(amount_received) FROM " . DB::table('payment_received_items') . " WHERE invoice_id = i.id), 0)) as balance_due 
                                                         FROM " . $tbl_prefix . "invoices i 
                                                         WHERE customer_id = $customer_id";
 
@@ -816,7 +818,7 @@ if (
 
                                                             <?php
                                                             // Calculate Overdue
-                                                            $payment_term           = getTableAttr('payment_term', tbl_customers, $customer_id);
+                                                            $payment_term           = getTableAttr('payment_term', DB::CUSTOMERS, $customer_id);
                                                             $payment_term_duration  = getTableAttr('payment_term', DB::PAYMENT_TERMS, $payment_term);
                                                             // $display_due_days       = getInvoiceDueDay($invoice_status, $invoice_date, $payment_term_duration);
                                                             // echo $display_due_days;

@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module             = 'invoices';
@@ -202,188 +205,82 @@ if ($action == "update_$module" || $action == "add_$module") {
 */
 if ($action == "update_$module" && !empty($id)) {
 
-    if (empty($customer_id) || $customer_id == 'Please select') {
-        $error_message = 'Please select Customer.';
-    } else if (empty($invoice_date)) {
-    } else {
+    $itemsData = [];
+    for ($invoice_item = 1; $invoice_item <= $total_rows; $invoice_item++) {
+        $index = $invoice_item - 1;
+        $post_item_id       = (isset($_POST['item_id'][$index]) && !empty($_POST['item_id'][$index]) ? (int)$_POST['item_id'][$index] : null);
+        $post_service       = (isset($_POST['service'][$index]) && !empty($_POST['service'][$index]) ? (int)$_POST['service'][$index] : 0);
+        $post_description   = (isset($_POST['description'][$index]) ? (string)$_POST['description'][$index] : '');
+        $post_qty           = (isset($_POST['qty'][$index]) ? (float)$_POST['qty'][$index] : 1.0);
+        $post_rate          = (isset($_POST['rate'][$index]) ? (float)$_POST['rate'][$index] : 0.0);
+        $post_sub_total     = (isset($_POST['sub_total'][$index]) ? (float)$_POST['sub_total'][$index] : 0.0);
+        $post_tax           = (isset($_POST['tax'][$index]) ? (float)$_POST['tax'][$index] : 0.0);
+        $post_tax_amount    = (isset($_POST['tax_amount'][$index]) ? (float)$_POST['tax_amount'][$index] : 0.0);
+        $post_total         = (isset($_POST['total'][$index]) ? (float)$_POST['total'][$index] : 0.0);
 
+        if ($post_service > 0) {
+            $itemsData[] = [
+                'id' => $post_item_id,
+                'service' => $post_service,
+                'description' => $post_description,
+                'qty' => $post_qty,
+                'rate' => $post_rate,
+                'sub_total' => $post_sub_total,
+                'tax' => $post_tax,
+                'tax_amount' => $post_tax_amount,
+                'total' => $post_total,
+            ];
+        }
+    }
+
+    try {
         if (empty($invoice_status)) {
             $invoice_status = getTableAttr('invoice_status', DB::INVOICES, $id);
         }
+        $invoiceService = \App\Core\Container::getInstance()->get(\App\Service\InvoiceService::class);
+        $invoiceService->updateInvoice((int)$id, [
+            'customer_id' => $customer_id,
+            'invoice_date' => $invoice_date,
+            'expiry_date' => $expiry_date,
+            'reference_no' => $reference_no,
+            'warehouse_id' => $warehouse_id,
+            'expected_shipment_date' => $expected_shipment_date,
+            'payment_term' => $payment_term,
+            'shipment_type' => $shipment_type,
+            'sales_person' => $sales_person,
+            'job_reference_no' => $job_reference_no,
+            'master_awb_no' => $master_awb_no,
+            'shipper' => $shipper,
+            'consignee' => $consignee,
+            'origin' => $origin,
+            'destination' => $destination,
+            'no_of_packs' => $no_of_packs,
+            'gross_weight' => $gross_weight,
+            'chargeable_weight' => $chargeable_weight,
+            'volume' => $volume,
+            'terms_and_conditions' => $terms_and_conditions,
+            'grand_subtotal' => $grand_subtotal,
+            'grand_discount_type' => $grand_discount_type,
+            'grand_discount_type_value' => $grand_discount_type_value,
+            'grand_discount_amount' => $grand_discount_amount,
+            'grand_after_discount' => $grand_after_discount,
+            'customer_notes' => $customer_notes,
+            'grand_tax' => $grand_tax,
+            'grand_total' => $grand_total,
+            'publish' => $is_active,
+            'invoice_status' => $invoice_status,
+        ], $itemsData, $activeOrganizationId, (int)$session_user_id);
 
-        if ($grand_subtotal == '')                      $grand_subtotal = '0.00';
-        if ($grand_discount_type == '')                 $grand_discount_type = '0.00';
-        if ($grand_discount_type_value == '')           $grand_discount_type_value = '0.00';
-        if ($grand_discount_amount == '')               $grand_discount_amount = '0.00';
-        if ($grand_after_discount == '')                $grand_after_discount = '0.00';
-        if ($grand_tax == '')                           $grand_tax = '0.00';
-        if ($grand_total == '')                         $grand_total = '0.00';
-
-        $invoice_date         = processDateDtoY($invoice_date);
-        $expiry_date            = (empty($expiry_date) ? '1970-01-01' : processDateDtoY($expiry_date));
-        $expected_shipment_date = (empty($expected_shipment_date) ? '1970-01-01' : processDateDtoY($expected_shipment_date));
-
-        $payment_term       = (empty($payment_term) ? '0' : $payment_term);
-        $sales_person       = (empty($sales_person) ? '0' : $sales_person);
-        $master_awb_no      = (empty($master_awb_no) ? '0' : $master_awb_no);
-        $shipper            = (empty($shipper) ? '0' : $shipper);
-        $consignee          = (empty($consignee) ? '0' : $consignee);
-        $origin             = (empty($origin) ? '0' : $origin);
-        $destination        = (empty($destination) ? '0' : $destination);
-        $no_of_packs        = (empty($no_of_packs) ? '0' : $no_of_packs);
-        $gross_weight       = (empty($gross_weight) ? '0' : $gross_weight);
-        $chargeable_weight  = (empty($chargeable_weight) ? '0' : $chargeable_weight);
-        $volume             = (empty($volume) ? '0' : $volume);
-
-        // ---------------------------------------------
-        // UPDATE 
-        // ---------------------------------------------
-        $update_row = $mysqli->query("
-                                        UPDATE `" . DB::INVOICES . "` SET
-                                            invoice_date		        = '" . $invoice_date . "',
-                                            expiry_date		            = '" . $expiry_date . "',
-                                            customer_id					= '" . $customer_id . "',
-                                            invoice_status		        = '" . $invoice_status . "',
-                                            reference_no		        = '" . $reference_no . "',
-                                            warehouse_id		        = '" . $warehouse_id . "',
-                                            
-                                            expected_shipment_date		= '" . $expected_shipment_date . "',
-                                            payment_term		        = '" . $payment_term . "',
-                                            
-                                            shipment_type		        = '" . $shipment_type . "',
-                                            sales_person		        = '" . $sales_person . "',
-                                            job_reference_no		    = '" . $job_reference_no . "',
-                                            master_awb_no		        = '" . $master_awb_no . "',
-                                            shipper		                = '" . $shipper . "',
-                                            consignee		            = '" . $consignee . "',
-                                            origin		                = '" . $origin . "',
-                                            destination		            = '" . $destination . "',
-                                            no_of_packs		            = '" . $no_of_packs . "',
-                                            gross_weight		        = '" . $gross_weight . "',
-                                            chargeable_weight		    = '" . $chargeable_weight . "',
-                                            volume		                = '" . $volume . "',
-                                            
-                                            customer_notes		        = '" . $customer_notes . "',
-                                            terms_and_conditions		= '" . $terms_and_conditions . "',
-                                            
-                                            grand_subtotal		        = '" . $grand_subtotal . "',
-                                            grand_discount_type		    = '" . $grand_discount_type . "',
-                                            grand_discount_type_value   = '" . $grand_discount_type_value . "',
-                                            grand_discount_amount		= '" . $grand_discount_amount . "',
-                                            grand_after_discount		= '" . $grand_after_discount . "',
-                                            grand_tax		            = '" . $grand_tax . "',
-                                            grand_total		            = '" . $grand_total . "',
-                                            
-                                            publish 					= '" . $is_active . "'
-                                        WHERE id=$id");
-
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            fp__(DB::INVOICES, $id);
-            $invoice_id = $id;
-
-
-            // PROCESS -> JOURNAL ENTRY
-
-            ///////////////////////////////////////////////////////////
-
-            // -- PROCESS ITEMS
-            if ($total_rows > 0) {
-
-                $updated_row    = 0;
-                $inserted_row   = 0;
-
-                for ($invoice_item = 1; $invoice_item <= $total_rows; $invoice_item++) {
-
-                    $index = $invoice_item;
-                    $index = $index - 1;
-
-                    $item_id                        = e_s__($_POST['item_id'][$index]);
-                    $item_service                   = e_s__($_POST['service'][$index]);
-                    $item_description               = e_s__($_POST['description'][$index]);
-                    $item_qty                       = e_s__($_POST['qty'][$index]);
-                    $item_rate                      = e_s__($_POST['rate'][$index]);
-                    $item_sub_total                 = e_s__($_POST['sub_total'][$index]);
-                    $item_tax                       = e_s__($_POST['tax'][$index]);
-                    $item_tax_amount                = e_s__($_POST['tax_amount'][$index]);
-                    $item_total                     = e_s__($_POST['total'][$index]);
-
-
-                    // ---------------------------------------------
-                    // UPDATE ITEMS
-                    // ---------------------------------------------
-
-                    $item_qty           = (($item_qty == '') ? 1 : $item_qty);
-                    $item_rate          = (($item_rate == '') ? 0 : $item_rate);
-                    $item_sub_total     = (($item_sub_total == '') ? 0 : $item_sub_total);
-                    $item_tax           = (($item_tax == '') ? 0 : $item_tax);
-                    $item_tax_amount    = (($item_tax_amount == '') ? 0 : $item_tax_amount);
-                    $item_total         = (($item_total == '') ? 0 : $item_total);
-
-                    // Process Updated Items
-                    if (!empty($item_id) && !empty($item_service)) {
-
-                        $update_row = $mysqli->query("UPDATE `" . tbl_invoice_items . "` SET 
-                                                            service         = '" . $item_service . "',
-                                                            description     = '" . $item_description . "',
-                                                            qty             = '" . $item_qty . "',
-                                                            rate            = '" . $item_rate . "',
-                                                            sub_total       = '" . $item_sub_total . "',
-                                                            tax             = '" . $item_tax . "',
-                                                            tax_amount      = '" . $item_tax_amount . "',
-                                                            total           = '" . $item_total . "' 
-                                                        WHERE id=$item_id");
-
-                        if ($update_row) $updated_row++;
-                        fp__(tbl_invoice_items, $item_id);
-
-                        // Process New Items
-                    } else if (empty($item_id) && !empty($item_service)) {
-
-                        $insert_row = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "`(invoice_id, service, description, qty, rate, sub_total, tax, tax_amount, total) VALUES ('" . $invoice_id . "', '" . $item_service . "', '" . $item_description . "', '" . $item_qty . "', '" . $item_rate . "', '" . $item_sub_total . "', '" . $item_tax . "', '" . $item_tax_amount . "', '" . $item_total . "'); ");
-
-                        if ($insert_row) $inserted_row++;
-                        fp__(tbl_invoice_items, $mysqli->insert_id);
-
-                        // Process Deleted Items
-                    } else if (!empty($item_id) && empty($item_service) && empty($item_rate) && empty($item_tax) && empty($item_total)) {
-
-                        $mysqli->query("DELETE FROM `" . tbl_invoice_items . "` WHERE id=$item_id");
-                    }
-                    // ---------------------------------------------
-
-                } //for 
-
-            }
-            ///////////////////////////////////////////////////////////
-
-            // CHECK IF AT LEAST ONE ITEM IS ADDED
-            if ($updated_row == 0 && $inserted_row == 0) {
-                $success_message = '';
-                $invoice_date   = processDateYtoD($invoice_date);
-                $expiry_date    = processDateYtoD($expiry_date);
-                $error_message  = "No items added. Please add at least one item..";
-            } else {
-
-                if ($save_and_send == 1) {
-                    header("Location:send_email.php?current_module=$module&id=$id");
-                } else {
-                    header("Location:listing_$module.php?success_message=$success_message");
-                }
-            }
+        $success_message = "The $module_caption has been updated successfully.";
+        if ($save_and_send == 1) {
+            header("Location:send_email.php?current_module=$module&id=$id");
+            exit;
         } else {
-            $error_message = "The $module_caption could not be updated. Please try again.";
-            //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
+            header("Location:listing_$module.php?success_message=" . urlencode($success_message));
+            exit;
         }
-
-        // CHECK IF AT LEAST ONE ITEM IS ADDED
-        // if ($inserted_row == 0) {
-        //     $success_message = '';
-        //     $invoice_date = processDateYtoD($invoice_date);
-        //     $error_message = "No items added. Please add at least one item..";
-        // } else {
-        //     header("Location:listing_$module.php?success_message=$success_message");
-        // }
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 
     /*
@@ -394,161 +291,81 @@ if ($action == "update_$module" && !empty($id)) {
 */
 } else if ($action == "add_$module") {
 
-    if (empty($customer_id) || $customer_id == 'Please select') {
-        $error_message = 'Please select Customer.';
-    } else if (empty($invoice_date)) {
-        $error_message = 'Please select Invoice Date.';
-    } else {
+    $itemsData = [];
+    for ($invoice_item = 1; $invoice_item <= $total_rows; $invoice_item++) {
+        $index = $invoice_item - 1;
+        $post_service       = (isset($_POST['service'][$index]) && !empty($_POST['service'][$index]) ? (int)$_POST['service'][$index] : 0);
+        $post_description   = (isset($_POST['description'][$index]) ? (string)$_POST['description'][$index] : '');
+        $post_qty           = (isset($_POST['qty'][$index]) ? (float)$_POST['qty'][$index] : 1.0);
+        $post_rate          = (isset($_POST['rate'][$index]) ? (float)$_POST['rate'][$index] : 0.0);
+        $post_sub_total     = (isset($_POST['sub_total'][$index]) ? (float)$_POST['sub_total'][$index] : 0.0);
+        $post_tax           = (isset($_POST['tax'][$index]) ? (float)$_POST['tax'][$index] : 0.0);
+        $post_tax_amount    = (isset($_POST['tax_amount'][$index]) ? (float)$_POST['tax_amount'][$index] : 0.0);
+        $post_total         = (isset($_POST['total'][$index]) ? (float)$_POST['total'][$index] : 0.0);
 
-        ///////////////////////////////////////////////////////////
+        if ($post_service > 0) {
+            $itemsData[] = [
+                'service' => $post_service,
+                'description' => $post_description,
+                'qty' => $post_qty,
+                'rate' => $post_rate,
+                'sub_total' => $post_sub_total,
+                'tax' => $post_tax,
+                'tax_amount' => $post_tax_amount,
+                'total' => $post_total,
+            ];
+        }
+    }
 
-        // -- PROCESS ITEMS - ITNS
-        if ($total_rows > 0) {
+    try {
+        if (empty($invoice_status)) {
+            $invoice_status = 'draft';
+        }
+        $invoiceService = \App\Core\Container::getInstance()->get(\App\Service\InvoiceService::class);
+        $newInvoice = $invoiceService->createInvoice([
+            'customer_id' => $customer_id,
+            'invoice_date' => $invoice_date,
+            'expiry_date' => $expiry_date,
+            'reference_no' => $reference_no,
+            'warehouse_id' => $warehouse_id,
+            'expected_shipment_date' => $expected_shipment_date,
+            'payment_term' => $payment_term,
+            'shipment_type' => $shipment_type,
+            'sales_person' => $sales_person,
+            'job_reference_no' => $job_reference_no,
+            'master_awb_no' => $master_awb_no,
+            'shipper' => $shipper,
+            'consignee' => $consignee,
+            'origin' => $origin,
+            'destination' => $destination,
+            'no_of_packs' => $no_of_packs,
+            'gross_weight' => $gross_weight,
+            'chargeable_weight' => $chargeable_weight,
+            'volume' => $volume,
+            'terms_and_conditions' => $terms_and_conditions,
+            'grand_subtotal' => $grand_subtotal,
+            'grand_discount_type' => $grand_discount_type,
+            'grand_discount_type_value' => $grand_discount_type_value,
+            'grand_discount_amount' => $grand_discount_amount,
+            'grand_after_discount' => $grand_after_discount,
+            'customer_notes' => $customer_notes,
+            'grand_tax' => $grand_tax,
+            'grand_total' => $grand_total,
+            'publish' => $is_active,
+            'invoice_status' => $invoice_status,
+        ], $itemsData, $activeOrganizationId, (int)$session_user_id);
 
-            $inserted_row = 0;
-
-            for ($invoice_item = 1; $invoice_item <= $total_rows; $invoice_item++) {
-
-                $index = $invoice_item;
-                $index = $index - 1;
-
-                $item_service                   = e_s__($_POST['service'][$index]);
-                $item_description               = e_s__($_POST['description'][$index]);
-                $item_qty                       = e_s__($_POST['qty'][$index]);
-                $item_rate                      = e_s__($_POST['rate'][$index]);
-                $item_sub_total                 = e_s__($_POST['sub_total'][$index]);
-                $item_tax                       = e_s__($_POST['tax'][$index]);
-                $item_tax_amount                = e_s__($_POST['tax_amount'][$index]);
-                $item_total                     = e_s__($_POST['total'][$index]);
-
-
-                if (!empty($item_service)) {
-
-                    // ---------------------------------------------
-                    // SAVE invoice
-                    // ---------------------------------------------
-                    if ($inserted_row == 0) {
-
-                        if ($grand_subtotal == '')                      $grand_subtotal = '0.00';
-                        if ($grand_discount_type == '')                 $grand_discount_type = '0.00';
-                        if ($grand_discount_type_value == '')           $grand_discount_type_value = '0.00';
-                        if ($grand_discount_amount == '')               $grand_discount_amount = '0.00';
-                        if ($grand_after_discount == '')                $grand_after_discount = '0.00';
-                        if ($grand_tax == '')                           $grand_tax = '0.00';
-                        if ($grand_total == '')                         $grand_total = '0.00';
-
-
-                        if (empty($invoice_status)) {
-                            $invoice_status = 'draft';
-                        }
-
-                        $invoice_date        = processDateDtoY($invoice_date);
-                        $expiry_date            = (empty($expiry_date) ? '1970-01-01' : processDateDtoY($expiry_date));
-                        $expected_shipment_date = (empty($expected_shipment_date) ? '1970-01-01' : processDateDtoY($expected_shipment_date));
-
-                        $payment_term       = (empty($payment_term) ? '0' : $payment_term);
-                        $sales_person       = (empty($sales_person) ? '0' : $sales_person);
-                        $master_awb_no      = (empty($master_awb_no) ? '0' : $master_awb_no);
-                        $shipper            = (empty($shipper) ? '0' : $shipper);
-                        $consignee          = (empty($consignee) ? '0' : $consignee);
-                        $origin             = (empty($origin) ? '0' : $origin);
-                        $destination        = (empty($destination) ? '0' : $destination);
-                        $no_of_packs        = (empty($no_of_packs) ? '0' : $no_of_packs);
-                        $gross_weight       = (empty($gross_weight) ? '0' : $gross_weight);
-                        $chargeable_weight  = (empty($chargeable_weight) ? '0' : $chargeable_weight);
-                        $volume             = (empty($volume) ? '0' : $volume);
-
-
-                        $item_qty           = (($item_qty == '') ? 1 : $item_qty);
-                        $item_rate          = (($item_rate == '') ? 0 : $item_rate);
-                        $item_sub_total     = (($item_sub_total == '') ? 0 : $item_sub_total);
-                        $item_tax           = (($item_tax == '') ? 0 : $item_tax);
-                        $item_tax_amount    = (($item_tax_amount == '') ? 0 : $item_tax_amount);
-
-
-
-                        // ======================================================
-                        // invoice NO Auto Generation System
-                        // ======================================================
-
-                        // Build the prefix for this month
-                        $prefix = 'FL-IN' . date('ym');
-
-                        // Get the last invoice number for this month
-                        $sql = "SELECT invoice_no  FROM " . DB::INVOICES . "  WHERE invoice_no LIKE '{$prefix}-%'ORDER BY invoice_no DESC LIMIT 1";
-                        $result = $mysqli->query($sql);
-
-                        if ($row = $result->fetch_assoc()) {
-                            // Extract the serial part after the dash
-                            $last_serial = (int) substr($row['invoice_no'], -4);
-                            $new_serial = $last_serial + 1;
-                        } else {
-                            // First invoice of the month
-                            $new_serial = 1;
-                        }
-
-                        // Build new invoice number with zero padding
-                        $invoice_no = $prefix . '-' . str_pad($new_serial, 4, '0', STR_PAD_LEFT);
-                        // ======================================================
-
-
-                        $insert_row = $mysqli->query("INSERT INTO `" . DB::INVOICES . "`(invoice_no, customer_id, invoice_status, invoice_date, expiry_date, reference_no, warehouse_id, expected_shipment_date, payment_term, shipment_type, sales_person, job_reference_no, master_awb_no, shipper, consignee, origin, destination, no_of_packs, gross_weight, chargeable_weight, volume, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total, publish) VALUES ('" . $invoice_no . "', '" . $customer_id . "', '" . $invoice_status . "',  '" . $invoice_date . "', '" . $expiry_date . "', '" . $reference_no . "', '" . $warehouse_id . "', '" . $expected_shipment_date . "', '" . $payment_term . "', '" . $shipment_type . "', '" . $sales_person . "', '" . $job_reference_no . "', '" . $master_awb_no . "', '" . $shipper . "', '" . $consignee . "', '" . $origin . "', '" . $destination . "', '" . $no_of_packs . "', '" . $gross_weight . "', '" . $chargeable_weight . "', '" . $volume . "', '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $customer_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $is_active . "'); ");
-
-                        $id = $mysqli->insert_id;
-                        // if ($insert_row) {
-                        fp__(DB::INVOICES, $id);
-                        $success_message = "The $module_caption has been saved successfully.";
-                        $invoice_id = $id;
-
-
-                        // PROCESS -> JOURNAL ENTRY
-
-
-                    }
-                    // ---------------------------------------------
-
-
-                    // ---------------------------------------------
-                    // SAVE ITEMS
-                    // ---------------------------------------------
-
-                    $item_qty           = (($item_rate == '') ? 1 : $item_qty);
-                    $item_rate          = (($item_rate == '') ? 0 : $item_rate);
-                    $item_sub_total     = (($item_sub_total == '') ? 0 : $item_sub_total);
-                    $item_tax           = (($item_tax == '') ? 0 : $item_tax);
-                    $item_tax_amount    = (($item_tax_amount == '') ? 0 : $item_tax_amount);
-                    $item_total         = (($item_total == '') ? 0 : $item_total);
-
-                    $insert_row = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "`(invoice_id, service, description, qty, rate, sub_total, tax, tax_amount, total) VALUES ('" . $invoice_id . "', '" . $item_service . "', '" . $item_description . "', '" . $item_qty . "', '" . $item_rate . "', '" . $item_sub_total . "', '" . $item_tax . "', '" . $item_tax_amount . "', '" . $item_total . "'); ");
-
-                    if ($insert_row) $inserted_row++;
-
-                    fp__(tbl_invoice_items, $mysqli->insert_id);
-                    // ---------------------------------------------
-
-                }
-            } //for 
-
-
-            // CHECK IF AT LEAST ONE ITEM IS ADDED
-            if ($inserted_row == 0) {
-                $error_message = "No items added. Please add at least one item..";
-            } else {
-
-                if ($save_and_send == 1) {
-                    header("Location:send_email.php?current_module=$module&id=$id");
-                } else {
-                    header("Location:listing_$module.php?success_message=$success_message");
-                }
-            }
-        } // if
-        ///////////////////////////////////////////////////////////
-        // header("Location:listing_$module.php?success_message=$success_message");
-        // } else {
-        //     $error_message = "The $module_caption could not be saved. Please try again.";
-        //     //header("Location:$module.php?error_message=$error_message");
-        // }
-
+        $id = $newInvoice->id;
+        $success_message = "The $module_caption has been saved successfully.";
+        if ($save_and_send == 1) {
+            header("Location:send_email.php?current_module=$module&id=$id");
+            exit;
+        } else {
+            header("Location:listing_$module.php?success_message=" . urlencode($success_message));
+            exit;
+        }
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 }
 
@@ -566,73 +383,68 @@ if (
     ||
     (!empty($id) && $session_user_id == $created_by)
 ) {
+    try {
+        $invoiceService = \App\Core\Container::getInstance()->get(\App\Service\InvoiceService::class);
+        $invoice = $invoiceService->getInvoice((int)$id, $activeOrganizationId);
 
-    $result = $mysqli->query("SELECT * FROM `" . DB::INVOICES . "` WHERE id=$id");
-    $row = $result->fetch_array();
+        $customer_id            = (string)$invoice->customerId;
+        $invoice_no             = $invoice->invoiceNo;
+        $invoice_status         = $invoice->invoiceStatus;
+        $invoice_date           = $invoice->invoiceDate;
+        $expiry_date            = $invoice->expiryDate;
+        $reference_no           = (string)$invoice->referenceNo;
+        $warehouse_id           = (string)$invoice->warehouseId;
 
-    $customer_id            = s__($row['customer_id']);
-    $invoice_no             = s__($row['invoice_no']);
-    $invoice_status         = s__($row['invoice_status']);
-    $invoice_date           = s__($row['invoice_date']);
-    $expiry_date            = s__($row['expiry_date']);
-    $reference_no           = s__($row['reference_no']);
-    $warehouse_id           = s__($row['warehouse_id']);
+        $expected_shipment_date = (string)$invoice->expectedShipmentDate;
+        $payment_term           = (string)$invoice->paymentTerm;
 
-    $expected_shipment_date = s__($row['expected_shipment_date']);
-    $payment_term           = s__($row['payment_term']);
+        $shipment_type          = (string)$invoice->shipmentType;
+        $sales_person           = (string)$invoice->salesPerson;
+        $job_reference_no       = (string)$invoice->jobReferenceNo;
+        $master_awb_no          = (string)$invoice->masterAwbNo;
+        $shipper                = (string)$invoice->shipper;
+        $consignee              = (string)$invoice->consignee;
+        $origin                 = (string)$invoice->origin;
+        $destination            = (string)$invoice->destination;
+        $no_of_packs            = (string)$invoice->noOfPacks;
+        $gross_weight           = (string)$invoice->grossWeight;
+        $chargeable_weight      = (string)$invoice->chargeableWeight;
+        $volume                 = (string)$invoice->volume;
 
-    $shipment_type          = s__($row['shipment_type']);
-    $sales_person           = s__($row['sales_person']);
-    $job_reference_no       = s__($row['job_reference_no']);
-    $master_awb_no          = s__($row['master_awb_no']);
-    $shipper                = s__($row['shipper']);
-    $consignee              = s__($row['consignee']);
-    $origin                 = s__($row['origin']);
-    $destination            = s__($row['destination']);
-    $no_of_packs            = s__($row['no_of_packs']);
-    $gross_weight           = s__($row['gross_weight']);
-    $chargeable_weight      = s__($row['chargeable_weight']);
-    $volume                 = s__($row['volume']);
+        $customer_notes         = (string)$invoice->customerNotes;
+        $terms_and_conditions   = (string)$invoice->termsAndConditions;
 
-    $customer_notes         = s__($row['customer_notes']);
-    $terms_and_conditions   = s__($row['terms_and_conditions']);
+        $grand_subtotal             = (string)$invoice->grandSubtotal;
+        $grand_discount_type        = (string)$invoice->grandDiscountType;
+        $grand_discount_type_value  = (string)$invoice->grandDiscountTypeValue;
+        $grand_discount_amount      = (string)$invoice->grandDiscountAmount;
+        $grand_after_discount       = (string)$invoice->grandAfterDiscount;
+        $grand_tax                  = (string)$invoice->grandTax;
+        $grand_total                = (string)$invoice->grandTotal;
 
-    $grand_subtotal             = s__($row['grand_subtotal']);
-    $grand_discount_type        = s__($row['grand_discount_type']);
-    $grand_discount_type_value  = s__($row['grand_discount_type_value']);
-    $grand_discount_amount      = s__($row['grand_discount_amount']);
-    $grand_after_discount       = s__($row['grand_after_discount']);
-    $grand_tax                  = s__($row['grand_tax']);
-    $grand_total                = s__($row['grand_total']);
+        $is_active = $invoice->publish ? 1 : 0;
 
-    $is_active = s__($row['publish']);
+        $invoice_date               = processDateYtoD($invoice_date);
+        $expiry_date                = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
+        $expected_shipment_date     = ($expected_shipment_date == '1970-01-01' ? '' : processDateDtoY($expected_shipment_date));
 
-    $invoice_date               = processDateYtoD($invoice_date);
-    $expiry_date                = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
-    $expected_shipment_date     = ($expected_shipment_date == '1970-01-01' ? '' : processDateDtoY($expected_shipment_date));
+        // Retrieve items
+        $invoiceItems = $invoiceService->getInvoiceItems((int)$id, $activeOrganizationId);
+        $total_rows = count($invoiceItems);
 
-
-    // ------------------ TOTAL ITEMS ------------------
-    $result_invoice_items     = $mysqli->query("SELECT * FROM `" . tbl_invoice_items . "` WHERE invoice_id=$id");
-    $total_rows                 = $result_invoice_items->num_rows;
-
-
-    if ($total_rows > 0) {
-        while ($row_invoice_items = $result_invoice_items->fetch_array()) {
-
-            array_push($item_id_arr,                $row_invoice_items['id']);
-            array_push($service_arr,                $row_invoice_items['service']);
-            array_push($description_arr,            $row_invoice_items['description']);
-            array_push($qty_arr,                    $row_invoice_items['qty']);
-            array_push($rate_arr,                   $row_invoice_items['rate']);
-            array_push($sub_total_arr,              $row_invoice_items['sub_total']);
-            // array_push($discount_type_arr,          $row_invoice_items['discount_type']);
-            // array_push($discount_type_value_arr,    $row_invoice_items['discount_type_value']);
-            // array_push($discount_amount_arr,        $row_invoice_items['discount_amount']);
-            array_push($tax_arr,                    $row_invoice_items['tax']);
-            array_push($tax_amount_arr,             $row_invoice_items['tax_amount']);
-            array_push($total_arr,                  $row_invoice_items['total']);
+        foreach ($invoiceItems as $item) {
+            array_push($item_id_arr,                $item->id);
+            array_push($service_arr,                $item->service);
+            array_push($description_arr,            $item->description);
+            array_push($qty_arr,                    $item->qty);
+            array_push($rate_arr,                   $item->rate);
+            array_push($sub_total_arr,              $item->subTotal);
+            array_push($tax_arr,                    $item->tax);
+            array_push($tax_amount_arr,             $item->taxAmount);
+            array_push($total_arr,                  $item->total);
         }
+    } catch (\Throwable $e) {
+        $error_message = $e->getMessage();
     }
 }
 
@@ -742,8 +554,8 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $customer_details = '';
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` WHERE is_active=1 AND approved=1 ORDER BY id DESC");
-                                                // $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` ORDER BY id DESC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE is_active=1 AND approved=1 ORDER BY id DESC");
+                                                // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // $display_name           = $rows["display_name"];
                                                     // -------------------------------------------------------------------------------------------------
@@ -795,7 +607,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'>Please select</option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_organizations  . "` WHERE is_active=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::ORGANIZATIONS  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -845,7 +657,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="sales_person" id="sales_person" class="form-select">
                                                 <option value='0'>Please select</option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_organizations  . "` WHERE is_active=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::ORGANIZATIONS  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -897,7 +709,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="shipper" id="shipper" class="form-select">
                                                 <option value='0'>Please select</option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_shippers  . "` WHERE is_active=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::SHIPPERS  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $shipper_name = $rows["shipper_name"];
                                                 ?>
@@ -916,7 +728,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="consignee" id="consignee" class="form-select">
                                                 <option value='0'>Please select</option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_consignees  . "` WHERE is_active=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $consignee_name = $rows["consignee_name"];
                                                 ?>
@@ -1063,7 +875,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                             <select class="form-select item-selector" name="service[]" id="service<?php echo $invoice_item; ?>" data-item-id="<?php echo $invoice_item; ?>">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . tbl_items . "` WHERE is_active=1 AND item_type='services' ORDER BY item_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE is_active=1 AND item_type='services' ORDER BY item_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $service_id = $rows['id'];
                                                                 ?>

@@ -1,6 +1,9 @@
 <?php
+
+use App\Core\DB;
+use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 $module = 'invoices';
 $module_caption = 'Invoice';
@@ -83,39 +86,27 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
     } else {
         $invoiceId = $idResult['value'];
         
-        // IDOR PROTECTION: Check ownership (unless system admin)
-        $canDelete = has_full_access();
-        if (!$canDelete) {
-            $canDelete = checkOwnership($tbl_name, $invoiceId, 'created_by');
-        }
-        
-        if (!$canDelete) {
-            $error_message = "You do not have permission to delete this invoice";
-            log_error("IDOR attempt: User $session_user_id tried to delete invoice $invoiceId", 'WARNING', __FILE__, __LINE__);
-        } else {
-            // Perform cascading delete with prepared statements
-            // 1. Delete invoice items first
-            $stmt1 = $mysqli->prepare("DELETE FROM `" . DB::INVOICE_ITEMS . "` WHERE invoice_id=?");
-            $stmt1->bind_param("i", $invoiceId);
-            $stmt1->execute();
-            $stmt1->close();
+        try {
+            $invoiceService = \App\Core\Container::getInstance()->get(\App\Service\InvoiceService::class);
+            $invoice = $invoiceService->getInvoice($invoiceId, $activeOrganizationId);
+
+            // IDOR PROTECTION: Check ownership (unless system admin / full access)
+            $canDelete = has_full_access() || ($invoice->createdBy === (int)$session_user_id);
             
-            // 2. Then delete invoice
-            $stmt2 = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id=?");
-            $stmt2->bind_param("i", $invoiceId);
-            
-            if ($stmt2->execute()) {
-                if ($stmt2->affected_rows > 0) {
+            if (!$canDelete) {
+                $error_message = "You do not have permission to delete this invoice";
+                log_error("IDOR attempt: User $session_user_id tried to delete invoice $invoiceId", 'WARNING', __FILE__, __LINE__);
+            } else {
+                if ($invoiceService->deleteInvoice($invoiceId, $activeOrganizationId)) {
                     $success_message = "$module_caption Deleted Successfully.";
-                    header("Location:listing_$module.php?page=$page&success_message=$success_message");
+                    header("Location:listing_$module.php?page=$page&success_message=" . urlencode($success_message));
+                    exit;
                 } else {
                     $error_message = "Could not delete record. It may have already been deleted.";
                 }
-            } else {
-                $error_message = "Database error: " . $stmt2->error;
-                log_error("Delete failed for invoice $invoiceId: " . $stmt2->error, 'ERROR', __FILE__, __LINE__);
             }
-            $stmt2->close();
+        } catch (\Throwable $e) {
+            $error_message = $e->getMessage();
         }
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Core\DeletionManager;
 /**
  * HS Codes Listing Page (Redesigned)
  * 

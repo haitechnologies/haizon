@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\DataTable;
+
+use App\Core\DB;
+use App\Helper\ActionButtonHelper;
+
+class ItemsDataTable extends BaseDataTable
+{
+    protected $table = DB::ITEMS;
+    protected $searchFields = ['item_name'];
+    protected $sortableColumns = [
+        0 => 'id', 1 => 'item_name', 2 => 'unit_price', 3 => 'created_at', 4 => 'id'
+    ];
+
+    protected function formatRow($row, $requestData = [])
+    {
+        $id = (int)$row['id'];
+        $itemName = $row['item_name'] ?? '';
+        $unitPrice = (float)($row['unit_price'] ?? 0);
+        $createdAt = $row['created_at'] ?? '';
+
+        return [
+            $id,
+            htmlspecialchars($itemName),
+            number_format($unitPrice, 2),
+            date('d M Y', strtotime($createdAt)),
+            $this->getActionButtons($id, 'items')
+        ];
+    }
+
+    protected function getActionButtons($id, $module)
+    {
+        $buttons = [];
+        if (function_exists('granted_') && granted_('edit', $module)) {
+            $buttons[] = ActionButtonHelper::editButton($id, 'items.php', $module, 'Edit', false);
+        }
+        if (function_exists('granted_') && granted_('delete', $module)) {
+            $buttons[] = ActionButtonHelper::deleteButton($id, $module);
+        }
+        return implode(' ', array_filter($buttons));
+    }
+}

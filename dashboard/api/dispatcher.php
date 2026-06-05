@@ -21,6 +21,69 @@ startDashboardSession();
 require_once('../../config/globals.php');
 require_once('../../config/database.php');
 require_once('../admin_elements/error_logger.php');
+
+// Register custom error/exception/shutdown handlers for API (returning JSON on exceptions/fatals)
+if (function_exists('custom_error_handler')) {
+    set_error_handler('custom_error_handler');
+}
+
+// Custom JSON exception handler for API dispatcher
+set_exception_handler(function (\Throwable $exception) {
+    // Log the exception first
+    $context = backend_runtime_log_context([
+        'exception_class' => get_class($exception),
+        'trace_depth' => count($exception->getTrace())
+    ]);
+    
+    log_error(
+        'Exception: ' . $exception->getMessage(),
+        'ERROR',
+        $exception->getFile(),
+        $exception->getLine(),
+        $context
+    );
+    
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+    }
+    
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Internal Server Error',
+        'timestamp' => date('Y-m-d H:i:s')
+    ]);
+    exit;
+});
+
+// Custom JSON fatal error shutdown handler for API dispatcher
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        $context = backend_runtime_log_context(['error_type' => $error['type']]);
+        
+        log_error(
+            'Fatal Error: ' . $error['message'],
+            'CRITICAL',
+            $error['file'],
+            $error['line'],
+            $context
+        );
+        
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+            http_response_code(500);
+        }
+        
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Internal Server Error',
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        exit;
+    }
+});
+
 require_once('BaseAPI.php');
 require_once('ItemAPI.php');
 require_once('CustomerAPI.php');
@@ -92,7 +155,7 @@ class APIDispatcher {
             
             $handler->$methodName();
             
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             log_error('[API Dispatch Error] ' . $e->getMessage(), 'ERROR', $e->getFile(), $e->getLine(), [
                 'module' => 'api_dispatcher',
                 'module_slug' => 'api',

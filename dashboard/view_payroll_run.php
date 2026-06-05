@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'payroll_runs';
 $module_caption = 'View Payroll Run';
 
@@ -187,7 +189,7 @@ $total_net = $run['total_net'];
                                         u.full_name,
                                         d.department
                                     FROM `" . DB::PAYSLIPS . "` ps
-                                    INNER JOIN `" . tbl_users . "` u ON ps.employee_id = u.id
+                                    INNER JOIN `" . DB::USERS . "` u ON ps.employee_id = u.id
                                     LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id
                                     WHERE ps.payroll_run_id = $payroll_run_id
                                     ORDER BY u.full_name ASC

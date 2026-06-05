@@ -1,10 +1,24 @@
 <?php
+
+use App\Core\DB;
 // Sync hai_permissions for all roles based on existing permission patterns per role.
 // - Removes orphaned rows (module/permission no longer exists).
 // - Inserts missing rows for permissions the role already uses elsewhere.
 
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../classes/DB.php';
+require_once __DIR__ . '/admin_elements/error_logger.php';
+
+// Register custom error/exception/shutdown handlers for CLI execution
+if (function_exists('custom_error_handler')) {
+    set_error_handler('custom_error_handler');
+}
+if (function_exists('custom_exception_handler')) {
+    set_exception_handler('custom_exception_handler');
+}
+if (function_exists('handle_fatal_error')) {
+    register_shutdown_function('handle_fatal_error');
+}
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
 
 $now = date('Y-m-d H:i:s');
 

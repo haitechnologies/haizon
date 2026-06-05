@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'leads';
@@ -126,7 +128,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
                     <?php
                     // ------------------------------------------------------------------------------------------------
-                    $result = $mysqli->query("SELECT * FROM `" . tbl_setup_statuses . "` WHERE publish=1 AND status_type='leads' ORDER BY status LIMIT 50");
+                    $result = $mysqli->query("SELECT * FROM `" . DB::SETUP_STATUSES . "` WHERE publish=1 AND status_type='leads' ORDER BY status LIMIT 50");
                     while ($rows = $result->fetch_array()) {
                         $status = $rows['id'];
                         // ------------------------------------------------------------------------------------------------

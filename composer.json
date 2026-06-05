@@ -7,7 +7,9 @@
         "endroid/qr-code": "^3.2",
         "smalot/pdfparser": "^2.12",
         "vlucas/phpdotenv": "5.6",
-        "stripe/stripe-php": "^13.0"
+        "stripe/stripe-php": "^13.0",
+        "psr/container": "^2.0",
+        "phpmailer/phpmailer": "^6.9"
     },
     "autoload": {
         "psr-4": {
@@ -16,5 +18,9 @@
     },
     "scripts": {
         "check-links": "php scripts/check_broken_links.php"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.2",
+        "squizlabs/php_codesniffer": "^4.0"
     }
 }

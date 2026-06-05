@@ -69,7 +69,7 @@ const UAE_STATES = [
 
 /**
  * Get UAE state name by ID
- * Replaces: getTableAttr('state_name', tbl_geo_states, $state_id)
+ * Replaces: getTableAttr('state_name', DB::GEO_STATES, $state_id)
  * 
  * @param int $state_id
  * @return string
@@ -92,7 +92,7 @@ function getUAEStateNameAr($state_id) {
 
 /**
  * Get UAE country name
- * Replaces: getTableAttr('country_name', tbl_geo_countries, $country_id)
+ * Replaces: getTableAttr('country_name', DB::GEO_COUNTRIES, $country_id)
  * 
  * @param int $country_id
  * @return string
@@ -114,7 +114,7 @@ function getUAECountryNameAr($country_id = null) {
 
 /**
  * Get UAE country alpha3 code
- * Replaces: getTableAttr('alpha3_code', tbl_geo_countries, $country_id)
+ * Replaces: getTableAttr('alpha3_code', DB::GEO_COUNTRIES, $country_id)
  * 
  * @param int $country_id
  * @return string

@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 Roles::requireAdminAccess();
 
@@ -47,7 +50,7 @@ if ($action == "update_$module" || $action == "add_$module") {
 $permissions_arr = array();
 
 
-$result = $mysqli->query("SELECT * FROM `" . tbl_modules . "` ORDER BY module_name");
+$result = $mysqli->query("SELECT * FROM `" . DB::MODULES . "` ORDER BY module_name");
 while ($row = $result->fetch_array()) {
 
     $module_id         = $row['id'];
@@ -89,7 +92,7 @@ if ($action == "update_$module" && !empty($id)) {
             fp__($tbl_name, $id);
 
             // Delete old permissions using prepared statement
-            $stmt = $mysqli->prepare("DELETE FROM " . tbl_permissions . " WHERE role_id = ?");
+            $stmt = $mysqli->prepare("DELETE FROM " . DB::PERMISSIONS . " WHERE role_id = ?");
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $stmt->close();
@@ -97,7 +100,7 @@ if ($action == "update_$module" && !empty($id)) {
             // ---------------------------------------------------------------------------------
             // ------------------------- GRANTED PERMISSIONS -----------------------------------
             // ---------------------------------------------------------------------------------
-            $result = $mysqli->query("SELECT * FROM `" . tbl_modules . "` ORDER BY module_name");
+            $result = $mysqli->query("SELECT * FROM `" . DB::MODULES . "` ORDER BY module_name");
             while ($row = $result->fetch_array()) {
 
                 $module_id         = $row['id'];
@@ -112,7 +115,7 @@ if ($action == "update_$module" && !empty($id)) {
                         $granted_permission = intval(e_s__($value)); // Sanitize to integer
                         
                         // Use prepared statement to prevent SQL injection
-                        $stmt = $mysqli->prepare("INSERT INTO " . tbl_permissions . " (role_id, permission_id, module_id) VALUES (?, ?, ?)");
+                        $stmt = $mysqli->prepare("INSERT INTO " . DB::PERMISSIONS . " (role_id, permission_id, module_id) VALUES (?, ?, ?)");
                         $stmt->bind_param('iii', $id, $granted_permission, $module_id);
                         $stmt->execute();
                         $insert_id = $stmt->insert_id;
@@ -154,7 +157,7 @@ if ($action == "update_$module" && !empty($id)) {
             // ---------------------------------------------------------------------------------
             // ------------------------- GRANTED PERMISSIONS -----------------------------------
             // ---------------------------------------------------------------------------------
-            $result = $mysqli->query("SELECT * FROM `" . tbl_modules . "` ORDER BY module_name");
+            $result = $mysqli->query("SELECT * FROM `" . DB::MODULES . "` ORDER BY module_name");
             while ($row = $result->fetch_array()) {
 
                 $module_id      = $row['id'];
@@ -169,7 +172,7 @@ if ($action == "update_$module" && !empty($id)) {
                         $granted_permission = intval(e_s__($value)); // Sanitize to integer
                         
                         // Use prepared statement to prevent SQL injection
-                        $stmt = $mysqli->prepare("INSERT INTO " . tbl_permissions . " (role_id, permission_id, module_id) VALUES (?, ?, ?)");
+                        $stmt = $mysqli->prepare("INSERT INTO " . DB::PERMISSIONS . " (role_id, permission_id, module_id) VALUES (?, ?, ?)");
                         $stmt->bind_param('iii', $id, $granted_permission, $module_id);
                         $stmt->execute();
                         $insert_id = $stmt->insert_id;
@@ -215,7 +218,7 @@ if (!empty($id)) {
     // --------------------------------------------------------------------------
     // -------------------- POPULATE PERMISSIONS --------------------------------
     // --------------------------------------------------------------------------
-    $result_permissions         = $mysqli->query("SELECT * FROM `" . tbl_permissions . "` WHERE role_id=$id");
+    $result_permissions         = $mysqli->query("SELECT * FROM `" . DB::PERMISSIONS . "` WHERE role_id=$id");
     while ($row_permissions     = $result_permissions->fetch_array()) {
         array_push($permissions_arr,        $row_permissions['permission_id']);
     }
@@ -341,7 +344,7 @@ if (!empty($id)) {
                         <div class="row" id="modulesContainer">
 
                         <?php
-                        $result = $mysqli->query("SELECT * FROM `" . tbl_modules . "` ORDER BY module_name");
+                        $result = $mysqli->query("SELECT * FROM `" . DB::MODULES . "` ORDER BY module_name");
                         while ($row = $result->fetch_array()) {
                             $module_id         = $row['id'];
                             $module_name     = $row['module_name'];
@@ -363,7 +366,7 @@ if (!empty($id)) {
                                         <div class="permission-list">
 
                                         <?php
-                                        $result_         = $mysqli->query("SELECT * FROM `" . tbl_module_permissions . "` WHERE module_id=$module_id  ORDER BY permission_name");
+                                        $result_         = $mysqli->query("SELECT * FROM `" . DB::MODULE_PERMISSIONS . "` WHERE module_id=$module_id  ORDER BY permission_name");
                                         while ($row_     = $result_->fetch_array()) {
                                             $permission_id         =  $row_['id'];
                                             $permission_name     =  str_ireplace('_', '', $row_['permission_name']);

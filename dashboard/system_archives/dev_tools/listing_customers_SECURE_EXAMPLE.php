@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\InputValidator;
 /**
  * EXAMPLE: Secure Customer Management Page
  * 
@@ -20,7 +23,7 @@
 // STEP 1: Include Dependencies
 // ============================================================================
 include 'admin_elements/admin_header.php';
-require_once __DIR__ . '/../classes/InputValidator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
 
 // ============================================================================
 // STEP 2: Define Module & Table

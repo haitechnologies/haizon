@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 $module = 'salary_structures';
 $module_caption = 'Salary Structure';
 $tbl_name = DB::SALARY_STRUCTURES;
@@ -84,7 +86,7 @@ $employee_department = '';
 if ($employee_id > 0) {
     $emp_result = $mysqli->query("
         SELECT u.full_name, d.department
-        FROM `" . tbl_users . "` u
+        FROM `" . DB::USERS . "` u
         LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id
         WHERE u.id = $employee_id
     ");
@@ -178,7 +180,7 @@ if ($employee_id > 0) {
                                     <?php
                                     $res = $mysqli->query("
                                         SELECT u.id, u.full_name, d.department
-                                        FROM `" . tbl_users . "` u
+                                        FROM `" . DB::USERS . "` u
                                         LEFT JOIN `" . DB::DEPARTMENTS . "` d ON u.department_id = d.id
                                         WHERE u.id > 1 AND u.is_active = 1
                                         ORDER BY u.full_name ASC

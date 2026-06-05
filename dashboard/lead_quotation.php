@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'quotations';
@@ -519,7 +521,7 @@ if ($total_rows == 0)           $total_rows = 1;
 
                                         <tr>
                                             <td>
-                                                <div class="fw-bold"><?php echo getTableAttr('item_name', tbl_items, $service_arr[$index]); ?></div>
+                                                <div class="fw-bold"><?php echo getTableAttr('item_name', DB::ITEMS, $service_arr[$index]); ?></div>
                                                 <span class="text-muted">
                                                     <?php
                                                     // ----------------------------------------------

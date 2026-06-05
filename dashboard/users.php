@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module             = 'users';
@@ -33,47 +36,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-/*
-|--------------------------------------------------------------------------|
-|--------------------------------------------------------------------------|
-|--------------------------------------------------------------------------|
-*/
+use App\Core\Container;
+use App\Service\UserService;
+use App\Exception\ValidationException;
+use App\Exception\NotFoundException;
 
-$role_id = getTableAttr('role_id', tbl_users, $id);
+$container = Container::getInstance();
+$userService = $container->get(UserService::class);
 
-if (Roles::hasFullAccess($role_id)) {
-    header("Location:listing_users.php?error_message=Access Denied to edit/update Super Admin Users. Super Admin can update Information from My Profile Link.");
+$role_id_check = getTableAttr('role_id', DB::USERS, $id);
+
+if (Roles::hasFullAccess((int)$role_id_check)) {
+    flash_error("Super Admin accounts cannot be modified from this interface. To edit your own profile, please use the 'My Profile' menu.");
+    header("Location:listing_users.php");
+    exit;
 }
 
-
-if (isset($_POST['can_access_system']))                     $can_access_system     = 1;
-else $can_access_system = 0;
-
-if (isset($_POST['is_active']))                               $is_active     = 1;
-else $is_active = 0;
-
-
-/*
-|--------------------------------------------------------------------------
-| 	GET ALL VARIABLES ADD/UPDATE
-|--------------------------------------------------------------------------
-|
-*/
-if ($action == "update_$module" || $action == "add_$module") {
-
-    $role_id                = e_s__($_POST['role_id']);
-
-    $full_name              = e_s__($_POST['full_name']);
-    $email                  = e_s__($_POST['email']);
-    $password               = e_s__($_POST['password']);
-    $contact1               = e_s__($_POST['contact1']);
-    $contact2               = e_s__($_POST['contact2']);
-    $address                = e_s__($_POST['address']);
-    $dob                    = e_s__($_POST['dob']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $can_access_system = isset($_POST['can_access_system']) ? 1 : 0;
+    $is_active = isset($_POST['is_active']) ? 1 : 0;
 } else {
+    $can_access_system = 1;
+    $is_active = 0;
+}
 
+if ($action == "update_$module" || $action == "add_$module") {
+    $role_id                = $_POST['role_id'] ?? '';
+    $full_name              = $_POST['full_name'] ?? '';
+    $email                  = $_POST['email'] ?? '';
+    $password               = $_POST['password'] ?? '';
+    $contact1               = $_POST['contact1'] ?? '';
+    $contact2               = $_POST['contact2'] ?? '';
+    $address                = $_POST['address'] ?? '';
+    $dob                    = $_POST['dob'] ?? '';
+} else {
     $role_id                = '';
-
     $full_name              = '';
     $email                  = '';
     $password               = '';
@@ -81,133 +78,85 @@ if ($action == "update_$module" || $action == "add_$module") {
     $contact2               = '';
     $address                = '';
     $dob                    = '';
-    $can_access_system      = 1;
 }
 
-if (empty($dob)) $dob = '01-01-1970';
-
-
-/*
-|--------------------------------------------------------------------------
-| 	UPDATE
-|--------------------------------------------------------------------------
-|
-*/
 if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
-
-    if (empty($role_id) || $role_id == 'Please select') {
-        $error_message = 'Please select role.';
-    } else if (empty($full_name)) {
-        $error_message = 'Full name is mandatory.';
-    } else if (empty($email)) {
-        $error_message = 'Email is mandatory.';
-    } else if (checkDuplicateRow($tbl_name, 'email', $email) && $email != getTableAttr('email', $tbl_name, $id)) {
-        $error_message = 'Duplicate Email. Please enter different.';
-    } else if (!empty($password) && strlen($password) <= 5) {
-        $error_message = 'Password lenght must be between 6 - 20 chars.';
-    } else if (empty($contact1)) {
-        $error_message = 'Contact 1 is mandatory.';
-    } else {
-
-        $dob = processDateDtoY($dob);
-
-        if (!empty($password))
-            $mysqli->query("UPDATE `$tbl_name` SET password = '" . password_hash($password, PASSWORD_DEFAULT) . "' WHERE id=$id");
-
-        /* ---------------------- QUERY ---------------------- */
-        $update_row = $mysqli->query("
-										UPDATE `$tbl_name` SET
-
-                                            role_id				        = '" . $role_id . "',
-
-											full_name				    = '" . $full_name . "',
-											email						= '" . $email . "',
-											contact1					= '" . $contact1 . "',
-											contact2					= '" . $contact2 . "',
-											address						= '" . $address . "',
-											dob							= '" . $dob . "',
-											can_access_system 		    = '" . $can_access_system . "',
-											is_active 					= '" . $is_active . "'
-										WHERE id=$id");
-
-        if ($update_row) {
-            $success_message = "The $module_caption has been updated successfully.";
-            fp__($tbl_name, $id);
-            header("Location:listing_$module.php?success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be updated. Please try again.";
-            //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
-        }
+    try {
+        $data = [
+            'role_id' => $role_id,
+            'full_name' => $full_name,
+            'email' => $email,
+            'password' => $password,
+            'contact1' => $contact1,
+            'contact2' => $contact2,
+            'address' => $address,
+            'dob' => $dob,
+            'can_access_system' => $can_access_system === 1,
+            'is_active' => $is_active === 1,
+        ];
+        $userService->update((int)$id, $data);
+        $success_message = "Employee profile updated successfully.";
+        fp__($tbl_name, $id);
+        flash_success($success_message);
+        header("Location:listing_$module.php");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+        flash_error($error_message);
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+        flash_error($error_message);
+    } catch (\Throwable $e) {
+        $error_message = "Unable to update employee profile. Please review the form and try again.";
+        flash_error($error_message);
     }
-
-    /*
-|--------------------------------------------------------------------------
-| 	ADD
-|--------------------------------------------------------------------------
-|
-*/
-} else if ($action == "add_$module") {
-
-    if (empty($role_id) || $role_id == 'Please select') {
-        $error_message = 'Please select role.';
-    } else if (empty($full_name)) {
-        $error_message = 'Full name is mandatory.';
-    } else if (empty($email)) {
-        $error_message = 'Email is mandatory.';
-    } else if (checkDuplicateRow($tbl_name, 'email', $email) && $email != getTableAttr('email', $tbl_name, $id)) {
-        $error_message = 'Duplicate Email. Please enter different.';
-    } else if (!empty($password) && strlen($password) <= 5) {
-        $error_message = 'Password lenght must be between 6 - 20 chars.';
-    } else if (empty($contact1)) {
-        $error_message = 'Contact 1 is mandatory.';
-    } else {
-
-        $dob = processDateDtoY($dob);
-
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(role_id, full_name, email, contact1, contact2, address, dob, can_access_system) VALUES ('" . $role_id . "', '" . $full_name . "', '" . $email . "', '" . $contact1 . "', '" . $contact2 . "', '" . $address . "', '" . $dob . "', '" . $can_access_system . "'); ");
-
-        if ($insert_row) {
-            $id = $mysqli->insert_id;
-            $success_message = "The $module_caption has been saved successfully.";
-            fp__($tbl_name, $id);
-
-            if (!empty($password))
-                $mysqli->query("UPDATE `$tbl_name` SET password = '" . password_hash($password, PASSWORD_DEFAULT) . "' WHERE id=$id");
-
-            header("Location:listing_$module.php?success_message=$success_message");
-        } else {
-            $error_message = "The $module_caption could not be saved. Please try again.";
-            //header("Location:$module.php?error_message=$error_message");
-        }
+} else if ($action == "add_$module" && granted('create', $module_id)) {
+    try {
+        $data = [
+            'role_id' => $role_id,
+            'full_name' => $full_name,
+            'email' => $email,
+            'password' => $password,
+            'contact1' => $contact1,
+            'contact2' => $contact2,
+            'address' => $address,
+            'dob' => $dob,
+            'can_access_system' => $can_access_system === 1,
+            'is_active' => $is_active === 1,
+        ];
+        $newUser = $userService->create($data, (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0));
+        $id = $newUser->id;
+        fp__($tbl_name, $id);
+        $success_message = "Employee account created successfully.";
+        flash_success($success_message);
+        header("Location:listing_$module.php");
+        exit;
+    } catch (ValidationException $e) {
+        $error_message = current($e->getErrors());
+        flash_error($error_message);
+    } catch (\Throwable $e) {
+        $error_message = "Unable to create employee account. Please review the form and try again.";
+        flash_error($error_message);
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| EDIT
-|--------------------------------------------------------------------------
-|
-*/
 if (!empty($id)) {
-
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
-    $row = $result->fetch_array();
-
-    $role_id                = s__($row['role_id']);
-
-    $full_name              = s__($row['full_name']);
-    $email                  = s__($row['email']);
-    $password               = s__($row['password']);
-    $contact1               = s__($row['contact1']);
-    $contact2               = s__($row['contact2']);
-    $address                = s__($row['address']);
-
-    $dob                    = s__($row['dob']);
-    $dob                    = processDateYtoD($dob);
-
-    $can_access_system      = s__($row['can_access_system']);
-    $is_active              = s__($row['is_active']);
+    try {
+        $user = $userService->getById((int)$id);
+        $role_id                = (string)$user->roleId;
+        $full_name              = s__($user->fullName);
+        $email                  = s__($user->email);
+        $password               = s__($user->password ?? '');
+        $contact1               = s__($user->contact1 ?? '');
+        $contact2               = s__($user->contact2 ?? '');
+        $address                = s__($user->address ?? '');
+        $dob                    = $user->dob ? processDateYtoD($user->dob) : '';
+        $can_access_system      = $user->canAccessSystem ? 1 : 0;
+        $is_active              = $user->isActive ? 1 : 0;
+    } catch (NotFoundException $e) {
+        $error_message = $e->getMessage();
+        flash_error($error_message);
+    }
 }
 
 
@@ -291,7 +240,7 @@ if (!empty($id)) {
                                         <select class="form-select" name="role_id" id="role_id">
                                             <option value='0'>Please select</option>
                                             <?php
-                                            $result_roles = $mysqli->query("SELECT * FROM `" . tbl_roles  . "` WHERE is_active=1 AND id > 2 ORDER BY role_name ASC");
+                                            $result_roles = $mysqli->query("SELECT * FROM `" . DB::ROLES  . "` WHERE is_active=1 AND id > 2 ORDER BY role_name ASC");
                                             while ($rows_roles = $result_roles->fetch_array()) {
                                                 // $role        = s__($rows_roles['role
                                             ?>

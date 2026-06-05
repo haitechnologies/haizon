@@ -1,9 +1,24 @@
 <?php
+
+use App\Core\DB;
 require_once __DIR__ . '/../config/session.php';
 startDashboardSession();
 header("Content-Type: text/html; charset=utf-8");
 require('../config/globals.php');
 require('../config/database.php');
+include('admin_elements/error_logger.php');
+
+// Register custom error/exception/shutdown handlers
+if (function_exists('custom_error_handler')) {
+	set_error_handler('custom_error_handler');
+}
+if (function_exists('custom_exception_handler')) {
+	set_exception_handler('custom_exception_handler');
+}
+if (function_exists('handle_fatal_error')) {
+	register_shutdown_function('handle_fatal_error');
+}
+
 include('../config/images.php');
 // include('admin_elements/timeout.php');  // File doesn't exist
 // include('admin_elements/security.php');
@@ -148,7 +163,7 @@ $pdf->setFont('helvetica', '', 8);
 
 // -----------------------------------------------------------------------------
 
-$pdf_background          = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="pdf_background"'));
+$pdf_background          = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="pdf_background"'));
 
 // -- set new background ---
 
@@ -245,80 +260,75 @@ $row_bg = '';
 
 
 if (!empty($id)) {
+    $container = \App\Core\Container::getInstance();
+    $invoiceService = $container->get(\App\Service\InvoiceService::class);
+    $db = $container->get(\App\Core\Database::class);
 
-    $result = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id=$id");
-    $row = $result->fetch_array();
+    try {
+        $invoice = $invoiceService->getInvoicePublic((int)$id);
+    } catch (\Throwable $e) {
+        die('Invoice not found');
+    }
 
-    $customer_id                = s__($row['customer_id']);
-    $display_name           = getTableAttr('display_name', tbl_customers, $customer_id);
-    $customer_trn           = getTableAttr('trn', tbl_customers, $customer_id);
-    $customer_phone         = getTableAttr('phone', tbl_customers, $customer_id);
+    $customer_id            = $invoice->customerId;
+    $display_name           = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
+    $customer_trn           = getTableAttr('trn', DB::CUSTOMERS, $customer_id);
+    $customer_phone         = getTableAttr('phone', DB::CUSTOMERS, $customer_id);
 
-    $invoice_no             = s__($row['invoice_no']);
-    $invoice_status         = s__($row['invoice_status']);
-    $invoice_date           = s__($row['invoice_date']);
-    $expiry_date            = s__($row['expiry_date']);
-    $reference_no           = s__($row['reference_no']);
-    $warehouse_id           = s__($row['warehouse_id']);
+    $invoice_no             = $invoice->invoiceNo;
+    $invoice_status         = $invoice->invoiceStatus;
+    $invoice_date           = $invoice->invoiceDate;
+    $expiry_date            = $invoice->expiryDate;
+    $reference_no           = $invoice->referenceNo;
+    $warehouse_id           = $invoice->warehouseId;
 
-    $expected_shipment_date = s__($row['expected_shipment_date']);
-    $payment_term           = s__($row['payment_term']);
+    $expected_shipment_date = $invoice->expectedShipmentDate;
+    $payment_term           = $invoice->paymentTerm;
 
-    // $shipment_type          = s__($row['shipment_type']);
-    // $sales_person           = s__($row['sales_person']);
-    $job_reference_no       = s__($row['job_reference_no']);
-    $master_awb_no          = s__($row['master_awb_no']);
+    $job_reference_no       = $invoice->jobReferenceNo;
+    $master_awb_no          = $invoice->masterAwbNo;
 
-    $shipper                = s__($row['shipper']);
-    // COMMENTED: tbl_shippers table has been deleted
-    // $shipper                = getTableAttr('shipper_name', tbl_shippers, $shipper);
+    $shipper                = $invoice->shipper;
+    $consignee              = $invoice->consignee;
 
-    $consignee              = s__($row['consignee']);
-    // COMMENTED: tbl_consignees table has been deleted
-    // $consignee              = getTableAttr('consignee_name', tbl_consignees, $consignee);
+    $origin                 = $invoice->origin;
+    $origin                 = getTableAttr('abbr', DB::GEO_COUNTRIES, $origin) . ' - ' . getTableAttr('country', DB::GEO_COUNTRIES, $origin);
 
-    $origin                 = s__($row['origin']);
-    $origin                 = getTableAttr('abbr', tbl_geo_countries, $origin) . ' - ' . getTableAttr('country', tbl_geo_countries, $origin);
+    $destination            = $invoice->destination;
+    $destination            = getTableAttr('abbr', DB::GEO_COUNTRIES, $destination) . ' - ' . getTableAttr('country', DB::GEO_COUNTRIES, $destination);
 
-    $destination            = s__($row['destination']);
-    $destination            = getTableAttr('abbr', tbl_geo_countries, $destination) . ' - ' . getTableAttr('country', tbl_geo_countries, $destination);
+    $no_of_packs            = $invoice->noOfPacks;
+    $gross_weight           = $invoice->grossWeight;
+    $chargeable_weight      = $invoice->chargeableWeight;
+    $volume                 = $invoice->volume;
 
-    $no_of_packs            = s__($row['no_of_packs']);
-    $gross_weight           = s__($row['gross_weight']);
-    $chargeable_weight      = s__($row['chargeable_weight']);
-    $volume                 = s__($row['volume']);
+    $customer_notes         = $invoice->customerNotes;
+    $terms_and_conditions   = $invoice->termsAndConditions;
 
-    $customer_notes         = s__($row['customer_notes']);
-    $terms_and_conditions   = s__($row['terms_and_conditions']);
+    $grand_subtotal             = $invoice->grandSubtotal;
+    $grand_discount_type        = $invoice->grandDiscountType;
+    $grand_discount_type_value  = $invoice->grandDiscountTypeValue;
+    $grand_discount_amount      = $invoice->grandDiscountAmount;
+    $grand_after_discount       = $invoice->grandAfterDiscount;
+    $grand_tax                  = $invoice->grandTax;
+    $grand_total                = $invoice->grandTotal;
 
-    $grand_subtotal             = s__($row['grand_subtotal']);
-    $grand_discount_type        = s__($row['grand_discount_type']);
-    $grand_discount_type_value  = s__($row['grand_discount_type_value']);
-    $grand_discount_amount      = s__($row['grand_discount_amount']);
-    $grand_after_discount       = s__($row['grand_after_discount']);
-    $grand_tax                  = s__($row['grand_tax']);
-    $grand_total                = s__($row['grand_total']);
-
-    $is_active = s__($row['publish']);
+    $is_active = $invoice->publish ? 1 : 0;
 
     $invoice_date               = processDateYtoD($invoice_date);
-    $expiry_date                = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
-    $expected_shipment_date     = ($expected_shipment_date == '1970-01-01' ? '' : processDateDtoY($expected_shipment_date));
+    $expiry_date                = ($expiry_date === '1970-01-01' || empty($expiry_date) ? '' : processDateDtoY($expiry_date));
+    $expected_shipment_date     = ($expected_shipment_date === '1970-01-01' || empty($expected_shipment_date) ? '' : processDateDtoY($expected_shipment_date));
 
-    $created_at             = s__($row['created_at']);
-    $created_time           = date('h:i:s', strtotime($created_at));
-    $created_date           = date('d-m-Y', strtotime($created_at));
-    $created_by             = s__($row['created_by']);
+    $created_at             = $invoice->createdAt;
+    $created_time           = $created_at ? date('h:i:s', strtotime($created_at)) : '';
+    $created_date           = $created_at ? date('d-m-Y', strtotime($created_at)) : '';
+    $created_by             = $invoice->createdBy;
     $created_by             = getUsernameByID($created_by);
 
-    // $grand_total_in_words  = ucwords(convert_number_to_words($grand_total));
-
     $spell_out = '';
-    // Need to enable Extension intl in php.ini
     $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
 
     if (!empty($grand_total)){
-
         $spell_out = $f->format($grand_total);
         $spell_out = str_ireplace(' point ', '.', ucwords($spell_out));
     
@@ -327,16 +337,14 @@ if (!empty($id)) {
         }
     }
 
-    // if (Str::contains($haystack, 'needles'))
     $grand_total_in_words  = ucwords($spell_out);
 
-    $is_active = s__($row['publish']);
-
-
+    $is_active = $invoice->publish ? 1 : 0;
 
     // Customer Billing Address 
-    $rs_billing     = $mysqli->query("SELECT * FROM `" . tbl_customer_addresses . "` WHERE customer_id=$customer_id AND type='billing' ");
-    $row_billing    = $rs_billing->fetch_array();
+    $row_billing = $db->fetchOne("SELECT * FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND type = 'billing'", [
+        'customer_id' => $customer_id
+    ]);
 
     $billing_attention      = (!empty($row_billing['attention']) ? s__($row_billing['attention']) : '');
     $billing_country        = (!empty($row_billing['country']) ? s__($row_billing['country']) : '');
@@ -348,10 +356,10 @@ if (!empty($id)) {
     $billing_phone          = (!empty($row_billing['phone']) ? s__($row_billing['phone']) : '');
     $billing_fax            = (!empty($row_billing['fax']) ? s__($row_billing['fax']) : '');
 
-
     // Customer Shipping Address
-    $rs_shipping     = $mysqli->query("SELECT * FROM `".tbl_customer_addresses."` WHERE customer_id=$customer_id AND type='shipping' ");
-    $row_shipping    = $rs_shipping->fetch_array();
+    $row_shipping = $db->fetchOne("SELECT * FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND type = 'shipping'", [
+        'customer_id' => $customer_id
+    ]);
 
     $shipping_attention      = (!empty($row_shipping['attention']) ? s__($row_shipping['attention']) : '');
     $shipping_country        = (!empty($row_shipping['country']) ? s__($row_shipping['country']) : '');
@@ -363,41 +371,30 @@ if (!empty($id)) {
     $shipping_phone          = (!empty($row_shipping['phone']) ? s__($row_shipping['phone']) : '');
     $shipping_fax            = (!empty($row_shipping['fax']) ? s__($row_shipping['fax']) : '');
 
-
-
-
-
     $row_no = 1;
     $item_row = '';
 
-    //     // ------------------ TOTAL ITEMS ------------------
-    $result_invoice_items     = $mysqli->query("SELECT * FROM `" . tbl_invoice_items . "` WHERE invoice_id=$id");
-    $total_rows                 = $result_invoice_items->num_rows;
+    // ------------------ TOTAL ITEMS ------------------
+    $invoice_items = $invoiceService->getInvoiceItemsPublic($id);
+    $total_rows = count($invoice_items);
 
     if ($total_rows > 0) {
-        while ($row_invoice_items = $result_invoice_items->fetch_array()) {
+        foreach ($invoice_items as $item) {
+            $service        = $item->service;
+            $service_name   = getTableAttr('item_name', DB::ITEMS, $service);
 
-            $service        = $row_invoice_items['service'];
-            $service_name   = getTableAttr('item_name', tbl_items, $service);
+            $description    = $item->description;
 
-            $description    = $row_invoice_items['description'];
-
-            $qty            = $row_invoice_items['qty'];
-            $rate           = $row_invoice_items['rate'];
-            $tax            = $row_invoice_items['tax'];
-            $tax_amount     = $row_invoice_items['tax_amount'];
-            $total          = $row_invoice_items['total'];
+            $qty            = $item->qty;
+            $rate           = $item->rate;
+            $tax            = $item->tax;
+            $tax_amount     = $item->taxAmount;
+            $total          = $item->total;
 
             $qty            = (($qty == 1)  ? '1.00': $qty);
             $rate           = (($rate == 0)  ? '1.00': $rate);
             $tax            = (($tax == 0)  ? '0': $tax);
             $tax_amount     = (($tax == 0)  ? '0.00': $tax_amount);
-
-            if ($row_no % 2 == 0) {
-                // $row_bg = 'background-color: #dce9f7;';
-            } else {
-                // $row_bg = 'background-color: #ffffff;';
-            }
 
             $item_row .= '
             <tr>
@@ -409,10 +406,8 @@ if (!empty($id)) {
                 <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $tax_amount . '</span>  </td>
                 <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $total . '</span> </td>
             </tr>';
-        } // while
+        }
     }
-
-
 }
 
 
@@ -433,7 +428,7 @@ if (!empty($id)) {
 
 
 // ---------------------------------- LOGO ---------------------------------- 
-$logo        = getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="logo"');
+$logo        = getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="logo"');
 
 if (!empty($logo) && file_exists('../uploads/global_settings/thumbs/' . $logo)) {
     $display_logo = '../uploads/global_settings/' . s__($logo);
@@ -442,27 +437,26 @@ if (!empty($logo) && file_exists('../uploads/global_settings/thumbs/' . $logo)) 
 }
 // ----------------------------------------------------------------------------- 
 
-$company_name        = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="company_name"'));
+$company_name        = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="company_name"'));
 
 
     $warehouse_information = '';
-    $rs_warehouse   = $mysqli->query("SELECT * FROM `" . tbl_organizations . "` WHERE id=$warehouse_id");
-    $row_warehouse  = $rs_warehouse->fetch_array();
+    $row_warehouse = $db->fetchOne("SELECT * FROM `erp_organizations` WHERE id = :id", ['id' => $warehouse_id]);
 
-    $warehouse_no       = s__($row_warehouse['warehouse_no']);
-    $warehouse_name     = s__($row_warehouse['warehouse_name']);
-    $street1            = s__($row_warehouse['street1']);
-    $street2            = s__($row_warehouse['street2']);
+    $warehouse_no       = s__($row_warehouse['warehouse_no'] ?? '');
+    $warehouse_name     = s__($row_warehouse['warehouse_name'] ?? '');
+    $street1            = s__($row_warehouse['street1'] ?? '');
+    $street2            = s__($row_warehouse['street2'] ?? '');
 
-    $country            = s__($row_warehouse['country']);
-    $country            = getTableAttr('country', tbl_geo_countries, $country);
+    $country            = s__($row_warehouse['country'] ?? '');
+    $country            = getTableAttr('country', DB::GEO_COUNTRIES, $country);
     
-    $state              = s__($row_warehouse['state']);
-    $state            = getTableAttr('state', tbl_geo_states, $state);
+    $state              = s__($row_warehouse['state'] ?? '');
+    $state            = getTableAttr('state', DB::GEO_STATES, $state);
     
-    $phone              = s__($row_warehouse['phone']);
-    $email              = s__($row_warehouse['email']);
-    $trn                = s__($row_warehouse['trn']);
+    $phone              = s__($row_warehouse['phone'] ?? '');
+    $email              = s__($row_warehouse['email'] ?? '');
+    $trn                = s__($row_warehouse['trn'] ?? '');
 
     $warehouse_information .= (!empty($warehouse_name) ? '<strong>'.$warehouse_name . '</strong><br />' : '');
     $warehouse_information .= (!empty($warehouse_no) ? $warehouse_no . '<br />' : '');
@@ -757,10 +751,10 @@ $pdf->writeHTML($tbl, true, false, false, false, '');
 
 // -----------------------------------------------------------------------------
 
-$bank_name      = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="bank_name"'));
-$Beneficiary    = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="Beneficiary"'));
-$account_number = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="account_number"'));
-$iban           = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="iban"'));
+$bank_name      = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="bank_name"'));
+$Beneficiary    = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="Beneficiary"'));
+$account_number = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="account_number"'));
+$iban           = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="iban"'));
 $currency       = $base_currency_code;
 
 
@@ -892,7 +886,7 @@ $pdf->Output($encrypted_filename, 'I');  // Flag - I (show file)
     // ---------------------------------------------
     // UPDATE PDF DB 
     // ---------------------------------------------
-    $mysqli->query("UPDATE `" . tbl_invoices . "` SET pdf = '" . $encrypted_filename . "' WHERE id=$id");
+    $mysqli->query("UPDATE `" . DB::INVOICES . "` SET pdf = '" . $encrypted_filename . "' WHERE id=$id");
 
 
 

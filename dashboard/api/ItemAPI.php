@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * ItemAPI.php - API Handler for Item/Service Operations
  * 
@@ -30,7 +32,7 @@ class ItemAPI extends BaseAPI {
             
             // Prepare query with parameterized statement
             $sql = "SELECT id, item_name FROM ? WHERE is_active=1 AND item_type='services' ORDER BY item_name";
-            $table = tbl_items;
+            $table = DB::ITEMS;
             
             // Direct query (table names cannot be parameterized in prepared statements)
             $result = $this->mysqli->query(
@@ -80,7 +82,7 @@ class ItemAPI extends BaseAPI {
             
             // Use prepared statement to prevent SQL injection
             $stmt = $this->executeQuery(
-                "SELECT id, unit_price FROM `" . tbl_items . "` WHERE id = ? LIMIT 1",
+                "SELECT id, unit_price FROM `" . DB::ITEMS . "` WHERE id = ? LIMIT 1",
                 [$item_id],
                 'i'
             );

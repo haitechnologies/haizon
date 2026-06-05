@@ -1,11 +1,13 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
-require_once __DIR__ . '/../classes/TOTPAuthenticator.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/TOTPAuthenticator.php';
 use Endroid\QrCode\QrCode;
 
 $module_caption = 'Security - Two-Factor Authentication';
-$tbl_name = tbl_users;
+$tbl_name = DB::USERS;
 $userId = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
 $isLiveServer = function_exists('isRemote') ? isRemote() : false;
 

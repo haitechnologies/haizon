@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 /*
 |--------------------------------------------------------------------------
 | ACCOUNTING FUNCTIONS - NOT NEEDED

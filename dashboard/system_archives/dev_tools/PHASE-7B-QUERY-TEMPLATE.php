@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * PHASE 7B: Direct Query Organization Isolation
  * 

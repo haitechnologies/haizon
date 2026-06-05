@@ -2,7 +2,7 @@
 
     <?php
     // ----------------------------------------------------------------
-    $result_contacts = $mysqli->query("SELECT * FROM `" . tbl_customer_contacts . "` WHERE customer_id=$customer_id AND is_primary=1");
+    $result_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=$customer_id AND is_primary=1");
     while ($rows_contacts = $result_contacts->fetch_array()) {
         // ----------------------------------------------------------------
     ?>
@@ -58,7 +58,7 @@
 
                 <?php
                 $billing_country = ((empty($billing_country)) ? '0' : $billing_country);
-                $rs_billing     = $mysqli->query("SELECT * FROM `" . tbl_customer_addresses . "` WHERE customer_id=$customer_id AND type='billing' ");
+                $rs_billing     = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE customer_id=$customer_id AND type='billing' ");
                 $row_billing    = $rs_billing->fetch_array();
 
                 // IF EXISTS - UPDATE
@@ -72,7 +72,7 @@
                     $billing_attention      = (!empty($row_billing['attention']) ? s__($row_billing['attention']) : '');
 
                     $billing_country        = (!empty($row_billing['country']) ? s__($row_billing['country']) : '');
-                    $billing_country        = (!empty($billing_country) ? getTableAttr('country_name', tbl_geo_countries, $billing_country)  : '');
+                    $billing_country        = (!empty($billing_country) ? getTableAttr('country_name', DB::GEO_COUNTRIES, $billing_country)  : '');
 
                     $billing_address_line1  = (!empty($row_billing['address_line1']) ? s__($row_billing['address_line1']) : '');
                     $billing_address_line2  = (!empty($row_billing['address_line2']) ? s__($row_billing['address_line2']) : '');
@@ -106,7 +106,7 @@
 
                 <?php
                 $shipping_country = ((empty($shipping_country)) ? '0' : $shipping_country);
-                $rs_shipping     = $mysqli->query("SELECT * FROM `" . tbl_customer_addresses . "` WHERE customer_id=$customer_id AND type='shipping' ");
+                $rs_shipping     = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE customer_id=$customer_id AND type='shipping' ");
                 $row_shipping    = $rs_shipping->fetch_array();
 
                 // IF EXISTS - UPDATE
@@ -120,7 +120,7 @@
                     $shipping_attention      = (!empty($row_shipping['attention']) ? s__($row_shipping['attention']) : '');
 
                     $shipping_country        = (!empty($row_shipping['country']) ? s__($row_shipping['country']) : '');
-                    $shipping_country        = (!empty($shipping_country) ? getTableAttr('country_name', tbl_geo_countries, $shipping_country)  : '');
+                    $shipping_country        = (!empty($shipping_country) ? getTableAttr('country_name', DB::GEO_COUNTRIES, $shipping_country)  : '');
 
                     $shipping_address_line1  = (!empty($row_shipping['address_line1']) ? s__($row_shipping['address_line1']) : '');
                     $shipping_address_line2  = (!empty($row_shipping['address_line2']) ? s__($row_shipping['address_line2']) : '');
@@ -189,7 +189,7 @@
 
     <?php
     //COUNT QUERY
-    $rs                     = $mysqli->query("SELECT id FROM `" . tbl_customer_contacts . "` WHERE customer_id=$customer_id ");
+    $rs                     = $mysqli->query("SELECT id FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=$customer_id ");
     $total_contact_persons  = $rs->num_rows;
 
     ?>
@@ -213,7 +213,7 @@
 
                 <?php
                 // ----------------------------------------------------------------
-                $result_contacts = $mysqli->query("SELECT * FROM `" . tbl_customer_contacts . "` WHERE customer_id=$customer_id AND is_primary=0");
+                $result_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=$customer_id AND is_primary=0");
                 while ($rows_contacts = $result_contacts->fetch_array()) {
                     // ----------------------------------------------------------------
                 ?>
@@ -291,7 +291,7 @@
 
                 <div class="row mt-2">
                     <div class="col-lg-6 small text-muted">Created By</div>
-                    <div class="col-lg-6 small"><?php echo getTableAttr('full_name', tbl_users, $created_by); ?></div>
+                    <div class="col-lg-6 small"><?php echo getTableAttr('full_name', DB::USERS, $created_by); ?></div>
                 </div>
 
                 <?php if ($approved == 1) { ?>

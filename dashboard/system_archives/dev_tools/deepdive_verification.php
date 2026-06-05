@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 // Deep-dive verification of form fields vs actual DB columns
 require_once __DIR__ . '/../config/database.php';
 

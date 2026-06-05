@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module             = 'credit_notes';
@@ -539,7 +541,7 @@ if ($total_rows == 0) $total_rows = 1;
 */
 if (!empty($source_invoice_id) && $action == 'add_credit_notes') {
     // Get invoice data
-    $invoice_result = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id=$source_invoice_id");
+    $invoice_result = $mysqli->query("SELECT * FROM `" . DB::INVOICES . "` WHERE id=$source_invoice_id");
     if ($invoice_result && $invoice_row = $invoice_result->fetch_array()) {
         
         $customer_id                = s__($invoice_row['customer_id']);
@@ -562,7 +564,7 @@ if (!empty($source_invoice_id) && $action == 'add_credit_notes') {
         $grand_total                = s__($invoice_row['grand_total']);
         
         // Get invoice items
-        $items_result = $mysqli->query("SELECT * FROM `" . tbl_invoice_items . "` WHERE invoice_id=$source_invoice_id ORDER BY id");
+        $items_result = $mysqli->query("SELECT * FROM `" . DB::INVOICE_ITEMS . "` WHERE invoice_id=$source_invoice_id ORDER BY id");
         $total_rows = $items_result->num_rows;
         
         if ($total_rows > 0) {
@@ -679,8 +681,8 @@ if (!empty($source_invoice_id) && $action == 'add_credit_notes') {
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $customer_details = '';
-                                                // $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` WHERE publish=1 ORDER BY id DESC");
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_customers  . "` ORDER BY id DESC");
+                                                // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE publish=1 ORDER BY id DESC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $display_name           = $rows["display_name"];
                                                     // -------------------------------------------------------------------------------------------------
@@ -719,7 +721,7 @@ if (!empty($source_invoice_id) && $action == 'add_credit_notes') {
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'>Please select</option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -739,7 +741,7 @@ if (!empty($source_invoice_id) && $action == 'add_credit_notes') {
                                             <select name="sales_person" id="sales_person" class="form-select">
                                                 <option value='0'>Please select</option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . tbl_warehouses  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -838,7 +840,7 @@ if (!empty($source_invoice_id) && $action == 'add_credit_notes') {
                                                             <select class="form-select" name="service[]" id="service<?php echo $credit_note_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $credit_note_item; ?>); ">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . tbl_items . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $service_id = $rows['id'];
                                                                 ?>

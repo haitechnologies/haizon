@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Core\DB;
 include('admin_elements/admin_header.php');
 
 $module = 'organizations';
@@ -157,7 +159,7 @@ if ($action == "update_$module" || $action == "add_$module") {
 |
 */
 if (isset($_REQUEST['delete_photo']) && $_REQUEST['delete_photo'] == 1 && !empty($id)) {
-    $photo = getTableAttr("photo", tbl_organizations, $id);
+    $photo = getTableAttr("photo", DB::ORGANIZATIONS, $id);
     if (!empty($photo)) {
         delete_photo($photo, $photo_upload_path, '1');     // DELETE OLD THUMB
         delete_photo($photo, $photo_upload_path, '0');    // DELETE OLD PHOTO

@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 // Final corrected audit using correct table mappings
 require_once __DIR__ . '/../config/database.php';
 

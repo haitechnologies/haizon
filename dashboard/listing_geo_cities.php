@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * Geo Cities Listing Page
  */

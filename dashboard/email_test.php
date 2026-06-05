@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Service\SMTPMailer;
 // Email Test Page (Standalone)
 include('admin_elements/admin_header.php');
 $module = 'email_providers';
@@ -6,8 +9,8 @@ $module_caption = 'Send Test Email';
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
-require_once __DIR__ . '/../classes/EmailProviderManager.php';
-require_once __DIR__ . '/../classes/SMTPMailer.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailProviderManager.php';
+// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/SMTPMailer.php';
 
 // Fetch providers for dropdown (must be before POST handler)
 

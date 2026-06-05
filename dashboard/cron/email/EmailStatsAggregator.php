@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * Email Statistics Aggregator
  * 
@@ -77,7 +79,7 @@ class EmailStatsAggregator extends CronJobBase {
                 SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
                 SUM(CASE WHEN status = 'bounced' THEN 1 ELSE 0 END) as bounced,
                 SUM(CASE WHEN status = 'unsubscribed' THEN 1 ELSE 0 END) as unsubscribed
-            FROM `" . tbl_email_history . "`
+            FROM `" . DB::EMAIL_HISTORY . "`
             WHERE DATE(sent_at) = '{$this->aggregateDate}'
             AND campaign_id IS NOT NULL
             GROUP BY campaign_id"
@@ -139,7 +141,7 @@ class EmailStatsAggregator extends CronJobBase {
                 SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
                 SUM(CASE WHEN status = 'bounced' THEN 1 ELSE 0 END) as bounced,
                 AVG(TIMESTAMPDIFF(SECOND, created_at, sent_at)) as avg_send_time
-            FROM `" . tbl_email_history . "`
+            FROM `" . DB::EMAIL_HISTORY . "`
             WHERE DATE(sent_at) = '{$this->aggregateDate}'
             AND provider_id IS NOT NULL
             AND status IN ('sent', 'failed', 'bounced', 'opened', 'clicked')
@@ -207,7 +209,7 @@ class EmailStatsAggregator extends CronJobBase {
                 SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
                 SUM(CASE WHEN status = 'bounced' THEN 1 ELSE 0 END) as bounced,
                 SUM(CASE WHEN status = 'unsubscribed' THEN 1 ELSE 0 END) as unsubscribed
-            FROM `" . tbl_email_history . "`
+            FROM `" . DB::EMAIL_HISTORY . "`
             WHERE DATE(sent_at) = '{$this->aggregateDate}'"
         );
         

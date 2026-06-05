@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module = 'customer_attachments';
@@ -75,7 +78,7 @@ if (isset($_POST['customer_id']))           $customer_id     = e_s__($_POST['cus
 
 
 //VERIFY IF IS VALID 
-$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . tbl_customers . "` WHERE id='" . $customer_id . "'");
+$rs_customer_valid  = $mysqli->query("SELECT id FROM `" . DB::CUSTOMERS . "` WHERE id='" . $customer_id . "'");
 if ($rs_customer_valid->num_rows == 0) header("Location:listing_customers.php");
 
 
@@ -244,7 +247,7 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($customer_id))
 
 ?>
 
-<div class="sidebar sidebar-secondary sidebar-expand-lg">
+<aside class="sidebar sidebar-secondary sidebar-expand-lg" aria-label="Secondary Navigation">
 
     <!-- Expand button -->
     <button type="button" class="btn btn-sidebar-expand sidebar-control sidebar-secondary-toggle h-100">
@@ -257,7 +260,7 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($customer_id))
     <?php include('admin_elements/sidebar_customer.php'); ?>
     <!-- /sidebar content -->
 
-</div>
+</aside>
 
 <div class="content-wrapper">
 
@@ -378,7 +381,7 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($customer_id))
 
                                                         <div class="ms-3 flex-grow-1">
                                                             <div class="d-flex align-items-center mb-1">
-                                                                <span class="fw-bold me-2"><?php echo getTableAttr('full_name', tbl_users, $rows['created_by']) ?></span>
+                                                                <span class="fw-bold me-2"><?php echo getTableAttr('full_name', DB::USERS, $rows['created_by']) ?></span>
                                                                 <span class="text-muted small">• <?php echo dd__($created_at); ?></span>
                                                             </div>
                                                             <div class="bg-light rounded p-3 d-flex justify-content-between align-items-center">

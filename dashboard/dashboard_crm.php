@@ -1,4 +1,7 @@
 <?php
+
+use App\Core\DB;
+use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
 $module = 'statistics';
@@ -43,7 +46,7 @@ $customer_query = "
         SUM(CASE WHEN created_at BETWEEN '$last_month_start' AND '$last_month_end 23:59:59' THEN 1 ELSE 0 END) as last_month_count,
         SUM(CASE WHEN approved = 1 THEN 1 ELSE 0 END) as approved_count,
         SUM(CASE WHEN approved = 0 THEN 1 ELSE 0 END) as pending_approval
-    FROM `" . tbl_customers . "`
+    FROM `" . DB::CUSTOMERS . "`
 ";
 $customer_data = $mysqli->query($customer_query)->fetch_assoc();
 $total_customers = $customer_data['total'] ?? 0;
@@ -61,7 +64,7 @@ $lead_query = "
         COUNT(*) as total,
         SUM(CASE WHEN created_at BETWEEN '$current_month_start' AND '$current_month_end 23:59:59' THEN 1 ELSE 0 END) as month_count,
         SUM(CASE WHEN created_at BETWEEN '$last_month_start' AND '$last_month_end 23:59:59' THEN 1 ELSE 0 END) as last_month_count
-    FROM `" . tbl_leads . "`
+    FROM `" . DB::LEADS . "`
 ";
 $lead_data = $mysqli->query($lead_query)->fetch_assoc();
 $total_leads = $lead_data['total'] ?? 0;
@@ -78,7 +81,7 @@ $invoice_query = "
         SUM(grand_total) as total_value,
         SUM(CASE WHEN invoice_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as month_value,
         SUM(CASE WHEN invoice_date BETWEEN '$current_month_start' AND '$current_month_end' THEN 1 ELSE 0 END) as month_count
-    FROM `" . tbl_invoices . "`
+    FROM `" . DB::INVOICES . "`
 ";
 $invoice_data = $mysqli->query($invoice_query)->fetch_assoc();
 $total_invoices = $invoice_data['total'] ?? 0;
@@ -87,7 +90,7 @@ $month_invoice_value = $invoice_data['month_value'] ?? 0;
 $month_invoices = $invoice_data['month_count'] ?? 0;
 
 // CONTACTS
-$total_contacts = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_customer_contacts . "`")->fetch_assoc()['count'];
+$total_contacts = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::CUSTOMER_CONTACTS . "`")->fetch_assoc()['count'];
 
 // ALERTS (replacing tasks functionality)
 $alert_query = "
@@ -95,7 +98,7 @@ $alert_query = "
         COUNT(*) as total,
         SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as open_count,
         SUM(CASE WHEN is_read = 1 THEN 1 ELSE 0 END) as closed_count
-    FROM `" . tbl_alerts . "`
+    FROM `" . DB::ALERTS . "`
 ";
 $alert_data = $mysqli->query($alert_query)->fetch_assoc();
 $total_alerts = $alert_data['total'] ?? 0;
@@ -109,7 +112,7 @@ $near_expiry_documents = 0;
 $up_to_date_documents = 0;
 
 // CONVERSION RATE (Leads to Customers)
-$converted_leads = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_leads . "` WHERE lead_status = 'converted'")->fetch_assoc()['count'];
+$converted_leads = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::LEADS . "` WHERE lead_status = 'converted'")->fetch_assoc()['count'];
 $conversion_rate = $total_leads > 0 ? round(($converted_leads / $total_leads) * 100, 1) : 0;
 
 ?>
@@ -201,7 +204,7 @@ $conversion_rate = $total_leads > 0 ? round(($converted_leads / $total_leads) * 
 										</thead>
 										<tbody>
 											<?php
-											$result = $mysqli->query("SELECT * FROM `" . tbl_customers . "` ORDER BY id DESC LIMIT 8");
+											$result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` ORDER BY id DESC LIMIT 8");
 											if ($result->num_rows > 0) {
 												while ($row = $result->fetch_array()) {
 													$approved = $row['approved'];
@@ -246,7 +249,7 @@ $conversion_rate = $total_leads > 0 ? round(($converted_leads / $total_leads) * 
 									</div>
 									<div class="card-body">
 										<?php
-										$result = $mysqli->query("SELECT * FROM `" . tbl_leads . "` ORDER BY id DESC LIMIT 5");
+										$result = $mysqli->query("SELECT * FROM `" . DB::LEADS . "` ORDER BY id DESC LIMIT 5");
 										if ($result->num_rows > 0) {
 											while ($row = $result->fetch_array()) {
 												$lead_status = $row['lead_status'] ?? '';
@@ -349,7 +352,7 @@ $conversion_rate = $total_leads > 0 ? round(($converted_leads / $total_leads) * 
 							</div>
 							<div class="card-body">
 								<?php
-								$result = $mysqli->query("SELECT * FROM `" . tbl_customers . "` WHERE approved != 1 ORDER BY id DESC LIMIT 5");
+								$result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` WHERE approved != 1 ORDER BY id DESC LIMIT 5");
 								if ($result->num_rows > 0) {
 									while ($row = $result->fetch_array()) {
 										$approved = $row['approved'];

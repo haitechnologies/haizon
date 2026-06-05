@@ -8,7 +8,7 @@ use RuntimeException;
 
 /**
  * Domain Exception
- * 
+ *
  * Base exception class for all business logic/domain errors.
  * Helps prevent type coercion and returning false/null on failure.
  */

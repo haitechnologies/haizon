@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /* -------------------------------------------------------------------------- */
 
 $invoice_id = '';
@@ -6,8 +8,8 @@ if (isset($_REQUEST['invoice_id']))        $invoice_id     = e_s__($_REQUEST['in
 if (isset($_POST['invoice_id']))           $invoice_id     = e_s__($_POST['invoice_id']);
 
 
-$invoice_no     = getTableAttr('invoice_no', tbl_invoices, $invoice_id);
-$invoice_status = getTableAttr('invoice_status', tbl_invoices, $invoice_id);
+$invoice_no     = getTableAttr('invoice_no', DB::INVOICES, $invoice_id);
+$invoice_status = getTableAttr('invoice_status', DB::INVOICES, $invoice_id);
 
 // Journal/credit note features are disabled (tables removed)
 $has_journal_entries = false;
@@ -81,7 +83,7 @@ $grand_total = 0;
                         <i class="ph-file-pdf pe-1"></i> PDF
                     </a>
 
-                    <?php $invoice_status = getTableAttr('invoice_status', tbl_invoices, $invoice_id); ?>
+                    <?php $invoice_status = getTableAttr('invoice_status', DB::INVOICES, $invoice_id); ?>
 
                     <?php if ($invoice_status == 'draft') { ?>
                         <a class="btn btn-light btn-sm me-2" href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>&action=update_<?php echo $module; ?>&invoice_status=sent">

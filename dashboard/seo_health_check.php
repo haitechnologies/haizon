@@ -30,8 +30,7 @@ $settingsPageUrl = 'global_settings.php?tab=seo';
 $globalSeoConfig = [
     'sitemap_enabled' => (int)getSystemSetting('sitemap_enabled', 1),
     'ai_sitemap_enabled' => (int)getSystemSetting('ai_sitemap_enabled', 1),
-    'sitemap_companies' => (int)getSystemSetting('sitemap_companies', 1),
-    'sitemap_blogs' => (int)getSystemSetting('sitemap_blogs', 1),
+    // Decommissioned: sitemap_companies & sitemap_blogs
     'sitemap_categories' => (int)getSystemSetting('sitemap_categories', 1),
     'sitemap_hs_codes' => (int)getSystemSetting('sitemap_hs_codes', 1),
     'sitemap_amp' => (int)getSystemSetting('sitemap_amp', 0),
@@ -166,8 +165,7 @@ $checks['sitemap_config'] = [
 $sitemap_settings = [
     'sitemap_enabled' => 'Main Sitemap',
     'ai_sitemap_enabled' => 'AI Sitemap',
-    'sitemap_companies' => 'Companies Included',
-    'sitemap_blogs' => 'Blogs Included',
+    // Decommissioned: sitemap_companies & sitemap_blogs
     'sitemap_categories' => 'Categories Included',
     'sitemap_hs_codes' => 'HS Codes Sitemap Included',
     'sitemap_amp' => 'AMP Sitemap Enabled',
@@ -197,8 +195,7 @@ seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitema
 seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-index.php', 'Sitemap index handler');
 seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-hs-codes.php', 'HS codes sitemap handler');
 seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-static.php', 'Static sitemap handler');
-seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-companies.php', 'Companies sitemap handler');
-seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-blog.php', 'Blog sitemap handler');
+// Decommissioned: sitemap-companies.php & sitemap-blog.php
 seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-categories.php', 'Categories sitemap handler');
 seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/sitemap-amp.php', 'AMP sitemap handler');
 seo_append_file_detail($checks['sitemap_endpoints'], $projectRoot, 'pages/ai-sitemap.php', 'AI sitemap handler');
@@ -210,8 +207,7 @@ $checks['sitemap_endpoints']['details'][] = '   • ' . $masterSitemapPath . ' -
 $checks['sitemap_endpoints']['details'][] = '   • /sitemap_index.xml - Sitemap index';
 $checks['sitemap_endpoints']['details'][] = '   • /sitemap-hs-codes.xml - HS codes sitemap';
 $checks['sitemap_endpoints']['details'][] = '   • /sitemap-static.xml - Static pages sitemap';
-$checks['sitemap_endpoints']['details'][] = '   • /sitemap-companies.xml - Companies sitemap';
-$checks['sitemap_endpoints']['details'][] = '   • /sitemap-blog.xml - Blog sitemap';
+// Decommissioned: sitemap-companies.xml & sitemap-blog.xml
 $checks['sitemap_endpoints']['details'][] = '   • /sitemap-categories.xml - Categories sitemap';
 $checks['sitemap_endpoints']['details'][] = '   • /sitemap-amp.xml - AMP sitemap';
 $checks['sitemap_endpoints']['details'][] = '   • /ai-sitemap.xml - AI sitemap';
@@ -246,11 +242,7 @@ $criticalRouteFiles = [
     'pages/search.php' => 'Search page',
     'pages/advanced-search.php' => 'Advanced search page',
     'pages/search-analytics.php' => 'Search analytics page',
-    'pages/blog.php' => 'Blog listing page',
-    'pages/blog-details.php' => 'Blog detail page',
-    'pages/company-detail.php' => 'Company detail page',
-    'pages/amp/blog-detail-amp.php' => 'AMP blog detail page',
-    'pages/amp/company-detail-amp.php' => 'AMP company detail page',
+    // Decommissioned: blog.php, blog-details.php, company-detail.php, blog-detail-amp.php, company-detail-amp.php
     'pages/amp/hs-code-detail-amp.php' => 'AMP HS code detail page'
 ];
 
@@ -274,8 +266,7 @@ $codebaseFileChecks = [
     'pages/services.php' => 'Services listing page',
     'pages/service.php' => 'Service detail page',
     'pages/search.php' => 'Search page',
-    'pages/blog.php' => 'Blog listing page',
-    'pages/company-detail.php' => 'Company detail page',
+    // Decommissioned: blog.php, company-detail.php
     'pages/sitemap.php' => 'Main sitemap handler',
     'pages/ai-sitemap.php' => 'AI sitemap handler',
     'config/seo_helpers.php' => 'SEO helper functions',
@@ -291,8 +282,7 @@ foreach ($codebaseFileChecks as $relativePath => $label) {
 $codebaseEndpointChecks = [
     ['name' => 'index.php', 'url' => '../index.php', 'category' => 'route_handlers'],
     ['name' => 'pages/search.php', 'url' => '../pages/search.php', 'category' => 'route_handlers'],
-    ['name' => 'pages/blog.php', 'url' => '../pages/blog.php', 'category' => 'route_handlers'],
-    ['name' => 'pages/company-detail.php', 'url' => '../pages/company-detail.php', 'category' => 'route_handlers'],
+    // Decommissioned: blog.php, company-detail.php
     ['name' => 'pages/services.php', 'url' => '../pages/services.php', 'category' => 'codebase_integrity'],
     ['name' => 'pages/service.php', 'url' => '../pages/service.php', 'category' => 'codebase_integrity'],
     ['name' => 'pages/ai-sitemap.php', 'url' => '../pages/ai-sitemap.php', 'category' => 'codebase_integrity']
@@ -446,8 +436,7 @@ if (file_exists($projectRoot . '/classes/JSONLDSchema.php')) {
     
     // Check key page handlers for schema implementation
     $schema_pages = [
-        'pages/company-detail.php' => 'Organization/Business schema',
-        'pages/blog-details.php' => 'Article schema',
+        // Decommissioned: company-detail.php, blog-details.php
         'pages/home.php' => 'WebSite schema',
         'pages/search.php' => 'SearchAction schema'
     ];
@@ -467,8 +456,7 @@ if (file_exists($projectRoot . '/classes/JSONLDSchema.php')) {
     
     $checks['structured_data']['details'][] = '';
     $checks['structured_data']['details'][] = 'Rich results types supported:';
-    $checks['structured_data']['details'][] = '  • Organization (LocalBusiness)';
-    $checks['structured_data']['details'][] = '  • Article (Blog posts)';
+    // Decommissioned: Organization & Article schemas
     $checks['structured_data']['details'][] = '  • BreadcrumbList';
     $checks['structured_data']['details'][] = '  • WebSite with SearchAction';
     $checks['structured_data']['details'][] = '  • Product/Offer (for listings)';
@@ -759,7 +747,7 @@ if (file_exists($htaccess_path)) {
 }
 
 // Check for canonical link implementation in pages
-$check_pages = ['pages/home.php', 'pages/company-detail.php', 'pages/blog-details.php'];
+$check_pages = ['pages/home.php'];
 $canonical_found = false;
 
 foreach ($check_pages as $page) {

@@ -11,7 +11,7 @@ use RuntimeException;
 
 /**
  * Core Database Wrapper
- * 
+ *
  * Provides a secure, strict PDO connection with prepared statement helpers.
  * Adheres to PSR.md specifications: no string interpolation, strict types, and PDO exceptions.
  */
@@ -43,7 +43,7 @@ class Database
 
     /**
      * Retrieve the active PDO connection instance
-     * 
+     *
      * Establishes the connection if not already active.
      *
      * @return PDO The active PDO connection
@@ -143,5 +143,45 @@ class Database
                 $e
             );
         }
+    }
+
+    /**
+     * Start a new transaction
+     *
+     * @return bool
+     */
+    public function beginTransaction(): bool
+    {
+        return $this->getConnection()->beginTransaction();
+    }
+
+    /**
+     * Commit the active transaction
+     *
+     * @return bool
+     */
+    public function commit(): bool
+    {
+        return $this->getConnection()->commit();
+    }
+
+    /**
+     * Rollback the active transaction
+     *
+     * @return bool
+     */
+    public function rollBack(): bool
+    {
+        return $this->getConnection()->rollBack();
+    }
+
+    /**
+     * Check if a transaction is currently active
+     *
+     * @return bool
+     */
+    public function inTransaction(): bool
+    {
+        return $this->getConnection()->inTransaction();
     }
 }

@@ -14,30 +14,6 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 
 // Define all hideable items with their metadata
 $hideableItems = [
-    'blogs' => [
-        'label' => 'Blog Posts',
-        'description' => 'Blog post management and editing',
-        'module' => 'blogs',
-        'href' => 'listing_blogs.php',
-        'icon' => 'ph-note-pencil',
-        'section' => 'Content'
-    ],
-    'guest_posts' => [
-        'label' => 'Guest Posts',
-        'description' => 'Review and manage guest-submitted blog content',
-        'module' => 'blogs',
-        'href' => 'listing_guest_posts.php',
-        'icon' => 'ph-user-list',
-        'section' => 'Content'
-    ],
-    'blog_categories' => [
-        'label' => 'Blog Categories',
-        'description' => 'Manage blog post categories and taxonomies',
-        'module' => 'blog_categories',
-        'href' => 'listing_blog_categories.php',
-        'icon' => 'ph-folder-open',
-        'section' => 'Content'
-    ],
     'pages' => [
         'label' => 'Static Pages',
         'description' => 'Manage static website pages and content',
@@ -45,22 +21,6 @@ $hideableItems = [
         'href' => 'listing_pages.php',
         'icon' => 'ph-file-doc',
         'section' => 'Content'
-    ],
-    'frontend_users' => [
-        'label' => 'Frontend Users',
-        'description' => 'Manage frontend account holders and review user profiles',
-        'module' => 'frontend_users',
-        'href' => 'listing_frontend_users.php',
-        'icon' => 'ph-user-circle',
-        'section' => 'Content'
-    ],
-    'searches' => [
-        'label' => 'Search Analytics',
-        'description' => 'View and analyze search patterns and user queries',
-        'module' => 'searches',
-        'href' => 'listing_searches.php',
-        'icon' => 'ph-magnifying-glass',
-        'section' => 'Operations'
     ]
 ];
 

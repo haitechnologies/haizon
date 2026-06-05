@@ -1,5 +1,7 @@
 <?php
-	// ============================================================================
+	
+use App\Core\DB;
+// ============================================================================
 	// SESSION SECURITY VALIDATION
 	// ============================================================================
 	
@@ -58,7 +60,7 @@
 	if ($isLiveServer && isset($mysqli)) {
 		$userIdForMfa = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
 		if ($userIdForMfa > 0) {
-			$mfaStmt = $mysqli->prepare("SELECT mfa_totp_enabled, mfa_totp_secret FROM `" . tbl_users . "` WHERE id = ? LIMIT 1");
+			$mfaStmt = $mysqli->prepare("SELECT mfa_totp_enabled, mfa_totp_secret FROM `" . DB::USERS . "` WHERE id = ? LIMIT 1");
 			if ($mfaStmt) {
 				$mfaStmt->bind_param('i', $userIdForMfa);
 				$mfaStmt->execute();
