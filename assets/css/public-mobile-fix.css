@@ -1,0 +1,444 @@
+/*
+ * Public Mobile Fix Layer
+ * Loaded after final.css to normalize spacing/readability on small screens.
+ */
+
+@media (max-width: 991.98px) {
+  .container,
+  .container-fluid,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --mobile-gap: 12px;
+    --mobile-gap-sm: 8px;
+    --mobile-radius: 10px;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  body {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  section,
+  .section,
+  .section-lg,
+  .section-md,
+  .hero,
+  .hero-section,
+  .cta-business-section,
+  .ads-hero,
+  .category-hero-main {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 0 !important;
+  }
+
+  h1,
+  .h1 {
+    font-size: 1.35rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  h2,
+  .h2 {
+    font-size: 1.2rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.45rem !important;
+  }
+
+  h3,
+  .h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  p,
+  .lead,
+  .text-muted {
+    margin-bottom: 0.45rem !important;
+  }
+
+  .card,
+  .hero-card,
+  .listing-item,
+  .company-card,
+  .blog-card,
+  .item-card,
+  .stats-card,
+  .feature-card,
+  .service-card,
+  .content-box,
+  .shadow,
+  .shadow-sm,
+  .shadow-lg {
+    border-radius: var(--mobile-radius) !important;
+    padding: 10px !important;
+    margin-bottom: var(--mobile-gap) !important;
+  }
+
+  .row {
+    --bs-gutter-x: 0.75rem;
+    --bs-gutter-y: 0.65rem;
+  }
+
+  .mb-5,
+  .my-5,
+  .py-5 {
+    margin-bottom: 1rem !important;
+  }
+
+  .mt-5,
+  .my-5,
+  .py-5 {
+    margin-top: 1rem !important;
+  }
+
+  .p-5,
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+
+  .btn,
+  .btn-lg,
+  .btn-primary-ui,
+  .btn-secondary-ui,
+  .btn-outline-primary,
+  .btn-outline-secondary {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.9rem !important;
+    line-height: 1.2 !important;
+    border-radius: 8px !important;
+  }
+
+  .form-control,
+  .form-select,
+  .input-group-text,
+  textarea.form-control {
+    font-size: 0.95rem !important;
+    padding: 0.52rem 0.7rem !important;
+    min-height: 40px !important;
+  }
+
+  .table-responsive {
+    margin-bottom: var(--mobile-gap-sm) !important;
+  }
+
+  .pagination {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .page-link {
+    padding: 0.3rem 0.55rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .breadcrumb {
+    margin-bottom: 0.4rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .navbar,
+  .navbar .container,
+  .navbar .container-fluid {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .site-main-nav .navbar-toggler {
+    border: 1px solid #d6dce5 !important;
+    padding: 0.32rem 0.42rem !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+  }
+
+  .site-main-nav .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.2) !important;
+  }
+
+  .site-main-nav .navbar-toggler-icon {
+    width: 1.15em;
+    height: 1.15em;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2822,31,44,0.95%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.1' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+    background-size: 100% 100%;
+  }
+
+  .site-main-nav .navbar-collapse {
+    width: 100%;
+  }
+
+  .site-main-nav .navbar-collapse:not(.offcanvas-lg):not(.show) {
+    display: none !important;
+  }
+
+  .site-main-nav .navbar-collapse.show:not(.offcanvas-lg) {
+    display: block !important;
+  }
+
+  .site-main-nav .navbar-nav {
+    margin-top: 6px;
+    margin-bottom: 4px;
+  }
+
+  .site-main-nav .nav-link {
+    display: block;
+    padding: 0.45rem 0.2rem !important;
+  }
+
+  .site-main-nav .btn-post {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .site-header-top {
+    display: none;
+  }
+
+  .footer,
+  footer,
+  .footer-cta-section {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .container,
+  .container-fluid,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .btn,
+  .btn-lg {
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+/* Mobile content prioritization: show essential info first */
+@media (max-width: 767.98px) {
+  /* Hide lower-priority promotional blocks on small screens */
+  .home-partners-section,
+  .home-footer-ad-section,
+  .trade-ad-section,
+  .pricing-bottom-cta,
+  .blog-cta-card,
+  .category-cta-card,
+  .ads-cta,
+  .ads-why-card {
+    display: none !important;
+  }
+
+  /* Keep dense card feeds concise */
+  .grid-3 > *:nth-child(n + 5),
+  .directory-grid > *:nth-child(n + 7),
+  .results-grid > *:nth-child(n + 7),
+  .search-results-grid > *:nth-child(n + 7),
+  .blog-grid > *:nth-child(n + 5),
+  .similar-grid > *:nth-child(n + 5),
+  .trending-grid > *:nth-child(n + 5),
+  .ads-plan-grid > *:nth-child(n + 3),
+  .states-grid > *:nth-child(n + 7),
+  .alphabet-cards-grid > *:nth-child(n + 2) {
+    display: none !important;
+  }
+
+  /* Clamp verbose text for easier scanning */
+  .directory-card-desc,
+  .blog-card-excerpt,
+  .category-hero-desc,
+  .ads-hero__text,
+  .company-section-card p,
+  .about-hero p {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Reduce visual noise in side/support areas while retaining core navigation */
+  .popular-tags,
+  .blog-featured-meta,
+  .company-claim-card,
+  .kpi-grid--4 > *:nth-child(n + 3) {
+    display: none !important;
+  }
+
+  /* Pricing: keep plan cards, hide heavy comparison matrix and long FAQ tail */
+  .comparison-section {
+    display: none !important;
+  }
+
+  #pricingFaq .accordion-item:nth-child(n + 4) {
+    display: none !important;
+  }
+
+  /* Blog: reduce hero weight and keep list-centric browsing */
+  .blog-featured-section,
+  .blog-result-hint {
+    display: none !important;
+  }
+
+  /* Category: keep listings primary, hide extra exploration cluster */
+  .category-subcats-wrap,
+  .category-stats-bar {
+    display: none !important;
+  }
+
+  /* Company profile: keep core profile + contact, hide lower-priority blocks */
+  .company-map-wrap,
+  .company-social-row {
+    display: none !important;
+  }
+
+  /* Home: keep search and core listings, trim extra discovery blocks */
+  .home-ad-section,
+  .home-alpha-section,
+  .home-blog-section,
+  .home-trending-hidden {
+    display: none !important;
+  }
+
+  .home-kpi-section .kpi:nth-child(n + 3) {
+    display: none !important;
+  }
+
+  /* Categories listing page: compact hero + fewer cards */
+  .directory-stats {
+    display: none !important;
+  }
+
+  .directory-grid > *:nth-child(n + 5) {
+    display: none !important;
+  }
+
+  .directory-title {
+    font-size: 1.25rem !important;
+  }
+
+  .directory-subtitle {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Company detail: cap long related/support content */
+  .company-keywords-row .company-keyword-pill:nth-child(n + 7),
+  .company-brands-row > *:nth-child(n + 5),
+  .similar-grid > *:nth-child(n + 4) {
+    display: none !important;
+  }
+
+  /* Pagination: compact + thumb-friendly + overflow-safe */
+  .pagination,
+  .pagination-row,
+  .pagination-nums,
+  .listings-pagination,
+  .listings-pagination-wrap,
+  .services-pagination,
+  .blog-pagination,
+  .pagination-controls,
+  .trending-pagination,
+  .subcategory-pagination,
+  .advsearch-pagination,
+  .dash-pagination-wrap {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .pagination::-webkit-scrollbar,
+  .pagination-row::-webkit-scrollbar,
+  .pagination-nums::-webkit-scrollbar,
+  .listings-pagination::-webkit-scrollbar,
+  .listings-pagination-wrap::-webkit-scrollbar,
+  .services-pagination::-webkit-scrollbar,
+  .blog-pagination::-webkit-scrollbar,
+  .pagination-controls::-webkit-scrollbar,
+  .trending-pagination::-webkit-scrollbar,
+  .subcategory-pagination::-webkit-scrollbar,
+  .advsearch-pagination::-webkit-scrollbar,
+  .dash-pagination-wrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pagination .page-link,
+  .pagination-btn,
+  .pagination-link,
+  .btn-pagination,
+  .listings-pagination .btn-ui,
+  .advsearch-pagination .btn,
+  .subcategory-pagination .btn,
+  .trending-pagination .btn,
+  .dash-pagination .btn,
+  .dash-pagination-wrap .btn {
+    min-height: 36px !important;
+    min-width: 36px !important;
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.82rem !important;
+    line-height: 1.1 !important;
+    border-radius: 8px !important;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .pagination-ellipsis {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    flex: 0 0 auto;
+  }
+
+  .pagination-info,
+  .trending-pagination-info,
+  .listings-pagination-info {
+    width: 100%;
+    margin-top: 6px !important;
+    font-size: 0.78rem !important;
+    text-align: center;
+    color: #64748b;
+  }
+
+  /* Bootstrap-style page lists: reduce visual noise, keep current + edge controls */
+  .pagination .page-item:not(.active):not(:first-child):not(:last-child):not(:nth-child(2)):not(:nth-last-child(2)) {
+    display: none;
+  }
+
+  /* Legacy paginations with explicit First/Last links: hide them on phone */
+  .blog-pagination > .pagination-btn:first-child,
+  .blog-pagination > .pagination-btn:last-child,
+  .services-pagination > .pagination-btn:first-child,
+  .services-pagination > .pagination-btn:last-child,
+  .pagination-controls > .pagination-link:first-child,
+  .pagination-controls > .pagination-link:last-child {
+    display: none !important;
+  }
+}

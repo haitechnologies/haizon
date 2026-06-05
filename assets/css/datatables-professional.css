@@ -1,0 +1,245 @@
+/* ============================================================================
+    PROFESSIONAL DATATABLE THEME - HAIPULSE DASHBOARD
+   ============================================================================
+   
+   This CSS file provides consistent, professional styling for all DataTable
+   listing pages in the dashboard. Apply by adding class="datatable-professional"
+   to any <table> element with DataTables initialized.
+   
+   Created: March 9, 2026
+   Maintenance: Update this file to instantly style all 66+ listing pages
+   ============================================================================ */
+
+/* ========================
+   PROFESSIONAL TABLE STYLING
+   ======================== */
+
+/* Table Header Styling - Premium */
+.datatable-professional thead th {
+    background: linear-gradient(180deg, #f5f9fd 0%, #ecf2f9 100%) !important;
+    color: #2d3e52 !important;
+    border-bottom: 2px solid #d0dce8 !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Table Body Cell Styling - Refined */
+.datatable-professional tbody td {
+    font-size: 0.875rem;
+    color: #374151;
+    border-bottom: 1px solid #e5ecf1;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    vertical-align: middle;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* Alternating Row Colors - Professional */
+.datatable-professional tbody tr:nth-child(odd) td {
+    background: #ffffff;
+}
+
+.datatable-professional tbody tr:nth-child(even) td {
+    background: #fafbfd;
+}
+
+/* Row Hover Effect - Smooth Transition */
+.datatable-professional tbody tr:hover td {
+    background: #eff5fb !important;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================
+   PROFESSIONAL PAGINATION
+   ======================== */
+
+/* Pagination Container - Clean Flex Layout */
+.dataTables_wrapper .dataTables_paginate {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Pagination Button Base - Professional Style */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1.5px solid #d0dce8;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    outline: none;
+    text-decoration: none;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+/* Pagination Button Hover - Subtle Lift */
+.dataTables_wrapper .dataTables_paginate .paginate_button:not(.disabled):hover {
+    background-color: #f8fafd;
+    border-color: #a8bdd4;
+    color: #2d5a96;
+    box-shadow: 
+        0 4px 8px rgba(43, 90, 153, 0.1),
+        inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    transform: translateY(-1px);
+}
+
+/* Pagination Button Active (Current Page) - Premium Active State */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: linear-gradient(180deg, #2d5a96 0%, #1e4575 100%);
+    border-color: #163859;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    box-shadow: 
+        0 6px 16px rgba(43, 90, 153, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+}
+
+/* Pagination Button Active Hover - Enhanced Depth */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: linear-gradient(180deg, #1e4575 0%, #142e50 100%);
+    border-color: #0f1f35;
+    box-shadow: 
+        0 8px 20px rgba(43, 90, 153, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Pagination Button Disabled - Muted Professional */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    background-color: #f3f5fa;
+    border-color: #e2e7f0;
+    color: #a0aab8;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.65;
+}
+
+/* Pagination Previous/Next Arrow Styling */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+.dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    min-width: 36px;
+    padding: 0 8px;
+    font-weight: 600;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous:not(.disabled):hover,
+.dataTables_wrapper .dataTables_paginate .paginate_button.next:not(.disabled):hover {
+    background-color: #eef3fa;
+    border-color: #7b9ec8;
+    color: #1e4575;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.next:not(.disabled):hover {
+    transform: translateX(1px);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous:not(.disabled):hover {
+    transform: translateX(-1px);
+}
+
+/* Table Info Styling - Professional */
+.dataTables_wrapper .dataTables_info {
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    line-height: 1.5;
+}
+
+/* Filter/Search Input Styling - Professional */
+.dataTables_wrapper .dataTables_filter input {
+    border: 1.5px solid #d0dce8 !important;
+    border-radius: 5px;
+    padding: 7px 12px !important;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #374151;
+    background-color: #ffffff;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.4;
+}
+
+.dataTables_wrapper .dataTables_filter input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #2d5a96 !important;
+    background-color: #f8fafd;
+    box-shadow: 
+        0 0 0 3px rgba(45, 90, 150, 0.08),
+        inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    outline: none;
+}
+
+/* Length Menu Styling - Professional */
+.dataTables_wrapper .dataTables_length select {
+    border: 1.5px solid #d0dce8 !important;
+    border-radius: 5px;
+    padding: 6px 10px !important;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #374151;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M1 4l5 4 5-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    padding-right: 28px !important;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.dataTables_wrapper .dataTables_length select:focus {
+    border-color: #2d5a96 !important;
+    background-color: #f8fafd;
+    box-shadow: 
+        0 0 0 3px rgba(45, 90, 150, 0.08),
+        inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    outline: none;
+}
+
+.dataTables_wrapper .dataTables_length select:hover:not(:focus) {
+    border-color: #a8bdd4 !important;
+}
+
+/* Processing Message - Professional */
+.dataTables_processing {
+    background: rgba(255, 255, 255, 0.98) !important;
+    color: #2d5a96 !important;
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0.3px;
+}
+
+/* ============================================================================
+   END PROFESSIONAL DATATABLE THEME
+   ============================================================================ */

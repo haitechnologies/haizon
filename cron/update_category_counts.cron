@@ -1,0 +1,18 @@
+# Category Count Update Cron Job
+# Add this to your crontab to keep category counts updated
+
+# Update category counts daily at midnight
+0 0 * * * cd /path/to/haipulse && php update_category_counts.php >> logs/category_counts.log 2>&1
+
+# Alternative: Update daily at 2 AM (recommended for less load)
+# 0 2 * * * cd /path/to/haipulse && php update_category_counts.php >> logs/category_counts.log 2>&1
+
+# Alternative: Update every 6 hours
+# 0 */6 * * * cd /path/to/haipulse && php update_category_counts.php >> logs/category_counts.log 2>&1
+
+# For Windows Task Scheduler (PowerShell):
+# Action: Start a program
+# Program: php.exe
+# Arguments: G:\xampp\htdocs\haipulse\cron\update_category_counts.php
+# Start in: G:\xampp\htdocs\haipulse
+# Trigger: Daily at midnight (or your preferred time)

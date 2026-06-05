@@ -1,0 +1,401 @@
+<?php
+include('admin_elements/admin_header.php');
+
+$module = 'statistics';
+$module_caption = 'Statistics';
+$tbl_name = $tbl_prefix . $module;
+$error_message = '';
+$success_message = '';
+
+/*
+|--------------------------------------------------------------------------
+| PERMISSIONS
+|--------------------------------------------------------------------------
+|
+*/
+if (!has_full_access() && !has_any_role([Roles::SALES, Roles::OPERATIONS])) {
+	echo 'Permission Denied.';
+	exit();
+}
+
+include('admin_elements/permissions.php');
+
+$activeOrganizationId = dashboardRequireActiveOrganization();
+
+
+/*
+|--------------------------------------------------------------------------
+| DATA AGGREGATION - Dynamic CRM Metrics
+|--------------------------------------------------------------------------
+*/
+
+// Date ranges
+$current_month_start = date('Y-m-01');
+$current_month_end = date('Y-m-t');
+$last_month_start = date('Y-m-01', strtotime('-1 month'));
+$last_month_end = date('Y-m-t', strtotime('-1 month'));
+
+// CUSTOMERS
+$customer_query = "
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN created_at BETWEEN '$current_month_start' AND '$current_month_end 23:59:59' THEN 1 ELSE 0 END) as month_count,
+        SUM(CASE WHEN created_at BETWEEN '$last_month_start' AND '$last_month_end 23:59:59' THEN 1 ELSE 0 END) as last_month_count,
+        SUM(CASE WHEN approved = 1 THEN 1 ELSE 0 END) as approved_count,
+        SUM(CASE WHEN approved = 0 THEN 1 ELSE 0 END) as pending_approval
+    FROM `" . tbl_customers . "`
+";
+$customer_data = $mysqli->query($customer_query)->fetch_assoc();
+$total_customers = $customer_data['total'] ?? 0;
+$month_customers = $customer_data['month_count'] ?? 0;
+$last_month_customers = $customer_data['last_month_count'] ?? 0;
+$approved_customers = $customer_data['approved_count'] ?? 0;
+$pending_approval_customers = $customer_data['pending_approval'] ?? 0;
+
+// Customer growth percentage
+$customer_growth = $last_month_customers > 0 ? round((($month_customers - $last_month_customers) / $last_month_customers) * 100, 1) : 0;
+
+// LEADS
+$lead_query = "
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN created_at BETWEEN '$current_month_start' AND '$current_month_end 23:59:59' THEN 1 ELSE 0 END) as month_count,
+        SUM(CASE WHEN created_at BETWEEN '$last_month_start' AND '$last_month_end 23:59:59' THEN 1 ELSE 0 END) as last_month_count
+    FROM `" . tbl_leads . "`
+";
+$lead_data = $mysqli->query($lead_query)->fetch_assoc();
+$total_leads = $lead_data['total'] ?? 0;
+$month_leads = $lead_data['month_count'] ?? 0;
+$last_month_leads = $lead_data['last_month_count'] ?? 0;
+
+// Lead growth percentage
+$lead_growth = $last_month_leads > 0 ? round((($month_leads - $last_month_leads) / $last_month_leads) * 100, 1) : 0;
+
+// INVOICES (replacing sale_orders metrics)
+$invoice_query = "
+    SELECT
+        COUNT(*) as total,
+        SUM(grand_total) as total_value,
+        SUM(CASE WHEN invoice_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as month_value,
+        SUM(CASE WHEN invoice_date BETWEEN '$current_month_start' AND '$current_month_end' THEN 1 ELSE 0 END) as month_count
+    FROM `" . tbl_invoices . "`
+";
+$invoice_data = $mysqli->query($invoice_query)->fetch_assoc();
+$total_invoices = $invoice_data['total'] ?? 0;
+$total_invoice_value = $invoice_data['total_value'] ?? 0;
+$month_invoice_value = $invoice_data['month_value'] ?? 0;
+$month_invoices = $invoice_data['month_count'] ?? 0;
+
+// CONTACTS
+$total_contacts = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_customer_contacts . "`")->fetch_assoc()['count'];
+
+// ALERTS (replacing tasks functionality)
+$alert_query = "
+    SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as open_count,
+        SUM(CASE WHEN is_read = 1 THEN 1 ELSE 0 END) as closed_count
+    FROM `" . tbl_alerts . "`
+";
+$alert_data = $mysqli->query($alert_query)->fetch_assoc();
+$total_alerts = $alert_data['total'] ?? 0;
+$open_alerts = $alert_data['open_count'] ?? 0;
+$completed_alerts = $alert_data['closed_count'] ?? 0;
+
+// CUSTOMER DOCUMENTS - table decommissioned
+$total_documents = 0;
+$expired_documents = 0;
+$near_expiry_documents = 0;
+$up_to_date_documents = 0;
+
+// CONVERSION RATE (Leads to Customers)
+$converted_leads = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_leads . "` WHERE lead_status = 'converted'")->fetch_assoc()['count'];
+$conversion_rate = $total_leads > 0 ? round(($converted_leads / $total_leads) * 100, 1) : 0;
+
+?>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
+
+
+<!-- Main content -->
+<div class="content-wrapper">
+
+	<!-- Page header -->
+	<div class="page-header page-header-light shadow">
+		<div class="page-header-content d-lg-flex border-top">
+			<div class="d-flex align-items-center py-3 mb-2 mb-lg-0 flex-fill">
+				<div class="me-3 ms-2">
+					<div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
+						<i class="ph ph-users ph-2x"></i>
+					</div>
+				</div>
+				<div class="flex-fill">
+					<h4 class="mb-0">CRM Dashboard</h4>
+					<span class="text-muted">Customer Relationship Management</span>
+				</div>
+				<div class="ms-auto">
+					<span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 fs-6">
+						<i class="ph ph-calendar-blank me-1"></i> <?php echo date('F Y'); ?>
+					</span>
+				</div>
+			</div>
+
+			<div class="navbar navbar-expand-lg border-bottom-0 py-0 flex-lg-1">
+				<div class="container-fluid px-0">
+					<div class="navbar-collapse collapse" id="breadcrumb_elements">
+						<div class="navbar-nav ms-auto py-2">
+							<a href="listing_customers.php" class="btn btn-primary">
+								<i class="ph ph-users-three me-2"></i> New Customer
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
+				<i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
+			</a>
+		</div>
+	</div>
+	<!-- /page header -->
+
+
+
+	<?php if (granted_('view', '___')) { ?>
+		<!-- Inner content -->
+		<div class="content-inner">
+
+			<!-- Content area -->
+			<div class="content">
+
+				<?php include('admin_elements/breadcrumb.php'); ?>
+
+				<!-- KPI Cards -->
+				<!-- /KPI Cards -->
+
+				<!-- Dashboard content -->
+				<div class="row">
+					<div class="col-xl-8">
+
+						<!-- Recent Customers -->
+						<div class="card mb-3">
+							<div class="card-header d-flex align-items-center">
+								<h5 class="mb-0"><i class="ph ph-users me-2"></i>Recent Customers</h5>
+								<div class="ms-auto">
+									<a href="listing_customers.php" class="btn btn-sm btn-outline-primary">View all</a>
+								</div>
+							</div>
+							<div class="card-body p-0">
+								<div class="table-responsive">
+									<table class="table table-hover mb-0">
+										<thead class="table-light">
+											<tr>
+												<th>Customer</th>
+												<th>Email</th>
+												<th>Phone</th>
+												<th>Date Added</th>
+												<th>Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php
+											$result = $mysqli->query("SELECT * FROM `" . tbl_customers . "` ORDER BY id DESC LIMIT 8");
+											if ($result->num_rows > 0) {
+												while ($row = $result->fetch_array()) {
+													$approved = $row['approved'];
+													$status_text = $approved == 1 ? 'Approved' : ($approved == 0 ? 'Pending' : 'Not Approved');
+													$status_class = $approved == 1 ? 'success' : ($approved == 0 ? 'warning' : 'danger');
+											?>
+													<tr>
+														<td class="py-2">
+															<a href="customer_overview.php?customer_id=<?php echo $row['id']; ?>" class="fw-semibold">
+																<?php echo $row['display_name']; ?>
+															</a>
+														</td>
+														<td class="py-2 text-muted"><?php echo $row['email']; ?></td>
+														<td class="py-2 text-muted"><?php echo $row['phone']; ?></td>
+														<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['created_at'])); ?></td>
+														<td class="py-2">
+															<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
+																<?php echo $status_text; ?>
+															</span>
+														</td>
+													</tr>
+											<?php
+												}
+											} else {
+												echo '<tr><td class="text-center text-muted py-3" colspan="5">No customers found</td></tr>';
+											}
+											?>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+						<!-- Recent Leads Row -->
+						<div class="row">
+							<!-- Recent Leads -->
+							<div class="col-lg-6">
+								<div class="card mb-3">
+									<div class="card-header d-flex align-items-center">
+										<h6 class="mb-0"><i class="ph ph-user-plus me-2"></i>Recent Leads</h6>
+										<div class="ms-auto"></div>
+									</div>
+									<div class="card-body">
+										<?php
+										$result = $mysqli->query("SELECT * FROM `" . tbl_leads . "` ORDER BY id DESC LIMIT 5");
+										if ($result->num_rows > 0) {
+											while ($row = $result->fetch_array()) {
+												$lead_status = $row['lead_status'] ?? '';
+												$status_class = $lead_status == 'converted' ? 'success' : ($lead_status == 'contacted' ? 'info' : 'secondary');
+										?>
+												<div class="d-sm-flex flex-sm-wrap mb-3 pb-2 border-bottom">
+													<div class="flex-fill">
+														<a href="lead.php?id=<?php echo $row['id']; ?>" class="fw-semibold">
+															<?php echo $row['display_name']; ?>
+														</a>
+														<div class="text-muted fs-sm">
+															<i class="ph ph-envelope me-1"></i><?php echo $row['email']; ?>
+														</div>
+													</div>
+													<div class="ms-sm-auto mt-1 mt-sm-0">
+														 
+													</div>
+												</div>
+										<?php
+											}
+										} else {
+											echo '<p class="text-muted mb-0">No leads found</p>';
+										}
+										?>
+									</div>
+								</div>
+							</div>
+
+						</div>
+
+
+					</div>
+
+
+
+
+					<div class="col-xl-4">
+
+						<!-- Quick Stats -->
+						<div class="row">
+							<div class="col-sm-6 col-xl-12">
+								<div class="card card-body bg-success text-white mb-3 nav-link" data-href="listing_customers.php" style="cursor: pointer;">
+									<div class="d-flex align-items-center">
+										<div class="me-3">
+											<i class="ph ph-users ph-3x opacity-75"></i>
+										</div>
+										<div class="flex-fill">
+											<h3 class="mb-0"><?php echo number_format($total_customers); ?></h3>
+											<span class="opacity-75">Total Customers</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+
+						<!-- CRM Statistics -->
+						<div class="card mb-3">
+							<div class="card-header">
+								<h6 class="mb-0"><i class="ph ph-chart-bar me-2"></i>CRM Statistics</h6>
+							</div>
+							<div class="card-body">
+								<div class="mb-3 pb-3 border-bottom">
+									<div class="d-flex justify-content-between align-items-center mb-2">
+										<span class="text-muted">Contacts</span>
+										<span class="fw-semibold"><?php echo number_format($total_contacts); ?></span>
+									</div>
+									<div class="progress" style="height: 6px;">
+										<div class="progress-bar bg-info" style="width: 100%"></div>
+									</div>
+								</div>
+								<div class="mb-3 pb-3 border-bottom">
+									<div class="d-flex justify-content-between align-items-center mb-2">
+										<span class="text-muted">Pending Approval</span>
+										<span class="fw-semibold"><?php echo number_format($pending_approval_customers); ?></span>
+									</div>
+									<div class="progress" style="height: 6px;">
+										<div class="progress-bar bg-warning" style="width: <?php echo $total_customers > 0 ? ($pending_approval_customers / $total_customers) * 100 : 0; ?>%"></div>
+									</div>
+								</div>
+								<div class="mb-3 pb-3 border-bottom">
+									<div class="d-flex justify-content-between align-items-center mb-2">
+										<span class="text-muted">Open Alerts</span>
+										<span class="fw-semibold"><?php echo number_format($open_alerts); ?></span>
+									</div>
+									<div class="progress" style="height: 6px;">
+										<div class="progress-bar bg-danger" style="width: <?php echo $total_alerts > 0 ? ($open_alerts / $total_alerts) * 100 : 0; ?>%"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Pending Approvals -->
+						<div class="card mb-3">
+							<div class="card-header d-flex align-items-center">
+								<h6 class="mb-0"><i class="ph ph-check-square me-2"></i>Pending Approvals</h6>
+								<div class="ms-auto">
+									<span class="badge bg-warning"><?php echo $pending_approval_customers; ?></span>
+								</div>
+							</div>
+							<div class="card-body">
+								<?php
+								$result = $mysqli->query("SELECT * FROM `" . tbl_customers . "` WHERE approved != 1 ORDER BY id DESC LIMIT 5");
+								if ($result->num_rows > 0) {
+									while ($row = $result->fetch_array()) {
+										$approved = $row['approved'];
+										$status_text = $approved == 0 ? 'Pending' : 'Not Approved';
+										$status_class = $approved == 0 ? 'warning' : 'danger';
+								?>
+										<div class="d-flex justify-content-between align-items-start mb-3 pb-2 border-bottom">
+											<div class="flex-fill">
+												<a href="customer_overview.php?customer_id=<?php echo $row['id']; ?>" class="fw-semibold">
+													<?php echo $row['display_name']; ?>
+												</a>
+												<div class="text-muted fs-sm"><?php echo date("d M Y", strtotime($row['created_at'])); ?></div>
+											</div>
+											<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
+												<?php echo $status_text; ?>
+											</span>
+										</div>
+								<?php
+									}
+								} else {
+									echo '<p class="text-muted mb-0">All customers approved</p>';
+								}
+								?>
+							</div>
+						</div>
+
+
+					</div>
+				</div>
+				<!-- /dashboard content -->
+
+			</div>
+			<!-- /content area -->
+
+
+			<?php include('admin_elements/copyright.php'); ?>
+
+
+		</div>
+	<?php } // permissions 
+	?>
+	<!-- /inner content -->
+
+</div>
+<!-- /main content -->
+
+</div>
+<!-- /page content -->
+<?php include('admin_elements/admin_footer.php'); ?>

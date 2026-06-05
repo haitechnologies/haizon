@@ -1,0 +1,147 @@
+<?php
+include('admin_elements/admin_header.php');
+
+$module = 'statistics';
+$module_caption = 'Setup';
+$error_message = '';
+$success_message = '';
+
+include('admin_elements/permissions.php');
+
+$activeOrganizationId = dashboardRequireActiveOrganization();
+
+if (!function_exists('setupCanSee')) {
+	function setupCanSee(string $moduleSlug): bool
+	{
+		return has_full_access() || hasModuleAccess($moduleSlug);
+	}
+}
+
+$setupSections = [
+	[
+		'title' => 'Platform Administration',
+		'icon' => 'ph-gear-six',
+		'links' => [
+			['href' => 'global_settings.php', 'label' => 'Global Settings', 'desc' => 'Branding, domain, identity, and global platform options.', 'icon' => 'ph-sliders-horizontal', 'visible' => has_full_access()],
+			['href' => 'system_settings.php', 'label' => 'System Settings', 'desc' => 'Core behavior and technical feature settings.', 'icon' => 'ph-cpu', 'visible' => has_full_access()],
+			['href' => 'listing_users.php', 'label' => 'Users', 'desc' => 'Manage admin users and account access.', 'icon' => 'ph-users', 'visible' => has_full_access()],
+			['href' => 'listing_roles.php', 'label' => 'Roles & Permissions', 'desc' => 'Permission matrix and role access controls.', 'icon' => 'ph-lock-key', 'visible' => has_full_access()],
+			['href' => 'listing_modules.php', 'label' => 'Modules', 'desc' => 'Module catalog and permission-linked module setup.', 'icon' => 'ph-puzzle-piece', 'visible' => has_full_access()],
+			['href' => 'listing_authentication_activity.php', 'label' => 'Authentication Activity', 'desc' => 'Security access logs and authentication events.', 'icon' => 'ph-shield-check', 'visible' => has_full_access()],
+		],
+	],
+	[
+		'title' => 'Operations & Master Data',
+		'icon' => 'ph-database',
+		'links' => [
+			['href' => 'listing_warehouses.php', 'label' => 'Warehouses', 'desc' => 'Warehouse and location records.', 'icon' => 'ph-warehouse', 'visible' => setupCanSee('warehouses')],
+			['href' => 'listing_setup_groups.php', 'label' => 'Setup Groups', 'desc' => 'Reusable setup group definitions.', 'icon' => 'ph-sliders', 'visible' => setupCanSee('setup_groups')],
+			['href' => 'listing_document_categories.php', 'label' => 'Document Categories', 'desc' => 'Document taxonomy and filing categories.', 'icon' => 'ph-folders', 'visible' => setupCanSee('document_categories')],
+			['href' => 'listing_incoterms.php', 'label' => 'Incoterms', 'desc' => 'Trade incoterm definitions.', 'icon' => 'ph-globe-hemisphere-west', 'visible' => setupCanSee('incoterms')],
+			['href' => 'listing_units.php', 'label' => 'Units of Measure', 'desc' => 'Measurement units used in pricing and inventory.', 'icon' => 'ph-ruler', 'visible' => setupCanSee('units')],
+		],
+	],
+	[
+		'title' => 'Business Systems',
+		'icon' => 'ph-squares-four',
+		'links' => [
+			['href' => 'listing_customers.php', 'label' => 'CRM Setup', 'desc' => 'Customer, lead, and project-related setup.', 'icon' => 'ph-users-three', 'visible' => dashboardHasSystemAccess('crm') && (setupCanSee('customers') || setupCanSee('leads'))],
+			['href' => 'listing_payroll_components.php', 'label' => 'HR Setup', 'desc' => 'Payroll, attendance, and people setup items.', 'icon' => 'ph-identification-card', 'visible' => dashboardHasSystemAccess('hr') && (setupCanSee('payroll_components') || setupCanSee('departments'))],
+			['href' => 'listing_accounts.php', 'label' => 'Accounting Setup', 'desc' => 'Chart of accounts and financial configuration.', 'icon' => 'ph-currency-circle-dollar', 'visible' => dashboardHasSystemAccess('accounting') && (setupCanSee('accounts') || setupCanSee('banks'))],
+			['href' => 'listing_shipping_advices.php', 'label' => 'Shipping Setup', 'desc' => 'Shipping operations and master shipping entities.', 'icon' => 'ph-package', 'visible' => dashboardHasSystemAccess('shipping') && (setupCanSee('shipping_advices') || setupCanSee('shipping_invoices'))],
+		],
+	],
+	[
+		'title' => 'Communication & Risk Controls',
+		'icon' => 'ph-envelope-simple',
+		'links' => [
+			['href' => 'listing_email_providers.php', 'label' => 'Email Providers', 'desc' => 'SMTP/provider configuration and credentials.', 'icon' => 'ph-envelope-simple', 'visible' => setupCanSee('email_providers')],
+			['href' => 'listing_email_templates.php', 'label' => 'Email Templates', 'desc' => 'Template management for automated communications.', 'icon' => 'ph-file-doc', 'visible' => setupCanSee('email_templates')],
+			['href' => 'listing_email_targets.php', 'label' => 'Email Segments', 'desc' => 'Targeting lists and audience segments.', 'icon' => 'ph-target', 'visible' => setupCanSee('email_targets')],
+			['href' => 'listing_disposable_email_domains.php', 'label' => 'Disposable Email Domains', 'desc' => 'Block throwaway domains to reduce abuse.', 'icon' => 'ph-shield-slash', 'visible' => setupCanSee('disposable_email_domains')],
+			['href' => 'listing_banned_words.php', 'label' => 'Banned Words', 'desc' => 'Filter prohibited terms across content inputs.', 'icon' => 'ph-prohibit', 'visible' => setupCanSee('banned_words')],
+		],
+	],
+];
+
+$visibleSectionCount = 0;
+?>
+
+<div class="content-wrapper">
+	<div class="page-header page-header-light shadow-sm">
+		<div class="page-header-content d-lg-flex align-items-center justify-content-between border-top">
+			<div class="d-flex align-items-center gap-2 py-2">
+				<i class="ph-wrench fs-3 text-primary"></i>
+				<div>
+					<h5 class="mb-0">Setup Control Center</h5>
+					<small class="text-muted">Core configuration and operational setup links for the current organization.</small>
+				</div>
+			</div>
+			<div class="d-flex gap-2 py-2">
+				<a href="global_settings.php" class="btn btn-sm btn-light">Global Settings</a>
+				<a href="listing_system_settings.php" class="btn btn-sm btn-primary">System Settings</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="content-area">
+		<?php if (Roles::isSuperAdmin($session_role_id)): ?>
+			<div class="card mb-3 border-primary-subtle">
+				<div class="card-body py-2 d-flex flex-wrap align-items-center gap-2">
+					<span class="fw-semibold me-1">System Availability:</span>
+					<?php
+					$labels = ['crm' => 'CRM', 'hr' => 'HR', 'accounting' => 'Accounting', 'shipping' => 'Shipping'];
+					foreach ($labels as $key => $label):
+						$enabled = dashboardHasSystemAccess($key);
+					?>
+						<span class="badge <?php echo $enabled ? 'bg-success' : 'bg-secondary'; ?>"><?php echo htmlspecialchars($label, ENT_QUOTES); ?>: <?php echo $enabled ? 'Enabled' : 'Disabled'; ?></span>
+					<?php endforeach; ?>
+					<small class="text-muted">Toggle from header menu: Availability</small>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<div class="row g-3">
+			<?php foreach ($setupSections as $section): ?>
+				<?php
+				$links = array_values(array_filter($section['links'], function ($item) {
+					return !empty($item['visible']);
+				}));
+				if (empty($links)) {
+					continue;
+				}
+				$visibleSectionCount++;
+				?>
+				<div class="col-12 col-md-6 col-xxl-4">
+					<div class="card h-100">
+						<div class="card-header d-flex align-items-center gap-2">
+							<i class="<?php echo htmlspecialchars($section['icon'], ENT_QUOTES); ?> text-primary"></i>
+							<span class="fw-semibold"><?php echo htmlspecialchars($section['title'], ENT_QUOTES); ?></span>
+						</div>
+						<div class="list-group list-group-flush">
+							<?php foreach ($links as $link): ?>
+								<a href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES); ?>" class="list-group-item list-group-item-action py-3">
+									<div class="d-flex align-items-start gap-2">
+										<i class="<?php echo htmlspecialchars($link['icon'], ENT_QUOTES); ?> mt-1 text-muted"></i>
+										<div>
+											<div class="fw-semibold text-body"><?php echo htmlspecialchars($link['label'], ENT_QUOTES); ?></div>
+											<small class="text-muted"><?php echo htmlspecialchars($link['desc'], ENT_QUOTES); ?></small>
+										</div>
+									</div>
+								</a>
+							<?php endforeach; ?>
+						</div>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
+
+		<?php if ($visibleSectionCount === 0): ?>
+			<div class="alert alert-warning mt-3 mb-0">No setup modules are currently available for your role and active system availability settings.</div>
+		<?php endif; ?>
+	</div>
+
+	<?php include('admin_elements/copyright.php'); ?>
+</div>
+
+<?php include('admin_elements/admin_footer.php'); ?>

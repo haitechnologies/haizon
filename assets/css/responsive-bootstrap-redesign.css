@@ -1,0 +1,1395 @@
+/*
+ * Responsive Bootstrap Redesign Layer
+ * Shared mobile/tablet design system for public pages and dashboard screens.
+ * Loaded after existing stylesheets so it can normalize legacy layouts safely.
+ */
+
+:root {
+  --rb-surface: #ffffff;
+  --rb-surface-soft: #f4f7fb;
+  --rb-surface-strong: #e9eef8;
+  --rb-border: rgba(15, 23, 42, 0.08);
+  --rb-border-strong: rgba(15, 23, 42, 0.14);
+  --rb-text: #10213a;
+  --rb-text-soft: #5d6b82;
+  --rb-primary: #1357d5;
+  --rb-primary-strong: #0a43ac;
+  --rb-success: #0f9f73;
+  --rb-shadow: 0 18px 42px rgba(15, 23, 42, 0.09);
+  --rb-shadow-soft: 0 8px 20px rgba(15, 23, 42, 0.06);
+  --rb-radius-lg: 24px;
+  --rb-radius-md: 18px;
+  --rb-radius-sm: 14px;
+  --rb-mobile-gap: 12px;
+}
+
+body.hai-public.responsive-bootstrap-redesign .mobile-filter-trigger,
+body.hai-public.responsive-bootstrap-redesign .category-mobile-tools,
+body.hai-public.responsive-bootstrap-redesign .services-mobile-tools {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .responsive-bootstrap-redesign *,
+  .responsive-bootstrap-redesign *::before,
+  .responsive-bootstrap-redesign *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  body.responsive-bootstrap-redesign {
+    background: linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+    color: var(--rb-text);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.responsive-bootstrap-redesign .container,
+  body.responsive-bootstrap-redesign .container-fluid,
+  body.responsive-bootstrap-redesign .container-sm,
+  body.responsive-bootstrap-redesign .container-md,
+  body.responsive-bootstrap-redesign .container-lg,
+  body.responsive-bootstrap-redesign .container-xl,
+  body.responsive-bootstrap-redesign .container-xxl,
+  body.responsive-bootstrap-redesign .container-narrow {
+    padding-left: clamp(14px, 4vw, 24px) !important;
+    padding-right: clamp(14px, 4vw, 24px) !important;
+  }
+
+  body.responsive-bootstrap-redesign .section,
+  body.responsive-bootstrap-redesign .section-md,
+  body.responsive-bootstrap-redesign .section-lg,
+  body.responsive-bootstrap-redesign .hero,
+  body.responsive-bootstrap-redesign .hero-section,
+  body.responsive-bootstrap-redesign .ads-hero,
+  body.responsive-bootstrap-redesign .category-hero,
+  body.responsive-bootstrap-redesign .pricing-hero,
+  body.responsive-bootstrap-redesign main {
+    padding-top: clamp(16px, 3vw, 28px) !important;
+    padding-bottom: clamp(16px, 3vw, 28px) !important;
+  }
+
+  body.responsive-bootstrap-redesign .row {
+    --bs-gutter-x: clamp(0.85rem, 2vw, 1.15rem);
+    --bs-gutter-y: clamp(0.85rem, 2vw, 1rem);
+  }
+
+  body.responsive-bootstrap-redesign h1,
+  body.responsive-bootstrap-redesign .h1 {
+    font-size: clamp(1.55rem, 4vw, 2.35rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  body.responsive-bootstrap-redesign h2,
+  body.responsive-bootstrap-redesign .h2 {
+    font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+  }
+
+  body.responsive-bootstrap-redesign h3,
+  body.responsive-bootstrap-redesign .h3 {
+    font-size: clamp(1.05rem, 2.8vw, 1.45rem);
+    line-height: 1.25;
+  }
+
+  body.responsive-bootstrap-redesign p,
+  body.responsive-bootstrap-redesign .text-muted,
+  body.responsive-bootstrap-redesign .lead {
+    color: var(--rb-text-soft) !important;
+    line-height: 1.6;
+  }
+
+  body.responsive-bootstrap-redesign .card,
+  body.responsive-bootstrap-redesign .card-ui,
+  body.responsive-bootstrap-redesign .hero-card,
+  body.responsive-bootstrap-redesign .feature-card,
+  body.responsive-bootstrap-redesign .stats-card,
+  body.responsive-bootstrap-redesign .company-card,
+  body.responsive-bootstrap-redesign .company-card-pro,
+  body.responsive-bootstrap-redesign .blog-card,
+  body.responsive-bootstrap-redesign .filter-toolbar,
+  body.responsive-bootstrap-redesign .category-pagination-card,
+  body.responsive-bootstrap-redesign .category-empty-state,
+  body.responsive-bootstrap-redesign .modal-content,
+  body.responsive-bootstrap-redesign .table-responsive,
+  body.responsive-bootstrap-redesign .accordion-item,
+  body.responsive-bootstrap-redesign .dropdown-menu {
+    background: var(--rb-surface);
+    border: 1px solid var(--rb-border) !important;
+    border-radius: var(--rb-radius-md) !important;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.responsive-bootstrap-redesign .btn,
+  body.responsive-bootstrap-redesign .btn-ui,
+  body.responsive-bootstrap-redesign .btn-post,
+  body.responsive-bootstrap-redesign .page-link {
+    min-height: 46px;
+    border-radius: var(--rb-radius-sm) !important;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    box-shadow: none;
+  }
+
+  body.responsive-bootstrap-redesign .btn-primary,
+  body.responsive-bootstrap-redesign .btn-primary-ui,
+  body.responsive-bootstrap-redesign .btn-success,
+  body.responsive-bootstrap-redesign .btn-dark {
+    border: none;
+    background-image: linear-gradient(135deg, var(--rb-primary) 0%, #1f7af5 100%);
+  }
+
+  body.responsive-bootstrap-redesign .btn-outline-secondary,
+  body.responsive-bootstrap-redesign .btn-light,
+  body.responsive-bootstrap-redesign .btn-light-ui {
+    border-color: var(--rb-border-strong);
+    background: var(--rb-surface);
+    color: var(--rb-text);
+  }
+
+  body.responsive-bootstrap-redesign .form-control,
+  body.responsive-bootstrap-redesign .form-select,
+  body.responsive-bootstrap-redesign .input-group-text,
+  body.responsive-bootstrap-redesign textarea.form-control,
+  body.responsive-bootstrap-redesign .select2-container--default .select2-selection--single,
+  body.responsive-bootstrap-redesign .select2-container--default .select2-selection--multiple {
+    min-height: 48px;
+    border-radius: var(--rb-radius-sm) !important;
+    border: 1px solid var(--rb-border-strong) !important;
+    background: #fbfcff;
+    box-shadow: none !important;
+  }
+
+  body.responsive-bootstrap-redesign .form-control:focus,
+  body.responsive-bootstrap-redesign .form-select:focus,
+  body.responsive-bootstrap-redesign .btn:focus,
+  body.responsive-bootstrap-redesign .page-link:focus {
+    border-color: rgba(19, 87, 213, 0.45) !important;
+    box-shadow: 0 0 0 0.25rem rgba(19, 87, 213, 0.12) !important;
+  }
+
+  body.responsive-bootstrap-redesign .pagination {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  body.responsive-bootstrap-redesign .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--rb-border);
+    color: var(--rb-text);
+    background: var(--rb-surface);
+  }
+
+  body.responsive-bootstrap-redesign .table-responsive {
+    padding: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.responsive-bootstrap-redesign table {
+    background: transparent;
+  }
+
+  body.responsive-bootstrap-redesign th,
+  body.responsive-bootstrap-redesign td {
+    vertical-align: middle;
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.hai-public.responsive-bootstrap-redesign {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    scroll-padding-top: 84px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .header-main {
+    position: sticky;
+    top: 0;
+    z-index: 1045;
+    backdrop-filter: blur(14px);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-header-top {
+    display: none !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav {
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .container {
+    min-height: 72px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .navbar-brand img {
+    max-height: 42px;
+    width: auto;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .navbar-toggler {
+    width: 46px;
+    height: 46px;
+    border: 1px solid var(--rb-border) !important;
+    border-radius: 16px !important;
+    background: var(--rb-surface) !important;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-lg.navbar-collapse {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    margin-top: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-header {
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid var(--rb-border);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: calc(100dvh - 73px);
+    padding: 14px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-brand-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-brand-label {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--rb-text);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-brand-subtitle {
+    font-size: 0.78rem;
+    color: var(--rb-text-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .btn-close {
+    margin: 0;
+    border-radius: 12px;
+    padding: 0.75rem;
+    background-color: var(--rb-surface-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .navbar-nav {
+    flex: 1 1 auto;
+    align-content: start;
+    gap: 8px;
+    margin-bottom: 12px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 12px 14px !important;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    background: var(--rb-surface-soft);
+    color: var(--rb-text);
+    font-weight: 600;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .nav-link.active {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--rb-primary) 0%, #1f7af5 100%);
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(19, 87, 213, 0.25);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .public-nav-actions {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: auto;
+    padding: 12px;
+    border: 1px solid var(--rb-border);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--rb-shadow-soft);
+    backdrop-filter: blur(12px);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .btn-post {
+    width: 100%;
+    justify-content: center;
+    padding-inline: 1rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .mobile-filter-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0.7rem 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--rb-border);
+    background: var(--rb-surface);
+    box-shadow: var(--rb-shadow-soft);
+    font-weight: 700;
+    color: var(--rb-text);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .mobile-filter-trigger:hover,
+  body.hai-public.responsive-bootstrap-redesign .mobile-filter-trigger:focus {
+    border-color: rgba(19, 87, 213, 0.28);
+    color: var(--rb-primary);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search {
+    padding-top: 0.75rem;
+    padding-bottom: 0.8rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__inner {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    padding: 0.95rem;
+    border-radius: 20px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__label {
+    font-size: 0.95rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__keyword,
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__select,
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__submit {
+    min-width: 0;
+    width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero {
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__card {
+    padding: clamp(18px, 4vw, 26px);
+    border-radius: 26px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__content {
+    max-width: 100%;
+    margin-bottom: 14px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__content h1 {
+    font-size: clamp(1.75rem, 4.6vw, 2.35rem);
+    line-height: 1.08;
+    margin-bottom: 0.55rem;
+    overflow-wrap: anywhere;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__content p {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__form {
+    width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__grid,
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__grid--filters {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__keyword,
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__select,
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__submit {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__submit {
+    min-height: 50px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__tags,
+  body.hai-public.responsive-bootstrap-redesign .popular-tags {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__tags::-webkit-scrollbar,
+  body.hai-public.responsive-bootstrap-redesign .popular-tags::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .popular-tags__label,
+  body.hai-public.responsive-bootstrap-redesign .popular-tag {
+    flex: 0 0 auto;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: clamp(14px, 3vw, 18px);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-name,
+  body.hai-public.responsive-bootstrap-redesign .listing-name a {
+    overflow-wrap: anywhere;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-badges,
+  body.hai-public.responsive-bootstrap-redesign .listing-info-grid,
+  body.hai-public.responsive-bootstrap-redesign .listing-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-info-item,
+  body.hai-public.responsive-bootstrap-redesign .listing-actions .btn-ui,
+  body.hai-public.responsive-bootstrap-redesign .listing-actions .btn {
+    min-height: 44px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-info-item {
+    align-items: center;
+    justify-content: center;
+    padding: 10px 12px;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-actions > * {
+    flex: 1 1 160px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .listings-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .results-tools {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .results-tools .listings-sort {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .sidebar[data-filter-panel] {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: none;
+    padding: 82px 12px 12px;
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(10px);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .sidebar[data-filter-panel].open {
+    display: block;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .sidebar[data-filter-panel] .filter-box {
+    width: min(100%, 420px);
+    max-height: calc(100dvh - 104px);
+    margin-left: auto;
+    overflow: auto;
+    border-radius: 24px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-mobile-tools,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-mobile-tools {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-mobile-tools,
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-filter-panel {
+    display: none !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-filter-panel,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-filter-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: none;
+    padding: 82px 12px 12px;
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(10px);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-filter-panel.open,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-filter-panel.open {
+    display: block;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-filter-panel .filter-toolbar,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-filter-panel .services-controls {
+    width: min(100%, 420px);
+    max-height: calc(100dvh - 104px);
+    margin-left: auto;
+    overflow: auto;
+    border-radius: 24px;
+    background: var(--rb-surface);
+    box-shadow: var(--rb-shadow);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .toolbar-row-mobile-head,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-controls-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .filter-mobile-title,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-controls-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--rb-text);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .toolbar-row,
+  body.hai-public.responsive-bootstrap-redesign.page-category .filter-group-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .filter-select,
+  body.hai-public.responsive-bootstrap-redesign.page-category .filter-checkbox,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-filter,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-sort,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-actions {
+    width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .filter-checkbox {
+    min-height: 46px;
+    justify-content: flex-start;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .results-grid {
+    gap: 14px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .company-card-pro {
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .company-card-footer,
+  body.hai-public.responsive-bootstrap-redesign.page-category .company-card-action,
+  body.hai-public.responsive-bootstrap-redesign.page-category .company-card-action .btn-ui {
+    width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .service-card {
+    min-height: 100%;
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .service-name {
+    overflow-wrap: anywhere;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-pagination {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-pagination::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .pagination-btn,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-ellipsis {
+    flex: 0 0 auto;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .hero,
+  body.hai-public.responsive-bootstrap-redesign .hero-section,
+  body.hai-public.responsive-bootstrap-redesign .category-hero,
+  body.hai-public.responsive-bootstrap-redesign .ads-hero,
+  body.hai-public.responsive-bootstrap-redesign .pricing-hero,
+  body.hai-public.responsive-bootstrap-redesign .blog-hero {
+    border-radius: 0 0 28px 28px !important;
+    overflow: hidden;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .results-grid,
+  body.hai-public.responsive-bootstrap-redesign .search-results-grid,
+  body.hai-public.responsive-bootstrap-redesign .directory-grid,
+  body.hai-public.responsive-bootstrap-redesign .blog-grid,
+  body.hai-public.responsive-bootstrap-redesign .grid-3,
+  body.hai-public.responsive-bootstrap-redesign .grid-4,
+  body.hai-public.responsive-bootstrap-redesign .trending-grid {
+    gap: 16px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .company-card-pro,
+  body.hai-public.responsive-bootstrap-redesign .listing-item,
+  body.hai-public.responsive-bootstrap-redesign .blog-card,
+  body.hai-public.responsive-bootstrap-redesign .service-card,
+  body.hai-public.responsive-bootstrap-redesign .feature-card {
+    overflow: hidden;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .company-card-body,
+  body.hai-public.responsive-bootstrap-redesign .card-body,
+  body.hai-public.responsive-bootstrap-redesign .category-cta-card,
+  body.hai-public.responsive-bootstrap-redesign .filter-toolbar {
+    padding: clamp(14px, 3vw, 20px) !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .toolbar-row,
+  body.hai-public.responsive-bootstrap-redesign .filter-group-inline {
+    gap: 10px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer {
+    margin-top: 20px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-main {
+    background: linear-gradient(180deg, #10213a 0%, #162b4a 100%);
+    color: #dbe6f3;
+    border: 0;
+    border-radius: 28px 28px 0 0;
+    padding-top: 18px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-main a,
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-main h6,
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-main p,
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-main .text-dark,
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-main .text-muted {
+    color: inherit !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-cta-section .btn {
+    min-height: 56px;
+    border-radius: 18px;
+    font-weight: 700;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 12px 14px;
+    margin-bottom: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-toggle i {
+    transition: transform 0.2s ease;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-toggle[aria-expanded="true"] i {
+    transform: rotate(180deg);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .mobile-collapse {
+    margin-top: 8px;
+    padding: 4px 12px 10px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--rb-surface);
+    color: var(--rb-primary);
+    box-shadow: var(--rb-shadow-soft);
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.hai-dashboard.responsive-bootstrap-redesign {
+    background: linear-gradient(180deg, #eff4fa 0%, #e7edf6 100%);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .content-wrapper,
+  body.hai-dashboard.responsive-bootstrap-redesign .page-content {
+    width: 100%;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign > .navbar,
+  body.hai-dashboard.responsive-bootstrap-redesign .navbar.navbar-static {
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .navbar .container-fluid {
+    min-height: 68px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .sidebar-mobile-main-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .page-content {
+    padding: 16px 12px 88px;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-bottom,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-underline {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs::-webkit-scrollbar,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-bottom::-webkit-scrollbar,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-underline::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs .nav-link,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-bottom .nav-link,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-underline .nav-link {
+    white-space: nowrap;
+    min-height: 42px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--rb-border) !important;
+    background: #ffffff;
+    color: var(--rb-text);
+    font-weight: 600;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs .nav-link.active,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-bottom .nav-link.active,
+  body.hai-dashboard.responsive-bootstrap-redesign .nav-tabs-underline .nav-link.active {
+    border-color: transparent !important;
+    background: linear-gradient(135deg, var(--rb-primary) 0%, #1f7af5 100%);
+    color: #ffffff !important;
+    box-shadow: 0 10px 18px rgba(19, 87, 213, 0.18);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .card,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-content,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper,
+  body.hai-dashboard.responsive-bootstrap-redesign .table-responsive {
+    border-radius: 22px !important;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .table-responsive {
+    padding: 6px;
+    background: #ffffff;
+    border: 1px solid var(--rb-border);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .card-body,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-body {
+    padding: 16px !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .card-footer,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: stretch;
+    padding: 14px 16px;
+    border-top: 1px solid var(--rb-border);
+    background: linear-gradient(180deg, rgba(244, 247, 251, 0.7) 0%, #ffffff 100%);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .card-footer > *,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-footer > * {
+    flex: 1 1 160px;
+    margin: 0 !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .form-label,
+  body.hai-dashboard.responsive-bootstrap-redesign .col-form-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--rb-text);
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .form-text,
+  body.hai-dashboard.responsive-bootstrap-redesign .text-muted,
+  body.hai-dashboard.responsive-bootstrap-redesign small {
+    color: var(--rb-text-soft) !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .row .col-lg-3.col-form-label,
+  body.hai-dashboard.responsive-bootstrap-redesign .row .col-lg-4.col-form-label,
+  body.hai-dashboard.responsive-bootstrap-redesign .row .col-md-3.col-form-label,
+  body.hai-dashboard.responsive-bootstrap-redesign .row .col-md-4.col-form-label {
+    padding-bottom: 0;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .dt-header,
+  body.hai-dashboard.responsive-bootstrap-redesign .dt-footer,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dt-header,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dt-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_filter,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_length,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_info,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate {
+    width: 100%;
+    text-align: left !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate .pagination,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate::-webkit-scrollbar,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate .pagination::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate .paginate_button,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate .page-item,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_paginate .page-link {
+    flex: 0 0 auto;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .dataTables_filter input,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper .form-control,
+  body.hai-dashboard.responsive-bootstrap-redesign .dataTables_wrapper select,
+  body.hai-dashboard.responsive-bootstrap-redesign .form-control,
+  body.hai-dashboard.responsive-bootstrap-redesign .form-select {
+    min-height: 46px;
+    width: 100%;
+    border-radius: 14px !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .btn,
+  body.hai-dashboard.responsive-bootstrap-redesign .btn-sm,
+  body.hai-dashboard.responsive-bootstrap-redesign .btn-lg {
+    min-height: 44px;
+    border-radius: 14px !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-dialog {
+    margin: 0.75rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.responsive-bootstrap-redesign .card,
+  body.responsive-bootstrap-redesign .card-ui,
+  body.responsive-bootstrap-redesign .modal-content,
+  body.responsive-bootstrap-redesign .filter-toolbar,
+  body.responsive-bootstrap-redesign .category-pagination-card,
+  body.responsive-bootstrap-redesign .table-responsive {
+    border-radius: 18px !important;
+  }
+
+  body.responsive-bootstrap-redesign .btn,
+  body.responsive-bootstrap-redesign .btn-ui,
+  body.responsive-bootstrap-redesign .btn-post,
+  body.responsive-bootstrap-redesign .page-link {
+    width: auto;
+    max-width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .container {
+    min-height: 64px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .offcanvas-lg.navbar-collapse {
+    width: min(92vw, 380px);
+    padding: 0;
+    border-left: 1px solid var(--rb-border);
+    border-radius: 24px 0 0 24px;
+    box-shadow: var(--rb-shadow);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-main-nav .nav-link {
+    min-height: 46px;
+    padding: 11px 12px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__inner {
+    padding: 0.8rem;
+    border-radius: 18px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-global-search__label {
+    font-size: 0.9rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .results-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-listings .sidebar[data-filter-panel] .filter-box,
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-filter-panel .filter-toolbar,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-filter-panel .services-controls {
+    width: 100%;
+    max-height: calc(100dvh - 96px);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__card {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__content h1 {
+    font-size: clamp(1.5rem, 7vw, 1.95rem);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .public-search-hero__content p {
+    font-size: 0.92rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-card {
+    gap: 9px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-badge {
+    font-size: 0.74rem;
+    padding: 0.34rem 0.62rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-info-grid,
+  body.hai-public.responsive-bootstrap-redesign .listing-actions {
+    flex-direction: column;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .listing-actions > * {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-subcats-grid,
+  body.hai-public.responsive-bootstrap-redesign.page-category .results-grid,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-grid,
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-category .category-stats-bar {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-search-bar form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-services .services-search-bar button {
+    position: static;
+    transform: none;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid var(--rb-border);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-cta-section {
+    --bs-gutter-x: 0.6rem;
+    --bs-gutter-y: 0.6rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign .site-footer .footer-cta-section .btn {
+    min-height: 52px;
+    padding: 10px 12px;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .page-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .card-body,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-body,
+  body.hai-dashboard.responsive-bootstrap-redesign .card-footer,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-footer {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign .card-footer > *,
+  body.hai-dashboard.responsive-bootstrap-redesign .modal-footer > * {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 1199.98px) {
+  body.hai-public.responsive-bootstrap-redesign.page-home .hero-card {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(22px, 4vw, 34px);
+    border-radius: 30px;
+    background: radial-gradient(circle at top right, rgba(69, 145, 255, 0.28), transparent 34%), linear-gradient(145deg, #10213a 0%, #17355d 58%, #1357d5 100%);
+    box-shadow: 0 28px 56px rgba(16, 33, 58, 0.22);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .hero-card h1,
+  body.hai-public.responsive-bootstrap-redesign.page-home .hero-card p,
+  body.hai-public.responsive-bootstrap-redesign.page-home .popular-tags,
+  body.hai-public.responsive-bootstrap-redesign.page-home .popular-tags__label {
+    color: #ffffff !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .search-panel {
+    margin-top: 18px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .search-grid--wide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .field--hero {
+    min-height: 54px;
+    border-radius: 18px !important;
+    border: 1px solid rgba(20, 33, 61, 0.14) !important;
+    background: #ffffff !important;
+    color: var(--rb-text);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .field--hero::placeholder {
+    color: #6f7f93;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .field--hero:focus {
+    border-color: rgba(239, 108, 0, 0.42) !important;
+    box-shadow: 0 0 0 0.22rem rgba(239, 108, 0, 0.14);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .btn--search {
+    min-width: 144px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .popular-tags {
+    gap: 8px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .popular-tag {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .kpi {
+    padding: 18px 16px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+    border: 1px solid var(--rb-border);
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .kpi-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    background: #eef4ff;
+    font-size: 1.2rem;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .category-card,
+  body.hai-public.responsive-bootstrap-redesign.page-home .business-card,
+  body.hai-public.responsive-bootstrap-redesign.page-home .blog-card,
+  body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card,
+  body.hai-public.responsive-bootstrap-redesign.page-home .state-card,
+  body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card {
+    border-radius: 24px !important;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .state-card {
+    display: block;
+    padding: 16px 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid var(--rb-border);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card {
+    padding: clamp(20px, 4vw, 28px);
+    background: linear-gradient(135deg, #10213a 0%, #1357d5 100%);
+    color: #ffffff;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card .home-cta-copy {
+    color: rgba(255, 255, 255, 0.84) !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .detail-box,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-section-card,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-banner-card,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-card {
+    border-radius: 24px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-card-spaced {
+    padding: clamp(18px, 3vw, 28px) !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-title {
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .meta-line {
+    line-height: 1.6;
+    color: var(--rb-text-soft);
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-quick-grid,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-keywords-row,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-brands-row,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-states-row,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-alpha-row,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-social-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .quick-item,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-keyword-pill,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-brand-pill,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-state-btn,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-alpha-btn {
+    border-radius: 999px !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign.page-dashboard-form .content-wrapper > .container-fluid > h1 {
+    margin-bottom: 18px !important;
+    padding: 18px 20px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #10213a 0%, #1357d5 100%);
+    color: #ffffff;
+    box-shadow: var(--rb-shadow-soft);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign.page-dashboard-form .card-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--rb-border);
+    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign.page-dashboard-form .card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    color: var(--rb-text);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign.page-dashboard-form .form-check.form-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #f8fbff;
+    border: 1px solid var(--rb-border);
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign.page-dashboard-form .form-check.form-switch .form-check-input {
+    margin-left: auto;
+    width: 42px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.hai-public.responsive-bootstrap-redesign.page-home .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .grid-3,
+  body.hai-public.responsive-bootstrap-redesign.page-home .states-grid,
+  body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .list-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.hai-dashboard.responsive-bootstrap-redesign.page-dashboard-form .col-lg-3 {
+    order: -1;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hai-public.responsive-bootstrap-redesign.page-home .search-grid--wide {
+    grid-template-columns: 1fr;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .btn--search,
+  body.hai-public.responsive-bootstrap-redesign.page-home .home-btn-top,
+  body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card .btn-ui {
+    width: 100%;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-home .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .business-top,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-quick-grid {
+    gap: 8px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-banner-img,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-carousel-img,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-map-frame {
+    border-radius: 18px;
+  }
+
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .quick-grid a,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-cta-top,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-btn,
+  body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-action-btn {
+    width: 100%;
+  }
+}

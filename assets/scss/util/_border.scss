@@ -1,0 +1,267 @@
+.br-100 {
+	border-radius: 100% !important;
+}
+
+.br-7 {
+	border-radius: 7px;
+}
+.br-t-7 {
+	border-top-left-radius: 7px !important;
+	border-top-right-radius: 7px !important;
+}
+.br-b-7 {
+	border-bottom-left-radius: 7px !important;
+	border-bottom-right-radius: 7px !important;
+}
+
+.br-ts-7 {
+	border-top-left-radius: 7px !important;
+}
+
+.br-ts-10 {
+	border-top-left-radius: 1rem !important;
+}
+
+.br-bs-7 {
+	border-bottom-left-radius: 7px !important;
+}
+
+.br-bs-10 {
+	border-bottom-left-radius: 1rem !important;
+}
+
+.br-te-7 {
+	border-top-right-radius: 7px !important;
+}
+
+.br-te-10 {
+	border-top-right-radius: 1rem !important;
+}
+
+.br-be-7 {
+	border-bottom-right-radius: 7px !important;
+}
+
+.br-be-10 {
+	border-bottom-right-radius: 1rem !important;
+}
+
+.br-4 {
+	border-radius: 4px;
+}
+
+.br-ts-4 {
+	border-top-left-radius: 4px !important;
+}
+
+.br-bs-4 {
+	border-bottom-left-radius: 4px !important;
+}
+
+.br-ts-3 {
+	border-top-left-radius: 3px !important;
+}
+
+.br-bs-3 {
+	border-bottom-left-radius: 3px !important;
+}
+
+.br-te-3 {
+	border-top-right-radius: 3px !important;
+}
+
+.br-be-3 {
+	border-bottom-right-radius: 3px !important;
+}
+
+.br-te-4 {
+	border-top-right-radius: 4px !important;
+}
+
+.br-be-4 {
+	border-bottom-right-radius: 4px !important;
+}
+
+.br-ts-0 {
+	border-top-left-radius: 0 !important;
+}
+
+.br-bs-0 {
+	border-bottom-left-radius: 0 !important;
+}
+
+.br-te-0 {
+	border-top-right-radius: 0 !important;
+}
+
+.br-be-0 {
+	border-bottom-right-radius: 0 !important;
+}
+
+.border {
+	vertical-align: top;
+	border: 1px solid $border;
+}
+
+.br-100 {
+	border-radius: 100% !important;
+}
+
+.br-4 {
+	border-radius: 4px !important;
+}
+
+.br-3 {
+	border-radius: 3px !important;
+}
+
+.br-2 {
+	border-radius: 2px !important;
+}
+
+.br-ts-2 {
+	border-top-left-radius: 2px !important;
+}
+
+.br-bs-2 {
+	border-bottom-left-radius: 2px !important;
+}
+
+.br-te-2 {
+	border-top-right-radius: 2px !important;
+}
+
+.br-be-2 {
+	border-bottom-right-radius: 2px !important;
+}
+
+.br-0 {
+	border-radius: 0px !important;
+}
+
+.br-ts-0 {
+	border-top-left-radius: 0px !important;
+}
+
+.br-bs-0 {
+	border-bottom-left-radius: 0px !important;
+}
+
+.br-te-0 {
+	border-top-right-radius: 0px !important;
+}
+
+.br-be-0 {
+	border-bottom-right-radius: 0px !important;
+}
+
+@media (min-width: 992px) {
+	.br-md-2 {
+		border-radius: 2px !important;
+	}
+	.br-ts-md-2 {
+		border-top-left-radius: 2px !important;
+	}
+	.br-bs-md-2 {
+		border-bottom-left-radius: 2px !important;
+	}
+	.br-te-md-2 {
+		border-top-right-radius: 2px !important;
+	}
+	.br-be-md-2 {
+		border-bottom-right-radius: 2px !important;
+	}
+	.br-md-0 {
+		border-radius: 0 !important;
+	}
+	.br-ts-md-0 {
+		border-top-left-radius: 0 !important;
+	}
+	.br-bs-md-0 {
+		border-bottom-left-radius: 0 !important;
+	}
+	.br-te-md-0 {
+		border-top-right-radius: 0 !important;
+	}
+	.br-be-md-0 {
+		border-bottom-right-radius: 0 !important;
+	}
+	.Realestate-content .select2-container--default .select2-selection--single {
+		border-radius: 0 !important;
+	}
+}
+
+.border {
+	border: 1px solid $border !important;
+}
+
+.border-top {
+	border-top: 1px solid $border !important;
+}
+
+.border-end {
+	border-right: 1px solid $border !important;
+}
+
+.border-bottom {
+	border-bottom: 1px solid $border !important;
+}
+
+.border-start {
+	border-left: 1px solid $border !important;
+}
+
+.border-0 {
+	border: 0 !important;
+}
+
+.border-top-0 {
+	border-top: 0 !important;
+}
+
+.border-end-0 {
+	border-right: 0 !important;
+}
+
+.border-bottom-0 {
+	border-bottom: 0 !important;
+}
+
+.border-start-0 {
+	border-left: 0 !important;
+}
+
+.border-primary {
+	border-color: #868e96 !important;
+}
+
+.border-success {
+	border-color: $success !important;
+}
+
+.border-info {
+	border-color: $info !important;
+}
+
+.border-warning {
+	border-color: $warning !important;
+}
+
+.border-danger {
+	border-color: $danger !important;
+}
+
+.border-light {
+	border-color: $background !important;
+}
+
+.border-dark {
+	border-color: $gray-dark !important;
+}
+
+.border-white {
+	border-color: $white !important;
+}
+
+
+/*-------- Border Radius -------*/

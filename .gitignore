@@ -1,0 +1,116 @@
+# ============================================================
+# CREDENTIALS & SECRETS
+# ============================================================
+.env
+.env.local
+.env.*.local
+scripts/.env
+.private/
+
+# ============================================================
+# DEPENDENCY DIRECTORIES (generated, not committed)
+# ============================================================
+vendor/
+.venv/
+
+# Force-include specific dashboard DataTables vendor assets needed in production
+!dashboard/assets/vendor/
+!dashboard/assets/vendor/datatables/
+!dashboard/assets/vendor/datatables/**
+!dashboard/assets/vendor/datatables-responsive/
+!dashboard/assets/vendor/datatables-responsive/**
+!dashboard/assets/js/vendor/
+!dashboard/assets/js/vendor/tables/
+!dashboard/assets/js/vendor/tables/datatables/
+!dashboard/assets/js/vendor/tables/datatables/**
+# composer.lock is intentionally tracked — ensures reproducible installs in CI and production
+
+# ============================================================
+# AI / COPILOT DEV ARTIFACTS (local development only)
+# ============================================================
+ai/
+.github/copilot-memory-index.md
+.github/pulse-mini.md
+.vscode/
+claude-archive.md
+claude-mini.md
+claude-quick.md
+index.md
+
+# ============================================================
+# DEVELOPER TOOLS & SCRIPTS (not for production)
+# ============================================================
+scripts/
+backups/
+migrations/
+database/
+
+# ============================================================
+# GENERATED / TEMPORARY FILES
+# ============================================================
+error_log.txt
+pages/error_log.txt
+logs/
+*.log
+
+# ============================================================
+# DOCUMENTATION & PLANNING FILES (not for production)
+# ============================================================
+BACKUP_STRATEGY_GUIDE.html
+ZERO_RESULT_RECOVERY_PLAN.html
+PRODUCTION_LAUNCH_CHECKLIST.html
+manual-test-links.html
+manual-test-links.php
+token-optimization-report.html
+ROBOTS_SITEMAPS.txt
+Muje Parh Lo.txt
+@source.lnk
+*.lnk
+
+# ============================================================
+# DEPLOYMENT & SERVER CONFIGURATION (contain server/infra details)
+# ============================================================
+DEPLOYMENT_HOSTINGER.md
+DEPLOYMENT_*.md
+deploy-exclude.txt
+.htaccess.anti-scraping
+
+# ============================================================
+# TEMPORARY & AUDIT FILES
+# ============================================================
+.tmp*
+
+# ============================================================
+# DASHBOARD DEV/AUDIT FILES
+# ============================================================
+dashboard/CONSOLIDATED_ERROR_LOG.txt
+dashboard/CONSOLIDATED_ERROR_LOG.lock
+dashboard/error_log.txt
+dashboard/listing_customers_SECURE_EXAMPLE.php
+dashboard/deepdive_verification.php
+dashboard/final_audit.php
+dashboard/comprehensive_audit_report.php
+dashboard/validate_datatables.php
+dashboard/validate_listing_pages.php
+dashboard/validate_listing_styles.php
+dashboard/VALIDATOR_README.md
+dashboard/clean_audit_script.php
+dashboard/audit_cleanup.php
+
+# ============================================================
+# SQL DUMPS
+# ============================================================
+*.sql
+
+# ============================================================
+# USER-GENERATED CONTENT (not tracked in git)
+# ============================================================
+uploads/
+pdfs_invoices/
+
+# ============================================================
+# OS & EDITOR
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,922 @@
+<?php
+require_once __DIR__ . '/../config/session.php';
+startDashboardSession();
+header("Content-Type: text/html; charset=utf-8");
+require('../config/globals.php');
+require('../config/database.php');
+include('../config/images.php');
+// include('admin_elements/timeout.php');  // File doesn't exist
+// include('admin_elements/security.php');
+include('admin_elements/grab_vars.php');
+
+
+
+
+
+//============================================================+
+// File name   : example_001.php
+// Begin       : 2008-03-04
+// Last Update : 2013-05-14
+//
+// Description : Example 001 for TCPDF class
+//               Default Header and Footer
+//
+// Author: Nicola Asuni
+//
+// (c) Copyright:
+//               Nicola Asuni
+//               Tecnick.com LTD
+//               www.tecnick.com
+//               info@tecnick.com
+//============================================================+
+
+/**
+ * Creates an example PDF TEST document using TCPDF
+ * @package com.tecnick.tcpdf
+ * @abstract TCPDF - Example: Default Header and Footer
+ * @author Nicola Asuni
+ * @since 2008-03-04
+ * @group header
+ * @group footer
+ * @group page
+ * @group pdf
+ */
+
+// Include the main TCPDF library (search for installation path).
+require_once('../tcpdf/examples/tcpdf_include.php');
+
+// create new PDF document
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set document information
+$pdf->setCreator(PDF_CREATOR);
+$pdf->setAuthor('HaiTechnologiesLLC');
+$pdf->setTitle('Invoice');
+$pdf->setSubject('na');
+// $pdf->setKeywords('TCPDF, PDF, example, test, guide');
+
+// set default header data
+// $pdf->setHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE . ' 001', PDF_HEADER_STRING, array(0, 64, 255), array(0, 64, 128));
+// $pdf->setFooterData(array(0, 64, 0), array(0, 64, 128));
+
+// set header and footer fonts
+$pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+$pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+// set default monospaced font
+$pdf->setDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+// $pdf->setMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+// $pdf->setHeaderMargin(PDF_MARGIN_HEADER);
+
+$pdf->SetMargins(10, 3, 10, true);
+
+
+// $pdf->setFooterMargin(PDF_MARGIN_FOOTER);
+$pdf->setFooterMargin(5);
+
+// set auto page breaks
+$pdf->setAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+// set some language-dependent strings (optional)
+if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
+    require_once(dirname(__FILE__) . '/lang/eng.php');
+    $pdf->setLanguageArray($l);
+}
+
+
+// // set some language dependent data:
+// $lg = array();
+// $lg['a_meta_charset'] = 'UTF-8';
+// $lg['a_meta_dir'] = 'rtl';
+// $lg['a_meta_language'] = 'fa';
+// $lg['w_page'] = 'page';
+
+// // set some language-dependent strings (optional)
+// $pdf->setLanguageArray($lg);
+
+// ---------------------------------------------------------
+
+// set default font subsetting mode
+$pdf->setFontSubsetting(true);
+
+// Set font
+// dejavusans is a UTF-8 Unicode font, if you only need to
+// print standard ASCII chars, you can use core fonts like
+// helvetica or times to reduce file size.
+$pdf->setFont('dejavusans', '', 14, '', true);
+
+// remove default header
+$pdf->setPrintHeader(false);
+
+/*
+|--------------------------------------------------------------------------
+| 	ARABIC SUPPORT
+|--------------------------------------------------------------------------
+*/
+// set some language dependent data:
+// $lg = array();
+// $lg['a_meta_charset'] = 'UTF-8';
+// $lg['a_meta_dir'] = 'rtl';
+// $lg['a_meta_language'] = 'fa';
+// $lg['w_page'] = 'page';
+
+// set some language-dependent strings (optional)
+// $pdf->setLanguageArray($lg);
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+
+// Add a page
+// This method has several options, check the source code documentation for more information.
+$pdf->AddPage();
+
+// set text shadow effect
+// $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(196, 196, 196), 'opacity' => 1, 'blend_mode' => 'Normal'));
+
+// $pdf->Write(0, 'Example of HTML tables', '', 0, 'L', true, 0, false, false, 0);
+
+$pdf->setFont('helvetica', '', 8);
+
+// -----------------------------------------------------------------------------
+
+$pdf_background          = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="pdf_background"'));
+
+// -- set new background ---
+
+// get the current page break margin
+$bMargin = $pdf->getBreakMargin();
+// get current auto-page-break mode
+$auto_page_break = $pdf->getAutoPageBreak();
+// disable auto-page-break
+$pdf->SetAutoPageBreak(false, 0);
+// set bacground image
+// $img_file = K_PATH_IMAGES . 'image_demo.jpg';
+// $img_file = '../images/background.jpg';
+// $img_file = '../uploads/global_settings/'. $pdf_background.'';
+$img_file = '';
+
+$pdf->Image($img_file, 0, 0, 210, 297, '', '', '', false, 300, '', false, false, 0);
+// restore auto-page-break status
+$pdf->SetAutoPageBreak($auto_page_break, $bMargin);
+// set the starting point for the page content
+$pdf->setPageMark();
+
+// -----------------------------------------------------------------------------
+
+
+/*
+|--------------------------------------------------------------------------
+| 	ARABIC
+|--------------------------------------------------------------------------
+*/
+// set some language dependent data:
+$lg = array();
+$lg['a_meta_charset'] = 'UTF-8';
+$lg['a_meta_dir'] = 'rtl';
+$lg['a_meta_language'] = 'fa';
+$lg['w_page'] = 'page';
+
+// // set some language-dependent strings (optional)
+// $pdf->setLanguageArray($lg);
+
+// $pdf->SetFont('aealarabiya', '', 8);
+
+// ---------------------------------------------------------
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| 	SECURITY
+|--------------------------------------------------------------------------
+|
+*/
+
+
+
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| 	GET ALL VARIABLES ADD/UPDATE
+|--------------------------------------------------------------------------
+|
+*/
+
+$base_currency_code = BASE_CURRENCY['code'];
+
+
+if (isset($_REQUEST['id']) && !empty($_REQUEST['id']))  $id     = e_s__($_REQUEST['id']);
+else $id = 0;
+
+if (isset($_REQUEST['token']) && !empty($_REQUEST['token']))  $token     = e_s__($_REQUEST['token']);
+else $token = '';
+
+
+if (!isset($_REQUEST['token']) || empty($_REQUEST['token'])) {
+    header("Location:index.php");
+}
+
+
+$sent_token = hash("sha512", 'bushogai' . $id);
+
+
+if ($token != $sent_token) die('');
+
+// $row_bg = 'background-color: #dce9f7;';
+$row_bg = '';
+
+
+if (!empty($id)) {
+
+    $result = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id=$id");
+    $row = $result->fetch_array();
+
+    $customer_id                = s__($row['customer_id']);
+    $display_name           = getTableAttr('display_name', tbl_customers, $customer_id);
+    $customer_trn           = getTableAttr('trn', tbl_customers, $customer_id);
+    $customer_phone         = getTableAttr('phone', tbl_customers, $customer_id);
+
+    $invoice_no             = s__($row['invoice_no']);
+    $invoice_status         = s__($row['invoice_status']);
+    $invoice_date           = s__($row['invoice_date']);
+    $expiry_date            = s__($row['expiry_date']);
+    $reference_no           = s__($row['reference_no']);
+    $warehouse_id           = s__($row['warehouse_id']);
+
+    $expected_shipment_date = s__($row['expected_shipment_date']);
+    $payment_term           = s__($row['payment_term']);
+
+    // $shipment_type          = s__($row['shipment_type']);
+    // $sales_person           = s__($row['sales_person']);
+    $job_reference_no       = s__($row['job_reference_no']);
+    $master_awb_no          = s__($row['master_awb_no']);
+
+    $shipper                = s__($row['shipper']);
+    // COMMENTED: tbl_shippers table has been deleted
+    // $shipper                = getTableAttr('shipper_name', tbl_shippers, $shipper);
+
+    $consignee              = s__($row['consignee']);
+    // COMMENTED: tbl_consignees table has been deleted
+    // $consignee              = getTableAttr('consignee_name', tbl_consignees, $consignee);
+
+    $origin                 = s__($row['origin']);
+    $origin                 = getTableAttr('abbr', tbl_geo_countries, $origin) . ' - ' . getTableAttr('country', tbl_geo_countries, $origin);
+
+    $destination            = s__($row['destination']);
+    $destination            = getTableAttr('abbr', tbl_geo_countries, $destination) . ' - ' . getTableAttr('country', tbl_geo_countries, $destination);
+
+    $no_of_packs            = s__($row['no_of_packs']);
+    $gross_weight           = s__($row['gross_weight']);
+    $chargeable_weight      = s__($row['chargeable_weight']);
+    $volume                 = s__($row['volume']);
+
+    $customer_notes         = s__($row['customer_notes']);
+    $terms_and_conditions   = s__($row['terms_and_conditions']);
+
+    $grand_subtotal             = s__($row['grand_subtotal']);
+    $grand_discount_type        = s__($row['grand_discount_type']);
+    $grand_discount_type_value  = s__($row['grand_discount_type_value']);
+    $grand_discount_amount      = s__($row['grand_discount_amount']);
+    $grand_after_discount       = s__($row['grand_after_discount']);
+    $grand_tax                  = s__($row['grand_tax']);
+    $grand_total                = s__($row['grand_total']);
+
+    $is_active = s__($row['publish']);
+
+    $invoice_date               = processDateYtoD($invoice_date);
+    $expiry_date                = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
+    $expected_shipment_date     = ($expected_shipment_date == '1970-01-01' ? '' : processDateDtoY($expected_shipment_date));
+
+    $created_at             = s__($row['created_at']);
+    $created_time           = date('h:i:s', strtotime($created_at));
+    $created_date           = date('d-m-Y', strtotime($created_at));
+    $created_by             = s__($row['created_by']);
+    $created_by             = getUsernameByID($created_by);
+
+    // $grand_total_in_words  = ucwords(convert_number_to_words($grand_total));
+
+    $spell_out = '';
+    // Need to enable Extension intl in php.ini
+    $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+
+    if (!empty($grand_total)){
+
+        $spell_out = $f->format($grand_total);
+        $spell_out = str_ireplace(' point ', '.', ucwords($spell_out));
+    
+        if (str_contains($spell_out, '.')) {
+            $spell_out .= $base_currency_code;
+        }
+    }
+
+    // if (Str::contains($haystack, 'needles'))
+    $grand_total_in_words  = ucwords($spell_out);
+
+    $is_active = s__($row['publish']);
+
+
+
+    // Customer Billing Address 
+    $rs_billing     = $mysqli->query("SELECT * FROM `" . tbl_customer_addresses . "` WHERE customer_id=$customer_id AND type='billing' ");
+    $row_billing    = $rs_billing->fetch_array();
+
+    $billing_attention      = (!empty($row_billing['attention']) ? s__($row_billing['attention']) : '');
+    $billing_country        = (!empty($row_billing['country']) ? s__($row_billing['country']) : '');
+    $billing_address_line1  = (!empty($row_billing['address_line1']) ? s__($row_billing['address_line1']) : '');
+    $billing_address_line2  = (!empty($row_billing['address_line2']) ? s__($row_billing['address_line2']) : '');
+    $billing_city           = (!empty($row_billing['city']) ? s__($row_billing['city']) : '');
+    $billing_state          = (!empty($row_billing['state']) ? s__($row_billing['state']) : '');
+    $billing_zipcode        = (!empty($row_billing['zipcode']) ? s__($row_billing['zipcode']) : '');
+    $billing_phone          = (!empty($row_billing['phone']) ? s__($row_billing['phone']) : '');
+    $billing_fax            = (!empty($row_billing['fax']) ? s__($row_billing['fax']) : '');
+
+
+    // Customer Shipping Address
+    $rs_shipping     = $mysqli->query("SELECT * FROM `".tbl_customer_addresses."` WHERE customer_id=$customer_id AND type='shipping' ");
+    $row_shipping    = $rs_shipping->fetch_array();
+
+    $shipping_attention      = (!empty($row_shipping['attention']) ? s__($row_shipping['attention']) : '');
+    $shipping_country        = (!empty($row_shipping['country']) ? s__($row_shipping['country']) : '');
+    $shipping_address_line1  = (!empty($row_shipping['address_line1']) ? s__($row_shipping['address_line1']) : '');
+    $shipping_address_line2  = (!empty($row_shipping['address_line2']) ? s__($row_shipping['address_line2']) : '');
+    $shipping_city           = (!empty($row_shipping['city']) ? s__($row_shipping['city']) : '');
+    $shipping_state          = (!empty($row_shipping['state']) ? s__($row_shipping['state']) : '');
+    $shipping_zipcode        = (!empty($row_shipping['zipcode']) ? s__($row_shipping['zipcode']) : '');
+    $shipping_phone          = (!empty($row_shipping['phone']) ? s__($row_shipping['phone']) : '');
+    $shipping_fax            = (!empty($row_shipping['fax']) ? s__($row_shipping['fax']) : '');
+
+
+
+
+
+    $row_no = 1;
+    $item_row = '';
+
+    //     // ------------------ TOTAL ITEMS ------------------
+    $result_invoice_items     = $mysqli->query("SELECT * FROM `" . tbl_invoice_items . "` WHERE invoice_id=$id");
+    $total_rows                 = $result_invoice_items->num_rows;
+
+    if ($total_rows > 0) {
+        while ($row_invoice_items = $result_invoice_items->fetch_array()) {
+
+            $service        = $row_invoice_items['service'];
+            $service_name   = getTableAttr('item_name', tbl_items, $service);
+
+            $description    = $row_invoice_items['description'];
+
+            $qty            = $row_invoice_items['qty'];
+            $rate           = $row_invoice_items['rate'];
+            $tax            = $row_invoice_items['tax'];
+            $tax_amount     = $row_invoice_items['tax_amount'];
+            $total          = $row_invoice_items['total'];
+
+            $qty            = (($qty == 1)  ? '1.00': $qty);
+            $rate           = (($rate == 0)  ? '1.00': $rate);
+            $tax            = (($tax == 0)  ? '0': $tax);
+            $tax_amount     = (($tax == 0)  ? '0.00': $tax_amount);
+
+            if ($row_no % 2 == 0) {
+                // $row_bg = 'background-color: #dce9f7;';
+            } else {
+                // $row_bg = 'background-color: #ffffff;';
+            }
+
+            $item_row .= '
+            <tr>
+                <td align="center" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $row_no++ . '</span> </td>
+                <td align="left" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $service_name . ' ' . $description . '</span> </td>
+                <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $qty . '</span> </td>
+                <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $rate . '</span> </td>
+                <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $tax . '%</span>  </td>
+                <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $tax_amount . '</span>  </td>
+                <td align="right" style="' . $row_bg . ' border:1px solid #f1f1f1"> <span style="color: #555;">' . $total . '</span> </td>
+            </tr>';
+        } // while
+    }
+
+
+}
+
+
+// -----------------------------------------------------------------------------
+
+/*
+|--------------------------------------------------------------------------|
+|------------ PAGE WIDTH = 670---------------------------------------------|
+|--------------------------------------------------------------------------|
+*/
+
+
+
+// -----------------------------------------------------------------------------
+
+
+
+
+
+// ---------------------------------- LOGO ---------------------------------- 
+$logo        = getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="logo"');
+
+if (!empty($logo) && file_exists('../uploads/global_settings/thumbs/' . $logo)) {
+    $display_logo = '../uploads/global_settings/' . s__($logo);
+} else {
+    $display_logo = $base_url . '../images/default_logo.png';
+}
+// ----------------------------------------------------------------------------- 
+
+$company_name        = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="company_name"'));
+
+
+    $warehouse_information = '';
+    $rs_warehouse   = $mysqli->query("SELECT * FROM `" . tbl_organizations . "` WHERE id=$warehouse_id");
+    $row_warehouse  = $rs_warehouse->fetch_array();
+
+    $warehouse_no       = s__($row_warehouse['warehouse_no']);
+    $warehouse_name     = s__($row_warehouse['warehouse_name']);
+    $street1            = s__($row_warehouse['street1']);
+    $street2            = s__($row_warehouse['street2']);
+
+    $country            = s__($row_warehouse['country']);
+    $country            = getTableAttr('country', tbl_geo_countries, $country);
+    
+    $state              = s__($row_warehouse['state']);
+    $state            = getTableAttr('state', tbl_geo_states, $state);
+    
+    $phone              = s__($row_warehouse['phone']);
+    $email              = s__($row_warehouse['email']);
+    $trn                = s__($row_warehouse['trn']);
+
+    $warehouse_information .= (!empty($warehouse_name) ? '<strong>'.$warehouse_name . '</strong><br />' : '');
+    $warehouse_information .= (!empty($warehouse_no) ? $warehouse_no . '<br />' : '');
+    $warehouse_information .= (!empty($street1) ? $street1 . '<br />' : '');
+    $warehouse_information .= (!empty($street2) ? $street2 . '<br />' : '');
+    $warehouse_information .= (!empty($state) ? $state . ', ' : '');
+    $warehouse_information .= (!empty($country) ? $country . '<br />' : '');
+    $warehouse_information .= (!empty($phone) ? $phone . '<br />' : '');
+    $warehouse_information .= (!empty($email) ? $email . '<br />' : '');
+    $warehouse_information .= (!empty($trn) ? $trn : '');
+    
+
+// <img src="$display_logo" height="80" alt="Logo Image"><br />
+
+$tbl = <<<EOD
+<table cellpadding="0" cellspacing="2" border="0">
+<tr>
+    <td width="392" style="background-color: #fff;" align="center"> <br /><br /><br />
+        <span style="font-size: 18px; color:#102B44"> $company_name </span>
+    </td>
+
+    <td width="272" align="right">
+        $warehouse_information
+    </td>
+
+</tr>
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+ 
+
+// -----------------------------------------------------------------------------
+
+
+$tbl = <<<EOD
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+    <td width="275" style="background-color: #f1f1f1;"></td>
+    <td width="120" align="center"><span style="color: #007B8B; font-size: 16px; font-weight: bold;">TAX INVOICE</span></td>
+    <td width="275" style="background-color: #f1f1f1;"></td>
+</tr>
+</table>
+
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+// -----------------------------------------------------------------------------
+
+$tbl = <<<EOD
+<table cellpadding="2" cellspacing="2" border="0">
+
+<tr>
+    <td width="335"><strong>INVOICE TO</strong><br />$display_name</td>
+    <td width="335" align="rigth"><strong>INVOICE #</strong><br /> $invoice_no</td>
+</tr>
+
+<tr>
+    <td width="325">
+        <table>
+        <tr><td>Billing Address</td></tr>
+        <tr><td>Attention: $billing_attention</td></tr>
+        <tr><td>Country: $billing_country</td></tr>
+        <tr><td>Address Line 1: $billing_address_line1</td></tr>
+        <tr><td>Address Line 2: $billing_address_line2</td></tr>
+        <tr><td>City: $billing_city</td></tr>
+        <tr><td>State: $billing_state</td></tr>
+        <tr><td>POBOX: $billing_zipcode</td></tr>
+        <tr><td>Phone: $billing_phone</td></tr>
+        <tr><td>Fax: $billing_fax</td></tr>
+        </table>
+    </td>
+    
+    <td width="325">
+        <table>
+        <tr><td>Shipping Address</td></tr>
+        <tr><td>Attention: $billing_attention</td></tr>
+        <tr><td>Country: $billing_country</td></tr>
+        <tr><td>Address Line 1: $billing_address_line1</td></tr>
+        <tr><td>Address Line 2: $billing_address_line2</td></tr>
+        <tr><td>City: $billing_city</td></tr>
+        <tr><td>State: $billing_state</td></tr>
+        <tr><td>POBOX: $billing_zipcode</td></tr>
+        <tr><td>Phone: $billing_phone</td></tr>
+        <tr><td>Fax: $billing_fax</td></tr>
+        </table>
+    </td>
+</tr>
+
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+// -----------------------------------------------------------------------------
+
+
+$tbl = <<<EOD
+<table cellpadding="5" cellspacing="0" border="0">
+<tr><td></td></tr>
+<tr>
+    <td width="90" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Invoice Date </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Terms </span> </td>
+    <td width="90" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Due Date </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Job No </span> </td>
+    <td width="105" style="background-color: #e8f7f4; border:1px solid #f1f1f1"><span style="color: #555;">Master AWB No: </span> </td>
+    <td width="100" style="background-color: #e8f7f4; border:1px solid #f1f1f1"><span style="color: #555;">Ref No </span> </td>
+    <td width="123" style="background-color: #e8f7f4; border:1px solid #f1f1f1"><span style="color: #555;">Shipper </span> </td>
+</tr>
+
+<tr>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$invoice_date </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$payment_term </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$expiry_date </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$job_reference_no </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$master_awb_no </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$reference_no </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$shipper </span> </td>
+</tr>
+
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+// -----------------------------------------------------------------------------
+
+
+$tbl = <<<EOD
+<table cellpadding="5" cellspacing="0" border="0">
+<tr><td></td></tr>
+<tr>
+    <td width="90" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Consignee </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Origin </span> </td>
+    <td width="90" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">Destination </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"><span style="color: #555;">No of Packs </span> </td>
+    <td width="105" style="background-color: #e8f7f4; border:1px solid #f1f1f1"><span style="color: #555;">Gross Weight </span> </td>
+    <td width="100" style="background-color: #e8f7f4; border:1px solid #f1f1f1"><span style="color: #555;">Chargeable Weight </span> </td>
+    <td width="123" style="background-color: #e8f7f4; border:1px solid #f1f1f1"><span style="color: #555;">Volume (cbm) </span> </td>
+</tr>
+
+<tr>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$consignee </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$origin </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$destination </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$no_of_packs </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$gross_weight </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$chargeable_weight </span> </td>
+    <td style="border:1px solid #f1f1f1;"><span style="color: #555;">$volume </span> </td>
+</tr>
+
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+// -----------------------------------------------------------------------------
+
+
+$tbl = <<<EOD
+<table cellpadding="5" cellspacing="0" border="0">
+<tr><td></td></tr>
+<tr>
+    <td width="50" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"> <span style="color: #555;"> # </span> </td>
+    <td width="194" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"> <span style="color: #555;"> Item & Description </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> Qty </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> Rate </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1" align="right"> <span style="color: #555;"> Tax% </span> </td>
+    <td width="80" style="background-color: #e8f7f4; border:1px solid #f1f1f1" align="right"> <span style="color: #555;"> Tax </span> </td>
+    <td width="100" style="background-color: #e8f7f4; border:1px solid #f1f1f1" align="right"> <span style="color: #555;"> Amount </span> </td>
+</tr>
+
+$item_row
+
+<tr>
+<td colspan="3"><span style="color: #555;">Thanks for your business.</span></td>
+</tr>
+
+<tr>
+<td colspan="3"></td>
+<td colspan="3" style=" " align="right"> Sub Total </td>
+<td align="right"> $grand_subtotal  </td>
+</tr>
+
+<tr>
+<td colspan="3"></td>
+<td colspan="3" align="right"> Standard Rate (5%) </td>
+<td align="right"> $grand_subtotal  </td>
+</tr>
+
+<tr>
+<td colspan="3"></td>
+<td colspan="3" align="right"> Zero Rate (0%) </td>
+<td align="right"> $grand_subtotal  </td>
+</tr>
+
+<tr>
+<td colspan="3"></td>
+<td colspan="3" style=" border-top:1px solid silver; border-bottom:1px solid silver" align="right"> <strong> TOTAL </strong> </td>
+<td style=" border-top:1px solid silver; border-bottom:1px solid silver" align="right"> <strong> $base_currency_code$grand_total </strong>  </td>
+</tr>
+
+<tr>
+<td colspan="3"></td>
+<td colspan="3" style=" border-bottom:1px solid silver; " align="right"> <strong> BALANCE DUE </strong> </td>
+<td style=" border-bottom:1px solid silver; " align="right"> <strong> $base_currency_code$grand_total </strong> </td>
+</tr>
+
+<tr>
+<td colspan="7" align="right"> Total in Words: <strong> UAE Dirham  $grand_total_in_words </strong> </td>
+</tr>
+
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+
+// -----------------------------------------------------------------------------
+
+
+$tbl = <<<EOD
+<table cellpadding="5" cellspacing="0" border="0">
+<tr><td>Tax Summary</td></tr>
+<tr>
+    <td width="370" style="background-color: #e8f7f4; border:1px solid #f1f1f1;"> <span style="color: #555;"> Tax Details </span> </td>
+    <td width="150" style="background-color: #e8f7f4; border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> Taxable Amount ($base_currency_code) </span> </td>
+    <td width="150" style="background-color: #e8f7f4; border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> Tax Amount ($base_currency_code) </span> </td>
+</tr>
+
+<tr>
+    <td style="border:1px solid #f1f1f1;"> <span style="color: #555;"> Zero Rate (0%) </span> </td>
+    <td style="border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> 365.00 </span> </td>
+    <td style="border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> 0.00 </span> </td>
+</tr>
+
+<tr>
+    <td style="border:1px solid #f1f1f1;"> <span style="color: #555;"> Standard Rate (5%) </span> </td>
+    <td style="border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> 375.00 </span> </td>
+    <td style="border:1px solid #f1f1f1;" align="right"> <span style="color: #555;"> 18.75 </span> </td>
+</tr>
+
+<tr>
+    <td style="border:1px solid #f1f1f1;"> <span style="color: #000;"> Total </span> </td>
+    <td style="border:1px solid #f1f1f1;" align="right"> <span style="color: #000;"> $base_currency_code 740.00 </span> </td>
+    <td style="border:1px solid #f1f1f1;" align="right"> <span style="color: #000;"> $base_currency_code 18.75 </span> </td>
+</tr>
+
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+// -----------------------------------------------------------------------------
+
+
+if (!empty($customer_notes)){
+
+$tbl = <<<EOD
+<table cellpadding="2" cellspacing="2" border="0">
+<tr>
+<td><strong>Customer Notes</strong>: $customer_notes </td>
+</tr>
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+}
+
+
+// -----------------------------------------------------------------------------
+
+
+$tbl = <<<EOD
+<table cellpadding="2" cellspacing="2" border="0">
+<tr>
+<td width="670"><strong>Bank Details</strong></td>
+</tr>
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+// -----------------------------------------------------------------------------
+
+$bank_name      = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="bank_name"'));
+$Beneficiary    = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="Beneficiary"'));
+$account_number = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="account_number"'));
+$iban           = s__(getTableAttrv('setting_value', tbl_system_settings, 'setting_slug ="iban"'));
+$currency       = $base_currency_code;
+
+
+// <tr>
+// <td colspan="2"> NOTES: Pleasure having your business. We look forward to serve you again. </td>
+// </tr>
+
+$tbl = <<<EOD
+<table cellpadding="2" cellspacing="2" border="0" style="border: 1px solid silver;">
+<tr>
+<td width="150"> Bank Name </td>
+<td width="513">: $bank_name </td>
+</tr>
+<tr>
+<td width="150"> Beneficiary </td>
+<td width="513">: $Beneficiary </td>
+</tr>
+<tr>
+<td width="150"> Account Number </td>
+<td width="513">: $account_number </td>
+</tr>
+<tr>
+<td> IBAN </td>
+<td>: $iban </td>
+</tr>
+<tr>
+<td> Currency </td>
+<td>: $currency </td>
+</tr>
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+// -----------------------------------------------------------------------------
+// Seprate Line Number on base of Space new line
+$final_terms_and_conditions = '';
+if (!empty($terms_and_conditions)){
+    $desc = explode("\r", $terms_and_conditions);
+    $d_counter = 1;
+    if (count($desc) > 0) {
+        foreach ($desc as $d) {
+            if (!empty($d)) {
+                // $final_terms_and_conditions .= $d_counter++ . '. ' . $d . '<br />';
+                $final_terms_and_conditions .= $d . '<br />';
+            }
+        }
+    }
+}
+$tbl = <<<EOD
+<table cellpadding="2" cellspacing="2" border="0">
+<tr>
+<td width="670">Terms & Conditions: </td>
+</tr>
+<tr>
+<td width="670">$final_terms_and_conditions </td>
+</tr>
+<tr>
+<td width="670">
+1. E & OE<br />
+2. The customer will notify $warehouse_name in writing, if there are any discrepancy in this invoice within the period of 5 working days from the date of invoice. Failing which, the invoice stands payable in full.<br />
+3. Discrepancies do not include any kind of claim.<br />
+4. Claims, if any, would not be adjusted against the payable invoices. Invoices shall be settled in full.<br />
+5. Cheques (crossed) should be in favor of $warehouse_name.<br />
+</td>
+</tr>
+</table>
+EOD;
+
+$pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+    // -----------------------------------------------------------------------------
+
+    // $filename = 'Booking_' . $id . '.pdf';
+
+    // $salt =  '}#f4ga~g%7hjg4&jokho!bj30ab-wi=6gia^7-$^R9F|GaK5Jzxs#E6WT;IOJN'; // random string 
+    // $encrypted_filename = crc32($id . $salt);
+    // $encrypted_filename = sha($id . $salt);
+
+    $salt =  '}#f4ga~g%7hjg4&jokho!bj30ab-wi=6gia^7-$^R9F|GaK5Jzxs#E6WT;IOJN'; // random string 
+    $encrypted_filename = hash('sha256', $salt . $id);
+
+
+//============================================================+
+// SHOW File
+//============================================================+
+// if ($flag == 'i') {
+
+// //Close and output PDF document
+// // $pdf->Output('invoice_'.$id.'.pdf', 'I');  // Flag - I (show file)
+// $pdf->Output($filename, 'I');  // Flag - I (show file)
+
+
+// //============================================================+
+// // SAVE File
+// //============================================================+
+// } else if ($flag == 'f') {
+//     //Close and save PDF document
+//     $pdf->Output(__DIR__ . '/pdfs/'.$filename.'', 'F');
+// }
+
+
+// $pdf->Output(__DIR__ . '/pdfs/'.$filename.'', 'F');
+
+// if (isRemote()) {
+//     $pdf->Output($_SERVER['DOCUMENT_ROOT'] . '/pdfs_invoices/' . $encrypted_filename . '.pdf', 'F');
+// } else {
+//     $pdf->Output($_SERVER['DOCUMENT_ROOT'] . '/haipulse/pdfs_invoices/' . $encrypted_filename . '.pdf', 'F');
+// }
+
+$pdf->Output($encrypted_filename, 'I');  // Flag - I (show file)
+    // $pdf->Output($encrypted_filename, 'F');  // Flag - I (show file)
+    //============================================================+
+    // END OF FILE
+    //============================================================+
+
+
+
+    // https://stackoverflow.com/questions/29121375/fpdf-outputfilename-pdf-f-downloading-file-on-browser-instead-of-saving-i
+    // I: send the file inline to the browser. The plug-in is used if available. The name given by name is used when one selects the "Save as" option on the link generating the PDF.
+    // D: send to the browser and force a file download with the name given by name.
+    // F: save to a local file with the name given by name (may include a path).
+    // S: return the document as a string. name is ignored.
+
+
+
+    // ---------------------------------------------
+    // UPDATE PDF DB 
+    // ---------------------------------------------
+    $mysqli->query("UPDATE `" . tbl_invoices . "` SET pdf = '" . $encrypted_filename . "' WHERE id=$id");
+
+
+
+
+    // } // while
+// } // if
+
+
+
+// if (isset($_REQUEST['id']) && !empty($_REQUEST['id']))          $id     = e_s__($_REQUEST['id']);
+// else $id = 0;
+
+// if (isset($_REQUEST['flag']) && !empty($_REQUEST['flag']))      $flag     = e_s__($_REQUEST['flag']);
+// else $flag = 0;
+
+// if (isset($_REQUEST['token']) && !empty($_REQUEST['token']))    $token     = e_s__($_REQUEST['token']);
+// else $token = '';
+
+
+// if (!isset($_REQUEST['token']) || empty($_REQUEST['token'])) {
+//     // header("Location:index.php");
+// }
+
+// $sent_token = hash( "sha512", 'bushogai' . $id);
+
+
+// if ($token != $sent_token) die('');

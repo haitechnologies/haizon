@@ -1,0 +1,1343 @@
+<?php
+
+include('admin_elements/admin_header.php');
+
+$module             = 'jobs';
+$module_caption     = 'Job';
+$tbl_name = DB::JOBS;
+$error_message         = '';
+$success_message     = '';
+
+
+/*
+|--------------------------------------------------------------------------
+| PERMISSIONS
+|--------------------------------------------------------------------------
+|
+*/
+include('admin_elements/permissions.php');
+
+$activeOrganizationId = dashboardRequireActiveOrganization();
+
+
+// print_r($_REQUEST);
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+
+
+if (isset($_REQUEST['customer_id']) && !empty($_REQUEST['customer_id'])) {
+    $customer_id     = e_s__($_REQUEST['customer_id']);
+} else {
+    $customer_id = 0;
+}
+
+
+
+if (isset($_POST['publish']))                                 $publish     = 1;
+else $publish = 0;
+
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| CREATE PROJECT FOR THE JOB
+|--------------------------------------------------------------------------
+|
+*/
+if ($action == "create_project" && !empty($id)) {
+
+    // IF ALREADY CREATED PROJECT - EXIT
+    $rs = $mysqli->query("SELECT * FROM `" . DB::JOBS . "` WHERE id=$id AND project_created=1");
+
+    if ($rs->num_rows > 0) {
+        $error_message = 'The Project is already Created for this Job.';
+
+        // IF NOT CONVERTED - Then Continue
+    } else {
+        $customer_id = getTableAttrV('customer_id', DB::JOBS, "id=$id");
+        $mysqli->query("INSERT INTO `" . DB::PROJECTS . "`(job_id, customer_id) VALUES ('" . $id . "',  '" . $customer_id . "'); ");
+        $project_id = $mysqli->insert_id;
+
+        // SET PROJECT CREATED = 1
+        $mysqli->query("UPDATE `" . DB::JOBS . "` SET project_created=1, project_id = '" . $project_id . "' WHERE id=$id");
+
+        // REDIRECT
+        header("Location:view_job.php?id=$id");
+    }
+}
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+
+// $created_by                 = '';
+$modified_by                = '';
+$customer_type              = '';
+$quote_id                   = '';
+$books_customer_id          = '';
+$approved_time              = '';
+$project_id                 = '';
+$approved_time_resubmission = '';
+
+
+
+
+
+
+// ---------------------- Job Items -----------------------------
+$item_id_arr                = array();
+$service_arr                = array();
+$description_arr            = array();
+$qty_arr                    = array();
+$rate_arr                   = array();
+$sub_total_arr              = array();
+// $discount_type_arr          = array();
+// $discount_type_value_arr    = array();
+// $discount_amount_arr        = array();
+$tax_arr                    = array();
+$tax_amount_arr             = array();
+$total_arr                  = array();
+
+
+if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
+    $total_rows            = e_s__($_POST['total_rows']);
+    // if ($total_rows == 0 || $total_rows == '') $total_rows = 1;
+} else {
+    $total_rows            = 1;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| EDIT - ONLY SUPERADMIN or RELEVANT USER
+|--------------------------------------------------------------------------
+|
+*/
+$created_by = getTableAttr('created_by', DB::JOBS, $id);
+
+if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'accounts' || is_role() == 'operations' || $session_user_id == $created_by)) {
+
+    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
+    $row = $result->fetch_array();
+
+    $project_created        = s__($row['project_created']);
+    $job_date               = s__($row['job_date']);
+    $job_date               = processDateYtoD($job_date);
+    $job_status             = s__($row['job_status']);
+
+    $warehouse_id           = s__($row['warehouse_id']);
+    $customer_id            = s__($row['customer_id']);
+    $sales_person_from_lead = s__($row['sales_person_from_lead']);
+    $job_seq                = s__($row['job_seq']);
+    $sales_person           = s__($row['sales_person']);
+
+    $currency               = s__($row['currency']);
+    $exchange_rate          = s__($row['exchange_rate']);
+    $transport_mode         = s__($row['transport_mode']);
+    $shipment_type          = s__($row['shipment_type']);
+    $job_owner              = s__($row['job_owner']);
+
+    // -- Tags
+    $tags                   = s__($row['tags']);
+    $tags_arr               = array();
+    $tags_captions = '';
+
+    if ($tags != NULL) {
+        $tags_arr               = explode(',', $tags);
+        foreach ($tags_arr as $tag_id) {
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', tbl_setup_tags, $tag_id) . '</span> &nbsp;';
+        }
+    }
+
+
+    // -- Services
+    $services                   = s__($row['services']);
+    $services_arr               = array();
+    $services_captions = '';
+
+    if ($services != NULL) {
+        $services_arr               = explode(',', $services);
+
+        // $services_captions = '';
+
+        foreach ($services_arr as $service_id) {
+            $services_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('item_name', tbl_items, $service_id) . '</span> &nbsp;';
+        }
+    }
+
+
+    $job_no                 = s__($row['job_no']);
+    $job_ref_no             = s__($row['job_ref_no']);
+    $cs_agent               = s__($row['cs_agent']);
+    $incoterm               = s__($row['incoterm']);
+    $email                  = s__($row['email']);
+    $supplier_rate          = s__($row['supplier_rate']);
+    $estimated_net_profit   = s__($row['estimated_net_profit']);
+
+    $estimated_invoice_amount   = s__($row['estimated_invoice_amount']);
+    $etd                        = s__($row['etd']);
+    $etd                        = (($etd == '1970-01-01') ? '' : processDateYtoD($etd));
+
+    $eta                        = s__($row['eta']);
+    $eta                        = (($eta == '1970-01-01') ? '' : processDateYtoD($eta));
+
+    $carrier                    = s__($row['carrier']);
+    $vessel_name                = s__($row['vessel_name']);
+    $vessel_departure_date      = s__($row['vessel_departure_date']);
+    $vessel_departure_date      = (($vessel_departure_date == '1970-01-01') ? '' : processDateYtoD($vessel_departure_date));
+
+    $flight_no                  = s__($row['flight_no']);
+    $flight_departure_date      = s__($row['flight_departure_date']);
+    $flight_departure_date      = (($flight_departure_date == '1970-01-01') ? '' : processDateYtoD($flight_departure_date));
+
+    $job_completion_date        = s__($row['job_completion_date']);
+    $job_completion_date        = (($job_completion_date == '1970-01-01') ? '' : processDateYtoD($job_completion_date));
+
+    $payment_terms              = s__($row['payment_terms']);
+    $hawb                       = s__($row['hawb']);
+    $mawb                       = s__($row['mawb']);
+    $estimated_cost_amount      = s__($row['estimated_cost_amount']);
+    $declaration_no             = s__($row['declaration_no']);
+
+
+    $gross_weight               = s__($row['gross_weight']);
+    $volume_weight              = s__($row['volume_weight']);
+    $chargeable_weight          = s__($row['chargeable_weight']);
+    $no_of_pieces               = s__($row['no_of_pieces']);
+    $commodity_type             = s__($row['commodity_type']);
+
+    $no_of_containers           = s__($row['no_of_containers']);
+    $insurance_needed           = s__($row['insurance_needed']);
+    $container_type             = s__($row['container_type']);
+    $temperature_control_required = s__($row['temperature_control_required']);
+    $container_number           = s__($row['container_number']);
+    $special_comments           = s__($row['special_comments']);
+
+    $landing_country            = s__($row['landing_country']);
+    $landing_port               = s__($row['landing_port']);
+    $loading_place              = s__($row['loading_place']);
+    $billing_city               = s__($row['billing_city']);
+    $billing_state              = s__($row['billing_state']);
+    $billing_code               = s__($row['billing_code']);
+    $billing_country            = s__($row['billing_country']);
+
+    $destination_country        = s__($row['destination_country']);
+    $destination_port           = s__($row['destination_port']);
+    $fdp                        = s__($row['fdp']);
+    $shipping_city              = s__($row['shipping_city']);
+    $shipping_state             = s__($row['shipping_state']);
+    $shipping_code              = s__($row['shipping_code']);
+    $shipping_country           = s__($row['shipping_country']);
+
+    $happy_customer             = s__($row['happy_customer']);
+    $unhappy_reason             = s__($row['unhappy_reason']);
+    $shipment_on_time           = s__($row['shipment_on_time']);
+    $referral                   = s__($row['referral']);
+    $notes                      = s__($row['notes']);
+
+    $modified_by                = s__($row['modified_by']);
+    $customer_type              = getTableAttr('customer_type', DB::CUSTOMERS, $customer_id);
+    $quote_id                   = s__($row['quote_id']);
+    $books_customer_id          = s__($row['books_customer_id']);
+    $approved_time              = s__($row['created_at']);
+    $project_id                 = s__($row['project_id']);
+    $approved_time_resubmission = s__($row['approved_time_resubmission']);
+
+    $publish                = s__($row['publish']);
+
+    // $expiry_date        = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
+
+
+    // ------------------ TOTAL ITEMS ------------------
+    // ------------------ TOTAL ITEMS ------------------
+    $result_job_items = $mysqli->query("SELECT * FROM `" . tbl_job_items . "` WHERE job_id=$id");
+
+    // **CRITICAL FIX: INITIALIZE ARRAYS HERE**
+    $item_dim_id_arr = [];
+    $dim_length_arr  = [];
+    $dim_width_arr   = [];
+    $dim_height_arr  = [];
+    $dim_pcs_arr     = [];
+    $dim_volume_arr  = [];
+    $dim_cbm_arr     = [];
+    // --------------------------------------------------
+
+    // Removed the 'echo' before assignment to prevent accidental output
+    $total_rows = $result_job_items->num_rows;
+
+    if ($total_rows > 0) {
+        while ($row_job_items = $result_job_items->fetch_array()) {
+
+            // Note: You can also use the shorthand [] syntax instead of array_push()
+            // It is generally cleaner and slightly faster.
+
+            // Array Push Method (as you used):
+            array_push($item_dim_id_arr, $row_job_items['job_id']);
+            array_push($dim_length_arr,  $row_job_items['dim_length']);
+            array_push($dim_width_arr,   $row_job_items['dim_width']);
+            array_push($dim_height_arr,  $row_job_items['dim_height']);
+            array_push($dim_pcs_arr,     $row_job_items['dim_pcs']);
+            array_push($dim_volume_arr,  $row_job_items['dim_volume']);
+            array_push($dim_cbm_arr,     $row_job_items['dim_cbm']);
+
+            /* // OR the preferred shorthand method:
+        $item_dim_id_arr[] = $row_job_items['job_id'];
+        $dim_length_arr[]  = $row_job_items['dim_length'];
+        // ... and so on for the rest of the variables
+        */
+        }
+    }
+}
+
+if ($total_rows == 0) $total_rows = 1;
+
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+?>
+
+
+<div class="content-wrapper">
+
+
+    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+        <input type="hidden" name="job_status" id="job_status" value="" />
+        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+        <?php } else { ?>
+            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+        <?php } ?>
+
+        <!-- Page header -->
+        <div class="page-header page-header-light shadow">
+            <div class="page-header-content d-lg-flex border-top">
+                <div class="row mt-2">
+
+                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
+                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
+                    </a>
+                </div>
+
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <div class="mt-3">
+                        <div class="form-check form-check-inline form-switch">
+                            <label class="form-check-label fw-semibold" for="sc_r_success">Job #: <?php echo $id; ?></label>
+                        </div>
+                    </div>
+                <?php } ?>
+
+                <div class="mt-3">
+                    <div class="form-check form-check-inline form-switch">
+                        <label class="form-check-label" for="sc_r_success"> <strong><?php if (!empty($job_status)) echo getTableAttr("job_status", DB::JOB_STATUSES, $job_status); ?></strong></label>
+                    </div>
+                </div>
+
+                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
+                    <div class="d-lg-flex mb-2 mb-lg-0">
+                        <div class="mt-2 mb-2">
+
+                            <?php if ($project_created == 0) { ?>
+
+                                <?php
+                                $draft_job_status_id = getTableAttrV('id', DB::JOB_STATUSES, " job_status = 'draft' ");
+                                if ($job_status == $draft_job_status_id) { // job_status = draft 
+                                ?>
+                                    <button type="button" onclick="window.location.href='<?php echo $module; ?>.php?action=edit_<?php echo $module; ?>&id=<?php echo $id; ?>'; " class="btn btn-primary btn-sm me-2">Edit</button>
+                                <?php } ?>
+
+                                <?php
+                                $approved_job_status_id = getTableAttrV('id', DB::JOB_STATUSES, " job_status = 'approved' ");
+                                if ($job_status == $approved_job_status_id) { // job_status = draft 
+                                ?>
+                                    <button type="button" onclick="window.location.href='view_job.php?action=create_project&id=<?php echo $id; ?>';" class="btn btn-primary btn-sm me-2">Create Project</button>
+                                <?php } ?>
+
+                            <?php } else { ?>
+                                <button type="button" class=" btn btn-light my-1 me-2" disabled>Project Created</button>
+                            <?php } ?>
+
+
+                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- /page header -->
+
+
+        <div class="content-inner">
+            <div class="content">
+
+                <?php include('admin_elements/breadcrumb.php'); ?>
+
+
+                <div class="col-xl-12">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+
+                                <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0">
+                                        <?php echo $module_caption; ?># <?php echo $id; ?>
+                                    </h6>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label"><span class="text-danger">Warehouse:*</span></label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('warehouse_name', tbl_warehouses, $warehouse_id); ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label"><span class="text-danger">Customer Name:*</span></label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('display_name', DB::CUSTOMERS, $customer_id); ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Sale Person from Lead:</label>
+                                        <div class="col-lg-9">
+                                            <?php echo $sales_person_from_lead; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Job Seq:</label>
+                                        <div class="col-lg-9">
+                                            <?php echo $job_seq; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Sales Person: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('full_name', tbl_users, $sales_person); ?>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="col-lg-6">
+                            <div class="card">
+
+                                <!-- <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0"></h6>
+                                </div> -->
+
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Currency: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('currency', DB::CURRENCIES, $currency); ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Exchange Rate:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $exchange_rate; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Transport Mode: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $transport_mode; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Type of Shipment:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $shipment_type; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label"><span class="text-danger">Job Owner:*</span></label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('full_name', tbl_users, $job_owner); ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Tag:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php print_r($tags_captions); ?>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+
+                <div class="row">
+                    <div class="col-xl-12">
+
+                        <div class="card">
+
+                            <div class="card-header d-flex align-items-center">
+                                <h6 class="mb-0">Job Status Details</h6>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <label class="col-lg-2 col-form-label">Job Status: </label>
+                                    <div class="col-lg-4 mt-2">
+                                        <?php echo getTableAttr('job_status', DB::JOB_STATUSES, $job_status); ?>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+                <div class="col-xl-12">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+
+                                <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0">
+                                        Detailed Job Information
+                                    </h6>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Job No:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $job_no; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Job Ref No:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $job_ref_no; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">CS Agent: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('full_name', tbl_users, $cs_agent); ?>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Type of Services: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $services_captions; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Incoterms: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('incoterm', tbl_incoterms, $incoterm); ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Email:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $email; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Supplier Rates:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $supplier_rate; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Estimated Net Profit:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $estimated_net_profit; ?>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="col-lg-6">
+                            <div class="card">
+
+                                <!-- <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0"></h6>
+                                </div> -->
+
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Job Date:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $job_date; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Estimated Invoice Amount:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $estimated_invoice_amount; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">ETD: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $etd; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">ETA: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $eta; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Carrier Name: </label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo getTableAttr('carrier_name', tbl_carriers, $carrier); ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Vessel Name:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $vessel_name; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Vessel Departure Date:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $vessel_departure_date; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Flight No:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $flight_no; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Flight Departure Date:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $flight_departure_date; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Job Completed Date:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $job_completion_date; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Payment Terms:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $payment_terms; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">HAWB / HBL:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $hawb; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">MAWB / MBL:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $mawb; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label">Estimated Cost Amount:</label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $estimated_cost_amount; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-lg-3 col-form-label"><span class="text-danger">Custom Declaration No:*</span></label>
+                                        <div class="col-lg-9 mt-2">
+                                            <?php echo $declaration_no; ?>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <!-- L × W × H ÷ 6000 ÷ 166.66 -->
+                <div>
+
+                    <div class="col-xl-12">
+
+                        <div class="row">
+
+                            <div class="col-lg-2">
+                                <label class="form-label ms-3 fw-semibold">LENGTH </label>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <label class="form-label ms-4 fw-semibold">WIDTH </label>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <label class="form-label ms-3 fw-semibold">HEIGHT </label>
+                            </div>
+
+                            <div class="col-lg-1">
+                                <label class="form-label ms-2 fw-semibold">NO OF PCS </label>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <label class="form-label ms-5 fw-semibold">VOLUME WEIGHT </label>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <label class="form-label ms-2 fw-semibold">CBM</label>
+                            </div>
+
+                        </div>
+
+                        <div class="card">
+
+                            <div class="row card-body">
+
+                                <div class="col-lg-12">
+
+                                    <?php
+                                    $total_cbm = 0;
+                                    $total_volume = 0;
+                                    $total_pcs = 0;
+
+                                    // ----------------------------------------------------------------------------
+                                    for ($dim_item = 1; $dim_item <= $total_rows; $dim_item++) {
+                                        $index = $dim_item;
+                                        $index = $index - 1;
+
+                                        $total_cbm += (isset($dim_cbm_arr[$index]) ? $dim_cbm_arr[$index] : 0);
+                                        $total_volume += (isset($dim_volume_arr[$index]) ? $dim_volume_arr[$index] : 0);
+                                        $total_pcs += (isset($dim_pcs_arr[$index]) ? $dim_pcs_arr[$index] : 0);
+
+                                        // ----------------------------------------------------------------------------
+                                    ?>
+
+                                        <div class="mb-2">
+                                            <div class="row mb-3 pb-3">
+
+                                                <div class="col-lg-12">
+                                                    <div class="row">
+
+                                                        <div class="col-lg-2">
+                                                            <input readonly type="number" class="form-control bg-light bg-opacity-75 text-center" value="<?php echo (!empty($dim_length_arr[$index]) ? $dim_length_arr[$index] : '0'); ?>">
+                                                        </div>
+
+
+                                                        <div class="col-lg-2">
+                                                            <input readonly type="number" class="form-control bg-light bg-opacity-75 text-center" value="<?php echo (!empty($dim_width_arr[$index]) ? $dim_width_arr[$index] : '0'); ?>">
+                                                        </div>
+
+
+                                                        <div class="col-lg-2">
+                                                            <input readonly type="number" class="form-control bg-light bg-opacity-75 text-center" value="<?php echo (!empty($dim_height_arr[$index]) ? $dim_height_arr[$index] : '0'); ?>">
+                                                        </div>
+
+                                                        <div class="col-lg-2">
+                                                            <input readonly type="number" class="form-control bg-light bg-opacity-75 text-center" value="<?php echo (!empty($dim_pcs_arr[$index]) ? $dim_pcs_arr[$index] : '0'); ?>">
+                                                        </div>
+
+                                                        <div class="col-lg-2">
+                                                            <input readonly type="number" class="form-control bg-light bg-opacity-75 text-end" value="<?php echo (!empty($dim_volume_arr[$index]) ? $dim_volume_arr[$index] : '0'); ?>">
+                                                        </div>
+
+                                                        <div class="col-lg-2">
+                                                            <input readonly type="number" class="form-control bg-light bg-opacity-75 text-end" value="<?php echo (!empty($dim_cbm_arr[$index]) ? $dim_cbm_arr[$index] : '0'); ?>">
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    <?php
+                                        // -------------------------------------------------- 
+                                    } // for 
+                                    // -------------------------------------------------- 
+                                    ?>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-lg-8"></div>
+
+                        <div class="col-lg-4">
+                            <div class="card ">
+
+                                <div class="card-body"> <!--  bg-info bg-opacity-10 -->
+
+                                    <div class="row mb-1">
+                                        <label class="col-lg-6 col-form-label fw-semibold">TOTAL CBM:</label>
+                                        <div class="col-lg-6">
+                                            <input readonly type="number" class="form-control fw-semibold bg-light bg-opacity-50 text-end" placeholder="0" name="grand_subtotal" id="grand_subtotal" value="<?php echo $total_cbm; ?>" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-1">
+                                        <label class="col-lg-6 col-form-label">Total Volume Weight</label>
+                                        <div class="col-lg-6">
+                                            <input readonly type="number" class="form-control bg-light bg-opacity-50 text-end" name="grand_tax" id="grand_tax" value="<?php echo $total_volume; ?>" placeholder="0">
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row mb-1">
+                                        <label class="col-lg-6 col-form-label fw-semibold">Total Pieces</label>
+                                        <div class="col-lg-6">
+                                            <input type="number" class="form-control fw-semibold bg-light bg-opacity-50 text-end" name="grand_total" id="grand_total" value="<?php echo $total_pcs; ?>" readonly>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
+
+
+                    <div class="col-xl-12">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <div class="card-header d-flex align-items-center">
+                                        <h6 class="mb-0">
+                                            Commodity Details
+                                        </h6>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Gross Weight: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $gross_weight; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Volume Weight: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $volume_weight; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Chargable Weight: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $chargeable_weight; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">No. of Pieces: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $no_of_pieces; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Commodity Type: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('commodity_type', tbl_commodity_types, $commodity_type); ?>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <!-- <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0"></h6>
+                                </div> -->
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">No. of Contaiers:</label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $no_of_containers; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Insurance Needed?:</label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $insurance_needed; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Container Type: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('container_type', tbl_container_types, $container_type); ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Temperature Control Required: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $temperature_control_required; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Container Number:</label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $container_number; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Special Comments:</label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $special_comments; ?>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-xl-12">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <div class="card-header d-flex align-items-center">
+                                        <h6 class="mb-0">
+                                            Port Details
+                                        </h6>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Landing Country: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $landing_country); ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Port of Landing (POL): </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('port_name', tbl_ports, $landing_port); ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Place of Loading: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $loading_place; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Billing City: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $billing_city; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Billing State: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $billing_state; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Billing Code: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $billing_code; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Billing Country: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $billing_country); ?>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <!-- <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0"></h6>
+                                </div> -->
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Destination Country: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $destination_country); ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Port of Destination (POD): </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('port_name', tbl_ports, $destination_port); ?>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Final Destination (FDP): </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $fdp; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Shipping City: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $shipping_city; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Shipping State: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $shipping_state; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Shipping Code: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $shipping_code; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Shipping Country: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo getTableAttr('country_name', tbl_geo_countries, $shipping_country); ?>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-xl-12">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <div class="card-header d-flex align-items-center">
+                                        <h6 class="mb-0">
+                                            After Service
+                                        </h6>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Customer happy with service: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $happy_customer; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Reason for Customer Unsatisfaction: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $unhappy_reason; ?>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <!-- <div class="card-header d-flex align-items-center">
+                                    <h6 class="mb-0"></h6>
+                                </div> -->
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Shipment Delivered on Time: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $shipment_on_time; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Referral: </label>
+                                            <div class="col-lg-9 mt-2">
+                                                <?php echo $referral; ?>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-xl-12">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <div class="card-header d-flex align-items-center">
+                                        <h6 class="mb-0">
+                                            System Fields
+                                        </h6>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Created By: </label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo getTableAttr('full_name', tbl_users, $created_by); ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Modified By: </label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo $modified_by; ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Customer Type: </label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo ucwords($customer_type); ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Quote: </label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo $quote_id; ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-lg-6">
+                                <div class="card">
+
+                                    <div class="card-header d-flex align-items-center">
+                                        <h6 class="mb-0">&nbsp;</h6>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Books Customer ID:</label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo $books_customer_id; ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Approved Time:</label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo $approved_time; ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Project ID:</label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo $project_id; ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <label class="col-lg-3 col-form-label">Approved Time ReSubmission:</label>
+                                            <div class="col-lg-9 mt-1">
+                                                <input type="text" class="form-control" value="<?php echo $approved_time_resubmission; ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+
+                        <div class="col-lg-4">
+
+                            <div class="row">
+                                <div class="col-lg-12 mt-2">
+                                    <div class="ms-sm-3 mb-3 mb-sm-0">
+                                        <label class="col-lg-6 col-form-label">Notes:</label>
+                                        <textarea class="form-control" name="notes" id="notes" style="field-sizing: content;" placeholder=""><?php echo $notes; ?></textarea>
+                                        <!-- Looking forward for your business -->
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-5 alert alert-info border-0 fade show small">
+                    <!-- <i class="ph-info me-2"></i> -->
+                    <!-- <span class="fw-semibold">Heads up!</span>  -->
+                    *Job Edit option available for Draft Status. *Approved Project will show CREATE PROJECT option.
+                </div>
+
+            </div>
+
+
+            <?php include('admin_elements/copyright.php'); ?>
+        </div>
+    </form>
+</div>
+
+
+<?php include('admin_elements/admin_footer.php'); ?>

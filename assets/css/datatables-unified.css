@@ -1,0 +1,202 @@
+/**
+ * Unified DataTables Styling - HAIPULSE Dashboard
+ *
+ * Centralized import layer for all DataTables presentation styles.
+ * This file is the single include target for dashboard DataTables UI.
+ *
+ * Phase 1 implementation: wraps existing style modules.
+ * Future phases can inline/merge these imports into this file.
+ */
+
+@import url('./datatables.css');
+@import url('./datatables-professional.css');
+@import url('./datatables-layout.css');
+
+/*
+ * Baseline professional theme (aligned with listing_companies.php look)
+ * Applied globally to dashboard listing tables.
+ */
+.custom_datatables.datatable-professional thead th,
+.datatable-professional thead th {
+	background: linear-gradient(180deg, #eef6ff 0%, #e4f0ff 100%) !important;
+	color: #1f4f8a !important;
+	border-bottom: 1px solid #c7dcf6 !important;
+	border-top: 1px solid #d8e8fb !important;
+}
+
+.custom_datatables.datatable-professional tbody tr:hover td,
+.datatable-professional tbody tr:hover td {
+	background: #f7fbff !important;
+}
+
+/*
+ * Unified footer + pagination layout for DataTables pages using dt-footer DOM blocks.
+ */
+.dataTables_wrapper .dt-footer {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	flex-wrap: wrap !important;
+	row-gap: 10px !important;
+	column-gap: 12px !important;
+	padding-top: 8px;
+}
+
+.dataTables_wrapper .dt-foot-left {
+	flex: 1 1 260px !important;
+	min-width: 220px !important;
+}
+
+/* Always show search control inside standardized header */
+.dataTables_wrapper .dt-header .dataTables_filter,
+.dataTables_wrapper .dt-head-left .dataTables_filter {
+	display: inline-flex !important;
+	align-items: center !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.dataTables_wrapper .dt-header .dataTables_filter label,
+.dataTables_wrapper .dt-head-left .dataTables_filter label {
+	display: inline-flex !important;
+	align-items: center !important;
+	margin: 0 !important;
+	gap: 8px !important;
+}
+
+.dataTables_wrapper .dt-header .dataTables_filter input,
+.dataTables_wrapper .dt-head-left .dataTables_filter input {
+	display: inline-block !important;
+	min-width: 220px !important;
+}
+
+/* Always show length dropdown in standardized left header, even when legacy duplicate-hide rules exist. */
+.dataTables_wrapper .dt-header .dt-head-left .dataTables_length,
+.dataTables_wrapper .dt-head-left .dataTables_length,
+.dataTables_wrapper .dt-head-left .dataTables_length:not(:first-of-type) {
+	display: inline-flex !important;
+	align-items: center !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.dataTables_wrapper .dt-head-left .dataTables_filter {
+	order: 1;
+}
+
+.dataTables_wrapper .dt-head-left .dataTables_length {
+	order: 2;
+	margin-left: 8px !important;
+}
+
+.dataTables_wrapper .dt-head-left .dataTables_length label,
+.dataTables_wrapper .dt-head-left .dataTables_length select {
+	display: inline-block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.dataTables_wrapper .dt-foot-right,
+.dataTables_wrapper .dataTables_paginate {
+	margin-left: auto !important;
+	display: flex !important;
+	justify-content: flex-end !important;
+	align-items: center !important;
+	flex: 0 1 auto !important;
+}
+
+/*
+ * Pagination (rewritten from scratch)
+ * Single source of truth for spacing and button sizing.
+ */
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dt-foot-right .dataTables_paginate {
+	position: relative !important;
+	z-index: 10 !important;
+	gap: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .pagination {
+	margin: 0 !important;
+	padding: 0 !important;
+	gap: 0 !important;
+	justify-content: flex-end !important;
+	flex-wrap: wrap !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button,
+.dataTables_wrapper .dataTables_paginate .page-item {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button + .paginate_button,
+.dataTables_wrapper .dataTables_paginate .page-item + .page-item {
+	margin-left: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button > a,
+.dataTables_wrapper .dataTables_paginate a.paginate_button,
+.dataTables_wrapper .dataTables_paginate span.paginate_button {
+	min-width: 32px !important;
+	height: 32px !important;
+	padding: 0 6px !important;
+	margin: 0 !important;
+	border: 1px solid #d5e1ef !important;
+	border-radius: 7px !important;
+	background: #ffffff !important;
+	color: #37506a !important;
+	font-size: 0.76rem !important;
+	font-weight: 600 !important;
+	line-height: 1 !important;
+	text-decoration: none !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	box-shadow: none !important;
+	outline: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-link:hover,
+.dataTables_wrapper .dataTables_paginate .paginate_button > a:hover,
+.dataTables_wrapper .dataTables_paginate a.paginate_button:not(.disabled):not(.current):hover {
+	border-color: #9ebce5 !important;
+	background: #edf4ff !important;
+	color: #1f4e8a !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-item.active .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current > a,
+.dataTables_wrapper .dataTables_paginate a.paginate_button.current {
+	border-color: #2f6fbf !important;
+	background: #2f6fbf !important;
+	color: #ffffff !important;
+	box-shadow: none !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-item.disabled .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled > a,
+.dataTables_wrapper .dataTables_paginate a.paginate_button.disabled {
+	border-color: #e4ebf5 !important;
+	background: #f6f9fc !important;
+	color: #9aabbe !important;
+	opacity: 0.65 !important;
+}
+
+@media (max-width: 575.98px) {
+	.dataTables_wrapper .dt-footer {
+		justify-content: center !important;
+	}
+
+	.dataTables_wrapper .dt-foot-left,
+	.dataTables_wrapper .dt-foot-right {
+		width: 100% !important;
+		text-align: center;
+	}
+
+	.dataTables_wrapper .dataTables_paginate,
+	.dataTables_wrapper .dataTables_paginate .pagination {
+		justify-content: center !important;
+	}
+}

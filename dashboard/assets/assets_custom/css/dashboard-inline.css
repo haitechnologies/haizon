@@ -1,0 +1,154 @@
+/***********************************/
+/* DataTables Custom Styling */
+/***********************************/
+
+table.dataTable thead th {
+	/* background-color: #4CAF50 !important; */
+	/* background-color: #21263C !important; */
+	/* background-color: #DEDEDE !important; */
+	background-color: #E1E2E2 !important;
+	color: black !important;
+	padding: 0.5em 0;
+}
+
+div.dataTables_filter {
+	float: right;
+}
+
+.custom_datatables thead th {
+	/* background-color: black; */
+	/* color: yellow !important; */
+	font-size: smaller !important;
+	font-weight: 500;
+	opacity: 63%;
+}
+
+.table th {
+	font-size: smaller !important;
+	font-weight: 500;
+	/* opacity: 63%; */
+}
+
+table.dataTable.table-striped tbody tr.odd {
+	background-color: #f9f9fb;
+}
+
+table.dataTable tbody tr:hover {
+	background-color: #f6f6fa !important;
+}
+
+.custom_datatables tbody tr.odd,
+.custom_datatables tbody tr.even {
+	height: 2.8em;
+	/* background-color: #ccc; */
+}
+
+.custom_datatables tbody tr.odd,
+.custom_datatables tbody tr.even {
+	height: 2.8em;
+}
+
+/* .custom_datatables th, */
+.custom_datatables td {
+	border-bottom: 1px solid #ebeaf2 !important;
+}
+
+.custom_datatables tbody img {
+	margin: 0.5em;
+}
+
+table.dataTable td {
+	border-bottom: 1px solid silver;
+}
+
+/* table.dataTable {
+	border-collapse: separate;
+	empty-cells: hide;
+} */
+
+/***********************************/
+
+/* Lightbox Popup - Text below the Image */
+.lb-data,
+.lb-details {
+	text-align: center !important;
+}
+
+#new_password-strength-status {
+	padding: 5px 10px;
+	border-radius: 4px;
+	margin-top: 5px;
+}
+
+.medium-password {
+	background-color: #fd0;
+}
+
+.weak-password {
+	background-color: #FBE1E1;
+}
+
+.strong-password {
+	background-color: #D5F9D5;
+}
+
+/*****************************************/
+/* Live Circle Animation */
+/*****************************************/
+.recordLed {
+	width: 20px;
+	height: 20px;
+	background-color: green;
+	border-radius: 50%;
+}
+
+.liveText {
+	font-size: 16px;
+}
+
+.live {
+	animation: blinking 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+@keyframes blinking {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}
+
+/*****************************************/
+
+/*****************************************/
+/* Blink Text Animation */
+/*****************************************/
+.blink-text {
+	animation: 1s blinker step-end infinite;
+	-webkit-animation: 1s blinker step-end infinite;
+	-moz-animation: 1s blinker step-end infinite;
+	text-align: center;
+	color: #fff;
+}
+
+@-moz-keyframes blinker {
+	67% {
+		opacity: 0;
+	}
+}
+
+@-webkit-keyframes blinker {
+	67% {
+		opacity: 0;
+	}
+}
+
+@keyframes blinker {
+	67% {
+		opacity: 0;
+	}
+}
+
+/*****************************************/

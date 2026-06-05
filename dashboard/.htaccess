@@ -1,0 +1,116 @@
+﻿# ============================================================================
+# PHASE 1: SECURITY - Disable Directory Listing
+# ============================================================================
+Options -Indexes
+IndexIgnore *
+
+# ============================================================================
+# ACCESS CONTROL: Application-Level Auth
+# ============================================================================
+# Dashboard authentication and authorization are enforced in PHP
+# (session + permissions checks). Do not block by IP here on live.
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+</IfModule>
+
+# Keep dashboard URLs out of search indexes/snippets even if discovered.
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+</IfModule>
+
+# Generate Error Logs and keep in file error_log.txt
+php_flag log_errors on
+php_value error_reporting 32767
+php_value error_log "error_log.txt"
+
+# Enable rewrite engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Set environment variable for base path detection
+    # Local environment (XAMPP)
+    RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
+    RewriteRule .* - [E=BASE_PATH:/haipulse/dashboard]
+
+    # Live environment
+    RewriteCond %{HTTP_HOST} ^(www\.)?haipulse\.com$ [NC]
+    RewriteRule .* - [E=BASE_PATH:/dashboard]
+</IfModule>
+
+# Custom Error Pages
+# Use conditional rewrites below instead of ErrorDocument for cross-env compatibility
+# ErrorDocument 403 /haipulse/dashboard/404.php  â† local only, breaks on live
+# ErrorDocument 404 /haipulse/dashboard/404.php  â† local only, breaks on live
+
+# If the relative path doesn't work, use conditional based on host
+<IfModule mod_rewrite.c>
+    # Handle 404 for local
+    RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /haipulse/dashboard/404.php [L]
+
+    # Handle 404 for live
+    RewriteCond %{HTTP_HOST} ^(www\.)?haipulse\.com$ [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /dashboard/404.php [L]
+</IfModule>
+
+# ============================================================================
+# PHASE 5: SECURITY - Protect Log Files from Direct Access
+# ============================================================================
+# Block direct access to error log and lock files
+<FilesMatch "^(error_log|CONSOLIDATED_ERROR_LOG|.*\.lock)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block access to logs directory using RedirectMatch
+RedirectMatch 403 ^/.*dashboard/logs/.*$
+
+# Specific block for CONSOLIDATED_ERROR_LOG.txt and archived logs
+<Files "CONSOLIDATED_ERROR_LOG.txt">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+<Files "CONSOLIDATED_ERROR_LOG.lock">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# ============================================================================
+# PHASE 6: SECURITY - Protect Sensitive File Types
+# ============================================================================
+<FilesMatch "\.(env|config|sql|lock|json|xml|bak|backup|old|orig|tmp|temp|swp)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+

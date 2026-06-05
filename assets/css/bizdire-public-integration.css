@@ -1,0 +1,3651 @@
+:root {
+    --hai-shell-font: "Poppins", "Segoe UI", sans-serif;
+    --hai-shell-ink: #14213d;
+    --hai-shell-subtle: #5f6f86;
+    --hai-shell-line: rgba(20, 33, 61, 0.12);
+    --hai-shell-surface: #ffffff;
+    --hai-shell-surface-alt: #f4f7fb;
+    --hai-shell-accent: #ef6c00;
+    --hai-shell-accent-deep: #cf5a00;
+    --hai-shell-success: #147d64;
+    --hai-shell-shadow: 0 18px 40px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public {
+    font-family: var(--hai-shell-font);
+    color: var(--hai-shell-ink);
+    background:
+        radial-gradient(circle at top left, rgba(239, 108, 0, 0.08), transparent 28%),
+        linear-gradient(180deg, #fcfdff 0%, #f4f7fb 100%);
+}
+
+body.hai-public,
+body.hai-public * {
+    box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.hai-public *,
+    body.hai-public *::before,
+    body.hai-public *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+.public-shell-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    backdrop-filter: blur(12px);
+}
+
+.public-shell-topbar {
+    background: linear-gradient(90deg, rgba(20, 33, 61, 0.96) 0%, rgba(17, 65, 96, 0.94) 100%);
+    color: #eef4ff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.public-shell-topbar .text-muted,
+.public-shell-topbar a {
+    color: rgba(238, 244, 255, 0.86) !important;
+    text-decoration: none;
+}
+
+.public-shell-topbar a:hover,
+.public-shell-topbar a:focus {
+    color: #ffffff !important;
+}
+
+.public-shell-topbar .public-shell-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.02em;
+}
+
+.public-shell-nav {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid var(--hai-shell-line);
+    box-shadow: var(--hai-shell-shadow);
+}
+
+.public-shell-nav .container {
+    min-height: 84px;
+}
+
+.public-shell-brand {
+    gap: 0.9rem;
+    text-decoration: none;
+}
+
+.public-shell-brand img {
+    max-height: 52px;
+    width: auto;
+}
+
+.public-shell-brand-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+}
+
+.public-shell-brand-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hai-shell-ink);
+}
+
+.public-shell-brand-tagline {
+    font-size: 0.75rem;
+    color: var(--hai-shell-subtle);
+}
+
+.public-shell-nav .navbar-nav {
+    gap: 0.15rem;
+}
+
+.public-shell-nav .nav-link {
+    color: var(--hai-shell-ink);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.8rem 0.95rem !important;
+    border-radius: 999px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.public-shell-nav .nav-link:hover,
+.public-shell-nav .nav-link:focus {
+    color: var(--hai-shell-accent-deep);
+    background: rgba(239, 108, 0, 0.08);
+}
+
+.public-shell-nav .nav-link.active {
+    color: var(--hai-shell-accent-deep);
+    background: rgba(239, 108, 0, 0.12);
+}
+
+.public-shell-nav .navbar-toggler {
+    border: 1px solid rgba(20, 33, 61, 0.15);
+    border-radius: 14px;
+    padding: 0.5rem 0.7rem;
+    background: #ffffff;
+}
+
+.public-shell-nav .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(239, 108, 0, 0.18);
+}
+
+.public-shell-nav .navbar-toggler-icon {
+    display: block;
+    width: 1.35rem;
+    height: 1.35rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(20,33,61,0.94)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.3' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+}
+
+.public-shell-nav .public-nav-actions {
+    gap: 0.7rem !important;
+}
+
+.public-shell-nav .btn-post {
+    border-radius: 999px;
+    padding: 0.78rem 1.1rem;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.public-shell-nav .btn-success.btn-post {
+    background: #ef6c00;
+    background-image: none;
+    border-color: transparent;
+    box-shadow: none !important;
+}
+
+.public-shell-nav .btn-success.btn-post:hover,
+.public-shell-nav .btn-success.btn-post:focus {
+    background: #d95f00;
+    background-image: none;
+    box-shadow: none !important;
+}
+
+.public-shell-nav .offcanvas {
+    border-left: 1px solid var(--hai-shell-line);
+    background:
+        radial-gradient(circle at top right, rgba(239, 108, 0, 0.1), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+}
+
+.public-shell-nav .offcanvas-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.public-shell-nav .offcanvas-brand-logo {
+    max-height: 42px;
+    width: auto;
+}
+
+.public-shell-nav .offcanvas-brand-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.public-shell-nav .offcanvas-brand-subtitle {
+    color: var(--hai-shell-subtle);
+    font-size: 0.78rem;
+}
+
+.public-global-search {
+    position: relative;
+    z-index: 1020;
+    padding: 0.9rem 0 1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 247, 251, 0.92) 100%);
+    border-bottom: 1px solid rgba(20, 33, 61, 0.08);
+}
+
+.public-global-search__inner {
+    display: block;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 16px 30px rgba(20, 33, 61, 0.08);
+}
+
+.public-global-search__form {
+    margin: 0;
+}
+
+.public-global-search__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(180px, 0.85fr) auto;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.public-global-search__keyword,
+.public-global-search__select {
+    min-height: 54px;
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid rgba(20, 33, 61, 0.1);
+    background: #ffffff;
+    color: var(--hai-shell-ink);
+}
+
+.public-global-search__keyword::placeholder {
+    color: #6f7f93;
+}
+
+.public-global-search__keyword:focus,
+.public-global-search__select:focus {
+    border-color: rgba(239, 108, 0, 0.42);
+    box-shadow: 0 0 0 0.22rem rgba(239, 108, 0, 0.14);
+}
+
+.public-global-search__submit {
+    min-width: 140px;
+    min-height: 54px;
+    border-radius: 16px;
+}
+
+.public-search-hero {
+    padding: 1.25rem 0 1.1rem;
+}
+
+.public-search-hero__card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 28px;
+    box-shadow: var(--hai-shell-shadow);
+    background:
+        radial-gradient(circle at top right, rgba(239, 108, 0, 0.14), transparent 25%),
+        linear-gradient(135deg, rgba(20, 33, 61, 0.98) 0%, rgba(17, 65, 96, 0.95) 55%, rgba(239, 108, 0, 0.9) 100%);
+    color: #fff;
+    width: 100%;
+}
+
+.public-search-hero__content {
+    max-width: 48rem;
+}
+
+.public-search-hero__content p {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.public-search-hero__form .field,
+.public-search-hero__form .select {
+    min-height: 56px;
+    border-radius: 16px;
+    border: 1px solid rgba(20, 33, 61, 0.1);
+    background: #ffffff;
+    color: var(--hai-shell-ink);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.public-search-hero__form .field::placeholder {
+    color: #6f7f93;
+}
+
+.public-search-hero__form .field:focus,
+.public-search-hero__form .select:focus {
+    border-color: rgba(239, 108, 0, 0.42);
+    box-shadow: 0 0 0 0.22rem rgba(239, 108, 0, 0.14);
+}
+
+.public-search-hero__grid--filters {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(170px, 1fr) minmax(170px, 1fr) auto;
+    gap: 0.85rem;
+}
+
+.public-search-hero__submit {
+    min-width: 160px;
+}
+
+.public-search-hero__tags {
+    margin-top: 1.1rem;
+}
+
+.public-search-hero--listings {
+    padding-top: 0.5rem;
+}
+
+.public-search-hero--listings .public-search-hero__card {
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(44, 123, 229, 0.1), transparent 24%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 248, 252, 0.97));
+    color: var(--hai-shell-ink);
+    box-shadow: 0 22px 40px rgba(20, 33, 61, 0.09);
+}
+
+.public-search-hero--listings .public-search-hero__content h1 {
+    color: var(--hai-shell-ink);
+}
+
+.public-search-hero--listings .public-search-hero__content p,
+.public-search-hero--listings .popular-tags,
+.public-search-hero--listings .popular-tags__label {
+    color: var(--hai-shell-subtle);
+}
+
+.public-search-hero--listings .search-panel {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(20, 33, 61, 0.08);
+}
+
+.public-search-hero--home .search-panel,
+.public-search-hero--listings .search-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    box-shadow: 0 16px 26px rgba(8, 24, 52, 0.14);
+}
+
+.public-search-hero--home .popular-tag,
+.public-search-hero--listings .popular-tag {
+    backdrop-filter: blur(4px);
+}
+
+.site-footer.site-footer-shell {
+    background: transparent !important;
+    color: var(--hai-shell-ink);
+}
+
+.site-footer-shell .footer-main {
+    padding: 2rem 0 0;
+    border-bottom: none !important;
+}
+
+.site-footer-shell .footer-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(244, 247, 251, 0.98) 100%);
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 28px;
+    box-shadow: var(--hai-shell-shadow);
+    padding: 1.5rem 1.5rem 0;
+    overflow: hidden;
+}
+
+.site-footer-shell .footer-cta-section {
+    margin-bottom: 1.75rem !important;
+}
+
+.site-footer-shell .footer-cta-section .btn {
+    min-height: 64px;
+    border-radius: 18px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    box-shadow: 0 10px 24px rgba(20, 33, 61, 0.05);
+}
+
+.site-footer-shell h6 {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hai-shell-ink);
+    margin-bottom: 1rem;
+}
+
+.site-footer-shell .footer-brand-copy {
+    color: var(--hai-shell-subtle);
+    max-width: 30rem;
+}
+
+.site-footer-shell a {
+    text-decoration: none;
+}
+
+.site-footer-shell .footer-panel,
+.site-footer-shell .footer-panel p,
+.site-footer-shell .footer-panel li,
+.site-footer-shell .footer-panel a,
+.site-footer-shell .footer-panel .text-dark {
+    color: var(--hai-shell-ink) !important;
+}
+
+.site-footer-shell .footer-panel .text-muted,
+.site-footer-shell .footer-panel .footer-pay-note,
+.site-footer-shell .footer-panel .footer-brand-copy {
+    color: var(--hai-shell-subtle) !important;
+}
+
+.site-footer-shell .footer-panel ul a {
+    opacity: 0.96;
+}
+
+.site-footer-shell .footer-toggle {
+    width: 100%;
+    text-align: left;
+    color: var(--hai-shell-ink);
+    border: 1px solid rgba(20, 33, 61, 0.1);
+    border-radius: 12px;
+    padding: 0.65rem 0.8rem;
+    background: #ffffff;
+    font-weight: 700;
+}
+
+.site-footer-shell .footer-toggle,
+.site-footer-shell .footer-toggle:visited,
+.site-footer-shell .footer-toggle:hover,
+.site-footer-shell .footer-toggle:focus,
+.site-footer-shell .footer-toggle:active,
+.site-footer-shell .footer-toggle i,
+.site-footer-shell .footer-panel h6,
+.site-footer-shell .footer-pay-note,
+.site-footer-shell .footer-pay-note i {
+    color: var(--hai-shell-ink) !important;
+}
+
+.site-footer-shell .footer-toggle i {
+    color: var(--hai-shell-subtle);
+}
+
+.site-footer-shell .mobile-collapse a,
+.site-footer-shell #footerExplore a,
+.site-footer-shell #footerCompany a {
+    color: var(--hai-shell-ink) !important;
+}
+
+.site-footer-shell .footer-panel ul a:hover,
+.site-footer-shell .footer-panel ul a:focus {
+    color: var(--hai-shell-accent-deep) !important;
+}
+
+.site-footer-shell .footer-btn-outline {
+    border-color: rgba(20, 33, 61, 0.12);
+    background: #fff;
+    color: var(--hai-shell-ink);
+}
+
+.site-footer-shell .footer-btn-outline:hover,
+.site-footer-shell .footer-btn-outline:focus {
+    border-color: rgba(239, 108, 0, 0.26);
+    color: var(--hai-shell-accent-deep);
+    background: rgba(239, 108, 0, 0.06);
+}
+
+.site-footer-shell .footer-bottom-bar {
+    background: transparent !important;
+    border-top: none !important;
+    padding: 1rem 0 2.5rem !important;
+}
+
+.site-footer-shell .footer-bottom-inner {
+    background: rgba(20, 33, 61, 0.96);
+    color: rgba(238, 244, 255, 0.88);
+    border-radius: 22px;
+    padding: 1rem 1.4rem;
+}
+
+.site-footer-shell .footer-bottom-inner a,
+.site-footer-shell .footer-bottom-inner .text-dark,
+.site-footer-shell .footer-bottom-inner .text-muted {
+    color: #ffffff !important;
+}
+
+.site-footer-shell .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--hai-shell-ink);
+    border: 1px solid rgba(20, 33, 61, 0.12);
+}
+
+.site-footer-shell .footer-bottom-inner .social-icon,
+.site-footer-shell .footer-bottom-inner .social-icon i {
+    color: var(--hai-shell-ink) !important;
+}
+
+.site-footer-shell .social-icon:hover,
+.site-footer-shell .social-icon:focus {
+    background: rgba(239, 108, 0, 0.95);
+    color: #fff;
+    border-color: rgba(239, 108, 0, 0.95);
+}
+
+body.hai-public.responsive-bootstrap-redesign .section-head {
+    align-items: end;
+    margin-bottom: 1.1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign .section-head h2,
+body.hai-public.responsive-bootstrap-redesign .results-title {
+    font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+}
+
+body.hai-public.responsive-bootstrap-redesign .section-head .muted {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: var(--hai-shell-accent-deep);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .home-kpi-section {
+    padding-top: 0.75rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .kpi {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 22px;
+    padding: 1.15rem 1rem;
+    background: #ffffff;
+    box-shadow: 0 10px 20px rgba(20, 33, 61, 0.06);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .kpi::after {
+    content: none;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .kpi-icon {
+    display: none;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .kpi-value {
+    font-size: clamp(1.25rem, 2vw, 1.8rem);
+    font-weight: 800;
+    color: var(--hai-shell-ink);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .kpi-label {
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card,
+body.hai-public.responsive-bootstrap-redesign.page-home .category-card,
+body.hai-public.responsive-bootstrap-redesign.page-home .business-card,
+body.hai-public.responsive-bootstrap-redesign.page-home .blog-card {
+    border-radius: 24px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    box-shadow: 0 22px 44px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card {
+    padding: 1.2rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.95));
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card-title {
+    margin-bottom: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-link {
+    border-radius: 12px;
+    min-width: 42px;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(20, 33, 61, 0.1);
+    background: #fff;
+    color: var(--hai-shell-ink);
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(20, 33, 61, 0.05);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-link:hover,
+body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-link:focus-visible {
+    background: rgba(239, 108, 0, 0.08);
+    border-color: rgba(239, 108, 0, 0.28);
+    color: var(--hai-shell-accent-deep);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .category-card,
+body.hai-public.responsive-bootstrap-redesign.page-home .business-card,
+body.hai-public.responsive-bootstrap-redesign.page-home .blog-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1.2rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 249, 252, 0.97));
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .category-card::before,
+body.hai-public.responsive-bootstrap-redesign.page-home .business-card::before,
+body.hai-public.responsive-bootstrap-redesign.page-home .blog-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--hai-shell-accent) 0%, #2c7be5 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .business-top {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .pill {
+    background: rgba(239, 108, 0, 0.1);
+    color: var(--hai-shell-accent-deep);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .business-card h3,
+body.hai-public.responsive-bootstrap-redesign.page-home .category-card h3,
+body.hai-public.responsive-bootstrap-redesign.page-home .blog-card h3 {
+    font-size: 1.08rem;
+    margin-bottom: 0.45rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .state-card {
+    position: relative;
+    min-height: 140px;
+    border-radius: 24px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    box-shadow: 0 20px 40px rgba(20, 33, 61, 0.09);
+    background:
+        linear-gradient(135deg, rgba(20, 33, 61, 0.96), rgba(13, 95, 194, 0.92)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
+    padding: 0.85rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .state-card::before {
+    opacity: 1;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 52%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .state-card h3,
+body.hai-public.responsive-bootstrap-redesign.page-home .state-card:hover h3 {
+    color: #ffffff;
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-categories .directory-hero,
+body.hai-public.responsive-bootstrap-redesign.page-services .services-hero,
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bannerimg,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 28px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-services .services-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero,
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bannerimg {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 16px 34px rgba(20, 33, 61, 0.13);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-section {
+    background: transparent;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 2rem;
+    background: linear-gradient(135deg, #10213a 0%, #17498a 52%, #ef6c00 100%);
+    box-shadow: 0 28px 58px rgba(16, 33, 58, 0.22);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    top: -70px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 68%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-content {
+    position: relative;
+    z-index: 1;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .home-mobile-quicklinks {
+    display: none;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-home .home-blog-excerpt,
+body.hai-public.responsive-bootstrap-redesign.page-home .business-card .muted,
+body.hai-public.responsive-bootstrap-redesign.page-home .category-card .muted,
+body.hai-public.responsive-bootstrap-redesign.page-home .meta-line {
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .notice {
+    border-radius: 16px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.95));
+    box-shadow: 0 14px 30px rgba(20, 33, 61, 0.06);
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-head {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 252, 0.96));
+    box-shadow: 0 18px 34px rgba(20, 33, 61, 0.07);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .results-tools .select {
+    min-width: 190px;
+    border-radius: 14px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .filter-box {
+    border-radius: 24px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 248, 252, 0.96));
+    box-shadow: 0 22px 40px rgba(20, 33, 61, 0.08);
+    padding: 1.2rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .filter-head {
+    margin-bottom: 1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .filter-group h4 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .filter-btn,
+body.hai-public.responsive-bootstrap-redesign.page-listings .filter-clear {
+    width: 100%;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 249, 252, 0.97));
+    box-shadow: 0 20px 42px rgba(20, 33, 61, 0.07);
+    padding: 1.3rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--hai-shell-accent) 0%, #2c7be5 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-name {
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    line-height: 1.12;
+    margin-bottom: 0.8rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-meta,
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-desc {
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-badges {
+    gap: 0.45rem;
+    margin-bottom: 0.8rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-badge {
+    border-radius: 999px;
+    padding: 0.38rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .badge-featured {
+    background: rgba(239, 108, 0, 0.1);
+    color: var(--hai-shell-accent-deep);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .badge-verified {
+    background: rgba(20, 125, 100, 0.12);
+    color: var(--hai-shell-success);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .badge-rating {
+    background: rgba(44, 123, 229, 0.1);
+    color: #1557b0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-info-item {
+    border-radius: 999px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 20px rgba(20, 33, 61, 0.05);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-actions {
+    margin-top: 1rem;
+    gap: 0.65rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listing-actions .btn-ui {
+    border-radius: 14px;
+    min-height: 44px;
+    box-shadow: none;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-upgrade-cta {
+    border-radius: 24px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(135deg, #10213a 0%, #17498a 52%, #ef6c00 100%);
+    box-shadow: 0 24px 54px rgba(16, 33, 58, 0.18);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-upgrade-cta,
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-upgrade-cta h4,
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-upgrade-cta a {
+    color: #ffffff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-upgrade-copy {
+    color: rgba(255, 255, 255, 0.88);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-pagination-wrap {
+    gap: 0.65rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-listings .listings-pagination .btn-ui {
+    min-width: 46px;
+    border-radius: 14px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-card-spaced,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-banner-card,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-section-card,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-card,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-map-wrap,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .detail-box {
+    border-radius: 24px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 20px 42px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-card-spaced {
+    position: relative;
+    overflow: hidden;
+    padding: 1.45rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-card-spaced::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--hai-shell-accent) 0%, #2c7be5 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-title {
+    font-size: clamp(1.45rem, 2.6vw, 2.1rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.55rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .meta-line,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-desc,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-contact-list,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-text,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-desc {
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-quick-grid,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-social-row,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-keywords-row,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-brands-row,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-states-row,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-alpha-row {
+    gap: 0.6rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-social-row .btn-ui,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-quick-grid .btn-ui,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-state-btn,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-alpha-btn {
+    border-radius: 14px;
+    border: 1px solid rgba(20, 33, 61, 0.1);
+    background: #fff;
+    color: var(--hai-shell-ink);
+    box-shadow: 0 10px 20px rgba(20, 33, 61, 0.06);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-pill-verified,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-keyword-pill,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-brand-pill {
+    background: rgba(20, 125, 100, 0.12);
+    color: var(--hai-shell-success);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-pill-green,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-pill-iso {
+    background: rgba(239, 108, 0, 0.12);
+    color: var(--hai-shell-accent-deep);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-map-wrap {
+    padding: 1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-map-frame {
+    border: 0;
+    border-radius: 18px;
+    width: 100%;
+    min-height: 260px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-card {
+    background: linear-gradient(135deg, #10213a 0%, #17498a 56%, #ef6c00 100%);
+    box-shadow: 0 26px 54px rgba(16, 33, 58, 0.2);
+    color: #fff;
+    text-align: center;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-card .company-claim-text,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-card strong {
+    color: rgba(255, 255, 255, 0.92) !important;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-btn {
+    border-radius: 999px;
+    background: #fff;
+    color: #114585;
+    border-color: transparent;
+    font-weight: 700;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-section-card {
+    padding: 1.2rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-section-heading {
+    margin-bottom: 0.95rem;
+    font-size: clamp(1.15rem, 2.1vw, 1.45rem);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-grid {
+    gap: 0.75rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-item {
+    border-radius: 18px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 12px 24px rgba(20, 33, 61, 0.06);
+    padding: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-title {
+    margin-bottom: 0.45rem;
+    font-size: 1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-action-btn,
+body.hai-public.responsive-bootstrap-redesign.page-company-detail .similar-viewall-btn {
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero {
+    margin-top: 0.5rem;
+    border-radius: 28px;
+    padding: clamp(2.4rem, 6vw, 4rem) 0 clamp(1.8rem, 4vw, 3rem);
+    background:
+        radial-gradient(circle at top right, rgba(239, 108, 0, 0.2), transparent 32%),
+        linear-gradient(135deg, #0f1f37 0%, #17498a 58%, #ef6c00 100%);
+    box-shadow: 0 30px 56px rgba(16, 33, 58, 0.22);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero h1 {
+    letter-spacing: -0.03em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-featured-card,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-card,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-category-card,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-sidebar-widget,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-empty-state,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-pagination {
+    border-radius: 24px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 18px 38px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-featured-card {
+    overflow: hidden;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-card {
+    position: relative;
+    overflow: hidden;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--hai-shell-accent) 0%, #2c7be5 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-card-title {
+    font-size: clamp(1.08rem, 1.6vw, 1.25rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-card-meta-item,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-card-excerpt,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-empty-state p,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-sidebar-widget p {
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-category-link,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-sidebar-link,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-pagination-link {
+    border-radius: 14px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-pagination-current {
+    border-radius: 14px;
+    background: linear-gradient(135deg, #215fd0 0%, #2c7be5 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .bannerimg {
+    margin-top: 0.5rem;
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 24px 50px rgba(16, 33, 58, 0.2);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .bannerimg .header-text {
+    background: linear-gradient(135deg, rgba(15, 31, 55, 0.88), rgba(23, 73, 138, 0.78));
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .sptb .card,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .sptb .alert,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .sptb .list-group-item {
+    border-radius: 22px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 16px 34px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .sptb .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .blog-content,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .blog-content p,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .item7-card-desc,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .text-muted {
+    color: var(--hai-shell-subtle) !important;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .blog-content h2,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .blog-content h3,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .blog-content h4,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .font-weight-semibold {
+    color: var(--hai-shell-ink);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .btn,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .badge {
+    border-radius: 999px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .site-main {
+    padding-bottom: 2rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-hero {
+    margin-top: 0.5rem;
+    margin-bottom: 1.9rem;
+    border-radius: 26px;
+    padding: clamp(2.2rem, 5vw, 3.4rem) 1.25rem;
+    text-align: center;
+    color: #fff;
+    background:
+        radial-gradient(circle at 82% 18%, rgba(239, 108, 0, 0.26), transparent 30%),
+        linear-gradient(135deg, #0f1f37 0%, #1a4f95 60%, #ef6c00 100%);
+    box-shadow: 0 24px 48px rgba(16, 33, 58, 0.2);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-hero h1 {
+    margin-bottom: 0.45rem;
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-hero p,
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-count {
+    color: rgba(255, 255, 255, 0.86);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 0.85rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-breadcrumb {
+    margin-bottom: 1rem;
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-breadcrumb a {
+    color: #1d5bd1;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-articles {
+    display: grid;
+    gap: 1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-card {
+    display: grid;
+    grid-template-columns: 176px minmax(0, 1fr);
+    gap: 0;
+    overflow: hidden;
+    text-decoration: none;
+    border-radius: 22px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 16px 34px rgba(20, 33, 61, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-card:hover,
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-card:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 40px rgba(20, 33, 61, 0.12);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-image-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.1rem;
+    background:
+        radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.15), transparent 36%),
+        linear-gradient(145deg, #134280 0%, #1f64b8 58%, #ef6c00 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-content {
+    padding: 1rem 1.05rem;
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-title {
+    margin-bottom: 0.45rem;
+    color: var(--hai-shell-ink);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-meta {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.55rem;
+    font-size: 0.86rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-read-more,
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blogcat-link {
+    color: #1d5bd1;
+    font-weight: 700;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-pagination {
+    margin: 1.6rem 0 0.2rem;
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .pagination-btn {
+    border-radius: 12px;
+    border: 1px solid rgba(20, 33, 61, 0.12);
+    background: #fff;
+    color: var(--hai-shell-ink);
+    padding: 0.5rem 0.8rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .pagination-btn:hover,
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .pagination-btn.active {
+    border-color: #1d5bd1;
+    background: linear-gradient(135deg, #1d5bd1 0%, #2c7be5 100%);
+    color: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .no-articles {
+    border-radius: 22px;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 14px 30px rgba(20, 33, 61, 0.07);
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-hero {
+    margin-top: 0;
+    border-radius: 0;
+    background: linear-gradient(120deg, #05243a 0%, #0b3a59 55%, #17608d 100%);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    padding: 90px 0 70px;
+    box-shadow: 0 24px 48px rgba(16, 33, 58, 0.2);
+}
+
+@media (max-width: 991.98px) {
+    .public-shell-nav #publicMainMenu.offcanvas {
+        width: min(88vw, 360px);
+        max-width: min(88vw, 360px);
+        top: 0;
+        right: 0;
+        left: auto;
+        height: 100vh;
+        border-radius: 18px 0 0 18px;
+        overflow: hidden;
+    }
+
+    .public-shell-nav #publicMainMenu.offcanvas.show,
+    .public-shell-nav #publicMainMenu.offcanvas.showing {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+    }
+
+    .public-shell-nav #publicMainMenu .offcanvas-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        overflow-y: auto;
+        padding: 1rem 1rem 1.2rem;
+    }
+
+    .public-shell-nav .navbar-toggler,
+    .public-shell-nav #publicMainMenu .btn-post,
+    .public-shell-nav #publicMainMenu .nav-link {
+        min-height: 44px;
+    }
+
+    .public-shell-nav #publicMainMenu .nav-link {
+        display: flex;
+        align-items: center;
+    }
+
+    .public-shell-nav #publicMainMenu .navbar-nav {
+        width: 100%;
+    }
+
+    .public-shell-nav #publicMainMenu .public-nav-actions {
+        margin-top: 0.25rem;
+    }
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-hero::after {
+    content: "";
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    right: -120px;
+    top: -120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.09);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-hero h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-hero p {
+    max-width: 760px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 1.05rem;
+    margin-bottom: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-breadcrumb {
+    background: transparent;
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-breadcrumb .breadcrumb-item,
+body.hai-public.responsive-bootstrap-redesign.page-about .about-breadcrumb .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.92rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-surface,
+body.hai-public.responsive-bootstrap-redesign.page-about .about-pillar,
+body.hai-public.responsive-bootstrap-redesign.page-about .about-process .card,
+body.hai-public.responsive-bootstrap-redesign.page-about .about-cta {
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 14px 30px rgba(20, 33, 61, 0.07);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-kpi {
+    border-left: 3px solid #1d5bd1;
+    padding-left: 14px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-kpi h4 {
+    margin: 0;
+    font-size: 1.7rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-kpi p {
+    margin: 4px 0 0;
+    color: #5b6775;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-pillar {
+    height: 100%;
+    padding: 24px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-pillar:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 32px rgba(13, 52, 86, 0.12);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #edf4ff;
+    color: #0b5ed7;
+    font-size: 20px;
+    margin-bottom: 14px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-about .about-step {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #1d5bd1;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .sptb {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .section-title {
+    margin-bottom: 2rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .section-title p {
+    max-width: 760px;
+    margin: 0.75rem auto 0;
+    line-height: 1.7;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .card,
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bannerimg {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    box-shadow: 0 14px 30px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .card-body {
+    padding: 1.5rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .feature-icon {
+    margin-bottom: 1.25rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .leading-normal {
+    line-height: 1.85;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .list-unstyled li {
+    padding: 0.35rem 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bg-primary {
+    margin-top: 0.5rem;
+    background: linear-gradient(135deg, #10213a 0%, #17498a 56%, #ef6c00 100%) !important;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero {
+    background: linear-gradient(135deg, #1a3c5e 0%, #0d6efd 100%);
+    color: #fff;
+    padding: 72px 0 56px;
+    text-align: center;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero p {
+    font-size: 1.15rem;
+    opacity: 0.88;
+    max-width: 620px;
+    margin: 0 auto 24px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .billing-toggle-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-size: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .billing-toggle-wrap label {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .billing-toggle-wrap .form-check-input {
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .save-badge {
+    background: #ffc107;
+    color: #212529;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cards {
+    padding: 56px 0 48px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-card {
+    border-radius: 16px;
+    border: 2px solid #e9ecef;
+    background: #fff;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-card.popular {
+    border-color: #0d6efd;
+    box-shadow: 0 8px 40px rgba(13, 110, 253, 0.2);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .popular-ribbon {
+    position: absolute;
+    top: 18px;
+    right: -28px;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 36px;
+    transform: rotate(45deg);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-header {
+    padding: 28px 28px 20px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-slug-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .badge-silver {
+    background: #f0f0f0;
+    color: #555;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .badge-gold {
+    background: #fff3cd;
+    color: #856404;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .badge-platinum {
+    background: #e8d5f5;
+    color: #6f42c1;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-price {
+    margin: 12px 0 6px;
+    line-height: 1;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-price .amount {
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-price .period {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-price .orig {
+    font-size: 1rem;
+    color: #adb5bd;
+    text-decoration: line-through;
+    margin-right: 6px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .trial-note {
+    font-size: 0.82rem;
+    color: #0d6efd;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-tagline {
+    font-size: 0.88rem;
+    color: #6c757d;
+    min-height: 36px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features {
+    padding: 0 28px 28px;
+    flex: 1;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features li {
+    padding: 7px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features li:last-child {
+    border-bottom: none;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .feat-qty {
+    display: inline-block;
+    background: #e7f3ff;
+    color: #0d6efd;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 12px;
+    margin-left: auto;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-check {
+    color: #198754;
+    flex-shrink: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cross {
+    color: #dc3545;
+    flex-shrink: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cta {
+    padding: 0 28px 28px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cta .btn {
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .free-plan-card {
+    background: #f8fafc;
+    border: 2px solid #e9ecef;
+    border-radius: 16px;
+    padding: 32px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-section {
+    background: #f8fafc;
+    padding: 64px 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table {
+    background: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table th,
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table td {
+    padding: 12px 16px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th {
+    background: #1e293b;
+    color: #fff;
+    font-weight: 700;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th.silver-col {
+    background: #e9edf2;
+    color: #1f2937;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th.gold-col {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th.plat-col {
+    background: #efe4fa;
+    color: #4a2b74;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td {
+    color: #1f2937;
+    background: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(3),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td.silver-col {
+    background: #f5f7fa;
+    color: #1f2937;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(4),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td.gold-col {
+    background: #fff9e8;
+    color: #5a4300;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(5),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td.plat-col {
+    background: #f8f1ff;
+    color: #4a2b74;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th:nth-child(3),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th:nth-child(4),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th:nth-child(5),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(3),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(4),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(5) {
+    border-left: 2px solid rgba(30, 41, 59, 0.12);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table thead th:nth-child(5),
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table tbody td:nth-child(5) {
+    border-right: 2px solid rgba(30, 41, 59, 0.12);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table .cat-row th {
+    background: #e9ecef;
+    color: #495057;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table td.center {
+    text-align: center;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table .feature-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1;
+    border: 1px solid transparent;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table .feature-badge.yes {
+    background: #e7f6ec;
+    color: #0f7a35;
+    border-color: #b7e4c5;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table .feature-badge.no {
+    background: #fdecec;
+    color: #b42318;
+    border-color: #f7c2c0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .faq-section {
+    padding: 64px 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .btn-purple {
+    background: #6f42c1;
+    color: #fff;
+    border-color: #6f42c1;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-pricing .btn-purple:hover {
+    background: #5a32a3;
+    border-color: #5a32a3;
+    color: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero {
+    margin-top: 0.5rem;
+    border-radius: 26px;
+    padding: clamp(2.4rem, 5vw, 3.8rem) 1.2rem;
+    text-align: center;
+    color: #fff;
+    background:
+        radial-gradient(circle at 86% 14%, rgba(239, 108, 0, 0.24), transparent 34%),
+        linear-gradient(135deg, #10213a 0%, #14508f 54%, #ef6c00 100%);
+    box-shadow: 0 24px 46px rgba(16, 33, 58, 0.2);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .container-narrow.ads-content {
+    padding-top: 1.2rem;
+    padding-bottom: 1.4rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero__title {
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero__text {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero__cta,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-full-cta {
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-stats,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-plan-card,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-why-card,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-cta {
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 14px 30px rgba(20, 33, 61, 0.08);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-plan-card {
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-plan-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 34px rgba(20, 33, 61, 0.13);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-plan-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #eef4ff;
+}
+
+/* Standard hero shell for existing public page hero blocks.
+   Baseline follows page-categories/page-services spacing and shell density. */
+body.hai-public.responsive-bootstrap-redesign.page-categories .directory-hero,
+body.hai-public.responsive-bootstrap-redesign.page-services .services-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .bannerimg,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero,
+body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero,
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bannerimg,
+body.hai-public.responsive-bootstrap-redesign.page-about .about-hero {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    box-shadow: 0 16px 34px rgba(20, 33, 61, 0.13);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-categories .directory-hero,
+body.hai-public.responsive-bootstrap-redesign.page-services .services-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-hero,
+body.hai-public.responsive-bootstrap-redesign.page-blog-detail .bannerimg,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero,
+body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero,
+body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bannerimg,
+body.hai-public.responsive-bootstrap-redesign.page-about .about-hero {
+    border-radius: 20px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-check-list li {
+    color: var(--hai-shell-subtle);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-price {
+    color: #1d5bd1;
+    font-weight: 800;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-section-title,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-why-item h4,
+body.hai-public.responsive-bootstrap-redesign.page-ads .ads-cta h2 {
+    color: var(--hai-shell-ink);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-shell {
+    padding-top: 1.6rem;
+    padding-bottom: 1.5rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-title {
+    margin-top: 0.35rem;
+    margin-bottom: 0.5rem;
+    font-size: clamp(2rem, 4vw, 2.6rem);
+    letter-spacing: -0.03em;
+    color: var(--hai-shell-ink);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-subtitle {
+    color: var(--hai-shell-subtle) !important;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-card {
+    border: 1px solid rgba(20, 33, 61, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 249, 252, 0.96));
+    box-shadow: 0 14px 30px rgba(20, 33, 61, 0.08);
+    margin-bottom: 1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-card-title {
+    color: var(--hai-shell-ink);
+    font-size: clamp(1.1rem, 2.1vw, 1.35rem);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-list li {
+    color: var(--hai-shell-subtle);
+    line-height: 1.7;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-warning {
+    border: 1px solid rgba(239, 108, 0, 0.24);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 247, 232, 0.9), rgba(255, 251, 241, 0.96));
+    box-shadow: 0 10px 24px rgba(239, 108, 0, 0.1);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-warning-title {
+    color: #9a4b00;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-tips .tips-warning-link {
+    color: #1d5bd1;
+    font-weight: 700;
+}
+
+@media (max-width: 1199.98px) {
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero {
+        padding: 64px 0 52px;
+        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 30%),
+            linear-gradient(135deg, #10213a 0%, #1357d5 100%);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero h1 {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        line-height: 1.1;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .billing-toggle-wrap {
+        padding: 8px 18px;
+        box-shadow: 0 14px 32px rgba(16, 33, 58, 0.18);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-card,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .free-plan-card,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .accordion-item {
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-header,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cta {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-section {
+        padding: 56px 0;
+        background: linear-gradient(180deg, #f7faff 0%, #eef4ff 100%);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table {
+        border: 1px solid #dbe4f0;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .faq-section {
+        padding: 56px 0;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-ads .ads-plan-grid {
+        gap: 0.85rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body.hai-public.responsive-bootstrap-redesign.page-categories .directory-hero,
+    body.hai-public.responsive-bootstrap-redesign.page-services .services-hero,
+    body.hai-public.responsive-bootstrap-redesign.page-blog .blog-hero,
+    body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-category-hero,
+    body.hai-public.responsive-bootstrap-redesign.page-blog-detail .bannerimg,
+    body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero,
+    body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .bannerimg {
+        margin-top: 8px;
+        margin-bottom: 22px;
+        border-radius: 14px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-about .about-hero {
+        margin-top: 8px;
+        margin-bottom: 22px;
+        border-radius: 14px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .public-shell-header {
+        position: relative;
+    }
+
+    .public-shell-nav .container {
+        min-height: 74px;
+    }
+
+    .public-shell-brand-copy {
+        display: none;
+    }
+
+    .site-footer-shell .footer-panel {
+        border-radius: 22px;
+        padding: 1.25rem 1rem 0;
+    }
+
+    .public-search-hero__grid--filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .public-search-hero__form .field,
+    .public-search-hero__form .select {
+        border: 1px solid #d4deea !important;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__form .field--hero {
+        border: 1px solid rgba(20, 33, 61, 0.14) !important;
+        background: #ffffff !important;
+        color: var(--hai-shell-ink) !important;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__form .field--hero::placeholder {
+        color: #6f7f93 !important;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__form .field--hero:focus {
+        border-color: rgba(239, 108, 0, 0.42) !important;
+        box-shadow: 0 0 0 0.22rem rgba(239, 108, 0, 0.14) !important;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__card {
+        border-radius: 18px;
+        padding: 1.15rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__content h1 {
+        font-size: 2.05rem;
+        line-height: 1.22;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__content p {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-grid {
+        gap: 0.75rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi {
+        border-radius: 16px;
+        padding: 0.95rem 0.8rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-value {
+        font-size: 1.18rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-label {
+        font-size: 0.84rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .category-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .business-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .blog-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card {
+        border-radius: 16px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card {
+        min-height: 88px;
+        display: flex;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 0.9rem 0.85rem 0.8rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: 0 14px 26px rgba(20, 33, 61, 0.14);
+        background:
+            linear-gradient(160deg, rgba(20, 33, 61, 0.98), rgba(13, 95, 194, 0.94)),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card::before {
+        inset: auto 0.7rem 0.7rem auto;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card::after {
+        content: "\2197";
+        position: absolute;
+        right: 1.05rem;
+        bottom: 0.98rem;
+        z-index: 1;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card h3 {
+        font-size: 0.92rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card-content {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        text-align: left;
+        padding-right: 1.8rem;
+    }
+
+    .public-search-hero__submit {
+        min-width: 0;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-listings .list-layout {
+        grid-template-columns: 1fr;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-card-spaced,
+    body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-section-card,
+    body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-claim-card {
+        padding: 1.05rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-company-detail .company-map-frame {
+        min-height: 220px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-article-card {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-blog-category .blog-image-wrapper {
+        min-height: 170px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .sptb {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-trade .trade-page .card-body {
+        padding: 1.25rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cards {
+        padding: 40px 0;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-card.popular {
+        transform: none;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .free-plan-card .row {
+        row-gap: 16px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-table {
+        min-width: 860px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero {
+        padding: 2.2rem 1rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-tips .tips-title {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .site-footer-shell .footer-bottom-inner {
+        border-radius: 18px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .site-footer-shell .footer-bottom-inner .row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .site-footer-shell .footer-bottom-inner .col-lg-8,
+    .site-footer-shell .footer-bottom-inner .col-lg-4 {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0;
+        text-align: center !important;
+    }
+
+    .site-footer-shell .footer-bottom-inner .col-lg-8 {
+        line-height: 1.6;
+    }
+
+    .site-footer-shell .footer-bottom-inner .col-lg-8 .mx-1 {
+        display: inline-block;
+        margin-left: 0.25rem !important;
+        margin-right: 0.25rem !important;
+    }
+
+    .site-footer-shell .footer-load-time {
+        display: block !important;
+        width: 100%;
+        margin-top: 0.35rem;
+        margin-left: 0 !important;
+        padding-top: 0.1rem;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        opacity: 0.85;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 575.98px) {
+    body.hai-public {
+        overflow-x: hidden;
+    }
+
+    .container,
+    .container-narrow {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .public-shell-nav .container {
+        min-height: 66px;
+    }
+
+    .public-shell-topbar .container > .d-flex {
+        justify-content: center !important;
+    }
+
+    .public-shell-topbar .public-shell-badge {
+        font-size: 0.76rem;
+    }
+
+    .site-footer-shell .footer-bottom-inner {
+        border-radius: 18px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .site-footer-shell .footer-bottom-inner .row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    .site-footer-shell .footer-bottom-inner .col-lg-8,
+    .site-footer-shell .footer-bottom-inner .col-lg-4 {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0;
+        text-align: center !important;
+    }
+
+    .site-footer-shell .footer-load-time {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        opacity: 0.85;
+    }
+
+    .public-search-hero__grid--filters {
+        grid-template-columns: 1fr;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .cta-business-card {
+        padding: 1.4rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .home-mobile-quicklinks {
+        display: block;
+        padding-top: 0.35rem;
+        padding-bottom: 0.25rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .home-mobile-quicklinks__grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .home-mobile-quicklinks__item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0.72rem 0.8rem;
+        border-radius: 14px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 248, 252, 0.96));
+        box-shadow: 0 10px 22px rgba(20, 33, 61, 0.05);
+        color: var(--hai-shell-ink);
+        font-size: 0.84rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .home-mobile-quicklinks__item--accent {
+        background: linear-gradient(135deg, rgba(239, 108, 0, 0.12), rgba(44, 123, 229, 0.12));
+        border-color: rgba(239, 108, 0, 0.2);
+        color: var(--hai-shell-accent-deep);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-about .about-hero {
+        padding: 70px 0 50px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .section {
+        padding-top: 0.9rem;
+        padding-bottom: 0.9rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__card {
+        border-radius: 16px;
+        padding: 0.95rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__content h1 {
+        font-size: 1.72rem;
+        line-height: 1.2;
+        margin-bottom: 0.45rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__content p {
+        font-size: 0.9rem;
+        line-height: 1.45;
+        margin-bottom: 0.7rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__tags {
+        margin-top: 0.65rem;
+        gap: 0.45rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .public-search-hero__tags .popular-tag:nth-of-type(n + 5) {
+        display: none;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .popular-tag {
+        border-radius: 999px;
+        padding: 0.35rem 0.62rem;
+        font-size: 0.78rem;
+        line-height: 1.2;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .section-head {
+        align-items: flex-start;
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .section-head h2 {
+        font-size: 1.15rem;
+        letter-spacing: -0.01em;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-grid,
+    body.hai-public.responsive-bootstrap-redesign.page-home .grid-3 {
+        gap: 0.7rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .grid-3 {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 86%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        padding-bottom: 0.2rem;
+        scrollbar-width: none;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .grid-3::-webkit-scrollbar {
+        display: none;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .grid-3 > * {
+        min-width: 0;
+        scroll-snap-align: start;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi {
+        border-radius: 14px;
+        padding: 0.9rem 0.75rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-value {
+        font-size: 1.1rem;
+        line-height: 1.15;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .kpi-label {
+        font-size: 0.82rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .category-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .business-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .blog-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card {
+        border-radius: 14px;
+        box-shadow: 0 8px 18px rgba(20, 33, 61, 0.06);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-link {
+        min-width: 38px;
+        min-height: 38px;
+        font-size: 0.83rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card {
+        padding: 0.85rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .alphabet-card-title {
+        margin-bottom: 0.7rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .business-top {
+        gap: 0.35rem;
+        margin-bottom: 0.6rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .category-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .business-card,
+    body.hai-public.responsive-bootstrap-redesign.page-home .blog-card {
+        padding: 0.95rem 0.9rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .category-card .muted,
+    body.hai-public.responsive-bootstrap-redesign.page-home .business-card .muted,
+    body.hai-public.responsive-bootstrap-redesign.page-home .home-blog-excerpt {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 0.7rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .states-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card {
+        min-height: 84px;
+        display: flex;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 0.9rem 0.85rem 0.8rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: 0 14px 26px rgba(20, 33, 61, 0.14);
+        background:
+            linear-gradient(160deg, rgba(20, 33, 61, 0.98), rgba(13, 95, 194, 0.94)),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card::before {
+        inset: auto 0.7rem 0.7rem auto;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card::after {
+        content: "\2197";
+        position: absolute;
+        right: 1.05rem;
+        bottom: 0.98rem;
+        z-index: 1;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card-content {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        text-align: left;
+        padding-right: 1.8rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .state-card h3 {
+        font-size: 0.92rem;
+        margin: 0;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-home .btn-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-home .btn {
+        min-height: 42px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-about .about-hero h1 {
+        font-size: 2rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero {
+        padding: 48px 0 38px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .pricing-hero p {
+        font-size: 0.98rem;
+        line-height: 1.6;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .billing-toggle-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 22px;
+        padding: 12px 14px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .save-badge {
+        display: inline-block;
+        margin-top: 4px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cards {
+        padding: 30px 0 24px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-card,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .free-plan-card,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .accordion-item {
+        border-radius: 18px;
+        box-shadow: none;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-header {
+        padding: 22px 18px 16px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cta {
+        padding-left: 18px;
+        padding-right: 18px;
+        padding-bottom: 20px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-price .amount {
+        font-size: 2.1rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-features li {
+        font-size: 0.88rem;
+        align-items: flex-start;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .plan-cta .btn,
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .free-plan-card .btn {
+        min-height: 48px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .comparison-section {
+        padding: 38px 0;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-pricing .faq-section {
+        padding: 38px 0;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-ads .ads-hero {
+        border-radius: 20px;
+        margin-top: 0.35rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-ads .container-narrow.ads-content {
+        padding-top: 0.9rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-tips .tips-shell {
+        padding-top: 1.1rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-tips .tips-card {
+        border-radius: 16px;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-listings .listings-head {
+        padding: 0.9rem;
+    }
+}
+
+    /* Phase 7 kickoff: auth/account wave scoped shells */
+    body.hai-public.responsive-bootstrap-redesign.page-login .auth-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-register .register-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-forgot-password .forgot-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-reset-password .reset-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email .verify-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .verify-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-account-profile .account-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-my-favorites .container-narrow,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .container-narrow,
+    body.hai-public.responsive-bootstrap-redesign.page-my-posts .container-narrow {
+        padding-top: 1rem;
+        padding-bottom: 1.75rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-login .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-register .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-forgot-password .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-reset-password .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-user-settings .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-account-profile .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-my-favorites .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .card-ui,
+    body.hai-public.responsive-bootstrap-redesign.page-my-posts .card-ui {
+        border-radius: 22px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        box-shadow: 0 18px 38px rgba(20, 33, 61, 0.08);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 249, 252, 0.97));
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-login h1,
+    body.hai-public.responsive-bootstrap-redesign.page-register h1,
+    body.hai-public.responsive-bootstrap-redesign.page-forgot-password h1,
+    body.hai-public.responsive-bootstrap-redesign.page-reset-password h1,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email h1,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending h1,
+    body.hai-public.responsive-bootstrap-redesign.page-user-settings h1,
+    body.hai-public.responsive-bootstrap-redesign.page-account-profile h1,
+    body.hai-public.responsive-bootstrap-redesign.page-my-favorites h1,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history h1,
+    body.hai-public.responsive-bootstrap-redesign.page-my-posts h1 {
+        letter-spacing: -0.02em;
+    }
+
+    /* Phase 7: extracted from pages/userprofile.php */
+    .account-shell {
+        --account-ink: #12344d;
+        --account-sky: #edf6fb;
+        --account-border: #d9e6ee;
+        --account-accent: #0f766e;
+        --account-accent-soft: #dff6f1;
+        --account-warm: #f59e0b;
+        --account-surface: #ffffff;
+        --account-muted: #5c7285;
+        background:
+            radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 32%),
+            linear-gradient(180deg, #f7fbfd 0%, #eef5f9 100%);
+        padding: 32px 0 56px;
+    }
+
+    .account-shell .container {
+        max-width: 1180px;
+    }
+
+    .account-hero {
+        background: linear-gradient(135deg, #12344d 0%, #1f6a7a 54%, #f59e0b 160%);
+        border-radius: 28px;
+        color: #fff;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 24px 60px rgba(18, 52, 77, 0.18);
+    }
+
+    .account-hero::after {
+        content: '';
+        position: absolute;
+        inset: auto -10% -35% auto;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 68%);
+    }
+
+    .account-hero-body {
+        position: relative;
+        z-index: 1;
+        padding: 32px;
+    }
+
+    .account-breadcrumb {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.92rem;
+        margin-bottom: 14px;
+    }
+
+    .account-breadcrumb a {
+        color: rgba(255, 255, 255, 0.92);
+        text-decoration: none;
+    }
+
+    .account-identity {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .account-user {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .account-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        font-size: 1.45rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+    }
+
+    .account-name {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .account-subline {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.84);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        font-size: 0.96rem;
+    }
+
+    .account-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .account-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+
+    .account-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-start;
+        justify-content: flex-end;
+    }
+
+    .account-actions .btn {
+        border-radius: 999px;
+        font-weight: 700;
+        padding: 0.72rem 1.15rem;
+    }
+
+    .account-intro {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+        gap: 18px;
+    }
+
+    .account-panel {
+        background: rgba(255, 255, 255, 0.11);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 22px;
+        padding: 20px;
+        backdrop-filter: blur(8px);
+    }
+
+    .account-panel h2,
+    .account-panel h3,
+    .workspace-card h3,
+    .workspace-card h4 {
+        margin-top: 0;
+    }
+
+    .account-panel p:last-child,
+    .workspace-card p:last-child,
+    .feature-list li:last-child,
+    .activity-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .mini-kpis {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .mini-kpi {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        padding: 14px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .mini-kpi strong {
+        display: block;
+        font-size: 1.55rem;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+
+    .mini-kpi span {
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.88rem;
+    }
+
+    .workspace-tabs {
+        margin-top: 26px;
+    }
+
+    .account-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+        padding: 10px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid var(--account-border);
+        box-shadow: 0 14px 32px rgba(18, 52, 77, 0.07);
+    }
+
+    .account-nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--account-border);
+        background: #fff;
+        color: var(--account-ink);
+        border-radius: 999px;
+        font-weight: 700;
+        padding: 0.68rem 1.05rem;
+        text-decoration: none;
+        line-height: 1;
+    }
+
+    .account-nav-link:hover {
+        background: #f3f8fb;
+        color: var(--account-ink);
+    }
+
+    .account-nav-link.active {
+        background: var(--account-ink);
+        border-color: var(--account-ink);
+        color: #fff;
+    }
+
+    .account-nav-link.active .account-nav-count {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+
+    .account-nav-link.utility-link {
+        background: #f7fbfd;
+    }
+
+    .account-nav-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.5rem;
+        padding: 0.12rem 0.38rem;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        background: #e6f0f6;
+        color: #21475f;
+    }
+
+    .alert-inline {
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        font-size: 0.92rem;
+    }
+
+    .alert-inline.alert-ok {
+        background: #e8f8f1;
+        border: 1px solid #b9ead3;
+        color: #0f5132;
+    }
+
+    .alert-inline.alert-err {
+        background: #fff0f2;
+        border: 1px solid #fecdd3;
+        color: #9f1239;
+    }
+
+    .workspace-card {
+        background: var(--account-surface);
+        border: 1px solid var(--account-border);
+        border-radius: 24px;
+        box-shadow: 0 12px 36px rgba(18, 52, 77, 0.06);
+        padding: 24px;
+        height: 100%;
+    }
+
+    .workspace-card-soft {
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
+    }
+
+    .workspace-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .workspace-title p {
+        margin: 8px 0 0;
+        color: var(--account-muted);
+    }
+
+    .account-title-xl {
+        font-size: 1.65rem;
+        font-weight: 800;
+    }
+
+    .account-title-lg {
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+
+    .account-title-md {
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .account-title-sm {
+        font-size: 1.05rem;
+        font-weight: 800;
+    }
+
+    .account-title-xs {
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .plan-status-pill {
+        background: rgba(255, 255, 255, 0.16);
+        color: #fff;
+        margin-bottom: 12px;
+    }
+
+    .plan-tagline {
+        margin: 10px 0 0;
+        color: rgba(255, 255, 255, 0.84);
+    }
+
+    .plan-status-note {
+        margin: 12px 0 0;
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    .workspace-card-compact {
+        padding: 22px;
+        box-shadow: none;
+    }
+
+    .workspace-card-compact-soft {
+        background: #f8fbfd;
+    }
+
+    .stat-grid,
+    .feature-grid,
+    .plan-limit-grid,
+    .upgrade-grid,
+    .capability-grid {
+        display: grid;
+        gap: 14px;
+    }
+
+    .stat-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .stat-card,
+    .capability-card,
+    .plan-limit-card,
+    .upgrade-card {
+        border-radius: 20px;
+        border: 1px solid var(--account-border);
+        background: #fff;
+        padding: 18px;
+    }
+
+    .stat-card strong,
+    .plan-limit-card strong,
+    .capability-card strong {
+        display: block;
+        font-size: 1.8rem;
+        color: var(--account-ink);
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+
+    .stat-card span,
+    .plan-limit-card span,
+    .capability-card span,
+    .upgrade-card p {
+        color: var(--account-muted);
+    }
+
+    .activity-item a,
+    .upgrade-card a,
+    .account-link-grid a {
+        color: var(--account-ink);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .activity-list,
+    .feature-list,
+    .capability-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .activity-item,
+    .feature-list li,
+    .capability-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 0;
+        border-bottom: 1px solid #e8f0f5;
+    }
+
+    .activity-meta,
+    .activity-note,
+    .muted-note {
+        color: var(--account-muted);
+        font-size: 0.92rem;
+    }
+
+    .feature-state {
+        flex-shrink: 0;
+        font-weight: 700;
+        color: var(--account-ink);
+    }
+
+    .feature-state.is-off {
+        color: #8c9cab;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 0.82rem;
+    }
+
+    .status-pill-live,
+    .status-pill-on {
+        background: #e6f8f1;
+        color: #0f766e;
+    }
+
+    .status-pill-draft,
+    .status-pill-off {
+        background: #fff6e5;
+        color: #a16207;
+    }
+
+    .status-pill-muted {
+        background: #eef3f7;
+        color: #5c7285;
+    }
+
+    .plan-summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        gap: 18px;
+    }
+
+    .plan-hero-card {
+        border-radius: 22px;
+        padding: 22px;
+        background: linear-gradient(140deg, #12344d 0%, #0f766e 100%);
+        color: #fff;
+    }
+
+    .plan-hero-card .price {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 8px 0 0;
+    }
+
+    .plan-limit-grid,
+    .capability-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .upgrade-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .upgrade-card {
+        background: linear-gradient(180deg, #fff 0%, #f8fbfd 100%);
+    }
+
+    .account-link-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .account-link-grid a {
+        display: block;
+        background: #fff;
+        border: 1px solid var(--account-border);
+        border-radius: 18px;
+        padding: 16px 18px;
+        box-shadow: 0 8px 24px rgba(18, 52, 77, 0.05);
+    }
+
+    .account-link-grid small {
+        display: block;
+        color: var(--account-muted);
+        font-weight: 500;
+        margin-top: 6px;
+    }
+
+    .profile-form label {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #294659;
+        margin-bottom: 6px;
+    }
+
+    .profile-form .form-control {
+        border-radius: 12px;
+        border: 1px solid #cbdbe6;
+        padding: 0.62rem 0.78rem;
+    }
+
+    .profile-form .form-control:focus {
+        border-color: #0f766e;
+        box-shadow: 0 0 0 0.18rem rgba(15, 118, 110, 0.15);
+    }
+
+    .empty-state {
+        border: 1px dashed #c5d6e1;
+        background: #f8fbfd;
+        border-radius: 18px;
+        padding: 22px;
+    }
+
+    @media (max-width: 991.98px) {
+        .account-shell {
+            padding-top: 20px;
+        }
+
+        .account-hero-body,
+        .workspace-card {
+            padding: 20px;
+        }
+
+        .account-intro,
+        .plan-summary,
+        .stat-grid,
+        .plan-limit-grid,
+        .upgrade-grid,
+        .capability-grid,
+        .account-link-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .account-name {
+            font-size: 1.65rem;
+        }
+
+        .account-user {
+            align-items: flex-start;
+        }
+
+        .account-intro,
+        .mini-kpis,
+        .stat-grid,
+        .plan-summary,
+        .plan-limit-grid,
+        .upgrade-grid,
+        .capability-grid,
+        .account-link-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .account-nav {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .account-nav-link {
+            justify-content: space-between;
+        }
+
+        .activity-item,
+        .feature-list li,
+        .capability-list li {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+/* Phase 7 continuation: auth/account route component polish */
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-shell {
+    display: grid;
+    gap: 18px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .section-head {
+    margin-bottom: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-card {
+    padding: 1.25rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-h3 {
+    margin-bottom: 0.9rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-btn-top {
+    margin-top: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-danger {
+    border-color: rgba(190, 24, 93, 0.2);
+    background: linear-gradient(180deg, #fff 0%, #fff6f8 100%);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-confirm {
+    margin: 0.7rem 0 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .section-head {
+    margin-bottom: 0.9rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-filter label {
+    font-weight: 600;
+    color: #324e64;
+    margin-right: 0.4rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-emirate {
+    min-width: 210px;
+    flex: 1 1 210px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-note-form {
+    margin-top: 0.75rem;
+    display: grid;
+    gap: 0.65rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-empty {
+    margin-bottom: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-title {
+    margin-bottom: 0.4rem;
+    font-size: clamp(1.5rem, 2vw, 1.95rem);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-subtitle {
+    margin-bottom: 0.95rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .nav-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    border-bottom: 0;
+    margin-bottom: 0.9rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .nav-tabs .nav-link {
+    border: 1px solid #d7e4ed;
+    border-radius: 999px;
+    padding: 0.48rem 0.95rem;
+    color: #294659;
+    font-weight: 700;
+    background: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .nav-tabs .nav-link.active {
+    border-color: #12344d;
+    background: #12344d;
+    color: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-head,
+body.hai-public.responsive-bootstrap-redesign.page-search-history .history-item,
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-preset-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .history-item,
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-preset-row {
+    padding: 0.9rem 0;
+    border-top: 1px solid #e4edf4;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-grid {
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-inline-form {
+    margin: 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-pre {
+    margin-top: 0.5rem;
+    border-radius: 12px;
+    background: #f6fafc;
+    border: 1px solid #e1ebf2;
+    padding: 0.7rem;
+    max-height: 220px;
+    overflow: auto;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-posts .mb-4 {
+    margin-bottom: 1rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-posts .card-ui {
+    padding: 1.2rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-my-posts .badge {
+    border-radius: 999px;
+    padding: 0.38rem 0.62rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.01em;
+}
+
+@media (max-width: 991.98px) {
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body.hai-public.responsive-bootstrap-redesign.page-user-settings .userset-shell,
+    body.hai-public.responsive-bootstrap-redesign.page-my-favorites .container-narrow,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .container-narrow,
+    body.hai-public.responsive-bootstrap-redesign.page-my-posts .container-narrow {
+        padding-top: 0.7rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-my-favorites .fav-row,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-head,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .history-item,
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-preset-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-search-history .nav-tabs .nav-link {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+/* Phase 7 continuation: auth route component polish */
+body.hai-public.responsive-bootstrap-redesign.page-login .auth-form,
+body.hai-public.responsive-bootstrap-redesign.page-register .form-box,
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password .form-box,
+body.hai-public.responsive-bootstrap-redesign.page-reset-password .reset-card,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email .verifyresult-card,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .register-verify-card {
+    padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-login .auth-title,
+body.hai-public.responsive-bootstrap-redesign.page-register .register-title,
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password .forgot-title,
+body.hai-public.responsive-bootstrap-redesign.page-reset-password .reset-title,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email .verifyresult-title,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .register-verify-title {
+    margin-bottom: 0.4rem;
+    font-size: clamp(1.45rem, 2.2vw, 2rem);
+    letter-spacing: -0.02em;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-login .auth-row,
+body.hai-public.responsive-bootstrap-redesign.page-register .register-grid,
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password .forgot-shell .form-box,
+body.hai-public.responsive-bootstrap-redesign.page-reset-password .reset-form-group {
+    margin-top: 0.8rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-login .auth-alert,
+body.hai-public.responsive-bootstrap-redesign.page-register .register-alert,
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password .forgot-alert,
+body.hai-public.responsive-bootstrap-redesign.page-reset-password .reset-alert,
+body.hai-public.responsive-bootstrap-redesign.page-search-history .searchhist-alert {
+    border-radius: 14px;
+    padding: 0.72rem 0.86rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-login .auth-alert {
+    background: #fff5f7;
+    border: 1px solid #fecdd3;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-login .auth-alert--success {
+    background: #e9fbf2;
+    border-color: #b8ead2;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .register-alert {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .register-password-meter {
+    margin-top: 0.55rem;
+    border: 1px solid #e4edf4;
+    border-radius: 12px;
+    background: #f8fbfd;
+    padding: 0.55rem 0.7rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .register-meter-row {
+    margin-bottom: 0.25rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .register-meter-dot {
+    display: inline-block;
+    width: 1.2rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .register-terms {
+    margin: 0.8rem 0;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .pwd-indicator--ok {
+    color: #0f766e;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-register .pwd-indicator--error {
+    color: #be123c;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password .forgot-alert--error,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email .alert-danger {
+    border: 1px solid #fecdd3;
+    background: #fff1f2;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password .forgot-alert--ok,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email .alert-success {
+    border: 1px solid #bae6d0;
+    background: #eafbf3;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-forgot-password #forgot-captcha-image,
+body.hai-public.responsive-bootstrap-redesign.page-login #login-captcha-image,
+body.hai-public.responsive-bootstrap-redesign.page-register #register-captcha-image {
+    border-radius: 12px;
+    border: 1px solid #d3e2ec;
+    background: #fff;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-reset-password .reset-footer {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #e2ebf2;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-verify-email .verifyresult-actions,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .register-verify-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+body.hai-public.responsive-bootstrap-redesign.page-verify-email .verifyresult-icon,
+body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .register-verify-icon {
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: #f0f7fc;
+    color: #12344d;
+}
+
+@media (max-width: 767.98px) {
+    body.hai-public.responsive-bootstrap-redesign.page-login .auth-row {
+        display: grid;
+        gap: 0.45rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-register .register-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email .verifyresult-actions,
+    body.hai-public.responsive-bootstrap-redesign.page-verify-email-pending .register-verify-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

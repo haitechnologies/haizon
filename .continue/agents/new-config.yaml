@@ -1,0 +1,119 @@
+name: Local Qwen Coder
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Qwen2.5-Coder-7B
+    provider: ollama
+    model: qwen2.5-coder:7b-instruct-q4_k_m
+    apiBase: http://127.0.0.1:11434
+    roles: [chat, edit, apply]
+    defaultCompletionOptions:
+      contextLength: 8192
+      temperature: 0.1
+      numPredict: 2048
+      stream: false
+
+  - name: Qwen2.5-Coder-7B-Autocomplete
+    provider: ollama
+    model: qwen2.5-coder:7b-instruct-q4_k_m
+    apiBase: http://127.0.0.1:11434
+    roles: [autocomplete]
+    defaultCompletionOptions:
+      contextLength: 2048
+      temperature: 0.2
+      numPredict: 128
+      stream: true
+      stop: ["\n\n", "```", "#", "//"]
+
+experimental:
+  enableAgent: true
+  autoAcceptEdits: false
+
+mcpServers: []
+
+context:
+  - provider: code
+  - provider: folder  
+  - provider: codebase
+
+
+
+
+  
+
+# name: True-Local-Ollama
+# version: 1.0.0
+# schema: v1
+
+# # 🔒 Block all cloud fallbacks
+# allowAnonymousTelemetry: false
+
+# # models:
+# #   - name: Qwen3-32B-LOCAL
+# #     provider: ollama
+# #     model: qwen3:32b          # ← This now matches your `ollama list`
+# #     apiBase: http://127.0.0.1:11434
+# #     roles: [chat, edit, apply]
+# #     defaultCompletionOptions:
+# #       contextLength: 16384
+# #       temperature: 0.1
+# #       numPredict: 2048
+
+# #   # Fast autocomplete fallback
+# #   - name: Llama3-8B-Local
+# #     provider: ollama
+# #     model: llama3.1:8b
+# #     apiBase: http://127.0.0.1:11434
+# #     roles: [autocomplete]
+# #     defaultCompletionOptions:
+# #       contextLength: 4096
+# #       temperature: 0.2
+
+# # mcpServers: []  # Disable until base works
+
+# # context:
+# #   - provider: code
+# #   - provider: folder  
+# #   - provider: codebase
+
+# models:
+#   # Primary coding model - updated to 7B for local efficiency
+#   - name: Qwen2.5-Coder-7B
+#     provider: ollama
+#     model: qwen2.5-coder:7b
+#     apiBase: http://127.0.0.1:11434
+#     roles: [chat, edit, apply]
+#     defaultCompletionOptions:
+#       contextLength: 8192      # 7B handles 8K well; increase to 16384 if your RAM allows
+#       temperature: 0.1
+#       numPredict: 2048
+
+#   # Optional: Keep 14B as secondary if you pull it later, or remove this block
+#   # - name: Qwen2.5-Coder-14B
+#   #   provider: ollama
+#   #   model: qwen2.5-coder:14b
+#   #   apiBase: http://127.0.0.1:11434
+#   #   roles: [chat, edit, apply]
+#   #   defaultCompletionOptions:
+#   #     contextLength: 8192
+#   #     temperature: 0.1
+#   #     numPredict: 2048
+
+#   # Fast autocomplete - same 7B model, tuned for speed
+#   - name: Qwen2.5-Coder-7B-Autocomplete
+#     provider: ollama
+#     model: qwen2.5-coder:7b
+#     apiBase: http://127.0.0.1:11434
+#     roles: [autocomplete]
+#     defaultCompletionOptions:
+#       contextLength: 2048      # Shorter context for faster autocomplete responses
+#       temperature: 0.2
+#       numPredict: 256          # Limit output length for snappy autocomplete
+
+# mcpServers: []
+
+# context:
+#   - provider: code
+#   - provider: folder  
+#   - provider: codebase

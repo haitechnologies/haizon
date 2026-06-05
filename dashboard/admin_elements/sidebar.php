@@ -1,0 +1,754 @@
+<?php
+require_once __DIR__ . '/../../config/globals.php';
+// Output dynamic sidebar color variables for admin sidebar
+echo generateColorVariablesCSS();
+?>
+<style>
+.sidebar-main .nav-sidebar > .nav-item > .nav-link {
+    color: var(--sidebar-text);
+    background: none;
+    transition: background 0.15s, color 0.15s;
+}
+.sidebar-main .nav-sidebar > .nav-item > .nav-link:hover,
+.sidebar-main .nav-sidebar > .nav-item > .nav-link:focus {
+    background: var(--sidebar-hover-bg) !important;
+    color: var(--sidebar-active-text) !important;
+}
+.sidebar-main .nav-sidebar > .nav-item > .nav-link.active,
+.sidebar-main .nav-sidebar > .nav-item > .nav-link[aria-current="page"] {
+    background: var(--sidebar-active-bg) !important;
+    color: var(--sidebar-active-text) !important;
+}
+</style>
+<!-- Main Sidebar Navigation -->
+
+<?php
+// Get sidebar colors from settings (now using CSS variables in admin_header.php)
+$sidebarColors = getSidebarColors();
+?>
+
+<aside class="sidebar sidebar-main sidebar-expand-lg" role="complementary" aria-label="Sidebar navigation" style="background: var(--sidebar-bg); color: var(--sidebar-text);">
+
+<?php
+/**
+ * Sidebar Navigation Component
+ * 
+ * Displays dynamic navigation menu based on user permissions
+ * @var string $current_page Current page filename
+ * @var string $session_email User email from session
+ */
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Check if menu item should be active
+ */
+if (!function_exists('isMenuActive')) {
+    function isMenuActive($pages) {
+        global $current_page;
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $queryString = $_SERVER['QUERY_STRING'] ?? '';
+        if (!is_array($pages)) {
+            $pages = [$pages];
+        }
+
+        foreach ($pages as $page) {
+            // If page contains a query string, match path and query string exactly
+            if (strpos($page, '?') !== false) {
+                list($base, $query) = explode('?', $page, 2);
+                $base = '/' . ltrim($base, '/');
+                if ((strpos($scriptName, $base) !== false) && ($queryString === $query)) {
+                    return true;
+                }
+            } else {
+                if ($current_page === $page) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+/**
+ * Check user access to module (prevent redeclaration if admin_header.php loaded first)
+ */
+if (!function_exists('hasModuleAccess')) {
+	function hasModuleAccess($module) {
+	    return granted_('view', $module) || granted_('create', $module) || 
+	           granted_('edit', $module) || granted_('delete', $module);
+	}
+}
+
+/**
+ * Render menu item
+ */
+if (!function_exists('renderMenuItem')) {
+    function renderMenuItem($href, $label, $icon, $pages = []) {
+        $activeClass = isMenuActive((array)$pages) ? 'active' : '';
+        echo <<<HTML
+        <li class="nav-item">
+            <a href="{$href}" class="nav-link {$activeClass}" aria-label="{$label}">
+                <i class="{$icon}" aria-hidden="true"></i>
+                <span>{$label}</span>
+            </a>
+        </li>
+HTML;
+    }
+}
+
+/**
+ * Render section divider and header
+ */
+function renderSectionHeader($title, $withDivider = true) {
+    if ($withDivider) {
+        echo '<li class="nav-item-divider"></li>';
+    }
+    echo <<<HTML
+    <li class="nav-item-header">
+        <div class="text-uppercase fs-sm lh-sm opacity-50 sidebar-resize-hide">
+            {$title}
+        </div>
+        <i class="ph-dots-three sidebar-resize-show"></i>
+    </li>
+HTML;
+}
+
+// ============================================================================
+// MENU CONFIGURATION
+// ============================================================================
+
+$menuConfig = [
+    'dashboard' => [
+        'label' => '',
+        'items' => [
+            [
+                'href' => 'index.php',
+                'label' => 'Home',
+                'icon' => 'ph-house',
+                'pages' => ['index.php'],
+                'condition' => function() { return true; }
+            ],
+        ],
+    ],
+    'operations' => [
+        'label' => 'Operations',
+        'items' => [
+            [
+                'href' => 'listing_inquiries.php',
+                'label' => 'Inquiries',
+                'icon' => 'ph-chat-circle-dots',
+                'pages' => ['listing_inquiries.php', 'inquiries.php', 'inquiry_detail.php'],
+                'condition' => function() { return hasModuleAccess('inquiries'); }
+            ],
+
+            [
+                'key' => 'searches',
+                'href' => 'listing_searches.php',
+                'label' => 'Search Analytics',
+                'icon' => 'ph-magnifying-glass',
+                'pages' => ['listing_searches.php'],
+                'condition' => function() { return has_full_access(); },
+                'hidden' => true
+            ]
+        ]
+    ],
+    'shipping' => [
+        'label' => 'Shipping System',
+        'items' => [
+            [
+                'href' => 'listing_shipping_advices.php',
+                'label' => 'Shipping Advices',
+                'icon' => 'ph-package',
+                'pages' => ['listing_shipping_advices.php', 'shipping_advices.php', 'view_shipping_advice.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('shipping_advices'); }
+            ],
+            [
+                'href' => 'listing_shipping_invoices.php',
+                'label' => 'Shipping Invoices',
+                'icon' => 'ph-receipt',
+                'pages' => ['listing_shipping_invoices.php', 'shipping_invoices.php', 'view_shipping_invoice.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('shipping_invoices'); }
+            ],
+            [
+                'href' => 'listing_shipping_stocks.php',
+                'label' => 'Shipping Stocks',
+                'icon' => 'ph-archive-box',
+                'pages' => ['listing_shipping_stocks.php', 'shipping_stocks.php', 'view_shipping_stocks.php', 'report_shipping_stocks.php', 'listing_shipping_advice_items.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('shipping_stocks'); }
+            ],
+            [
+                'href' => 'listing_shipping_customers.php',
+                'label' => 'Shipping Customers',
+                'icon' => 'ph-users-three',
+                'pages' => ['listing_shipping_customers.php', 'shipping_customers.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('shipping_customers'); }
+            ],
+            [
+                'href' => '#shipping-master-data-submenu',
+                'label' => 'Shipping Master Data',
+                'icon' => 'ph-database',
+                'pages' => ['listing_ports.php', 'ports.php', 'listing_carriers.php', 'carriers.php', 'listing_consignees.php', 'consignees.php', 'listing_shippers.php', 'shippers.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access() || hasModuleAccess('ports') || hasModuleAccess('carriers') || hasModuleAccess('consignees') || hasModuleAccess('shippers');
+                }
+            ],
+        ]
+    ],
+    'hr' => [
+        'label' => 'HR System',
+        'items' => [
+            [
+                'href' => '#hr-people-submenu',
+                'label' => 'People Setup',
+                'icon' => 'ph-users-three',
+                'pages' => ['listing_departments.php', 'departments.php', 'listing_designations.php', 'designations.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access() || hasModuleAccess('departments') || hasModuleAccess('designations');
+                },
+                'children' => [
+                    ['href' => 'listing_departments.php', 'label' => 'Departments', 'pages' => ['listing_departments.php', 'departments.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('departments'); }],
+                    ['href' => 'listing_designations.php', 'label' => 'Designations', 'pages' => ['listing_designations.php', 'designations.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('designations'); }],
+                ]
+            ],
+            [
+                'href' => '#hr-attendance-leave-submenu',
+                'label' => 'Attendance & Leave',
+                'icon' => 'ph-calendar-check',
+                'pages' => ['listing_attendance.php', 'attendance.php', 'listing_leave_requests.php', 'leave_requests.php', 'listing_leave_types.php', 'leave_types.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access() || hasModuleAccess('attendance') || hasModuleAccess('leave_requests') || hasModuleAccess('leave_types');
+                },
+                'children' => [
+                    ['href' => 'listing_attendance.php', 'label' => 'Attendance', 'pages' => ['listing_attendance.php', 'attendance.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('attendance'); }],
+                    ['href' => 'listing_leave_requests.php', 'label' => 'Leave Requests', 'pages' => ['listing_leave_requests.php', 'leave_requests.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('leave_requests'); }],
+                    ['href' => 'listing_leave_types.php', 'label' => 'Leave Types', 'pages' => ['listing_leave_types.php', 'leave_types.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('leave_types'); }],
+                ]
+            ],
+            [
+                'href' => '#hr-payroll-submenu',
+                'label' => 'Payroll',
+                'icon' => 'ph-calculator',
+                'pages' => ['listing_payroll_components.php', 'payroll_components.php', 'listing_salary_structures.php', 'salary_structures.php', 'listing_employee_salaries.php', 'listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php', 'listing_payslips.php', 'view_payslip.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access()
+                        || hasModuleAccess('payroll_components')
+                        || hasModuleAccess('salary_structures')
+                        || hasModuleAccess('employee_salaries')
+                        || hasModuleAccess('payroll_runs')
+                        || hasModuleAccess('payslips');
+                },
+                'children' => [
+                    ['href' => 'listing_payroll_components.php', 'label' => 'Payroll Components', 'pages' => ['listing_payroll_components.php', 'payroll_components.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payroll_components'); }],
+                    ['href' => 'listing_salary_structures.php', 'label' => 'Salary Structures', 'pages' => ['listing_salary_structures.php', 'salary_structures.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('salary_structures'); }],
+                    ['href' => 'listing_employee_salaries.php', 'label' => 'Employee Salaries', 'pages' => ['listing_employee_salaries.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('employee_salaries'); }],
+                    ['href' => 'listing_payroll_runs.php', 'label' => 'Payroll Runs', 'pages' => ['listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payroll_runs'); }],
+                    ['href' => 'listing_payslips.php', 'label' => 'Payslips', 'pages' => ['listing_payslips.php', 'view_payslip.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payslips'); }],
+                ]
+            ],
+            [
+                'href' => 'listing_user_documents.php',
+                'label' => 'User Documents',
+                'icon' => 'ph-file-text',
+                'pages' => ['listing_user_documents.php', 'user_documents.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('user_documents'); }
+            ],
+            [
+                'href' => 'report_hr.php',
+                'label' => 'HR Report',
+                'icon' => 'ph-chart-line-up',
+                'pages' => ['report_hr.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('report_hr'); }
+            ],
+        ]
+    ],
+    'accounting' => [
+        'label' => 'Accounting',
+        'items' => [
+            [
+                'href' => 'listing_banks.php',
+                'label' => 'Banking',
+                'icon' => 'ph-bank',
+                'pages' => ['listing_banks.php', 'banks.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('banks'); }
+            ],
+            [
+                'href' => '#accounting-sales-submenu',
+                'label' => 'Sales',
+                'icon' => 'ph-shopping-cart',
+                'pages' => ['listing_customers.php', 'customers.php', 'listing_quotations.php', 'quotations.php', 'listing_sale_orders.php', 'sale_orders.php', 'listing_invoices.php', 'invoices.php', 'listing_payments_received.php', 'payments_received.php', 'listing_credit_notes.php', 'credit_notes.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access()
+                        || hasModuleAccess('customers')
+                        || hasModuleAccess('quotations')
+                        || hasModuleAccess('sale_orders')
+                        || hasModuleAccess('invoices')
+                        || hasModuleAccess('payments_received')
+                        || hasModuleAccess('credit_notes');
+                },
+                'children' => [
+                    ['href' => 'listing_customers.php', 'label' => 'Customers', 'pages' => ['listing_customers.php', 'customers.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('customers'); }],
+                    ['href' => 'listing_quotations.php', 'label' => 'Quotes', 'pages' => ['listing_quotations.php', 'quotations.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('quotations'); }],
+                    ['href' => 'listing_sale_orders.php', 'label' => 'Sale Orders', 'pages' => ['listing_sale_orders.php', 'sale_orders.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('sale_orders'); }],
+                    ['href' => 'listing_invoices.php', 'label' => 'Invoices', 'pages' => ['listing_invoices.php', 'invoices.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('invoices'); }],
+                    ['href' => 'listing_payments_received.php', 'label' => 'Payments Received', 'pages' => ['listing_payments_received.php', 'payments_received.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payments_received'); }],
+                    ['href' => 'listing_invoices.php?view=recurring', 'label' => 'Recurring Invoices', 'pages' => ['listing_invoices.php', 'invoices.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('invoices'); }],
+                    ['href' => 'listing_credit_notes.php', 'label' => 'Credit Notes', 'pages' => ['listing_credit_notes.php', 'credit_notes.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('credit_notes'); }],
+                ]
+            ],
+            [
+                'href' => '#accounting-purchases-submenu',
+                'label' => 'Purchases',
+                'icon' => 'ph-package',
+                'pages' => ['listing_vendors.php', 'vendors.php', 'listing_expenses.php', 'expenses.php', 'listing_purchase_orders.php', 'purchase_orders.php', 'listing_purchases.php', 'purchases.php', 'listing_payments_made.php', 'payments_made.php', 'listing_debit_notes.php', 'debit_notes.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access()
+                        || hasModuleAccess('vendors')
+                        || hasModuleAccess('expenses')
+                        || hasModuleAccess('purchase_orders')
+                        || hasModuleAccess('purchases')
+                        || hasModuleAccess('payments_made')
+                        || hasModuleAccess('debit_notes');
+                },
+                'children' => [
+                    ['href' => 'listing_vendors.php', 'label' => 'Vendors', 'pages' => ['listing_vendors.php', 'vendors.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('vendors'); }],
+                    ['href' => 'listing_expenses.php', 'label' => 'Expenses', 'pages' => ['listing_expenses.php', 'expenses.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('expenses'); }],
+                    ['href' => 'listing_purchase_orders.php', 'label' => 'Purchase Orders', 'pages' => ['listing_purchase_orders.php', 'purchase_orders.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('purchase_orders'); }],
+                    ['href' => 'listing_purchases.php', 'label' => 'Purchases', 'pages' => ['listing_purchases.php', 'purchases.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('purchases'); }],
+                    ['href' => 'listing_payments_made.php', 'label' => 'Payments Made', 'pages' => ['listing_payments_made.php', 'payments_made.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payments_made'); }],
+                    ['href' => 'listing_debit_notes.php', 'label' => 'Debit Notes', 'pages' => ['listing_debit_notes.php', 'debit_notes.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('debit_notes'); }],
+                ]
+            ],
+            [
+                'href' => 'report_profit_and_loss.php',
+                'label' => 'Reports - Accounts',
+                'icon' => 'ph-chart-bar',
+                'pages' => ['report_profit_and_loss.php', 'report_balance_sheet.php', 'report_trial_balance.php', 'report_general_ledger.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('journals'); }
+            ],
+            [
+                'href' => 'listing_journals.php',
+                'label' => 'Manual Journal',
+                'icon' => 'ph-journal',
+                'pages' => ['listing_journals.php', 'journals.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('journals'); }
+            ],
+            [
+                'href' => 'listing_accounts.php',
+                'label' => 'Chart of Accounts',
+                'icon' => 'ph-book-open-text',
+                'pages' => ['listing_accounts.php', 'accounts.php', 'listing_accounts_report_categories.php', 'accounts_report_categories.php', 'accounts_report_subcategories.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('accounts'); }
+            ],
+        ]
+    ],
+    'crm' => [
+        'label' => 'CRM',
+        'items' => [
+            [
+                'href' => 'listing_leads.php',
+                'label' => 'Leads',
+                'icon' => 'ph-funnel',
+                'pages' => ['listing_leads.php', 'leads.php', 'lead.php', 'lead_notes.php', 'lead_attachments.php', 'lead_logs.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('leads'); }
+            ],
+            [
+                'href' => 'listing_lead_quotations.php',
+                'label' => 'Lead Quotations',
+                'icon' => 'ph-file-text',
+                'pages' => ['listing_lead_quotations.php', 'lead_quotations.php', 'lead_quotation.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('lead_quotations'); }
+            ],
+            [
+                'href' => 'listing_projects.php',
+                'label' => 'Projects',
+                'icon' => 'ph-briefcase',
+                'pages' => ['listing_projects.php', 'projects.php', 'view_project.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('projects'); }
+            ],
+            [
+                'href' => 'listing_jobs.php',
+                'label' => 'Jobs',
+                'icon' => 'ph-wrench',
+                'pages' => ['listing_jobs.php', 'jobs.php', 'view_job.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('jobs'); }
+            ],
+            [
+                'href' => 'listing_job_statuses.php',
+                'label' => 'Job Statuses',
+                'icon' => 'ph-tag',
+                'pages' => ['listing_job_statuses.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('job_statuses'); }
+            ],
+        ]
+    ],
+    'operational_setup' => [
+        'label' => 'Operational Setup',
+        'items' => [
+            [
+                'href' => 'listing_warehouses.php',
+                'label' => 'Warehouses',
+                'icon' => 'ph-warehouse',
+                'pages' => ['listing_warehouses.php', 'warehouses.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('warehouses'); }
+            ],
+            [
+                'href' => '#storage-submenu',
+                'label' => 'Storage',
+                'icon' => 'ph-stack',
+                'pages' => ['listing_storage_types.php', 'storage_types.php', 'listing_storage_subtypes.php', 'storage_subtypes.php'],
+                'type' => 'submenu',
+                'condition' => function() { return has_full_access() || hasModuleAccess('storage_types'); },
+                'children' => [
+                    ['href' => 'listing_storage_types.php',    'label' => 'Storage Types'],
+                    ['href' => 'listing_storage_subtypes.php', 'label' => 'Storage Subtypes'],
+                ]
+            ],
+            [
+                'href' => 'listing_incoterms.php',
+                'label' => 'Incoterms',
+                'icon' => 'ph-globe-hemisphere-west',
+                'pages' => ['listing_incoterms.php', 'incoterms.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('incoterms'); }
+            ],
+            [
+                'href' => 'listing_container_types.php',
+                'label' => 'Container Types',
+                'icon' => 'ph-cube',
+                'pages' => ['listing_container_types.php', 'container_types.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('container_types'); }
+            ],
+            [
+                'href' => 'listing_commodity_types.php',
+                'label' => 'Commodity Types',
+                'icon' => 'ph-box',
+                'pages' => ['listing_commodity_types.php', 'commodity_types.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('commodity_types'); }
+            ],
+            [
+                'href' => 'listing_exit_points.php',
+                'label' => 'Exit Points',
+                'icon' => 'ph-door-open',
+                'pages' => ['listing_exit_points.php', 'exit_points.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('exit_points'); }
+            ],
+            [
+                'href' => 'listing_units.php',
+                'label' => 'Units of Measure',
+                'icon' => 'ph-ruler',
+                'pages' => ['listing_units.php', 'units.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('units'); }
+            ],
+            [
+                'href' => 'listing_services.php',
+                'label' => 'Services',
+                'icon' => 'ph-lightning',
+                'pages' => ['listing_services.php', 'services.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('services'); }
+            ],
+            [
+                'href' => 'listing_document_categories.php',
+                'label' => 'Document Categories',
+                'icon' => 'ph-folders',
+                'pages' => ['listing_document_categories.php', 'document_categories.php', 'listing_documents.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('document_categories'); }
+            ],
+            [
+                'href' => 'listing_setup_groups.php',
+                'label' => 'Setup Groups',
+                'icon' => 'ph-sliders',
+                'pages' => ['listing_setup_groups.php', 'setup_groups.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('setup_groups'); }
+            ],
+        ]
+    ],
+    'catalog' => [
+        'label' => 'Catalog & Trade Codes',
+        'items' => [
+            [
+                'href' => 'listing_categories.php',
+                'label' => 'Categories',
+                'icon' => 'ph-folder-open',
+                'pages' => ['listing_categories.php', 'categories.php'],
+                'condition' => function() { return has_full_access() && hasModuleAccess('categories'); }
+            ],
+            [
+                'href' => 'listing_subcategories.php',
+                'label' => 'Subcategories',
+                'icon' => 'ph-folders',
+                'pages' => ['listing_subcategories.php', 'subcategories.php', 'subcategory_detail.php'],
+                'condition' => function() { return has_full_access() && hasModuleAccess('subcategories'); }
+            ],
+            // Category Items link moved to setup.php
+            [
+                'href' => '#hs-codes-submenu',
+                'label' => 'HS Codes',
+                'icon' => 'ph-barcode',
+                'pages' => ['listing_hscodes.php', 'hscodes.php', 'hscode_detail.php', 'listing_hscodesmappings.php', 'listing_hs_code_sets.php', 'hs_code_sets.php', 'listing_hs_code_texts.php', 'hs_code_texts.php', 'listing_category_hs_codes.php'],
+                'type' => 'submenu',
+                'condition' => function() { return has_full_access() && hasModuleAccess('hscodes'); }
+            ]
+        ]
+    ],
+    'content' => [
+        'label' => 'Content',
+        'items' => [
+            [
+                'key' => 'blogs',
+                'href' => 'listing_blogs.php',
+                'label' => 'Blog Posts',
+                'icon' => 'ph-note-pencil',
+                'pages' => ['listing_blogs.php', 'blogs.php'],
+                'condition' => function() { return has_full_access() && hasModuleAccess('blogs'); },
+                'hidden' => true
+            ],
+            [
+                'href' => 'listing_guest_posts.php',
+                    'key' => 'guest_posts',
+                'label' => 'Guest Posts',
+                'icon' => 'ph-user-list',
+                'pages' => ['listing_guest_posts.php'],
+                    'condition' => function() { return has_full_access() && hasModuleAccess('blogs'); },
+                    'hidden' => true
+            ],
+            [
+                'key' => 'blog_categories',
+                'href' => 'listing_blog_categories.php',
+                'label' => 'Blog Categories',
+                'icon' => 'ph-folder-open',
+                'pages' => ['listing_blog_categories.php', 'blog_categories.php', 'blog_category_detail.php'],
+                'condition' => function() { return has_full_access() && hasModuleAccess('blog_categories'); },
+                'hidden' => true
+            ],
+            [
+                'key' => 'pages',
+                'href' => 'listing_pages.php',
+                'label' => 'Static Pages',
+                'icon' => 'ph-file-doc',
+                'pages' => ['listing_pages.php', 'pages.php', 'page_detail.php'],
+                'condition' => function() { return has_full_access() && hasModuleAccess('pages'); },
+                'hidden' => true
+            ],
+            [
+                'key' => 'frontend_users',
+                'href' => 'listing_frontend_users.php',
+                'label' => 'Frontend Users',
+                'icon' => 'ph-user-circle',
+                'pages' => ['listing_frontend_users.php', 'frontend_user_detail.php'],
+                'condition' => function() { return hasModuleAccess('frontend_users'); },
+                'hidden' => true
+            ],
+            // User Favorites link moved to setup.php
+        ]
+    ],
+    // 'data' section moved to setup.php
+    // 'admin' section moved to setup.php
+];
+
+// ============================================================================
+// RENDER SIDEBAR
+// ============================================================================
+
+// Get list of items hidden by user from system settings
+$defaultHiddenItems = ['blogs', 'guest_posts', 'blog_categories', 'pages', 'frontend_users', 'searches'];
+$hiddenItemsJson = getSystemSetting('sidebar_hidden_items', json_encode($defaultHiddenItems));
+$storedHiddenItems = json_decode($hiddenItemsJson, true);
+$userHiddenItems = array_values(array_unique(array_merge($defaultHiddenItems, is_array($storedHiddenItems) ? $storedHiddenItems : [])));
+$userHiddenItemsMap = array_flip($userHiddenItems);
+$sectionOrder = ['dashboard', 'shipping', 'accounting', 'crm', 'hr', 'operations', 'catalog', 'operational_setup', 'content'];
+$sectionSystemMap = [
+    'shipping' => 'shipping',
+    'accounting' => 'accounting',
+    'crm' => 'crm',
+    'hr' => 'hr',
+];
+
+?>
+
+    <div class="sidebar-content">
+        <div class="sidebar-section">
+            <ul class="nav nav-sidebar" data-nav-type="accordion">
+                <?php
+                // Render each menu section
+                $sectionCount = 0;
+                foreach ($sectionOrder as $sectionKey):
+                    $requiredSystem = $sectionSystemMap[$sectionKey] ?? null;
+                    if ($requiredSystem !== null && function_exists('dashboardHasSystemAccess') && !dashboardHasSystemAccess($requiredSystem)) {
+                        continue;
+                    }
+                    if (!isset($menuConfig[$sectionKey])) {
+                        continue;
+                    }
+                    $section = $menuConfig[$sectionKey];
+                    $visibleItems = array_filter($section['items'], function($item) use ($userHiddenItemsMap) {
+                        // Check if item is in the hidden list
+                        $itemKey = $item['key'] ?? null;
+                        $isHidden = $itemKey && isset($userHiddenItemsMap[$itemKey]);
+                        return !$isHidden && call_user_func($item['condition']);
+                    });
+                    if (empty($visibleItems)) {
+                        continue;
+                    }
+                    if (!empty($section['label'])) {
+                        renderSectionHeader($section['label'], $sectionCount > 0);
+                    }
+                    $sectionCount++;
+                    foreach ($visibleItems as $item):
+                        if (!empty($item['type']) && $item['type'] === 'submenu'):
+                            $isOpen = isMenuActive($item['pages']);
+                            echo '<li class="nav-item nav-item-submenu ' . ($isOpen ? 'nav-item-open' : '') . '">';
+                            echo '<a href="#" class="nav-link">';
+                            echo '<i class="' . $item['icon'] . '"></i>';
+                            echo '<span>' . $item['label'] . '</span>';
+                            echo '</a>';
+                            echo '<ul class="nav-group-sub collapse ' . ($isOpen ? 'show' : '') . '">';
+                            // Submenu items for HS Codes
+                            if ($sectionKey === 'catalog' && $item['label'] === 'HS Codes'):
+                                $hsPgs = ['listing_hscodes.php','hscodes.php','hscode_detail.php'];
+                                echo '<li class="nav-item"><a href="listing_hscodes.php" class="nav-link ' . (isMenuActive($hsPgs) ? 'active' : '') . '"><i class="ph-barcode"></i><span>HS Codes</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_hscodesmappings.php" class="nav-link ' . ($current_page === 'listing_hscodesmappings.php' ? 'active' : '') . '"><i class="ph-link"></i><span>Mappings</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_hs_code_sets.php" class="nav-link ' . (isMenuActive(['listing_hs_code_sets.php','hs_code_sets.php']) ? 'active' : '') . '"><i class="ph-stack"></i><span>HS Code Sets</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_hs_code_texts.php" class="nav-link ' . (isMenuActive(['listing_hs_code_texts.php','hs_code_texts.php']) ? 'active' : '') . '"><i class="ph-book-open"></i><span>HS Code Texts</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_category_hs_codes.php" class="nav-link ' . ($current_page === 'listing_category_hs_codes.php' ? 'active' : '') . '"><i class="ph-tag"></i><span>Category HS Codes</span></a></li>';
+                            endif;
+                            if ($sectionKey === 'shipping' && $item['label'] === 'Shipping Master Data'):
+                                echo '<li class="nav-item"><a href="listing_ports.php" class="nav-link ' . (isMenuActive(['listing_ports.php','ports.php']) ? 'active' : '') . '"><i class="ph-map-pin-line"></i><span>Ports</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_carriers.php" class="nav-link ' . (isMenuActive(['listing_carriers.php','carriers.php']) ? 'active' : '') . '"><i class="ph-truck"></i><span>Carriers</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_consignees.php" class="nav-link ' . (isMenuActive(['listing_consignees.php','consignees.php']) ? 'active' : '') . '"><i class="ph-buildings"></i><span>Consignees</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_shippers.php" class="nav-link ' . (isMenuActive(['listing_shippers.php','shippers.php']) ? 'active' : '') . '"><i class="ph-user-square"></i><span>Shippers</span></a></li>';
+                            endif;
+                            // No submenu for Companies; direct link only
+                            if ($sectionKey === 'admin' && $item['label'] === 'Geo Locations'):
+                                echo '<li class="nav-item"><a href="listing_geo_countries.php" class="nav-link ' . ($current_page === 'listing_geo_countries.php' ? 'active' : '') . '"><i class="ph-globe"></i><span>Countries</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_geo_states.php" class="nav-link ' . ($current_page === 'listing_geo_states.php' ? 'active' : '') . '"><i class="ph-map-pin"></i><span>States</span></a></li>';
+                                echo '<li class="nav-item"><a href="listing_geo_cities.php" class="nav-link ' . ($current_page === 'listing_geo_cities.php' ? 'active' : '') . '"><i class="ph-map-trifold"></i><span>Cities</span></a></li>';
+                            endif;
+                            if ($sectionKey === 'crm' && $item['label'] === 'Invoices'):
+                                // Invoices submenu removed; invoices is now a direct link.
+                            endif;
+                            if (!empty($item['children']) && is_array($item['children'])):
+                                foreach ($item['children'] as $child):
+                                    $childVisible = !isset($child['condition']) || call_user_func($child['condition']);
+                                    if (!$childVisible) {
+                                        continue;
+                                    }
+                                    $childPages = $child['pages'] ?? [$child['href']];
+                                    echo '<li class="nav-item"><a href="' . $child['href'] . '" class="nav-link ' . (isMenuActive($childPages) ? 'active' : '') . '"><i class="ph-caret-right"></i><span>' . $child['label'] . '</span></a></li>';
+                                endforeach;
+                            endif;
+                            echo '</ul></li>';
+                        else:
+                            renderMenuItem($item['href'], $item['label'], $item['icon'], $item['pages']);
+                        endif;
+                    endforeach;
+                endforeach;
+                ?>
+                <!-- Footer section -->
+                <li class="nav-item-divider" style="margin: 16px 0 12px;"></li>
+            </ul>
+            <!-- Hidden Items Management -->
+            <div style="margin: 12px 16px 8px;">
+                <a href="sidebar_hidden_items.php" style="display: inline-block; text-align: center; width: 100%; font-size: 11px; color: #667eea; padding: 8px 0; text-decoration: none; border-top: 1px solid #e9ecef; padding-top: 12px;">
+                    📋 View Hidden Sidebar Items
+                </a>
+            </div>
+            <div style="margin: 0 16px 16px;">
+                <div style="text-align: center; font-size: 11px; color: #999; padding: 8px 0;">
+                    HAIPULSE Dashboard v2.1
+                </div>
+            </div>
+        </div>
+    </div>
+
+</aside>
+
+<style>
+/* Sidebar Professional Styling */
+.nav-item-header {
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.nav-item-header .text-uppercase {
+    color: #6c757d;
+    font-weight: 700;
+}
+
+.nav-item-divider {
+    margin: 12px 0;
+    opacity: 0.15;
+}
+
+.sidebar-main .nav-sidebar > .nav-item > .nav-link {
+    transition: all 0.2s ease;
+}
+
+.sidebar-main .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: rgba(103, 126, 234, 0.08);
+    transform: translateX(2px);
+}
+
+.sidebar-main .nav-sidebar > .nav-item > .nav-link.active {
+    background: linear-gradient(135deg, rgba(103, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    border-left: 3px solid #667eea;
+    font-weight: 600;
+}
+
+.sidebar-main .nav-sidebar > .nav-item > .nav-link i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Submenu Styling */
+.nav-group-sub .nav-link {
+    padding-left: 3rem;
+    font-size: 13px;
+}
+
+.nav-group-sub .nav-link:hover {
+    background-color: rgba(103, 126, 234, 0.06);
+}
+
+.nav-group-sub .nav-link.active {
+    color: #667eea;
+    font-weight: 600;
+    background-color: rgba(103, 126, 234, 0.1);
+}
+
+/* Icon colors for different sections */
+.nav-item-header + .nav-item:nth-of-type(1) .nav-link i,
+.nav-item-header + .nav-item-submenu .nav-link i {
+    color: #667eea;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Ensure submenu links always navigate even if another listener blocks nav-link clicks.
+    document.querySelectorAll('.nav-sidebar .nav-group-sub .nav-link[href]').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            var href = this.getAttribute('href');
+
+            if (!href || href === '#' || this.classList.contains('disabled')) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            window.location.href = href;
+        });
+    });
+});
+</script>
+

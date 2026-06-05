@@ -1,0 +1,209 @@
+<?php
+/**
+ * UAE Geographic Data Constants
+ * This file contains hardcoded UAE country and states data
+ * Replacing the geo_countries and geo_states database tables
+ */
+
+// UAE Country Data
+define('UAE_COUNTRY_ID', 1);
+define('UAE_COUNTRY_NAME', 'United Arab Emirates');
+define('UAE_COUNTRY_NAME_AR', 'الإمارات العربية المتحدة');
+define('UAE_COUNTRY_ISO2', 'AE');
+define('UAE_COUNTRY_ISO3', 'ARE');
+define('UAE_COUNTRY_PHONECODE', '971');
+define('UAE_COUNTRY_ALPHA3_CODE', 'ARE');
+
+// UAE States/Emirates Data (English and Arabic)
+const UAE_STATES = [
+    1 => [
+        'id' => 1,
+        'name' => 'Abu Dhabi',
+        'name_ar' => 'أبو ظبي',
+        'country_id' => 1,
+        'state_name' => 'Abu Dhabi'
+    ],
+    2 => [
+        'id' => 2,
+        'name' => 'Dubai',
+        'name_ar' => 'دبي',
+        'country_id' => 1,
+        'state_name' => 'Dubai'
+    ],
+    3 => [
+        'id' => 3,
+        'name' => 'Sharjah',
+        'name_ar' => 'الشارقة',
+        'country_id' => 1,
+        'state_name' => 'Sharjah'
+    ],
+    4 => [
+        'id' => 4,
+        'name' => 'Ajman',
+        'name_ar' => 'عجمان',
+        'country_id' => 1,
+        'state_name' => 'Ajman'
+    ],
+    5 => [
+        'id' => 5,
+        'name' => 'Umm Al Quwain',
+        'name_ar' => 'أم القيوين',
+        'country_id' => 1,
+        'state_name' => 'Umm Al Quwain'
+    ],
+    6 => [
+        'id' => 6,
+        'name' => 'Ras Al Khaimah',
+        'name_ar' => 'رأس الخيمة',
+        'country_id' => 1,
+        'state_name' => 'Ras Al Khaimah'
+    ],
+    7 => [
+        'id' => 7,
+        'name' => 'Fujairah',
+        'name_ar' => 'الفجيرة',
+        'country_id' => 1,
+        'state_name' => 'Fujairah'
+    ]
+];
+
+/**
+ * Get UAE state name by ID
+ * Replaces: getTableAttr('state_name', tbl_geo_states, $state_id)
+ * 
+ * @param int $state_id
+ * @return string
+ */
+function getUAEStateName($state_id) {
+    if (empty($state_id)) return '';
+    return UAE_STATES[$state_id]['name'] ?? '';
+}
+
+/**
+ * Get UAE state name in Arabic by ID
+ * 
+ * @param int $state_id
+ * @return string
+ */
+function getUAEStateNameAr($state_id) {
+    if (empty($state_id)) return '';
+    return UAE_STATES[$state_id]['name_ar'] ?? '';
+}
+
+/**
+ * Get UAE country name
+ * Replaces: getTableAttr('country_name', tbl_geo_countries, $country_id)
+ * 
+ * @param int $country_id
+ * @return string
+ */
+function getUAECountryName($country_id = null) {
+    // Always return UAE since we only support one country
+    return UAE_COUNTRY_NAME;
+}
+
+/**
+ * Get UAE country name in Arabic
+ * 
+ * @param int $country_id
+ * @return string
+ */
+function getUAECountryNameAr($country_id = null) {
+    return UAE_COUNTRY_NAME_AR;
+}
+
+/**
+ * Get UAE country alpha3 code
+ * Replaces: getTableAttr('alpha3_code', tbl_geo_countries, $country_id)
+ * 
+ * @param int $country_id
+ * @return string
+ */
+function getUAECountryAlpha3Code($country_id = null) {
+    return UAE_COUNTRY_ALPHA3_CODE;
+}
+
+/**
+ * Get all UAE states as array
+ * For dropdowns and selects
+ * 
+ * @return array
+ */
+function getAllUAEStates() {
+    return UAE_STATES;
+}
+
+/**
+ * Get UAE states for dropdown HTML
+ * Replaces SELECT * FROM geo_states queries
+ * 
+ * @param int $selected_id
+ * @return string HTML options
+ */
+function getUAEStatesDropdown($selected_id = null) {
+    $html = '<option value="">Select Emirate</option>';
+    foreach (UAE_STATES as $state) {
+        $selected = ($selected_id == $state['id']) ? 'selected' : '';
+        $html .= '<option value="' . $state['id'] . '" ' . $selected . '>' . $state['name'] . '</option>';
+    }
+    return $html;
+}
+
+/**
+ * Get UAE states as result set for legacy while loop compatibility
+ * Allows iteration: while ($row = getUAEStatesResult()->fetch_array())
+ * 
+ * @return object|array Returns UAE_STATES array wrapped for compatibility
+ */
+function getUAEStatesResult() {
+    return (object) [
+        'states' => array_values(UAE_STATES),
+        'index' => 0,
+        'fetch_array' => function() {
+            static $index = 0;
+            $states = array_values(UAE_STATES);
+            if ($index < count($states)) {
+                return $states[$index++];
+            }
+            $index = 0; // Reset for reuse
+            return null;
+        },
+        'num_rows' => count(UAE_STATES)
+    ];
+}
+
+/**
+ * Get UAE country for dropdown (always returns UAE since single country)
+ * 
+ * @param int $selected_id
+ * @return string HTML option
+ */
+function getUAECountryDropdown($selected_id = null) {
+    $selected = ($selected_id == UAE_COUNTRY_ID || $selected_id == 1) ? 'selected' : '';
+    return '<option value="' . UAE_COUNTRY_ID . '" ' . $selected . '>' . UAE_COUNTRY_NAME . '</option>';
+}
+
+/**
+ * Backward compatibility function
+ * Maps old getTableAttr calls for geo data
+ */
+function getGeoAttr($attr, $table, $id) {
+    if (strpos($table, 'geo_states') !== false) {
+        if ($attr == 'state_name' || $attr == 'name') {
+            return getUAEStateName($id);
+        } elseif ($attr == 'name_ar') {
+            return getUAEStateNameAr($id);
+        }
+    } elseif (strpos($table, 'geo_countries') !== false) {
+        if ($attr == 'country_name' || $attr == 'name') {
+            return getUAECountryName($id);
+        } elseif ($attr == 'alpha3_code') {
+            return getUAECountryAlpha3Code($id);
+        } elseif ($attr == 'name_ar') {
+            return getUAECountryNameAr($id);
+        } elseif ($attr == 'country') {
+            return UAE_COUNTRY_ISO2;
+        }
+    }
+    return '';
+}

@@ -1,0 +1,193 @@
+/**
+ * Standard Action Buttons Styling
+ * 
+ * Consistent action button appearance across all DataTable modules
+ * Icons: Phosphor Icons
+ */
+
+/* Action Button Base */
+.action-btn {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0 3px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    color: #495057;
+    text-align: center;
+    line-height: 30px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.action-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    text-decoration: none;
+}
+
+/* View Button - Blue */
+.action-btn.action-view {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.action-btn.action-view:hover {
+    background-color: #e7f1ff;
+    border-color: #0d6efd;
+}
+
+/* Edit Button - Green */
+.action-btn.action-edit {
+    color: #198754;
+    border-color: #198754;
+}
+
+.action-btn.action-edit:hover {
+    background-color: #d1e7dd;
+    border-color: #198754;
+}
+
+/* Delete Button - Red */
+.action-btn.action-delete {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.action-btn.action-delete:hover {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+/* Publish Button - Cyan */
+.action-btn.action-publish {
+    color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.action-btn.action-publish:hover {
+    background-color: #cfe4fc;
+    border-color: #0dcaf0;
+}
+
+/* Download Button - Gray */
+.action-btn.action-download {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.action-btn.action-download:hover {
+    background-color: #e9ecef;
+    border-color: #6c757d;
+}
+
+/* Test/Send Button - Orange/Success */
+.action-btn.action-test {
+    color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+.action-btn.action-test:hover {
+    background-color: #ffe5d0;
+    border-color: #fd7e14;
+}
+
+/* Disabled state */
+.action-btn:disabled,
+.action-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Action Button Icons */
+.action-btn i {
+    font-size: 0.95rem;
+    vertical-align: middle;
+    pointer-events: none;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    display: inline-flex;
+    gap: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;   /* never wrap icons to a second line */
+    white-space: nowrap;
+}
+
+/* Keep the TD that holds action buttons from collapsing */
+td:has(.action-btn),
+td:has(.action-buttons) {
+    white-space: nowrap;
+}
+
+/* Action Button Group with text wrapper */
+.action-buttons-group {
+    display: inline-flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        line-height: 28px;
+        margin: 0 2px;
+        font-size: 0.9rem;
+    }
+    
+    .action-btn i {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        line-height: 26px;
+        margin: 0 2px;
+        padding: 0;
+    }
+    
+    .action-btn i {
+        font-size: 0.8rem;
+    }
+    
+    .action-buttons {
+        gap: 0.15rem;
+    }
+}
+
+/* Loading state */
+.action-btn.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.action-btn.loading i::after {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: 0.25rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

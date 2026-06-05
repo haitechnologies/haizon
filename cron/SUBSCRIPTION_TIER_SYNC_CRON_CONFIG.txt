@@ -1,0 +1,20 @@
+Subscription Tier Sync Cron
+==========================
+
+Script:
+- cron/sync_subscription_tiers.php
+
+Purpose:
+- Mark ended listing subscriptions as expired.
+- Re-sync customer directory search tiers from highest active listing plan.
+
+Recommended schedule:
+- Every 30 minutes
+
+Linux cron example:
+*/30 * * * * /usr/bin/php /var/www/html/haipulse/cron/sync_subscription_tiers.php >> /var/www/html/haipulse/logs/subscription_sync.log 2>&1
+
+Windows Task Scheduler example:
+- Program/script: php
+- Arguments: G:\xampp\htdocs\haipulse\cron\sync_subscription_tiers.php
+- Trigger: repeat every 30 minutes

@@ -1,0 +1,349 @@
+/**
+ * DataTables Professional Layout CSS
+ * 
+ * This CSS replaces the cleanupCompanyFooterControls() JavaScript function
+ * that was forcing layout via jQuery .css() calls. Pure CSS is more performant,
+ * maintainable, and follows separation of concerns.
+ * 
+ * Layout Pattern:
+ * - Top: Entries-per-page (left) + Search (right)
+ * - Bottom: Info text (left) + Pagination buttons (right)
+ * - Single-line controls with no wrapping
+ * 
+ * IMPORTANT: Loaded AFTER datatables.css to override conflicting rules
+ */
+
+/* ========================================
+   TOP CONTROLS (Length + Search)
+   PRIORITY: Override datatables.css conflicts
+   ======================================== */
+
+/* Header Container - Force single line layout */
+.dataTables_wrapper .dt-header,
+.dt-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-bottom: 16px !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    position: static !important;
+    z-index: auto !important;
+}
+
+/* Left side - Entries dropdown (NO GROW) */
+.dataTables_wrapper .dt-head-left,
+.dt-head-left {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .dt-head-left .dataTables_length,
+.dt-head-left .dataTables_length {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .dt-head-left .dataTables_length label,
+.dt-head-left .dataTables_length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    gap: 6px !important;
+    word-break: keep-all !important;
+}
+
+.dataTables_wrapper .dt-head-left .dataTables_length select,
+.dt-head-left .dataTables_length select {
+    white-space: nowrap !important;
+    display: inline-block !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+}
+
+/* Right side - Search input (GROWS to fill remaining space) */
+.dataTables_wrapper .dt-head-right,
+.dt-head-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex: 1 1 auto !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    margin-left: auto !important;
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .dt-head-right .dataTables_filter,
+.dt-head-right .dataTables_filter {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    margin-left: auto !important;
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .dt-head-right .dataTables_filter label,
+.dt-head-right .dataTables_filter label {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    gap: 8px !important;
+    word-break: keep-all !important;
+}
+
+.dataTables_wrapper .dt-head-right .dataTables_filter input,
+.dt-head-right .dataTables_filter input {
+    white-space: nowrap !important;
+    display: inline-block !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+}
+
+/* ========================================
+   BOTTOM CONTROLS (Info + Pagination)
+   PRIORITY: Override datatables.css conflicts
+   ======================================== */
+
+/* Footer Container - Force single line layout */
+.dataTables_wrapper .dt-footer,
+.dt-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+    gap: 12px !important;
+}
+
+/* Left side - Info text */
+.dataTables_wrapper .dt-foot-left,
+.dt-foot-left {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .dt-foot-left .dataTables_info,
+.dt-foot-left .dataTables_info {
+    display: inline !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    flex: 0 1 auto !important;
+}
+
+/* Right side - Pagination (NO WRAP, STAY RIGHT) */
+.dataTables_wrapper .dt-foot-right,
+.dt-foot-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    margin-right: 0 !important;
+}
+
+/* Pagination wrapper - CRITICAL: No wrapping allowed */
+.dataTables_wrapper .dt-foot-right .dataTables_paginate,
+.dt-foot-right .dataTables_paginate {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Pagination buttons - Keep inline */
+.dataTables_wrapper .dt-foot-right .dataTables_paginate .paginate_button,
+.dt-foot-right .dataTables_paginate .paginate_button {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+/* Keep desktop behavior identical across breakpoints */
+@media (max-width: 991.98px) {
+    .dataTables_wrapper .dt-header,
+    .dt-header,
+    .dataTables_wrapper .dt-footer,
+    .dt-footer {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+    }
+
+    .dataTables_wrapper .dt-head-left,
+    .dt-head-left {
+        flex: 0 0 auto !important;
+        margin-bottom: 0 !important;
+    }
+
+    .dataTables_wrapper .dt-head-right,
+    .dt-head-right {
+        flex: 1 1 auto !important;
+        margin-left: auto !important;
+        justify-content: flex-end !important;
+    }
+
+    .dataTables_wrapper .dt-foot-right,
+    .dt-foot-right {
+        margin-left: auto !important;
+        justify-content: flex-end !important;
+    }
+
+    .dataTables_wrapper .dt-foot-right .dataTables_paginate,
+    .dt-foot-right .dataTables_paginate {
+        flex-wrap: nowrap !important;
+        justify-content: flex-end !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_length {
+        width: auto !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        width: 220px !important;
+        min-width: 220px !important;
+    }
+}
+
+/* Very small screens: still keep a single row, allow horizontal scroll if needed */
+@media (max-width: 575.98px) {
+    .dataTables_wrapper .dt-header,
+    .dt-header,
+    .dataTables_wrapper .dt-footer,
+    .dt-footer {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .dataTables_wrapper .dt-foot-left,
+    .dt-foot-left,
+    .dataTables_wrapper .dt-foot-right,
+    .dt-foot-right,
+    .dataTables_wrapper .dt-head-left,
+    .dt-head-left,
+    .dataTables_wrapper .dt-head-right,
+    .dt-head-right {
+        width: auto !important;
+        min-width: max-content !important;
+    }
+}
+
+/* ========================================
+   PREVENT DUPLICATE CONTROLS
+   ======================================== */
+
+/* Hide any duplicate info blocks (keep only one) */
+.dataTables_wrapper .dataTables_info:not(:last-of-type) {
+    display: none !important;
+}
+
+/* Hide any duplicate pagination blocks (keep only one) */
+.dataTables_wrapper .dataTables_paginate:not(:last-of-type) {
+    display: none !important;
+}
+
+/* Hide any duplicate length menus */
+.dataTables_wrapper .dataTables_length:not(:first-of-type) {
+    display: none !important;
+}
+
+/* Hide any duplicate search filters */
+.dataTables_wrapper .dataTables_filter:not(:first-of-type) {
+    display: none !important;
+}
+
+/* ========================================
+   HIDE UNWANTED ELEMENTS
+   ======================================== */
+
+/* Hide DataTables Buttons extension if present (CSV, Excel, PDF exports) */
+.dataTables_wrapper .dt-buttons {
+    display: none !important;
+}
+
+/* Hide any button containers in header */
+.dataTables_wrapper .dt-header .dt-buttons,
+.dt-header .dt-buttons {
+    display: none !important;
+}
+
+/* Hide column visibility buttons */
+.dataTables_wrapper .buttons-colvis,
+.dataTables_wrapper .buttons-collection {
+    display: none !important;
+}
+
+/* ========================================
+   CLEAN TABLE WRAPPER
+   ======================================== */
+
+/* Ensure the wrapper doesn't add unwanted spacing */
+.dataTables_wrapper {
+    position: relative;
+    clear: both;
+}
+
+/* Remove default DataTables spacing that conflicts with our layout */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Ensure wrapper rows don't interfere */
+.dataTables_wrapper .row {
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .row > div {
+    padding: 0 !important;
+}

@@ -1,0 +1,89 @@
+/**
+ * Standard Badge Styling
+ * 
+ * Consistent badge appearance across all DataTable modules
+ */
+
+.badge {
+    display: inline-block;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+/* Opacity variants */
+.badge.bg-success.bg-opacity-20 {
+    background-color: #e9f7ef !important;
+    color: #1f6b43 !important;
+    border-color: #bfe6cf;
+}
+
+.badge.bg-danger.bg-opacity-20 {
+    background-color: #fdecef !important;
+    color: #9f2e38 !important;
+    border-color: #f5c2c7;
+}
+
+.badge.bg-warning.bg-opacity-20 {
+    background-color: #fff6e6 !important;
+    color: #9a6700 !important;
+    border-color: #f2ddb2;
+}
+
+.badge.bg-info.bg-opacity-20 {
+    background-color: #eaf4fb !important;
+    color: #1d5f8a !important;
+    border-color: #c7deef;
+}
+
+.badge.bg-secondary.bg-opacity-20 {
+    background-color: #f1f3f5 !important;
+    color: #4a5562 !important;
+    border-color: #d7dde3;
+}
+
+.badge.bg-primary.bg-opacity-20 {
+    background-color: #e8f1ff !important;
+    color: #1b4f93 !important;
+    border-color: #c7daf8;
+}
+
+/* Support badges rendered with bg-opacity-10 utility (used by category chips) */
+.badge.bg-primary.bg-opacity-10 {
+    background-color: #eef4ff !important;
+    color: #234f8f !important;
+    border-color: #d5e2f7;
+}
+
+/* Badge icons */
+.badge i {
+    font-size: 0.85rem;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+}
+
+/* Badge groups */
+.badge-group {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Responsive badge sizing */
+@media (max-width: 576px) {
+    .badge {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.65rem;
+    }
+    
+    .badge i {
+        font-size: 0.75rem;
+        margin-right: 0.2rem;
+    }
+}

@@ -1,0 +1,267 @@
+<?php
+
+include('admin_elements/admin_header.php');
+
+$module             = 'users';
+$module_caption     = 'Employee';
+
+$tbl_name = $tbl_prefix . $module;
+$photo_upload_path        = '../uploads/' . $module . '/';
+
+
+$error_message = '';
+$success_message = '';
+
+/*
+|--------------------------------------------------------------------------
+| PERMISSIONS
+|--------------------------------------------------------------------------
+|
+*/
+include('admin_elements/permissions.php');
+
+$activeOrganizationId = dashboardRequireActiveOrganization();
+
+
+// ------------------ CHECK IF ID IS VALID ----------------
+$rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_users . "` WHERE id ='" . $id . "' ");
+if ($rs_valid->num_rows == 0) {
+    header("Location:listing_users.php?error_message=User Information is not accessible");
+}
+
+// -- System Admin
+if (!Roles::isSystemAdmin($_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? null) && $id == 1) {
+    header("Location:listing_users.php?error_message=Only System Admin has the rights to access this User.");
+}
+
+
+
+/*
+|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------|
+*/
+
+$selected_tab = 'personal';
+
+if (isset($_REQUEST['selected_tab']) && !empty($_REQUEST['selected_tab']))
+    $selected_tab     = e_s__($_REQUEST['selected_tab']);
+
+
+/*
+|--------------------------------------------------------------------------
+| EDIT
+|--------------------------------------------------------------------------
+|
+*/
+if (!empty($id)) {
+
+    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
+    $row = $result->fetch_array();
+
+    $role_id                    = s__($row['role_id']);
+    $full_name                  = s__($row['full_name']);
+    $email                      = s__($row['email']);
+    $contact1                   = s__($row['contact1']);
+    $contact2                   = s__($row['contact2']);
+    $address                    = s__($row['address']);
+
+    $dob                        = s__($row['dob']);
+    $dob                        = processDateYtoD($dob);
+
+    $can_access_system          = s__($row['can_access_system']);
+    $is_active                  = s__($row['is_active']);
+}
+
+$photo = getTableAttr('photo', $tbl_name, $id);
+
+
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+?>
+
+<div class="content-wrapper">
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow">
+        <div class="page-header-content d-lg-flex border-top">
+            <div class="row mt-2">
+                <div class="col-lg-12">
+                    <h5 class="ms-2">Employee</h5>
+                </div>
+
+                <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
+                    <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <div class="row">
+
+
+                <div class="col-lg-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+
+                            <!-- Light Box -->
+                            <?php if (!empty($photo) && file_exists('../uploads/users/thumbs/' . $photo)) { ?>
+                                <div class="card-img-actions d-inline-block mb-3">
+                                    <a data-lightbox="photo" href="<?php echo $photo_upload_path .  $photo ?>" target="_blank">
+                                        <img class="img-fluid rounded-circle" src="<?php echo $photo_upload_path . '/thumbs/' . $photo; ?>" alt="User photo" width="170" height="170" />
+                                    </a>
+                                    <!-- <img class="img-fluid rounded-circle" src="assets/images/demo/users/face2.jpg" width="170" height="170" alt=""> -->
+                                </div>
+                            <?php } else { ?>
+                                <img class="img-fluid rounded-circle" src="../assets/custom_images/no-image.png" alt="" />
+
+                            <?php } ?>
+
+                            <h6 class="mb-0"><?php echo $full_name; ?></h6>
+                            <small class="mb-0"><?php echo (($can_access_system == 1) ? '<span class="badge bg-info">Access System</span>' : '<span class="badge bg-danger">Disabled System Access</span>'); ?></small><br /><br />
+
+                            <span class="text-muted"><?php echo (($is_active == 1) ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-warning">Not Active</span>'); ?></span>
+                        </div>
+                        <div class="card-footer d-flex justify-content-around text-center p-0">
+
+                            <?php if (granted_('edit', 'users') && $role_id > 2) { ?>
+                                <a href="<?php echo $module; ?>.php?action=edit_<?php echo $module; ?>&id=<?php echo $id; ?>" class="text-body flex-fill p-2" data-bs-popup="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                                    <i class="ph-pencil"></i>
+                                </a>
+                            <?php } ?>
+
+                            <!-- <a href="#" class="text-body flex-fill p-2" data-bs-popup="tooltip" aria-label="Delete" data-bs-original-title="Delete">
+                                <i class="ph-trash"></i>
+                            </a> -->
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-lg-9">
+
+                    <!-- <ul class="nav nav-tabs nav-tabs-solid nav-tabs-solid-dark bg-dark nav-justified mb-3">
+                        <li class="nav-item">
+                            <a href="user.php?id=<?php echo $id; ?>" class="nav-link <?php echo (($selected_tab == 'personal') ? 'active' : ''); ?>">Personal Information</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="user.php?id=<?php echo $id; ?>&selected_tab=booking" class="nav-link <?php echo (($selected_tab == 'booking') ? 'active' : ''); ?>">Payroll</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="user.php?id=<?php echo $id; ?>&selected_tab=vehicle" class="nav-link <?php echo (($selected_tab == 'vehicle') ? 'active' : ''); ?>">Leave History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="user.php?id=<?php echo $id; ?>&selected_tab=cash" class="nav-link <?php echo (($selected_tab == 'cash') ? 'active' : ''); ?>">Documents</a>
+                        </li>
+                    </ul> -->
+
+                    <div class="card">
+
+                        <div class="tab-content card-body">
+
+                            <!-- -------------------------------------------------------------------------------------------------------------------- -->
+                            <!-- --------------------------------- TAB: PERSONAL INFORMATION -------------------------------------------------------- -->
+                            <!-- -------------------------------------------------------------------------------------------------------------------- -->
+                            <div class="tab-pane fade <?php echo (($selected_tab == 'personal') ? 'active show' : ''); ?>" id="tab-personal" role="tabpanel">
+
+
+                                <div class="row mb-3">
+                                    <label class="col-lg-3 col-form-label">Full Name:</label>
+                                    <div class="col-lg-9 fw-semibold">
+                                        <?php echo $full_name; ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-lg-3 col-form-label">Date of Birth:</label>
+                                    <div class="col-lg-9 fw-semibold">
+                                        <?php echo (($dob == '01-01-1970') ? '' : $dob); ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-lg-3 col-form-label">Email:</label>
+                                    <div class="col-lg-9 fw-semibold">
+                                        <?php echo $email; ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-lg-3 col-form-label">Phone:</label>
+                                    <div class="col-lg-9 fw-semibold">
+                                        <?php echo $contact1; ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-lg-3 col-form-label">Address:</label>
+                                    <div class="col-lg-9 fw-semibold">
+                                        <?php echo $address; ?>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+
+                            <!-- -------------------------------------------------------------------------------------------------------------------- -->
+                            <!-- ------------------------------------------- TAB: BOOKING HISTORY --------------------------------------------------- -->
+                            <!-- -------------------------------------------------------------------------------------------------------------------- -->
+
+                            <div class="tab-pane fade <?php echo (($selected_tab == 'booking') ? 'active show' : ''); ?>" id="booking-history" role="tabpanel">
+
+
+                                <div class="table-responsive">
+                                    <table class="table">
+
+                                        <thead>
+                                            <tr>
+                                                <th>ID #</th>
+                                                <th width="250">REQUESTED DATE TIME</th>
+                                                <th class="text-center">FULL NAME</th>
+                                                <th>VEHICLE</th>
+                                                <th>BOOKING INFORMATION</th>
+                                                <!-- <th>CASH</th> -->
+                                                <!-- <th>BOOKING STATUS</th> -->
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+
+
+                                    </table>
+                                </div>
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <?php include('admin_elements/copyright.php'); ?>
+    </div>
+</div>
+
+<?php include('admin_elements/admin_footer.php'); ?>

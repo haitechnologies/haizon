@@ -1,0 +1,698 @@
+<?php
+include('admin_elements/admin_header.php');
+
+$module = 'statistics';
+$module_caption = 'Statistics';
+$tbl_name = $tbl_prefix . $module;
+$error_message = '';
+$success_message = '';
+
+/*
+|--------------------------------------------------------------------------
+| PERMISSIONS
+|--------------------------------------------------------------------------
+|
+*/
+if (!Roles::currentUserHasFullAccess() && !Roles::currentUserHasRole(Roles::ACCOUNTS)) {
+	echo 'Permission Denied.';
+	exit();
+}
+
+
+include('admin_elements/permissions.php');
+
+$activeOrganizationId = dashboardRequireActiveOrganization();
+
+
+/*
+|--------------------------------------------------------------------------
+| FINANCIAL DATA AGGREGATION
+|--------------------------------------------------------------------------
+*/
+
+// Date ranges
+$current_month_start = date('Y-m-01');
+$current_month_end = date('Y-m-t');
+$last_month_start = date('Y-m-01', strtotime('-1 month'));
+$last_month_end = date('Y-m-t', strtotime('-1 month'));
+$current_year_start = date('Y-01-01');
+$today_date = date('Y-m-d');
+$ar_report_from = date('d-m-Y', strtotime($current_year_start));
+$ar_report_to = date('d-m-Y', strtotime($today_date));
+$ar_report_link = 'report_ar_aging_details.php?action=run_report&date_from=' . $ar_report_from . '&date_to=' . $ar_report_to . '&report_basis=accrual';
+
+// Aging bucket date ranges (for due date filtering)
+$due_date_1_15_from = date('d-m-Y', strtotime('-15 days'));  // Due 15 days ago
+$due_date_1_15_to = date('d-m-Y', strtotime('-1 day'));      // Due yesterday
+$ar_report_link_1_15 = 'report_ar_aging_details.php?action=run_report&date_from=' . $due_date_1_15_from . '&date_to=' . $due_date_1_15_to . '&report_basis=accrual';
+
+$due_date_16_30_from = date('d-m-Y', strtotime('-30 days'));
+$due_date_16_30_to = date('d-m-Y', strtotime('-16 days'));
+$ar_report_link_16_30 = 'report_ar_aging_details.php?action=run_report&date_from=' . $due_date_16_30_from . '&date_to=' . $due_date_16_30_to . '&report_basis=accrual';
+
+$due_date_31_45_from = date('d-m-Y', strtotime('-45 days'));
+$due_date_31_45_to = date('d-m-Y', strtotime('-31 days'));
+$ar_report_link_31_45 = 'report_ar_aging_details.php?action=run_report&date_from=' . $due_date_31_45_from . '&date_to=' . $due_date_31_45_to . '&report_basis=accrual';
+
+$due_date_over_45_from = date('d-m-Y', strtotime('-1000 days'));  // Far back in the past
+$due_date_over_45_to = date('d-m-Y', strtotime('-46 days'));
+$ar_report_link_over_45 = 'report_ar_aging_details.php?action=run_report&date_from=' . $due_date_over_45_from . '&date_to=' . $due_date_over_45_to . '&report_basis=accrual';
+
+// INVOICES METRICS
+$total_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "`")->fetch_assoc()['count'];
+$invoices_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+$draft_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_status='draft'")->fetch_assoc()['count'];
+$sent_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_status='sent'")->fetch_assoc()['count'];
+$paid_invoices = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_invoices . "` WHERE invoice_status='paid'")->fetch_assoc()['count'];
+
+// REVENUE CALCULATION
+$revenue_query = "
+    SELECT 
+        SUM(grand_total) as total_revenue,
+        SUM(CASE WHEN invoice_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as current_month_revenue,
+        SUM(CASE WHEN invoice_date BETWEEN '$last_month_start' AND '$last_month_end' THEN grand_total ELSE 0 END) as last_month_revenue,
+        SUM(CASE WHEN invoice_date >= '$current_year_start' THEN grand_total ELSE 0 END) as year_revenue
+    FROM `" . tbl_invoices . "`
+    WHERE invoice_status IN ('sent', 'paid')
+";
+$revenue_data = $mysqli->query($revenue_query)->fetch_assoc();
+$total_revenue = $revenue_data['total_revenue'] ?? 0;
+$current_month_revenue = $revenue_data['current_month_revenue'] ?? 0;
+$last_month_revenue = $revenue_data['last_month_revenue'] ?? 0;
+$year_revenue = $revenue_data['year_revenue'] ?? 0;
+
+// ACCOUNTS RECEIVABLE (Outstanding invoices)
+$ar_query = "
+    SELECT 
+        SUM(grand_total) as total_ar,
+        SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) <= 0 THEN grand_total ELSE 0 END) as current_ar,
+        SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) BETWEEN 1 AND 15 THEN grand_total ELSE 0 END) as ar_1_15,
+        SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) BETWEEN 16 AND 30 THEN grand_total ELSE 0 END) as ar_16_30,
+        SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) BETWEEN 31 AND 45 THEN grand_total ELSE 0 END) as ar_31_45,
+        SUM(CASE WHEN DATEDIFF(NOW(), expiry_date) > 45 THEN grand_total ELSE 0 END) as ar_over_45
+    FROM `" . tbl_invoices . "`
+    WHERE invoice_status = 'sent'
+";
+$ar_data = $mysqli->query($ar_query)->fetch_assoc();
+$total_ar = $ar_data['total_ar'] ?? 0;
+$current_ar = $ar_data['current_ar'] ?? 0;
+$overdue_ar = ($ar_data['ar_1_15'] ?? 0) + ($ar_data['ar_16_30'] ?? 0) + ($ar_data['ar_31_45'] ?? 0) + ($ar_data['ar_over_45'] ?? 0);
+$ar_1_15 = $ar_data['ar_1_15'] ?? 0;
+$ar_16_30 = $ar_data['ar_16_30'] ?? 0;
+$ar_31_45 = $ar_data['ar_31_45'] ?? 0;
+$ar_over_45 = $ar_data['ar_over_45'] ?? 0;
+
+// EXPENSES METRICS
+$total_expenses = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_expenses . "`")->fetch_assoc()['count'];
+$expenses_this_month = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_expenses . "` WHERE expense_date BETWEEN '$current_month_start' AND '$current_month_end'")->fetch_assoc()['count'];
+
+// EXPENSE AMOUNT CALCULATION
+$expense_query = "
+    SELECT 
+        SUM(grand_total) as total_expenses,
+        SUM(CASE WHEN expense_date BETWEEN '$current_month_start' AND '$current_month_end' THEN grand_total ELSE 0 END) as current_month_expenses,
+        SUM(CASE WHEN expense_date BETWEEN '$last_month_start' AND '$last_month_end' THEN grand_total ELSE 0 END) as last_month_expenses,
+        SUM(CASE WHEN expense_date >= '$current_year_start' THEN grand_total ELSE 0 END) as year_expenses
+    FROM `" . tbl_expenses . "`
+";
+$expense_data = $mysqli->query($expense_query)->fetch_assoc();
+$total_expense_amount = $expense_data['total_expenses'] ?? 0;
+$current_month_expenses = $expense_data['current_month_expenses'] ?? 0;
+$last_month_expenses = $expense_data['last_month_expenses'] ?? 0;
+$year_expenses = $expense_data['year_expenses'] ?? 0;
+
+// ACCOUNTS PAYABLE (Unpaid expenses)
+// Note: Currently showing all expenses as AP since expenses table doesn't track payment status
+$ap_query = "
+    SELECT 
+        SUM(grand_total) as total_ap
+    FROM `" . tbl_expenses . "`
+";
+$ap_data = $mysqli->query($ap_query)->fetch_assoc();
+$total_ap = $ap_data['total_ap'] ?? 0;
+$current_ap = $total_ap; // All approved expenses considered current
+$overdue_ap = 0; // No due date tracking for expenses
+
+// PAYMENTS RECEIVED
+$payments_received_query = "
+    SELECT 
+        COUNT(*) as count,
+        SUM(total_amount_received) as total_amount,
+        SUM(CASE WHEN payment_date BETWEEN '$current_month_start' AND '$current_month_end' THEN total_amount_received ELSE 0 END) as month_amount
+    FROM `" . tbl_payments_received . "`
+";
+$payments_received_data = $mysqli->query($payments_received_query)->fetch_assoc();
+$total_payments_received = $payments_received_data['count'] ?? 0;
+$total_payments_received_amount = $payments_received_data['total_amount'] ?? 0;
+$month_payments_received = $payments_received_data['month_amount'] ?? 0;
+
+// PROFIT/LOSS CALCULATION
+$current_month_profit = $current_month_revenue - $current_month_expenses;
+$year_profit = $year_revenue - $year_expenses;
+$profit_margin = $current_month_revenue > 0 ? round(($current_month_profit / $current_month_revenue) * 100, 1) : 0;
+
+// CUSTOMERS & VENDORS
+$total_customers = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_customers . "`")->fetch_assoc()['count'];
+$total_vendors = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_vendors . "`")->fetch_assoc()['count'];
+
+// BANKS & ACCOUNTS
+$total_banks = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_banks . "`")->fetch_assoc()['count'];
+$total_accounts = $mysqli->query("SELECT COUNT(*) as count FROM `" . tbl_accounts . "`")->fetch_assoc()['count'];
+
+// GROWTH CALCULATIONS
+$revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $last_month_revenue) / $last_month_revenue) * 100, 1) : 0;
+$expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $last_month_expenses) / $last_month_expenses) * 100, 1) : 0;
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|
+*/
+
+?>
+
+<!-- Main content -->
+<div class="content-wrapper">
+
+	<!-- Page header -->
+	<div class="page-header page-header-light shadow">
+		<div class="page-header-content d-lg-flex border-top">
+			<div class="d-flex align-items-center py-3">
+				<div class="ms-3">
+					<h5 class="mb-0">
+						<i class="ph-currency-circle-dollar me-2"></i>
+						Accounting & Finance Dashboard
+					</h5>
+					<span class="text-muted">Financial overview and insights</span>
+				</div>
+			</div>
+
+			<div class="my-lg-auto ms-lg-auto">
+				<div class="d-sm-flex align-items-center mb-3 mb-lg-0 ms-lg-3">
+					<div class="btn-group me-2">
+						<a href="invoices.php" class="btn btn-success btn-sm">
+							<i class="ph-plus-circle me-1"></i>
+							New Invoice
+						</a> &nbsp; &nbsp;
+						<a href="expenses.php" class="btn btn-danger btn-sm">
+							<i class="ph-plus-circle me-1"></i>
+							New Expense
+						</a>
+					</div>
+					<span class="badge bg-primary bg-opacity-20 text-primary">
+						<i class="ph-calendar-blank me-1"></i>
+						<?php echo date('F Y'); ?>
+					</span>
+				</div>
+			</div>
+
+			<a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
+				<i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
+			</a>
+		</div>
+	</div>
+	<!-- /page header -->
+
+
+
+	<?php if (granted_('view', '___')) { ?>
+		<!-- Inner content -->
+		<div class="content-inner">
+
+			<!-- Content area -->
+			<div class="content">
+
+				<?php include('admin_elements/breadcrumb.php'); ?>
+
+				<!-- Dashboard content -->
+
+				<!-- Financial KPI Cards -->
+				<div class="row">
+					<!-- Revenue Card -->
+					<div class="col-sm-6 col-xl-3">
+						<div class="card card-body">
+							<div class="d-flex align-items-center mb-3">
+								<div class="flex-fill">
+									<h6 class="mb-0 text-muted">Revenue (This Month)</h6>
+								</div>
+								<?php if ($revenue_growth != 0): ?>
+									<span class="badge <?php echo $revenue_growth > 0 ? 'bg-success' : 'bg-danger'; ?> rounded-pill ms-2">
+										<i class="ph-trend-<?php echo $revenue_growth > 0 ? 'up' : 'down'; ?>"></i>
+										<?php echo abs($revenue_growth); ?>%
+									</span>
+								<?php endif; ?>
+							</div>
+							<div class="d-flex align-items-end">
+								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_revenue, 2); ?></h3>
+							</div>
+							<div class="progress mt-2" style="height: 4px;">
+								<div class="progress-bar bg-success" style="width: <?php echo $year_revenue > 0 ? ($current_month_revenue / $year_revenue * 100) : 0; ?>%"></div>
+							</div>
+							<small class="text-muted mt-1">YTD: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($year_revenue, 2); ?></small>
+						</div>
+					</div>
+
+					<!-- Expenses Card -->
+					<div class="col-sm-6 col-xl-3">
+						<div class="card card-body">
+							<div class="d-flex align-items-center mb-3">
+								<div class="flex-fill">
+									<h6 class="mb-0 text-muted">Expenses (This Month)</h6>
+								</div>
+								<?php if ($expense_growth != 0): ?>
+									<span class="badge <?php echo $expense_growth < 0 ? 'bg-success' : 'bg-warning'; ?> rounded-pill ms-2">
+										<i class="ph-trend-<?php echo $expense_growth > 0 ? 'up' : 'down'; ?>"></i>
+										<?php echo abs($expense_growth); ?>%
+									</span>
+								<?php endif; ?>
+							</div>
+							<div class="d-flex align-items-end">
+								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_expenses, 2); ?></h3>
+							</div>
+							<div class="progress mt-2" style="height: 4px;">
+								<div class="progress-bar bg-danger" style="width: <?php echo $year_expenses > 0 ? ($current_month_expenses / $year_expenses * 100) : 0; ?>%"></div>
+							</div>
+							<small class="text-muted mt-1">YTD: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($year_expenses, 2); ?></small>
+						</div>
+					</div>
+
+					<!-- Profit Card -->
+					<div class="col-sm-6 col-xl-3">
+						<div class="card card-body <?php echo $current_month_profit >= 0 ? 'bg-success' : 'bg-danger'; ?> text-white">
+							<div class="d-flex align-items-center mb-3">
+								<div class="flex-fill">
+									<h6 class="mb-0 opacity-75">Net Profit (Month)</h6>
+								</div>
+								<span class="badge bg-white bg-opacity-20 rounded-pill ms-2">
+									<?php echo $profit_margin; ?>%
+								</span>
+							</div>
+							<div class="d-flex align-items-end">
+								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_profit, 2); ?></h3>
+							</div>
+							<div class="progress mt-2 bg-white bg-opacity-20" style="height: 4px;">
+								<div class="progress-bar bg-white" style="width: <?php echo abs($profit_margin); ?>%"></div>
+							</div>
+							<small class="opacity-75 mt-1">Year: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($year_profit, 2); ?></small>
+						</div>
+					</div>
+
+					<!-- Outstanding Balance -->
+					<div class="col-sm-6 col-xl-3">
+						<div class="card card-body bg-primary text-white">
+							<div class="d-flex align-items-center mb-3">
+								<div class="flex-fill">
+									<h6 class="mb-0 opacity-75">Outstanding (AR - AP)</h6>
+								</div>
+							</div>
+							<div class="d-flex align-items-end">
+								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($total_ar - $total_ap, 2); ?></h3>
+							</div>
+							<div class="d-flex mt-2 justify-content-between">
+								<small class="opacity-75">AR: <?php echo number_format($total_ar, 0); ?></small>
+								<small class="opacity-75">AP: <?php echo number_format($total_ap, 0); ?></small>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Main Content Row -->
+				<div class="row">
+					<!-- Left Column -->
+					<div class="col-xl-8">
+
+						<!-- Accounts Receivable & Payable -->
+						<div class="row">
+							<div class="col-lg-6">
+								<div class="card">
+									<div class="card-header d-flex align-items-center">
+										<h6 class="mb-0">
+											<i class="ph-wallet me-2"></i>
+											Total Receivables
+											<i class="ph-info ms-2" data-bs-popup="tooltip" data-bs-placement="right" title="Outstanding amounts from customers"></i>
+										</h6>
+										<div class="ms-auto">
+											<div class="btn-group">
+												<a href="#" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">New</a>
+												<div class="dropdown-menu dropdown-menu-end">
+													<a href="invoices.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>New Invoice</a>
+													<a href="payments_received.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>Record Payment</a>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="card-body">
+										<div class="row text-center">
+											<div class="col-6">
+												<div class="mb-3">
+													<a href="<?php echo $ar_report_link; ?>" class="text-info">
+														<div class="fs-sm mb-1">CURRENT</div>
+														<h4 class="mb-0"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_ar, 0); ?></h4>
+													</a>
+												</div>
+											</div>
+											<div class="col-6">
+												<div class="mb-3">
+													<div class="fs-sm text-danger mb-1">OVERDUE</div>
+													<div class="btn-group">
+														<a href="#" class="btn btn-link p-0 text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+															<h4 class="mb-0 text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($overdue_ar, 0); ?></h4>
+														</a>
+														<div class="dropdown-menu dropdown-menu-end">
+															<a href="<?php echo $ar_report_link_1_15; ?>" class="dropdown-item">1-15 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_1_15, 0); ?></a>
+															<a href="<?php echo $ar_report_link_16_30; ?>" class="dropdown-item">16-30 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_16_30, 0); ?></a>
+															<a href="<?php echo $ar_report_link_31_45; ?>" class="dropdown-item">31-45 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_31_45, 0); ?></a>
+															<a href="<?php echo $ar_report_link_over_45; ?>" class="dropdown-item">Over 45 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_over_45, 0); ?></a>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="border-top pt-3">
+											<div class="d-flex justify-content-between mb-2">
+												<span class="text-muted">Total Invoiced</span>
+												<span class="fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($total_revenue, 0); ?></span>
+											</div>
+											<div class="d-flex justify-content-between">
+												<span class="text-muted">Payments Received</span>
+												<span class="fw-semibold text-success"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($month_payments_received, 0); ?></span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-lg-6">
+								<div class="card">
+									<div class="card-header d-flex align-items-center">
+										<h6 class="mb-0">
+											<i class="ph-credit-card me-2"></i>
+											Total Payables
+											<i class="ph-info ms-2" data-bs-popup="tooltip" data-bs-placement="right" title="Outstanding amounts to vendors"></i>
+										</h6>
+										<div class="ms-auto">
+											<div class="btn-group">
+												<a href="#" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">New</a>
+												<div class="dropdown-menu dropdown-menu-end">
+													<a href="expenses.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>New Expense</a>
+													<a href="payments_made.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>Record Payment</a>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="card-body">
+										<div class="row text-center">
+											<div class="col-6">
+												<div class="mb-3">
+													<div class="fs-sm text-info mb-1">CURRENT</div>
+													<h4 class="mb-0"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_ap, 0); ?></h4>
+												</div>
+											</div>
+											<div class="col-6">
+												<div class="mb-3">
+													<div class="fs-sm text-danger mb-1">OVERDUE</div>
+													<h4 class="mb-0 text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($overdue_ap, 0); ?></h4>
+												</div>
+											</div>
+										</div>
+										<div class="border-top pt-3">
+											<div class="d-flex justify-content-between mb-2">
+												<span class="text-muted">Total Expenses</span>
+												<span class="fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($total_expense_amount, 0); ?></span>
+											</div>
+											<div class="d-flex justify-content-between">
+												<span class="text-muted">This Month</span>
+												<span class="fw-semibold text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_month_expenses, 0); ?></span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Recent Invoices -->
+						<div class="card">
+							<div class="card-header d-flex align-items-center">
+								<h6 class="mb-0">
+									<i class="ph-file-text me-2"></i>
+									Recent Invoices
+								</h6>
+								<div class="ms-auto">
+									<a href="listing_invoices.php" class="text-body">View all <i class="ph-arrow-right ms-1"></i></a>
+								</div>
+							</div>
+							<div class="card-body p-0">
+								<div class="table-responsive">
+									<table class="table table-hover">
+										<thead class="table-light">
+											<tr>
+												<th>Invoice #</th>
+												<th>Customer</th>
+												<th>Date</th>
+												<th>Status</th>
+												<th class="text-end">Amount</th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php
+											$result = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` ORDER BY id DESC LIMIT 8");
+											if ($result->num_rows > 0) {
+												while ($row = $result->fetch_array()) {
+													$customer_name = getTableAttr('display_name', tbl_customers, $row['customer_id']);
+													$status = $row['invoice_status'];
+													$status_class = $status == 'paid' ? 'success' : ($status == 'sent' ? 'warning' : 'secondary');
+											?>
+													<tr>
+														<td class="py-2">
+															<a href="invoice_overview.php?invoice_id=<?php echo $row['id']; ?>" class="fw-semibold">
+																<?php echo $row['invoice_no']; ?>
+															</a>
+														</td>
+														<td class="py-2"><?php echo $customer_name; ?></td>
+														<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['invoice_date'])); ?></td>
+														<td class="py-2">
+															<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
+																<?php echo ucfirst($status); ?>
+															</span>
+														</td>
+														<td class="py-2 text-end fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($row['grand_total'], 2); ?></td>
+													</tr>
+											<?php
+												}
+											} else {
+												echo '<tr><td class="text-center text-muted py-3" colspan="5">No invoices found</td></tr>';
+											}
+											?>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+						<!-- Recent Expenses -->
+						<div class="card">
+							<div class="card-header d-flex align-items-center">
+								<h6 class="mb-0">
+									<i class="ph-receipt me-2"></i>
+									Recent Expenses
+								</h6>
+								<div class="ms-auto">
+									<a href="listing_expenses.php" class="text-body">View all <i class="ph-arrow-right ms-1"></i></a>
+								</div>
+							</div>
+							<div class="card-body p-0">
+								<div class="table-responsive">
+									<table class="table table-hover">
+										<thead class="table-light">
+											<tr>
+												<th>Expense #</th>
+												<th>Vendor</th>
+												<th>Date</th>
+												<th>Status</th>
+												<th class="text-end">Amount</th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php
+											$result = $mysqli->query("SELECT * FROM `" . tbl_expenses . "` ORDER BY id DESC LIMIT 8");
+											if ($result->num_rows > 0) {
+												while ($row = $result->fetch_array()) {
+													$vendor_name = getTableAttr('display_name', tbl_vendors, $row['vendor_id']);
+											$status = 'recorded';  // Default status since expenses table doesn't have status field
+											$status_class = 'info';
+													$reference = !empty($row['reference_no']) ? $row['reference_no'] : 'EXP-' . $row['id'];
+											?>
+													<tr>
+														<td class="py-2">
+															<a href="expense_overview.php?expense_id=<?php echo $row['id']; ?>" class="fw-semibold">
+																<?php echo $reference; ?>
+															</a>
+														</td>
+														<td class="py-2"><?php echo $vendor_name; ?></td>
+														<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['expense_date'])); ?></td>
+														<td class="py-2">
+															<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
+																<?php echo ucfirst($status); ?>
+															</span>
+														</td>
+														<td class="py-2 text-end fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($row['grand_total'], 2); ?></td>
+													</tr>
+											<?php
+												}
+											} else {
+												echo '<tr><td class="text-center text-muted py-3" colspan="5">No expenses found</td></tr>';
+											}
+											?>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<!-- Right Column -->
+					<div class="col-xl-4">
+
+						<!-- Quick Stats -->
+						<div class="row">
+							<div class="col-sm-6 col-xl-12">
+								<div class="card card-body" onclick="window.location.href='listing_invoices.php?status=draft';" style="cursor: pointer;">
+									<div class="d-flex align-items-center">
+										<i class="ph-files ph-3x text-secondary opacity-75 me-3"></i>
+										<div class="flex-fill">
+											<h3 class="mb-1"><?php echo $draft_invoices; ?></h3>
+											<div class="text-muted">Draft Invoices</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-sm-6 col-xl-12">
+								<div class="card card-body" onclick="window.location.href='listing_invoices.php?status=sent';" style="cursor: pointer;">
+									<div class="d-flex align-items-center">
+										<i class="ph-paper-plane-tilt ph-3x text-warning opacity-75 me-3"></i>
+										<div class="flex-fill">
+											<h3 class="mb-1"><?php echo $sent_invoices; ?></h3>
+											<div class="text-muted">Sent Invoices</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-sm-6 col-xl-12">
+								<div class="card card-body bg-success text-white" onclick="window.location.href='listing_customers.php';" style="cursor: pointer;">
+									<div class="d-flex align-items-center">
+										<i class="ph-users ph-3x opacity-75 me-3"></i>
+										<div class="flex-fill">
+											<h3 class="mb-1"><?php echo $total_customers; ?></h3>
+											<div class="opacity-75">Customers</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-sm-6 col-xl-12">
+								<div class="card card-body bg-primary text-white" onclick="window.location.href='listing_vendors.php';" style="cursor: pointer;">
+									<div class="d-flex align-items-center">
+										<i class="ph-storefront ph-3x opacity-75 me-3"></i>
+										<div class="flex-fill">
+											<h3 class="mb-1"><?php echo $total_vendors; ?></h3>
+											<div class="opacity-75">Vendors</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Chart of Accounts Summary -->
+						<div class="card">
+							<div class="card-header">
+								<h6 class="mb-0">
+									<i class="ph-tree-structure me-2"></i>
+									Chart of Accounts
+								</h6>
+							</div>
+							<div class="list-group list-group-flush">
+								<a href="listing_accounts.php" class="list-group-item list-group-item-action d-flex align-items-center">
+									<i class="ph-database me-3 text-primary"></i>
+									<div class="flex-fill">
+										<div class="fw-semibold">Accounts</div>
+										<div class="fs-sm text-muted">Manage chart of accounts</div>
+									</div>
+									<span class="badge bg-primary bg-opacity-20 text-primary rounded-pill"><?php echo $total_accounts; ?></span>
+								</a>
+								<a href="listing_banks.php" class="list-group-item list-group-item-action d-flex align-items-center">
+									<i class="ph-bank me-3 text-success"></i>
+									<div class="flex-fill">
+										<div class="fw-semibold">Banks</div>
+										<div class="fs-sm text-muted">Manage bank accounts</div>
+									</div>
+									<span class="badge bg-success bg-opacity-20 text-success rounded-pill"><?php echo $total_banks; ?></span>
+								</a>
+								<a href="listing_journals.php" class="list-group-item list-group-item-action d-flex align-items-center">
+									<i class="ph-note-pencil me-3 text-info"></i>
+									<div class="flex-fill">
+										<div class="fw-semibold">Journal Entries</div>
+										<div class="fs-sm text-muted">View all transactions</div>
+									</div>
+									<i class="ph-caret-right"></i>
+								</a>
+							</div>
+						</div>
+
+						<!-- Quick Reports -->
+						<div class="card">
+							<div class="card-header">
+								<h6 class="mb-0">
+									<i class="ph-chart-line me-2"></i>
+									Quick Reports
+								</h6>
+							</div>
+							<div class="list-group list-group-flush">
+								<a href="report_profit_loss.php" class="list-group-item list-group-item-action">
+									<i class="ph-trending-up me-2 text-success"></i>
+									Profit & Loss Statement
+								</a>
+								<a href="report_balance_sheet.php" class="list-group-item list-group-item-action">
+									<i class="ph-scales me-2 text-primary"></i>
+									Balance Sheet
+								</a>
+								<a href="report_cash_flow.php" class="list-group-item list-group-item-action">
+									<i class="ph-arrows-left-right me-2 text-info"></i>
+									Cash Flow Statement
+								</a>
+									<a href="<?php echo $ar_report_link; ?>" class="list-group-item list-group-item-action">
+									<i class="ph-clock-countdown me-2 text-warning"></i>
+									AR Aging Summary
+								</a>
+								<a href="report_ap_aging_details.php" class="list-group-item list-group-item-action">
+									<i class="ph-clock me-2 text-danger"></i>
+									AP Aging Summary
+								</a>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				<!-- /dashboard content -->
+
+			</div>
+			<!-- /content area -->
+
+
+			<?php include('admin_elements/copyright.php'); ?>
+
+
+		</div>
+	<?php } // permissions 
+	?>
+	<!-- /inner content -->
+
+</div>
+<!-- /main content -->
+
+</div>
+<!-- /page content -->
+<?php include('admin_elements/admin_footer.php'); ?>

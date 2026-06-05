@@ -1,0 +1,41 @@
+# =============================================================================
+# .gitattributes — HAIPULSE
+# Ensures consistent line endings: LF on server (Linux), CRLF on Windows dev
+# =============================================================================
+
+# Default: normalize all text files to LF in the repo
+* text=auto eol=lf
+
+# PHP / HTML / CSS / JS — always LF
+*.php text eol=lf
+*.html text eol=lf
+*.htm text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.sql text eol=lf
+*.sh text eol=lf
+*.htaccess text eol=lf
+.env.example text eol=lf
+
+# Binary files — do not mangle
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.svg text eol=lf

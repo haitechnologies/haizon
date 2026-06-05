@@ -1,0 +1,1892 @@
+/*------------------------------------------------------------------
+[Color1 Stylesheet]
+
+Project        :   HAIPULSE - Business Directory and classifieds premium html5 CSS template
+Version        :   V.1
+Create Date    :   19/02/20
+Last Update    :   19/02/20
+Copyright      :   Spruko Technologies Private Limited 
+Author         :   SprukoSoft
+Author URL     :   https://themeforest.net/user/sprukosoft
+Support		   :   support@spruko.com
+License        :   Licensed under ThemeForest License
+
+-------------------------------------------------------------------*/
+
+@import "../scss/variables";
+
+a {
+    &:hover {
+        color: $primary1;
+    }
+}
+
+.bg-background2:before,
+.pattern:before {
+    background: $gradient !important;
+}
+
+.owl-controls .owl-page.active {
+    border-color: $secondary;
+    opacity: 1;
+
+    &:hover {
+        border-color: $secondary;
+        opacity: 1;
+    }
+}
+
+.owl-carousel:hover .owl-nav button {
+    color: $secondary !important;
+}
+
+.owl-nav button {
+    color: $primary1 !important;
+}
+
+a.bg-primary {
+    &:hover,
+    &:focus {
+        background-color: $primary1 !important;
+    }
+}
+
+button.bg-primary {
+    &:hover,
+    &:focus {
+        background-color: $primary1 !important;
+    }
+}
+
+.item-card7-overlaytext h4 {
+    background: $secondary;
+}
+
+.bg-background-color:before {
+    background: $gradient !important;
+}
+
+.btn-secondary {
+    color: $white !important;
+    background-color: $secondary;
+    border-color: $secondary;
+
+    &:hover {
+        color: $white;
+        background-color: $secondary-hover;
+        border-color: $secondary-hover;
+    }
+
+    &:focus,
+    &.focus {
+        box-shadow: 0 0 0 2px rgba($secondary, 0.5);
+        background-color: $secondary;
+        border-color: $secondary;
+    }
+
+    &.disabled,
+    &:disabled {
+        color: $white;
+        background-color: $secondary;
+        border-color: $secondary;
+    }
+
+    &:not(:disabled):not(.disabled) {
+        &:active,
+        &.active {
+            color: $white;
+            background-color: $secondary;
+            border-color: $secondary;
+        }
+    }
+}
+
+.show > .btn-secondary.dropdown-toggle {
+    color: $white;
+    background-color: $secondary;
+    border-color: $secondary;
+}
+
+.btn-secondary:not(:disabled):not(.disabled) {
+    &:active:focus,
+    &.active:focus {
+        box-shadow: 0 0 0 2px $secondary-shadow;
+    }
+}
+
+.show > .btn-secondary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 2px $secondary-shadow;
+}
+
+.btn-outline-secondary {
+    color: $secondary !important;
+    background-color: transparent;
+    background-image: none;
+    border-color: $secondary !important;
+
+    &:hover {
+        color: $white !important;
+        background-color: $secondary;
+        border-color: $secondary !important;
+    }
+
+    &:focus,
+    &.focus {
+        box-shadow: 0 0 0 2px $secondary-shadow;
+    }
+
+    &.disabled,
+    &:disabled {
+        color: $secondary;
+        background-color: transparent;
+    }
+
+    &:not(:disabled):not(.disabled) {
+        &:active,
+        &.active {
+            color: $white;
+            background-color: $secondary;
+            border-color: $secondary;
+        }
+    }
+}
+
+.show > .btn-outline-secondary.dropdown-toggle {
+    color: $white;
+    background-color: $secondary;
+    border-color: $secondary;
+}
+
+.btn-outline-secondary:not(:disabled):not(.disabled) {
+    &:active:focus,
+    &.active:focus {
+        box-shadow: 0 0 0 2px $secondary-shadow;
+    }
+}
+
+.show > .btn-outline-secondary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 2px $secondary-shadow;
+}
+
+.btn-link {
+    color: $primary1 !important;
+}
+
+.alert-secondary {
+    color: #fcfdff;
+    background-color: $secondary;
+    border-color: $secondary;
+}
+
+.label-secondary {
+    background-color: $secondary;
+}
+
+.badge-secondary {
+    color: $white;
+    background-color: $secondary;
+
+    &[href] {
+        &:hover,
+        &:focus {
+            color: $white;
+            text-decoration: none;
+            background-color: $secondary;
+        }
+    }
+}
+
+.bg-gradient-secondary {
+    background: $gradient !important;
+}
+
+.bg-secondary {
+    background-color: $secondary !important;
+}
+
+a.bg-secondary {
+    &:hover,
+    &:focus {
+        background-color: $secondary !important;
+    }
+}
+
+button.bg-secondary {
+    &:hover,
+    &:focus {
+        background-color: $secondary !important;
+    }
+}
+
+.border-secondary {
+    border-color: $secondary !important;
+}
+
+.text-secondary {
+    color: $secondary !important;
+}
+
+a.text-secondary {
+    &:hover,
+    &:focus {
+        color: $secondary-hover !important;
+    }
+}
+
+.social-box.linkedin i {
+    background: $secondary;
+}
+
+.checkbox span:after,
+.user-card .card-block .activity-leval li.active {
+    background-color: $secondary;
+}
+
+#count-down .clock-presenter .digit {
+    background: $secondary;
+}
+
+.notifyimg {
+    background: $secondary;
+}
+
+.timeline__item:after {
+    border: 6px solid $secondary;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: $primary1;
+}
+
+.form-checkbox .custom-control-input {
+    &:checked ~ .custom-control-label::before {
+        background-color: $primary1;
+    }
+
+    &:indeterminate ~ .custom-control-label::before {
+        background-color: $secondary;
+    }
+}
+
+.custom-radio .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: $primary1;
+}
+
+.form-select:focus {
+    border-color: $secondary;
+}
+
+.form-file-label::after {
+    background-color: $primary1;
+    border-left: 1px solid $primary1;
+}
+
+.form-range {
+    &::-webkit-slider-thumb,
+    &::-moz-range-thumb,
+    &::-ms-thumb {
+        background-color: $secondary;
+    }
+}
+
+.nav-link.active {
+    background-color: $secondary;
+}
+
+.nav-pills {
+    .nav-link.active,
+    .show > .nav-link {
+        background-color: $secondary;
+    }
+}
+
+.page-link:hover {
+    color: $secondary;
+}
+
+.page-item.active .page-link {
+    background-color: $secondary;
+    border-color: $secondary;
+}
+
+.range.range-secondary {
+    input[type="range"] {
+        &::-webkit-slider-thumb,
+        &::-moz-slider-thumb {
+            background-color: $secondary;
+        }
+    }
+
+    output {
+        background-color: $secondary;
+    }
+
+    input[type="range"] {
+        outline-color: $secondary;
+    }
+}
+
+.nav-tabs .nav-item1 .nav-link {
+    &:hover:not(.disabled),
+    &.active {
+        background: $secondary;
+    }
+}
+
+.panel.price > .panel-heading {
+    background: $secondary;
+    color: $white;
+    background: $secondary;
+}
+
+.heading-secondary {
+    background-color: $secondary;
+}
+
+.breadcrumb-item1 a:hover,
+.panel-title1 a {
+    color: $primary1 !important;
+}
+
+.nav-tabs .nav-link {
+    &:hover:not(.disabled) {
+        background: $secondary !important;
+    }
+}
+
+.navtab-wizard.nav-tabs .nav-link {
+    &.active,
+    &:hover {
+        color: $secondary;
+        background: $white;
+    }
+}
+
+.admin-navbar {
+    .nav-item.active .nav-link {
+        color: $secondary;
+
+        .icon {
+            color: $secondary;
+        }
+    }
+
+    .nav-link {
+        &:hover,
+        &:focus,
+        &.active {
+            color: $secondary;
+        }
+    }
+
+    .mega-dropdown .sub-item .section-label {
+        color: $secondary;
+    }
+
+    .sub-item ul a {
+        &:active {
+            background-color: $secondary;
+        }
+
+        &:hover,
+        &:focus {
+            color: $secondary;
+        }
+    }
+}
+
+.expanel.expanel-secondary {
+    border-color: $secondary !important;
+
+    > .expanel-heading {
+        color: $white !important;
+        background-color: $secondary !important;
+        border-color: $secondary !important;
+    }
+}
+
+.error-img .form-control:focus {
+    color: $white;
+    background-color: $white-2;
+    border-color: $secondary;
+}
+
+.avatar {
+    background: $secondary no-repeat center/cover;
+}
+
+.spinner {
+    background: linear-gradient(120deg, $primary1 0%, $secondary 100%);
+}
+
+.spinner-lg {
+    background-color: $secondary;
+}
+
+.double-bounce1,
+.double-bounce2,
+.cube1,
+.cube2 {
+    background: linear-gradient(120deg, $primary1 0%, $secondary 100%);
+}
+
+.lds-heart div {
+    background: $secondary;
+
+    &:after,
+    &:before {
+        background: $secondary;
+    }
+}
+
+.lds-ring div {
+    border: 6px solid $secondary;
+    border-color: $secondary transparent transparent transparent;
+}
+
+.lds-hourglass:after {
+    border: 26px solid $secondary;
+    border-color: $secondary transparent;
+}
+
+.mediaicon {
+    border: 1px solid $secondary;
+    background: $secondary;
+}
+
+a.chip:hover {
+    background-color: $secondary;
+}
+
+.highlight .s {
+    color: $secondary;
+}
+
+.selectgroup-input {
+    &:checked + .selectgroup-button {
+        border-color: $secondary;
+        z-index: 1;
+        color: $secondary;
+        background: $white;
+    }
+
+    &:focus + .selectgroup-button {
+        border-color: $secondary;
+        z-index: 2;
+        color: $secondary;
+        box-shadow: 0 0 0 2px $secondary-shadow;
+    }
+}
+
+.form-switch-input {
+    &:checked ~ .form-switch-indicator {
+        background: $primary1;
+    }
+}
+
+.imagecheck-input:focus ~ .imagecheck-figure {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px transparent;
+}
+
+.imagecheck-figure:before {
+    background: $secondary
+        url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E")
+        no-repeat center (center / 50%) 50%;
+    color: $white;
+}
+
+.colorinput-input:focus ~ .colorinput-color {
+    border-color: $secondary;
+}
+
+.ui-datepicker .ui-datepicker-title {
+    color: $secondary;
+}
+
+#back-to-top {
+    background: $secondary;
+
+    &:hover {
+        background: $white;
+        color: $secondary;
+        border: 2px solid $secondary;
+    }
+}
+
+#chat-message {
+    background: $gradient !important;
+}
+
+.tabs-menu ul li .active {
+    background: $secondary !important;
+    border: 1px solid $secondary;
+}
+
+.tabs-menu1 ul li .active {
+    border: 1px solid $secondary !important;
+    color: $secondary;
+}
+
+.rating-stars .rating-stars-container .rating-star {
+    &.is--active .fa-heart,
+    &.is--hover .fa-heart {
+        color: $secondary;
+    }
+}
+
+.message-feed:not(.right) .mf-content {
+    background: $secondary;
+    color: $white;
+
+    &:before {
+        border-right-color: $secondary;
+    }
+}
+
+.msb-reply button {
+    background: $secondary;
+}
+
+.wizard-card {
+    .moving-tab {
+        background-color: $secondary !important;
+    }
+
+    .choice {
+        &:hover .icon,
+        &.active .icon {
+            border-color: $secondary !important;
+            color: $secondary !important;
+        }
+    }
+}
+
+.cal1 .clndr {
+    .clndr-table {
+        .header-days {
+            background: $secondary;
+        }
+
+        tr .day {
+            &.today.event,
+            &.my-today.event {
+                background: $secondary;
+            }
+
+            &.today:hover,
+            &.my-today:hover {
+                background: $secondary;
+                color: $white;
+            }
+        }
+    }
+
+    .clndr-controls .clndr-control-button {
+        .clndr-previous-button {
+            color: $secondary;
+        }
+
+        .clndr-next-button {
+            color: $secondary;
+
+            &:hover {
+                background: $secondary;
+            }
+        }
+
+        .clndr-previous-button:hover {
+            background: $secondary;
+        }
+    }
+}
+
+.fc button {
+    background: $secondary;
+}
+
+.fc-event,
+.fc-event-dot {
+    background-color: $secondary;
+}
+
+#sidebar {
+    .accordion-toggle i {
+        background: $gradient-color;
+    }
+
+    ul li.active > a {
+        color: $secondary;
+
+        &:hover {
+            color: $secondary;
+        }
+    }
+
+    li a[aria-expanded="true"].active:before {
+        background: $gradient-color;
+    }
+
+    ul li a:hover,
+    .collapse li a:hover {
+        color: $secondary;
+    }
+}
+
+.sweet-alert button {
+    background-color: $secondary !important;
+}
+
+.timeline__item:after {
+    border: 6px solid $secondary;
+}
+
+.label-secondary.arrowed:before {
+    border-right-color: $secondary;
+}
+
+.widgetdate p,
+.widgetbox p,
+.datebox p {
+    border-bottom: 2px solid $secondary;
+}
+
+.arrow-ribbon.bg-secondary:before {
+    border-left: 15px solid $secondary;
+}
+
+.arrow-ribbon2:before {
+    border-left: 24px solid $primary1;
+}
+
+.badge-offer.bg-secondary:after,
+.badge-offer1.bg-secondary:after {
+    border-top: 12px solid $secondary;
+}
+
+.social-icons li:hover {
+    background: $secondary;
+    color: $white;
+}
+
+.social li a:hover,
+.footer-main a:hover,
+.footer-links a:hover {
+    color: $secondary !important;
+    i {
+        color: $white;
+    }
+}
+
+.product-tags li a:hover {
+    background: $secondary;
+    border-color: $secondary;
+}
+
+.info .counter-icon {
+    border: 1px solid $white-6;
+
+    i {
+        color: $white;
+    }
+}
+
+.counter-icon {
+    border: 1px solid $secondary;
+
+    i {
+        color: $secondary;
+    }
+}
+
+.header-links li a {
+    &.active,
+    &:hover {
+        background: $secondary;
+        color: $white;
+    }
+}
+
+.item1-tabs-menu ul li .active {
+    background: $secondary;
+}
+
+.items-blog-tab-heading .items-blog-tab-menu li .active {
+    background: $secondary !important;
+    border-color: $secondary !important;
+    color: $white;
+}
+
+.item2-gl-nav .item2-gl-menu li .active {
+    color: $secondary !important;
+}
+
+.item-all-cat {
+    .item-all-card:hover .item-all-text h5 {
+        color: $primary1 !important;
+    }
+
+    .category-type .item-all-card img {
+        background: linear-gradient(120deg, $primary1 0%, $primary-10 100%);
+    }
+}
+
+.carousel-indicators li.active {
+    color: $white;
+    background: $secondary;
+}
+
+.item-cards7-ic.realestate-list li a:hover {
+    color: $secondary;
+}
+
+.item1-links a {
+    &:hover {
+        color: $secondary;
+    }
+
+    &.active {
+        border-right: 2px solid $secondary;
+    }
+}
+
+.ads-tabs .tabs-menus ul li .active {
+    background: $secondary !important;
+    border: 1px solid $secondary !important;
+}
+
+.showmore-button-inner {
+    border: 1px solid $secondary;
+    color: $secondary;
+}
+
+.owl-nav button,
+.owl-carousel:hover .owl-nav button {
+    color: $primary1 !important;
+}
+
+.owl-nav > div i {
+    color: $secondary;
+}
+
+.tabs-menu ul.eductaional-tabs li .active {
+    background: $secondary;
+}
+
+.gradient-icon {
+    background: $gradient-color;
+}
+
+.axgmap-img {
+    border: 3px solid $secondary;
+}
+
+.horizontalMenu > .horizontalMenu-list > li {
+    > {
+        .horizontal-megamenu .menu_form input {
+            &[type="submit"],
+            &[type="button"] {
+                background-color: $secondary;
+                color: $white;
+            }
+        }
+
+        a.active {
+            background-color: $white-15;
+            color: $white;
+        }
+    }
+
+    &:hover > a {
+        background-color: $secondary;
+        color: $white !important;
+
+        .fa {
+            background-color: $secondary;
+            color: $white !important;
+        }
+    }
+
+    > ul.sub-menu > li {
+        &:hover > a {
+            background-color: $secondary !important;
+            color: $white !important;
+        }
+
+        > ul.sub-menu > li {
+            &:hover > a,
+            > ul.sub-menu > li:hover a {
+                background-color: $secondary !important;
+                color: $white !important;
+            }
+        }
+    }
+}
+
+code {
+    color: $primary1;
+}
+
+#gdpr-cookie-message {
+    h4,
+    h5 {
+        color: $secondary;
+    }
+
+    a {
+        color: $secondary;
+        border-bottom: 1px solid $secondary;
+
+        &:hover {
+            border-bottom: 1px solid $secondary;
+            transition: all 0.3s ease-in;
+            color: $secondary;
+        }
+    }
+}
+
+button#gdpr-cookie-advanced {
+    color: $white;
+    background-color: $secondary !important;
+}
+
+.ui-widget-header,
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+    background: $secondary;
+}
+
+.side-menu {
+    li a.active:before {
+        background: linear-gradient(120deg, $secondary 60%, $color-4 100%);
+        box-shadow: 0px 0px 14px 0px $secondary;
+    }
+}
+
+.app-sidebar {
+    .side-menu__item.active {
+        color: $primary1 !important;
+
+        &:hover {
+            color: $primary1 !important;
+        }
+    }
+
+    .side-menu li {
+        &.active > a,
+        a.active {
+            color: $primary1 !important;
+        }
+    }
+
+    .slide-menu li.active > a {
+        color: $primary1;
+    }
+
+    .side-menu li {
+        ul li a:hover,
+        a:hover,
+        &.active > a,
+        a.active {
+            color: $primary1;
+        }
+    }
+
+    .slide-menu li.active > a,
+    .side-menu li a:hover {
+        color: $primary1 !important;
+    }
+}
+
+.my-dash {
+    &.app-sidebar .side-menu li.active > a,
+    &.app-sidebar .side-menu li a.active {
+        color: $secondary !important;
+    }
+    &.app-sidebar .slide-menu li.active > a,
+    &.app-sidebar .side-menu li a:hover {
+        color: $secondary !important;
+    }
+}
+
+.side-menu {
+    li a.active:before {
+        background: linear-gradient(120deg, $secondary 60%, $color-4 100%);
+        box-shadow: 0px 0px 14px 0px $secondary;
+    }
+}
+
+.form-inline .nav-search .btn {
+    border: 2px solid $primary1;
+}
+
+.wrapper > h1 span {
+    border-bottom: 2px solid $secondary;
+    color: $secondary;
+}
+
+.tab_wrapper {
+    > ul li.active {
+        border-color: $secondary;
+        background: $secondary;
+        color: $white;
+    }
+
+    .controller span {
+        background: $secondary;
+    }
+
+    .content_wrapper .accordian_header.active {
+        color: $secondary;
+
+        &:after {
+            background: $secondary;
+        }
+
+        .arrow {
+            border-top: 3px solid $secondary;
+            border-left: 3px solid $secondary;
+        }
+    }
+
+    &.left_side > ul li.active:after,
+    &.right_side > ul li.active:after {
+        background: $secondary;
+    }
+}
+
+.addui-slider .addui-slider-track {
+    .addui-slider-range,
+    .addui-slider-handle:after {
+        background: $secondary;
+    }
+}
+
+.accordionjs .acc_section.acc_active > .acc_head {
+    background: $secondary !important;
+}
+
+.perfect-datetimepicker tbody td.selected {
+    border: 1px solid $secondary;
+    background-color: $secondary;
+}
+
+div.conv-form-wrapper div {
+    &.options div.option {
+        border: 1px solid $secondary;
+        color: $secondary;
+    }
+
+    &#messages div.message.from {
+        background: $secondary;
+    }
+
+    &.options div.option.selected {
+        background: $secondary;
+        color: $white;
+    }
+}
+
+form.convFormDynamic button.submit {
+    border: 1px solid $secondary;
+    background: $secondary;
+
+    &:hover {
+        background: $secondary;
+        color: $white;
+    }
+}
+
+.exzoom {
+    .exzoom_nav .exzoom_nav_inner span.current {
+        border: 1px solid $secondary;
+    }
+
+    .exzoom_btn a {
+        /*border: 1px solid $secondary   ;*/
+        color: $secondary;
+    }
+}
+
+.prev:hover,
+.next:hover {
+    color: $secondary !important;
+}
+
+.g_f-s {
+    .prev:hover i {
+        transform: translate(-5px, 0px);
+        color: $secondary;
+    }
+
+    .next:hover i {
+        transform: translate(5px, 0px);
+        color: $secondary;
+    }
+
+    .close-button > *:hover {
+        color: $secondary;
+    }
+}
+
+.horizontalMenu > .horizontalMenu-list > li > .horizontal-megamenu .link-list li a:hover {
+    color: $secondary !important;
+}
+
+.register {
+    background: linear-gradient(120deg, #4f4ac7 0%, $secondary 100%);
+}
+
+.btnRegister {
+    background: $secondary;
+}
+
+.register .nav-tabs .nav-link.active {
+    color: $secondary;
+    border: 1px solid $secondary;
+}
+
+.pretty {
+    input:checked ~ .state.p-secondary label:after,
+    &.p-toggle .state.p-secondary label:after {
+        background-color: $secondary !important;
+    }
+
+    input:checked ~ .state.p-secondary-o label:before,
+    &.p-toggle .state.p-secondary-o label:before {
+        border-color: $secondary;
+    }
+
+    input:checked ~ .state.p-secondary-o {
+        .icon1,
+        .svg,
+        svg {
+            color: $secondary;
+            stroke: $secondary;
+        }
+    }
+
+    &.p-toggle .state.p-secondary-o {
+        .icon1,
+        .svg,
+        svg {
+            color: $secondary;
+            stroke: $secondary;
+        }
+    }
+
+    &.p-default:not(.p-fill) input:checked ~ .state.p-secondary-o label:after {
+        background-color: $secondary !important;
+    }
+
+    &.p-switch {
+        input:checked ~ .state.p-secondary:before {
+            border-color: $secondary;
+        }
+
+        &.p-fill input:checked ~ .state.p-secondary:before {
+            background-color: $secondary !important;
+        }
+    }
+}
+
+.owl-carousel button.owl-dot {
+    // background: $transparent-1 !important;
+
+    &.active {
+        background: $primary1 !important;
+    }
+}
+
+.bg-background {
+    &:before {
+        background: $gradient !important;
+    }
+
+    // &.bg-background-video:before {
+    //     background: $transparent-gradient-1;
+    // }
+}
+
+.bg-background2 {
+    &:before {
+        background: $gradient !important;
+    }
+
+    &.white-transparent:before {
+        background: $black-5 !important;
+    }
+}
+
+.bg-background-color:before,
+.bg-background3:before,
+.bg-background-5:before,
+.bg-background-6:before,
+.slider-header:before {
+    background: $gradient !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    box-shadow: 0 0 0 2px $shadow-1;
+}
+
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 1px $white1, 0 0 0 2px $shadow-1;
+}
+
+.form-range {
+    &::-webkit-slider-thumb:focus,
+    &::-moz-range-thumb:focus,
+    &::-ms-thumb:focus {
+        outline: none;
+        box-shadow: 0 0 0 1px $white1, 0 0 0 2px $shadow-1;
+    }
+}
+
+.error-img .form-control:focus {
+    outline: 0;
+    box-shadow: 0 0 0 2px $shadow-1;
+}
+
+.selectize-input.focus {
+    border-color: $blue;
+    box-shadow: 0 0 0 2px $shadow-1;
+}
+
+// .item-card7-imgs:hover a {
+//     background: $transparent-hover-1;
+// }
+
+.app-sidebar-footer {
+    background: $gradient;
+}
+
+.app-header-background {
+    background: $primary-gradient;
+
+    &.app-header-background2 {
+        background: $primary-gradient;
+    }
+}
+
+.masthead .masthead-bg {
+    background: $gradient !important;
+}
+
+@media (max-width: 992px) {
+    .search-show .nav-search {
+        background: $gradient;
+    }
+}
+
+@media (max-width: 992px) {
+    .nav-item.with-sub .sub-item {
+        border-top: 2px solid $secondary;
+    }
+}
+
+@media (max-width: 480px) {
+    .zoom-container .arrow-ribbon2:before {
+        border-top: 17px solid transparent;
+        border-left: 17px solid $secondary;
+        border-bottom: 17px solid transparent;
+    }
+}
+
+.bg-primary {
+    background-color: $primary1 !important;
+}
+
+a.bg-primary {
+    &:hover,
+    &:focus {
+        background-color: $primary1 !important;
+    }
+}
+
+button.bg-primary {
+    &:hover,
+    &:focus {
+        background-color: $primary1 !important;
+    }
+}
+
+.btn-primary {
+    color: $white;
+    background-color: $primary1;
+    border-color: $primary1;
+
+    &:hover {
+        color: $white;
+        background-color: $primary-hover;
+        border-color: $primary-hover;
+    }
+
+    &:focus,
+    &.focus {
+        background-color: $primary1;
+        border-color: $primary1;
+    }
+
+    &.disabled,
+    &:disabled {
+        color: $white;
+        background-color: $primary1;
+        border-color: $primary1;
+    }
+
+    &:not(:disabled):not(.disabled) {
+        &:active,
+        &.active {
+            color: $white;
+            background-color: $primary1;
+            border-color: $primary1;
+        }
+    }
+}
+
+.show > .btn-primary.dropdown-toggle {
+    color: $white;
+    background-color: $primary1;
+    border-color: $primary1;
+}
+
+.accent-2 {
+    border-top: 2px solid $secondary;
+}
+@media (min-width: 992px) {
+    .sticky-wrapper.is-sticky .horizontalMenu > .horizontalMenu-list > li > a.active {
+        background-color: $secondary;
+        color: $white;
+    }
+}
+
+.arrow-ribbon.bg-primary:before {
+    border-left: 15px solid $primary1;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: $secondary !important;
+    color: $white;
+}
+
+.sticky-wrapper.relative.banners .horizontalMenu > .horizontalMenu-list > li {
+    > a.active,
+    &:hover > a {
+        background-color: $secondary;
+    }
+}
+
+.pricingTable2.pink .pricing-plans {
+    background-color: $secondary;
+}
+
+.pricingTable {
+    &:hover,
+    &.advance-pricing {
+        border: 1px solid $secondary;
+    }
+
+    &:hover .title {
+        background: $secondary;
+    }
+}
+
+.countdown-timer-wrapper .timer .timer-wrapper .time {
+    color: $secondary;
+    background: $white;
+}
+
+.pricingTable {
+    &:hover .pricingTable-signup {
+        background: $secondary;
+        color: $white;
+    }
+
+    .pricingTable-signup {
+        background: rgba($secondary, 0.12);
+        color: $secondary;
+    }
+
+    &:hover .title {
+        background: $secondary;
+        color: $white;
+    }
+
+    &.advance-pricing {
+        border: 1px solid $secondary;
+    }
+
+    &:hover {
+        border: 1px solid $secondary;
+
+        .title {
+            &:before {
+                border-right-color: $secondary;
+            }
+
+            &:after {
+                border-left-color: $secondary;
+            }
+        }
+    }
+
+    .title {
+        &:before {
+            content: "";
+            border-right: 26px solid rgba($secondary, 0.1);
+        }
+
+        &:after {
+            content: "";
+            border-right: 26px solid rgba($secondary, 0.1);
+            border-right: none;
+            border-left: 26px solid rgba($secondary, 0.1);
+        }
+
+        background: rgba($secondary, 0.1);
+        color: $secondary;
+    }
+}
+
+.construction-image:before {
+    background: $gradient !important;
+}
+
+@media (max-width: 991px) {
+    .horizontalMenu > .horizontalMenu-list > li > a.active {
+        background-color: $secondary;
+        color: $white;
+    }
+}
+
+.bg-card-light:hover {
+    border-color: $secondary;
+}
+
+.bg-card {
+    &:hover {
+        background: $secondary;
+        color: $white;
+    }
+
+    .cat-img i {
+        color: $secondary;
+    }
+
+    &:hover {
+        .cat-img i {
+            color: $white;
+        }
+
+        .bg-secondary {
+            background-color: $white !important;
+            color: $secondary !important;
+
+            i {
+                color: $secondary !important;
+            }
+        }
+    }
+}
+
+.sticky-wrapper.absolute.banners .horizontalMenu > .horizontalMenu-list > li > a.active {
+    background-color: $secondary;
+    color: $white !important;
+}
+
+.category-svg svg {
+    g {
+        fill: $primary1;
+    }
+
+    fill: $primary1;
+}
+
+.logo-svg svg {
+    fill: $primary1;
+
+    g {
+        fill: $primary1;
+    }
+}
+
+.service-card-svg svg {
+    fill: $primary1;
+}
+
+.category-svg {
+    &:after {
+        background: $primary-02;
+    }
+
+    background: $primary-04;
+}
+
+.breadcrumb-item.active,
+.perfect-datetimepicker table td.weekend,
+.invalid-feedback {
+    color: $secondary !important;
+}
+
+.form-select.is-invalid,
+.form-control.is-invalid {
+    border-color: $secondary;
+}
+
+.was-validated {
+    .form-select:invalid,
+    .form-control:invalid {
+        border-color: $secondary;
+    }
+}
+
+.form-select.is-invalid:focus,
+.form-control.is-invalid:focus {
+    border-color: $secondary;
+    box-shadow: 0 0 0 2px $secondary;
+}
+
+.was-validated {
+    .form-select:invalid:focus,
+    .form-control:invalid:focus {
+        border-color: $secondary;
+        box-shadow: 0 0 0 2px $secondary;
+    }
+}
+
+.form-check-input.is-invalid ~ .form-check-label,
+.was-validated .form-check-input:invalid ~ .form-check-label,
+.custom-control-input.is-invalid ~ .custom-control-label,
+.was-validated .custom-control-input:invalid ~ .custom-control-label {
+    color: $secondary;
+}
+
+.form-file-input.is-invalid ~ .form-file-label,
+.was-validated .form-file-input:invalid ~ .form-file-label {
+    border-color: $secondary;
+}
+
+@media (min-width: 992px) {
+    .sticky-wrapper.is-sticky .horizontalMenu > .horizontalMenu-list > li > a.active {
+        background-color: $secondary;
+        color: $white;
+    }
+}
+
+.header-btn.has-new:before {
+    background: $secondary;
+}
+
+.accent-2 {
+    border-top: 2px solid $secondary;
+}
+
+.item-card7-overlaytext h4,
+.item-card8-overlaytext h6 {
+    background: $secondary;
+}
+
+@media (max-width: 991px) {
+    .horizontalMenu > .horizontalMenu-list > li > a.active {
+        background-color: $secondary;
+        color: $white;
+    }
+}
+
+.sticky-wrapper.absolute.banners .horizontalMenu > .horizontalMenu-list > li {
+    &:hover > a,
+    > a.active {
+        background-color: $secondary;
+        color: $white !important;
+    }
+}
+
+.ribbon-1 {
+    &:after {
+        border-top: 13px solid $secondary;
+    }
+
+    span {
+        background: $secondary;
+
+        &:before,
+        &:after {
+            background: $secondary;
+        }
+    }
+}
+
+.header-main {
+    i {
+        color: $secondary;
+    }
+
+    .top-bar-right {
+        i {
+            color: $secondary !important;
+        }
+    }
+}
+
+.pricingTable {
+    .title {
+        background: $secondary-shadow;
+        color: $secondary;
+    }
+
+    &:hover .title {
+        background: $secondary;
+        color: $white;
+        box-shadow: 0 10px 40px 0 $shadow-1, 0 2px 9px 0 $shadow-1;
+    }
+
+    &.advance-pricing {
+        border: 1px solid $secondary;
+    }
+
+    &:hover {
+        border: 1px solid $secondary;
+
+        .title {
+            &:before {
+                border-right-color: $secondary;
+            }
+
+            &:after {
+                border-left-color: $secondary;
+            }
+        }
+    }
+
+    .pricingTable-signup {
+        background: $secondary-shadow;
+        color: $secondary;
+    }
+
+    &:hover .pricingTable-signup {
+        background: $secondary;
+        color: $white;
+    }
+}
+
+.pricingTable2.pink .pricing-plans {
+    background-color: $secondary;
+}
+
+.bg-card-light:hover {
+    background: $white;
+    border-color: $secondary;
+}
+
+.bg-card {
+    &:hover {
+        background: $secondary;
+        color: $white;
+    }
+
+    .cat-img i {
+        color: $secondary;
+    }
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    color: $white;
+    border-color: $primary1;
+    background-color: $primary1;
+    color: $white;
+    border-color: $primary1;
+    background-color: $primary1;
+}
+
+.bg-secondary-transparent {
+    background-color: $secondary-transparent;
+}
+
+.bg-primary-transparent {
+    background-color: $primary-transparent;
+}
+
+.badge-primary {
+    color: $white;
+    background-color: $primary1;
+
+    &[href] {
+        &:focus,
+        &:hover {
+            color: $white;
+            text-decoration: none;
+            background-color: $primary1;
+        }
+    }
+}
+
+.modal-header .close.btn {
+    background-color: $primary1;
+    border-color: $primary1;
+}
+
+.bg-primary {
+    background-color: $primary1 !important;
+}
+
+a.bg-primary {
+    &:focus,
+    &:hover {
+        background-color: $primary1 !important;
+    }
+}
+
+button.bg-primary {
+    &:focus,
+    &:hover {
+        background-color: $primary1 !important;
+    }
+}
+
+.text-primary {
+    color: $primary1 !important;
+}
+
+a.text-primary {
+    &:focus,
+    &:hover {
+        color: $primary1 !important;
+    }
+}
+
+.arrow-ribbon.bg-primary:before {
+    border-left: 15px solid $primary1;
+}
+
+#gdpr-cookie-message button,
+button#ihavecookiesBtn {
+    background: $primary1;
+}
+
+.ribbon-2 {
+    &:after {
+        border-top: 13px solid $primary1;
+    }
+
+    span {
+        background: $primary1;
+
+        &:before,
+        &:after {
+            background: $primary1;
+        }
+    }
+}
+
+.pricingTable2.blue .pricing-plans {
+    background-color: $primary1;
+}
+
+.btn-primary {
+    color: $white !important;
+    background-color: $primary1;
+    border-color: $primary1;
+
+    &:hover {
+        color: $white;
+        background-color: $primary-hover;
+        border-color: $primary-hover;
+    }
+
+    &.focus,
+    &:focus {
+        box-shadow: 0 0 0 2px rgba($primary1, 0.53);
+    }
+
+    &.disabled,
+    &:disabled {
+        color: $white;
+        background-color: $primary1;
+        border-color: $primary1;
+    }
+
+    &:not(:disabled):not(.disabled) {
+        &.active,
+        &:active {
+            color: $white;
+            background-color: $primary1;
+            border-color: $primary1;
+        }
+    }
+}
+
+.show > .btn-primary.dropdown-toggle {
+    color: $white;
+    background-color: $primary1;
+    border-color: $primary1;
+}
+
+.btn-primary:not(:disabled):not(.disabled) {
+    &.active:focus,
+    &:active:focus {
+        box-shadow: 0 0 0 2px rgba($primary1, 0.26);
+    }
+}
+
+.show > .btn-primary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 2px rgba($primary1, 0.26);
+}
+
+.pattern-1 {
+    background: $gradient, url(../images/products/products/img04.jpg) center;
+    border-radius: 5px;
+}
+
+.item-card2-icons a:hover {
+    background: $secondary;
+}
+
+.header-style03 .horizontalMenu > .horizontalMenu-list > li > a.active,
+.item-card7-icons a:hover {
+    background-color: $secondary;
+    color: $white;
+}
+
+.header-style-04 {
+    background: $gradient;
+}
+
+.xdsoft_autocomplete .xdsoft_autocomplete_dropdown > div.active {
+    background: rgba($primary1, 0.1);
+}
+
+footer .footer-btn-outline:hover {
+    border: 1px solid $secondary;
+    background-color: $secondary;
+    color: $white !important;
+}
+
+.label-primary {
+    background-color: $secondary !important;
+    color: $white;
+}
+
+.label.label-primary {
+    &.arrowed-in:before,
+    &.arrowed:before {
+        border-right-color: $secondary !important;
+    }
+}
+.rtl .label.label-primary {
+    &.arrowed-in:before,
+    &.arrowed:before {
+        border-left-color: $secondary !important;
+        border-right-color: transparent !important;
+    }
+}
+
+.user-tabs ul li a.active {
+    background: $primary1;
+    color: $white;
+}
+
+.alert-primary {
+    color: $white-9;
+    background-color: $primary1;
+    border-color: $primary1;
+}
+
+.btn.dropdown-toggle.btn-primary ~ .dropdown-menu .dropdown-plus-title {
+    border-color: $primary1 !important;
+}
+
+.sub-newsletter.d-sm-flex i {
+    color: $secondary;
+    background: $secondary-transparent;
+}
+
+.horizontalMenu > .horizontalMenu-list > li > {
+    ul.sub-menu > li.active a,
+    .horizontal-megamenu .link-list li.active a {
+        color: $secondary !important;
+    }
+}
+
+#commentForm {
+    .navtab-wizard.nav-tabs .nav-link.active,
+    .navtab-wizard.nav-tabs .nav-link:hover {
+        color: $white;
+        background: $secondary;
+    }
+}
+.form-control {
+    &.example-file-input-custom {
+        &::after {
+            content: "Browse file";
+            background-color: $secondary;
+        }
+    }
+}
+.horizontalMenu > .horizontalMenu-list > li > ul.sub-menu > li > a.active {
+    background-color: var(--secondary-color);
+    color: $white !important;
+}
+.select2-container--default .select2-results__option[aria-selected="true"] {
+    background-color: $secondary;
+}
+.btn-check:active + .btn-outline-primary,
+.btn-check:checked + .btn-outline-primary,
+.btn-outline-primary.active,
+.btn-outline-primary.dropdown-toggle.show,
+.btn-outline-primary:active {
+    color: $white !important;
+    background-color: $primary1;
+    border-color: $primary1;
+}
+#headerMenuCollapse1,
+#headerMenuCollapse2,
+#headerMenuCollapse3,
+#headerMenuCollapse4 {
+    .nav-tabs {
+        .nav-link.active {
+            background-color: $primary1;
+            color: $white;
+        }
+        .nav-link:hover:not(.disabled) {
+            background: $primary1 !important;
+        }
+    }
+}
+#basicwizard,
+#btnwizard,
+#progressbarwizard {
+    .navtab-wizard.nav-tabs .nav-link.active,
+    .navtab-wizard.nav-tabs .nav-link:hover {
+        color: $white;
+        background: $secondary;
+    }
+}
+#usa_map svg .jqvmap-region,
+#german svg .jqvmap-region,
+#russia svg .jqvmap-region {
+    fill: $primary1;
+}
+.horizontalMenu > .horizontalMenu-list > li > ul.sub-menu > li > ul.sub-menu > li:hover > a i,
+.horizontalMenu > .horizontalMenu-list > li > ul.sub-menu > li > ul.sub-menu > li > ul.sub-menu > li:hover a i {
+    color: $white !important;
+}
+li.ui-timepicker-selected {
+    background: $primary1 !important;
+}
+.ui-timepicker-list li:hover,
+.ui-timepicker-list .ui-timepicker-selected:hover {
+    background: $primary1 !important;
+}
+.horizontalMenu > .horizontalMenu-list > li > ul.sub-menu > li > ul.sub-menu > li:hover > a.active,
+.horizontalMenu > .horizontalMenu-list > li > ul.sub-menu > li > ul.sub-menu > li > ul.sub-menu > li:hover a.active {
+    background-color: $secondary !important;
+    color: $white !important;
+}
+
+.app-header-background.app-header-background2 {
+    .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+        border-color: transparent transparent $white transparent;
+    }
+}

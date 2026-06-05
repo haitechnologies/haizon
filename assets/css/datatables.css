@@ -1,0 +1,537 @@
+/**
+ * DataTables Enhanced Styling - HAIPULSE
+ * 
+ * Professional, consistent appearance across all DataTable modules.
+ * Extracted from listing_companies.php and generalized for reuse.
+ * 
+ * Features:
+ * - CSS Variables for unified theming
+ * - Clean white headers with subtle borders
+ * - Enhanced hover states and row highlighting
+ * - Professional pagination and search controls
+ * - Responsive behavior with mobile optimizations
+ * - Support for center-aligned columns (IDs, counts, actions)
+ * 
+ * Usage: Add 'datatable-enhanced' class to wrapper card/div
+ */
+
+/* ====================
+   CSS VARIABLES (Global)
+   ==================== */
+:root {
+    --dt-accent: #2f5f8f;
+    --dt-accent-soft: #eaf1f8;
+    --dt-text: #2c3b4b;
+    --dt-text-muted: #5f7083;
+    --dt-border: #d7e1eb;
+    --dt-row-even: #f8fafc;
+    --dt-row-hover: #edf2f7;
+}
+
+/* ====================
+   CARD WRAPPER
+   ==================== */
+.datatable-enhanced .card {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    overflow: visible;
+}
+
+.datatable-enhanced .content {
+    padding: 0;
+    background: transparent;
+}
+
+/* ====================
+   DATATABLE WRAPPER
+   ==================== */
+.datatable-enhanced .dataTables_wrapper {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+}
+
+/* Ensure DataTables default wrapper divs are styled */
+.dataTables_wrapper {
+    background: transparent;
+    width: 100%;
+}
+
+/* Custom wrapper divs created by DOM option - HIGH PRIORITY */
+.dataTables_wrapper .dt-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-bottom: 16px !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    margin-top: -95px !important;
+    padding-top: 95px !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.dataTables_wrapper .dt-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+}
+
+/* Left side - length dropdown */
+.dataTables_wrapper .dt-head-left {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+}
+
+/* Right side - search input (takes remaining space and pushes to right) */
+.dataTables_wrapper .dt-head-right {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    margin-left: auto !important;
+}
+
+/* Footer left - info text */
+.dataTables_wrapper .dt-foot-left {
+    flex: auto !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Footer right - pagination */
+.dataTables_wrapper .dt-foot-right {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* ====================
+   TABLE BASE STYLING - Enhanced
+   ==================== */
+.datatable-enhanced .custom_datatables,
+.custom_datatables {
+    background: #ffffff;
+    border: 1px solid var(--dt-border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(40, 55, 70, 0.08);
+    table-layout: auto;
+    width: 100%;
+}
+
+/* ====================
+   HEADER STYLING - Enhanced
+   ==================== */
+.datatable-enhanced .custom_datatables thead th,
+.custom_datatables thead th {
+    vertical-align: middle;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 14px 12px !important;
+    color: var(--dt-text);
+    border-bottom: 1px solid var(--dt-border);
+    font-weight: 600;
+    box-shadow: none;
+    position: relative;
+}
+
+
+/* Force white header background (override DataTables sort state backgrounds) */
+.custom_datatables thead tr,
+.custom_datatables thead th,
+.custom_datatables thead th.sorting,
+.custom_datatables thead th.sorting_asc,
+.custom_datatables thead th.sorting_desc {
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+/* Reserve space for DataTables sort indicators (prevent text overlap) */
+.custom_datatables thead th.sorting,
+.custom_datatables thead th.sorting_asc,
+.custom_datatables thead th.sorting_desc {
+    padding-right: 34px !important;
+}
+
+.custom_datatables thead th.sorting:before,
+.custom_datatables thead th.sorting_asc:before,
+.custom_datatables thead th.sorting_desc:before {
+    right: 12px !important;
+}
+
+.custom_datatables thead th.sorting:after,
+.custom_datatables thead th.sorting_asc:after,
+.custom_datatables thead th.sorting_desc:after {
+    right: 6px !important;
+}
+
+/* ====================
+   BODY/ROW STYLING - Enhanced
+   ==================== */
+.custom_datatables tbody td {
+    border-bottom: 1px solid var(--dt-border);
+    padding: 12px !important;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    color: var(--dt-text);
+    cursor: pointer;
+}
+
+.custom_datatables tbody td:first-child {
+    font-weight: 500;
+}
+
+.custom_datatables tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Odd rows: Clean white background */
+.custom_datatables tbody tr:nth-child(odd) td {
+    background-color: #ffffff;
+}
+
+/* Even rows: Subtle tint */
+.custom_datatables tbody tr:nth-child(even) td {
+    background-color: var(--dt-row-even);
+}
+
+/* Hover state: Stronger highlight */
+.custom_datatables tbody tr:hover td {
+    background-color: var(--dt-row-hover);
+    box-shadow: inset 1px 0 0 rgba(47, 95, 143, 0.12), inset -1px 0 0 rgba(47, 95, 143, 0.12);
+}
+
+/* ====================
+   COLUMN ALIGNMENT HELPERS
+   ==================== */
+/* Center-align specific columns (IDs, counts, badges, actions) */
+.custom_datatables .col-center,
+.custom_datatables thead th.col-center,
+.custom_datatables tbody td.col-center {
+    text-align: center;
+}
+
+/* Actions column always centered */
+.custom_datatables thead th:last-child,
+.custom_datatables tbody td:last-child {
+    text-align: center;
+}
+
+.custom_datatables tbody td:last-child,
+.custom_datatables tbody td:last-child a,
+.custom_datatables tbody td:last-child button {
+    cursor: pointer;
+}
+
+/* ====================
+   HEADER CONTROLS (Length + Search) - Universal
+   ==================== */
+
+/* Target Bootstrap5 theme's default top control container */
+.dataTables_wrapper .dt-top,
+.dataTables_wrapper .row:first-of-type {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: nowrap;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+/* Ensure length menu and filter are inline */
+.dataTables_wrapper .dataTables_length {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .dataTables_filter {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    margin-left: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    color: var(--dt-text-muted) !important;
+    font-weight: 600 !important;
+    font-size: 0.86rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    word-break: keep-all !important;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border: 1.5px solid var(--dt-border) !important;
+    border-radius: 8px !important;
+    padding: 6px 28px 6px 11px !important;
+    background-color: #ffffff !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+}
+
+.dataTables_wrapper .dataTables_length select:hover {
+    border-color: var(--dt-accent);
+}
+
+.dataTables_wrapper .dataTables_length select:focus {
+    border-color: var(--dt-accent);
+    box-shadow: 0 0 0 4px rgba(47, 95, 143, 0.14);
+    outline: none;
+}
+
+/* Search Input */
+.dataTables_wrapper .dataTables_filter {
+    text-align: left;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    color: var(--dt-text-muted) !important;
+    font-weight: 600 !important;
+    font-size: 0.86rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    word-break: keep-all !important;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    margin-left: 0 !important;
+    border: 1.5px solid var(--dt-border) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    width: 240px !important;
+    min-width: 240px !important;
+    background-color: #ffffff !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+}
+
+.dataTables_wrapper .dataTables_filter input::placeholder {
+    color: #9aa8b7;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--dt-accent);
+    box-shadow: 0 0 0 4px rgba(47, 95, 143, 0.14), inset 0 0 0 1px var(--dt-accent);
+    outline: none;
+    background-color: #fbfdff;
+}
+
+/* ====================   FOOTER CONTROLS (Info + Pagination) - Universal
+   ==================== */
+
+/* Target Bootstrap5 theme's default bottom control container */
+.dataTables_wrapper .dt-bottom,
+.dataTables_wrapper .row:last-of-type {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: nowrap;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.dataTables_wrapper .dataTables_info {
+    color: var(--dt-text-muted) !important;
+    font-size: 0.84rem !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    flex: auto !important;
+    white-space: nowrap !important;
+}
+
+/* Pagination on the right */
+.dataTables_wrapper .dataTables_paginate {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 6px !important;
+    border: 1px solid var(--dt-border) !important;
+    background: #fff !important;
+    color: var(--dt-text) !important;
+    margin: 0 3px !important;
+    padding: 6px 10px !important;
+    min-width: 2.2rem !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button span {
+    display: inline !important;
+    white-space: nowrap !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--dt-accent-soft) !important;
+    border-color: #c8d4e1 !important;
+    color: var(--dt-accent) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--dt-accent) !important;
+    border-color: var(--dt-accent) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(47, 95, 143, 0.24);
+}
+
+/* Bootstrap pagination variant used by some DataTables setups */
+.dataTables_wrapper .dataTables_paginate .pagination {
+    margin: 0 !important;
+    gap: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-link {
+    border-radius: 6px !important;
+    border: 1px solid var(--dt-border) !important;
+    background: #fff !important;
+    color: var(--dt-text) !important;
+    padding: 6px 10px !important;
+    min-width: 2.2rem !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    box-shadow: none !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-link:hover {
+    background: var(--dt-accent-soft) !important;
+    border-color: #c8d4e1 !important;
+    color: var(--dt-accent) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .page-item.active .page-link,
+.dataTables_wrapper .dataTables_paginate .page-item.active .page-link:hover {
+    background: var(--dt-accent) !important;
+    border-color: var(--dt-accent) !important;
+    color: #ffffff !important;
+}
+
+/* ====================
+   RESPONSIVE BEHAVIOR - Universal
+   ==================== */
+@media (max-width: 991.98px) {
+    /* Hide columns marked as .d-none.d-lg-table-cell */
+    .custom_datatables thead th.d-none.d-lg-table-cell,
+    .custom_datatables tbody td.d-none.d-lg-table-cell {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .dataTables_wrapper .dt-header,
+    .dataTables_wrapper .dt-footer {
+        flex-wrap: wrap;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        text-align: left;
+        width: 100%;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .custom_datatables thead th {
+        font-size: 0.8rem;
+        padding: 10px 6px !important;
+    }
+
+    .custom_datatables tbody td {
+        font-size: 0.85rem;
+        padding: 8px 6px !important;
+    }
+}
+
+/* ====================
+   LEGACY SUPPORT (minimal, for backward compatibility only)
+   ==================== */
+/* These rules apply base DataTables styling for pages that don't use 'datatable-enhanced' class */
+.datatable-standard {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.datatable-standard thead {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.datatable-standard thead th {
+    padding: 12px 15px;
+    border-bottom: 2px solid #dee2e6;
+    color: #495057;
+    text-align: left;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.datatable-standard tbody tr {
+    border-bottom: 1px solid #dee2e6;
+    transition: background-color 0.15s ease;
+}
+
+.datatable-standard tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.datatable-standard td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}

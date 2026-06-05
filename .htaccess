@@ -1,0 +1,176 @@
+﻿# Generate Error Logs and keep in file error_log.txt
+php_flag log_errors on
+php_value error_reporting 32767
+php_value error_log "error_log.txt"
+
+# ============================================
+# SECURITY: File & Directory Protection
+# ============================================
+
+# Disable directory listing
+Options -Indexes
+
+# Block hidden files (like .env, .git, .htaccess)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block backup, config, and sensitive files
+<FilesMatch "\.(bak|backup|sql|log|conf|env|lock|tmp|key|pem|crt|cer|p12|pfx)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block developer/AI documentation and planning files at web root
+<FilesMatch "\.(md|csv|ps1|lnk|sh|bat|cmd)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block developer HTML artifacts (checklists, test links, reports)
+<FilesMatch "^(PRODUCTION_LAUNCH_CHECKLIST|manual-test-links|token-optimization-report|ROBOTS_SITEMAPS)\.html?$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block deploy exclusion and other root-level dev text files
+<FilesMatch "^(deploy-exclude|readme|README|index)\.txt$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block dangerous setup/diagnostic scripts
+<FilesMatch "(setup-database|contact-diagnostic|test_browser)\.php">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ============================================
+# PERFORMANCE: Gzip Compression
+# ============================================
+
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, JSON, XML
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom+xml
+    
+    # Don't compress images (already compressed)
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|ico|svg)$ no-gzip dont-vary
+</IfModule>
+
+# ============================================
+# SECURITY: Content Security Policy Headers
+# ============================================
+
+# Enhanced Security Headers
+<IfModule mod_headers.c>
+    # HSTS: Force HTTPS (uncomment when SSL is enabled in production)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
+    
+    # CSP: Protect against XSS, clickjacking, and code injection
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.ampproject.org https://www.googletagmanager.com https://www.google-analytics.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdn.datatables.net; img-src 'self' data: https:; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; connect-src 'self' https: https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri /haipulse/csp-report.php;"
+    
+    # X-Frame-Options: Prevent clickjacking (redundant with CSP frame-ancestors but kept for older browsers)
+    Header always set X-Frame-Options "DENY"
+    
+    # X-Content-Type-Options: Prevent MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # X-XSS-Protection: Enable XSS filtering (legacy browsers)
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer-Policy: Control referrer information
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Permissions-Policy: Restrict browser features
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# Prefer front controller for clean URLs
+DirectoryIndex index.php index.html
+
+# ============================================
+# REDIRECTS: Public Route Aliases & Legacy URLs
+# ============================================
+# Never expose backend namespace on public routes.
+# Works for both subdirectory (/haipulse) and root deployments.
+RedirectMatch 301 ^/(haipulse/)?dashboard-favorites/?$ /$1my-favorites
+RedirectMatch 301 ^/(haipulse/)?dashboard-searches/?$ /$1my-searches
+RedirectMatch 301 ^/(haipulse/)?dashboard-history/?$ /$1search-history
+
+# Static page redirects - map old URLs to canonical paths
+RedirectMatch 301 ^/(haipulse/)?about-us/?$ /$1about
+RedirectMatch 301 ^/(haipulse/)?team/?$ /$1about
+RedirectMatch 301 ^/(haipulse/)?service/?$ /$1services
+# Removed self-redirect for /services to prevent infinite loop
+RedirectMatch 301 ^/(haipulse/)?faq/?$ /$1help
+RedirectMatch 301 ^/(haipulse/)?feed/?$ /$1blog
+
+# Retire removed test/example endpoints with Gone status
+RedirectMatch 410 ^/(haipulse/)?pages/register_example\.php/?$
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+
+    # Public website showing coming-soon page:
+    # Block direct access to specific public endpoints, but allow public traffic to reach index.php
+    # where it will be served the coming-soon page.
+    
+    # Explicitly block direct public-facing endpoints/files under decommission scope.
+    RewriteRule ^robots\.txt$ - [G,L,NC]
+    RewriteRule ^sitemap(?:_index|-.*)?\.xml$ - [G,L,NC]
+    RewriteRule ^ai-sitemap\.xml$ - [G,L,NC]
+    RewriteCond %{REQUEST_URI} !^/(haipulse/)?api/captcha\.php$ [NC]
+    RewriteRule ^api(?:/|$) - [G,L,NC]
+
+    # Legacy article URLs -> canonical blog URLs (server-level redirect before PHP)
+    # Handles: /article/, /articles/, /articles/slug, /article/slug/amp, etc.
+    RewriteRule ^articles?/([^/]+)/amp/?$ /blog/$1/amp [R=301,L,NC]
+    RewriteRule ^articles?/([^/]+)/?$ /blog/$1 [R=301,L,NC]
+    
+    # Legacy listing/article filter URLs -> canonical paths
+    # Old: /alphabets-companies/g/3 or /articles/schools-in-dubai/9
+    # These don't have direct modern equivalents - return 410 Gone
+    RewriteRule ^alphabets-companies/ - [G,L]
+    RewriteRule ^articles/[^/]+/\d+/?$ - [G,L]
+
+    # Retired endpoints must return Gone directly (avoid .php canonical redirect)
+    RewriteRule ^pages/register_example\.php$ - [G,L,NC]
+
+    # Block direct access to sensitive directories (anchored to root to avoid
+    # accidentally blocking asset paths like /dashboard/assets/js/vendor/...)
+    RewriteCond %{REQUEST_URI} ^/(haipulse/)?(config|classes|vendor|migrations|cron|database)(/|$) [NC]
+    RewriteRule ^ - [F,L]
+
+    # Canonicalize index.php to root
+    RewriteCond %{THE_REQUEST} \s/+([^\s?]*?)index\.php[\s?] [NC]
+    RewriteRule ^index\.php$ /%1 [R=301,L]
+
+    # Legacy asset path redirect: /assets/images/logo.png -> /assets/images/brand/logo.png
+    RewriteRule ^assets/images/logo\.png$ /assets/images/brand/logo.png [R=301,L]
+
+    # Skip existing files and directories (MUST come before rewrite rules)
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^ - [L]
+
+    # Redirect /file.php to /file (301 permanent redirect)
+    # EXCEPT: Utility/maintenance scripts - allow direct .php access
+    RewriteCond %{REQUEST_URI} !(contact_form_setup|check_email_queue_table)\.php [NC]
+    RewriteCond %{THE_REQUEST} \s/+([^\s?]*?)(?!api/)(.+)\.php[\s?] [NC]
+    RewriteRule ^(.+)\.php$ /%1$2 [R=301,L]
+
+	# Route everything else to the front controller
+	RewriteRule ^ index.php [L]
+</IfModule>
+

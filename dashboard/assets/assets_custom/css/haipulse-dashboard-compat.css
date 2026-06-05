@@ -1,0 +1,142 @@
+/*
+ * Haipulse dashboard compatibility layer for shared admin modules.
+ * Scope: shared shell rhythm, table density, form controls, and action buttons.
+ * This keeps the admin interface consistent without changing module-specific business logic.
+ */
+
+:root {
+    --haipulse-compat-radius: 0.375rem;
+    --haipulse-compat-card-shadow: 0 2px 10px rgba(17, 24, 39, 0.06);
+    --haipulse-compat-heading-color: #1f2937;
+    --haipulse-compat-muted-color: #6b7280;
+    --haipulse-compat-table-head-bg: #f9fafb;
+    --haipulse-compat-table-head-color: #374151;
+    --haipulse-compat-border: #e5e7eb;
+    --haipulse-compat-primary: #0d6efd;
+    --haipulse-compat-primary-hover: #0b5ed7;
+}
+
+body {
+    color: var(--haipulse-compat-heading-color);
+}
+
+.card,
+.dashboard-card,
+.content-card,
+.panel {
+    border-radius: var(--haipulse-compat-radius);
+    box-shadow: var(--haipulse-compat-card-shadow);
+}
+
+.card-header,
+.panel-heading,
+.page-header {
+    border-bottom: 1px solid var(--haipulse-compat-border);
+}
+
+.page-title,
+h1,
+h2,
+h3,
+.module-title {
+    color: var(--haipulse-compat-heading-color);
+}
+
+.text-muted,
+.small,
+.form-text {
+    color: var(--haipulse-compat-muted-color) !important;
+}
+
+.custom_datatables,
+.dataTables_wrapper table,
+table.dataTable {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom_datatables thead th,
+table.dataTable thead th {
+    background: var(--haipulse-compat-table-head-bg);
+    color: var(--haipulse-compat-table-head-color);
+    border-bottom: 1px solid var(--haipulse-compat-border);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.custom_datatables tbody td,
+table.dataTable tbody td {
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.custom_datatables tbody tr:hover,
+table.dataTable tbody tr:hover {
+    background: #f8fbff;
+}
+
+.form-control,
+.form-select,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+    border-radius: var(--haipulse-compat-radius);
+    border: 1px solid #d1d5db;
+    min-height: 38px;
+}
+
+.form-control:focus,
+.form-select:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #9ec5fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
+}
+
+.btn,
+.btn-sm,
+.btn-primary,
+.btn-outline-primary,
+.action-btn {
+    border-radius: var(--haipulse-compat-radius);
+}
+
+.btn-primary,
+.action-btn-primary {
+    background-color: var(--haipulse-compat-primary);
+    border-color: var(--haipulse-compat-primary);
+}
+
+.btn-primary:hover,
+.action-btn-primary:hover {
+    background-color: var(--haipulse-compat-primary-hover);
+    border-color: var(--haipulse-compat-primary-hover);
+}
+
+.page-header,
+.content-header,
+.filters-row,
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+@media (max-width: 992px) {
+    .page-header,
+    .content-header,
+    .filters-row,
+    .toolbar {
+        align-items: stretch;
+    }
+
+    .btn,
+    .form-control,
+    .form-select {
+        width: 100%;
+    }
+}
