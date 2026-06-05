@@ -3,7 +3,7 @@
 ## 1. CORE ARCHITECTURE & STACK
 - Stack: PHP 8.2+ (Strict Types, Enums, Readonly DTOs), MySQL 8.0+ (InnoDB, utf8mb4), Composer PSR-4.
 - Pattern: Strict Layered Architecture. Controllers (Validation/Routing) → Services (Business Logic) → Repositories (Data Access, 1 file = 1 table) → Models (Readonly DTOs).
-- Prefix: ALWAYS use `imj_` for database tables (e.g., `imj_users`).
+- Prefix: ALWAYS use `erp_` for database tables (e.g., `erp_users`).
 
 ## 2. STRICT PROHIBITIONS (NEVER DO THIS)
 - NO raw SQL, NO `SELECT *`, NO string interpolation in queries. Use PDO prepared statements exclusively.
