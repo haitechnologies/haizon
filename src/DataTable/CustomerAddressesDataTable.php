@@ -38,10 +38,10 @@ class CustomerAddressesDataTable extends BaseDataTable
 
     protected function buildBaseQuery($requestData)
     {
-        return "SELECT ca.*, c.display_name, c.email "
+        return "SELECT ca.*, ca.addressable_id AS customer_id, c.display_name, c.email "
             . "FROM `" . DB::CUSTOMER_ADDRESSES . "` ca "
-            . "LEFT JOIN `" . DB::CUSTOMERS . "` c ON c.id = ca.customer_id "
-            . "WHERE ca.id > 0";
+            . "LEFT JOIN `" . DB::CUSTOMERS . "` c ON c.id = ca.addressable_id "
+            . "WHERE ca.addressable_type = 'Customer' AND ca.id > 0";
     }
 
     protected function buildSearchClause($requestData)

@@ -65,29 +65,17 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow ">
-        <div class="page-header-content d-lg-flex border-top">
-            <div class="d-flex">
-                <div class="breadcrumb py-2">
-                    <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                    <a href="index.php" class="breadcrumb-item">Home</a>
-                    <span class="breadcrumb-item active">Journals</span>
-                    <span class="breadcrumb-item active">Listing</span>
-                </div>
-
-                <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                    <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                </a>
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0">Journals</h5>
             </div>
 
             <?php if (granted_('create', 'journals')) { ?>
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <button type="button" onclick="window.location.href='<?php echo $module; ?>.php';" class=" btn btn-info my-1 me-2">Create <?php echo $module_caption; ?></button>
-                    </div>
+                <div class="my-1">
+                    <button type="button" onclick="window.location.href='<?php echo $module; ?>.php';" class="btn btn-primary btn-sm">Create Journal</button>
                 </div>
             <?php } ?>
-
         </div>
     </div>
     <!-- /page header -->
@@ -118,8 +106,9 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
             </div>
         </div>
 
-        <?php include('admin_elements/copyright.php'); ?>
     </div>
+
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 
 <script>

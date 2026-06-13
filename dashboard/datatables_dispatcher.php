@@ -34,6 +34,10 @@ if (ob_get_level() === 0) {
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/admin_elements/error_logger.php';
 
+set_error_handler('custom_error_handler');
+set_exception_handler('custom_exception_handler');
+register_shutdown_function('handle_fatal_error');
+
 // Safely start dashboard session with error handling
 try {
     if (session_status() === PHP_SESSION_NONE) {
@@ -128,7 +132,7 @@ function emit_json_and_exit(array $payload, int $statusCode = 200): void {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/globals.php';
 
-$project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+$project_pre = $GLOBALS['project_pre'] ?? 'haizon';
 
 // Get request data
 $requestData = $_POST;
@@ -260,7 +264,7 @@ try {
         emit_json_and_exit(['error' => 'Database connection failed', 'success' => false], 500);
     }
 
-    $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+    $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
     $sessionDashboardUserId = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
 
     /*
@@ -304,7 +308,7 @@ try {
     // Check if module is registered
     if (!$registry->isRegistered($module)) {
         // Log unknown module
-        log_error('[DataTableDispatcher] Unknown module requested: ' . $module, 'ERROR', __FILE__, __LINE__, [
+        log_error('[DataTableDispatcher] Unknown module requested: ' . $module, 'WARNING', __FILE__, __LINE__, [
             'module' => $module,
             'module_slug' => 'datatables',
             'entrypoint_type' => 'datatable',

@@ -27,7 +27,7 @@ try {
     $testUserId = 101;
 
     // Clean any prior leftovers
-    $db->execute("DELETE FROM erp_department WHERE organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM erp_departments WHERE organization_id = :org", ['org' => $testOrgId]);
 
     // Test 1: Create a department via Service
     echo "[TEST 1] Creating department via Service... ";
@@ -88,7 +88,7 @@ try {
     }
 
     // Clean up
-    $db->execute("DELETE FROM erp_department WHERE organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM erp_departments WHERE organization_id = :org", ['org' => $testOrgId]);
     echo "\nAll department tests passed successfully!\n";
 
 } catch (Throwable $e) {

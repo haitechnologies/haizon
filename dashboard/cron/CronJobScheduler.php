@@ -34,23 +34,11 @@ class CronJobScheduler {
             'schedule' => '*/5 * * * *',
             'description' => 'Process email marketing queue'
         ],
-        'email:bounce' => [
-            'class' => 'EmailBounceProcessor',
-            'path' => 'email/EmailBounceProcessor.php',
-            'schedule' => '0 * * * *',
-            'description' => 'Process email bounces and unsubscribes'
-        ],
         'email:cleanup' => [
             'class' => 'EmailQueueCleanup',
             'path' => 'email/EmailQueueCleanup.php',
             'schedule' => '0 2 * * *',
             'description' => 'Clean up old email queue items'
-        ],
-        'email:stats' => [
-            'class' => 'EmailStatsAggregator',
-            'path' => 'email/EmailStatsAggregator.php',
-            'schedule' => '0 3 * * *',
-            'description' => 'Aggregate email campaign statistics'
         ],
         
         // Database jobs
@@ -250,15 +238,15 @@ class CronJobScheduler {
      * Generate crontab file
      */
     public function generateCrontab() {
-        echo "# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n";
-        echo "# HAIPULSE - Cron Jobs Configuration\n";
+        echo "# â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• \n";
+        echo "# HAIZON - Cron Jobs Configuration\n";
         echo "# Generated: " . date('Y-m-d H:i:s') . "\n";
-        echo "# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n";
+        echo "# â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• \n";
         echo "\n";
         echo "# Set PHP path (adjust as needed)\n";
         echo "PHP=/usr/bin/php\n";
-        echo "CRON_DIR=/var/www/haipulse/dashboard/cron\n";
-        echo "LOG_DIR=/var/log/haipulse\n";
+        echo "CRON_DIR=/var/www/haizon/dashboard/cron\n";
+        echo "LOG_DIR=/var/log/haizon\n";
         echo "\n";
         
         $categories = [

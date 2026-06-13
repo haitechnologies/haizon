@@ -45,31 +45,31 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
 
         // --- Delete Vendor Addresses
-        $mysqli->query("DELETE FROM `" . tbl_vendor_addresses . "` WHERE vendor_id=$id");
+        $mysqli->query("DELETE FROM `" . DB::VENDOR_ADDRESSES . "` WHERE addressable_type='Vendor' AND addressable_id=$id");
 
         // --- Delete Vendor Contacts
-        $mysqli->query("DELETE FROM `" . DB::VENDOR_CONTACTS . "` WHERE vendor_id=$id");
+        $mysqli->query("DELETE FROM `" . DB::VENDOR_CONTACTS . "` WHERE contactable_type='Vendor' AND contactable_id=$id");
 
 
         // --- Delete Vendor Notes
-        $mysqli->query("DELETE FROM `" . tbl_vendor_notes . "` WHERE vendor_id=$id");
+        $mysqli->query("DELETE FROM `" . DB::ENTITY_NOTES . "` WHERE entity_type='vendor' AND entity_id=$id");
 
 
         // --- Delete Vendor attachments
-        $result = $mysqli->query("SELECT * FROM `" . tbl_vendor_attachments . "` WHERE vendor_id=$id");
+        $result = $mysqli->query("SELECT * FROM `" . DB::VENDOR_ATTACHMENTS . "` WHERE attachable_type = 'Vendor' AND attachable_id=$id");
 
         while ($rows = $result->fetch_array()) {
 
             $file_id          = $rows['id'];
             $filename    = $rows['filename'];
 
-            unlink('../uploads/vendor_attachments/' . $filename);
-            $mysqli->query("DELETE FROM `" . tbl_vendor_attachments . "` WHERE id=$file_id");
+            @unlink('../uploads/vendor_attachments/' . $filename);
+            $mysqli->query("DELETE FROM `" . DB::VENDOR_ATTACHMENTS . "` WHERE id=$file_id");
         } // while
 
 
-        // --- Delete Vendor Activity Logo
-        $mysqli->query("DELETE FROM `" . tbl_vendor_logs . "` WHERE vendor_id=$id");
+        // --- Delete Vendor Activity Logs
+        $mysqli->query("DELETE FROM `" . DB::ENTITY_LOGS . "` WHERE entity_type='vendor' AND entity_id=$id");
 
 
         // --- Delete Vendor
@@ -78,31 +78,31 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
 
         // --- Delete Vendor Addresses
-        $mysqli->query("DELETE FROM `" . tbl_vendor_addresses . "` WHERE vendor_id=$id AND created_by ='" . $session_user_id . "'");
+        $mysqli->query("DELETE FROM `" . DB::VENDOR_ADDRESSES . "` WHERE addressable_type='Vendor' AND addressable_id=$id AND created_by ='" . $session_user_id . "'");
 
         // --- Delete Vendor Contacts
-        $mysqli->query("DELETE FROM `" . DB::VENDOR_CONTACTS . "` WHERE vendor_id=$id AND created_by ='" . $session_user_id . "'");
+        $mysqli->query("DELETE FROM `" . DB::VENDOR_CONTACTS . "` WHERE contactable_type='Vendor' AND contactable_id=$id AND created_by ='" . $session_user_id . "'");
 
 
         // --- Delete Vendor Notes
-        $mysqli->query("DELETE FROM `" . tbl_vendor_notes . "` WHERE vendor_id=$id AND created_by ='" . $session_user_id . "'");
+        $mysqli->query("DELETE FROM `" . DB::ENTITY_NOTES . "` WHERE entity_type='vendor' AND entity_id=$id AND created_by ='" . $session_user_id . "'");
 
 
         // --- Delete Vendor attachments
-        $result = $mysqli->query("SELECT * FROM `" . tbl_vendor_attachments . "` WHERE vendor_id=$id AND created_by ='" . $session_user_id . "'");
+        $result = $mysqli->query("SELECT * FROM `" . DB::VENDOR_ATTACHMENTS . "` WHERE attachable_type = 'Vendor' AND attachable_id=$id AND created_by ='" . $session_user_id . "'");
 
         while ($rows = $result->fetch_array()) {
 
             $file_id     = $rows['id'];
             $filename    = $rows['filename'];
 
-            unlink('../uploads/vendor_attachments/' . $filename);
-            $mysqli->query("DELETE FROM `" . tbl_vendor_attachments . "` WHERE id=$file_id");
+            @unlink('../uploads/vendor_attachments/' . $filename);
+            $mysqli->query("DELETE FROM `" . DB::VENDOR_ATTACHMENTS . "` WHERE id=$file_id");
         } // while
 
 
-        // --- Delete Vendor Activity Logo
-        $mysqli->query("DELETE FROM `" . tbl_vendor_logs . "` WHERE vendor_id=$id AND created_by ='" . $session_user_id . "'");
+        // --- Delete Vendor Activity Logs
+        $mysqli->query("DELETE FROM `" . DB::ENTITY_LOGS . "` WHERE entity_type='vendor' AND entity_id=$id AND created_by ='" . $session_user_id . "'");
 
 
         // --- Delete Vendor
@@ -128,17 +128,38 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <?php include('admin_elements/page_header.php'); ?>
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
     <!-- /page header -->
 
 
-    <div class="content">
+    <div class="content datatable-enhanced">
 
         <?php include('admin_elements/breadcrumb.php'); ?>
 
         <div class="card">
-            <div class="content clearfix">
-                <table id="grid-<?php echo $module; ?>" class="custom_datatables display responsive no-wrap table-hover" width="100%">
+            <div class="card-body">
+                <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
                     <thead>
                         <tr>
                             <th>NAME</th>
@@ -159,7 +180,6 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
 
     <?php include('admin_elements/copyright.php'); ?>
-</div>
 </div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

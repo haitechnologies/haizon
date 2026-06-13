@@ -7,6 +7,8 @@ namespace App\DataTable;
 use App\Core\Database;
 use App\Core\DB;
 
+use function is_array;
+
 /**
  * DataTable Handler Registry
  *
@@ -22,6 +24,7 @@ class Registry
      * @var array
      */
     private static array $handlers = [];
+    private static ?array $tableConfigs = null;
 
     /**
      * Database connection wrapper
@@ -124,6 +127,18 @@ class Registry
 
         try {
             // Instantiate handler with dependencies
+            if ($handlerClass === GenericDataTable::class) {
+                $cfgModule = $module;
+                if (strpos($module, 'listing_') === 0) {
+                    $cfgModule = substr($module, 8);
+                }
+                $cfg = $this->getTableConfig($cfgModule);
+                if ($cfg === null) {
+                    error_log("DataTable: No config for generic handler '{$module}'");
+                    return null;
+                }
+                return new GenericDataTable($cfg, $this->db, $this->userId, $this->roleId, $this->organizationId);
+            }
             return new $handlerClass($this->db, $this->userId, $this->roleId, $this->organizationId);
         } catch (\Throwable $e) {
             error_log("DataTable: Failed to instantiate handler for module '{$module}' [" . get_class($e) . "]: " . $e->getMessage());
@@ -243,8 +258,8 @@ class Registry
         // Phase 3 Final: Customer & Payment handlers (completed)
         $this->register('listing_payment_methods', PaymentMethodsDataTable::class);
         $this->register('listing_customer_contacts', CustomerContactsDataTable::class);
-        $this->register('listing_customer_documents', CustomerDocumentsDataTable::class);
         $this->register('listing_customer_addresses', CustomerAddressesDataTable::class);
+        $this->register('listing_customer_transactions', CustomerTransactionsDataTable::class);
 
         // Shipping module listings
         $this->register('listing_shipping_advices', ShippingAdvicesDataTable::class);
@@ -260,6 +275,9 @@ class Registry
 
         // Security & Spam Prevention
         $this->register('listing_disposable_email_domains', DisposableEmailDomainsDataTable::class);
+
+        // Lead/CRM filtered listings
+        $this->register('listing_lead_quotations', LeadQuotationsDataTable::class);
     }
 
     /**
@@ -320,9 +338,35 @@ class Registry
         }
 
         $resolvedHandlerClass = $this->resolveHandlerClassFromModule($module);
-        if ($resolvedHandlerClass !== null) {
+        if ($resolvedHandlerClass !== null && class_exists($resolvedHandlerClass)) {
             $this->register($module, $resolvedHandlerClass);
+            return;
         }
+
+        $normalizedModule = $module;
+        if (strpos($module, 'listing_') === 0) {
+            $normalizedModule = substr($module, 8);
+        }
+
+        $config = $this->getTableConfig($normalizedModule);
+        if ($config !== null) {
+            self::$handlers[strtolower($module)] = GenericDataTable::class;
+        }
+    }
+
+    private static function loadTableConfigs(): array
+    {
+        if (self::$tableConfigs === null) {
+            $config = (require __DIR__ . '/config.php');
+            self::$tableConfigs = is_array($config) ? $config : [];
+        }
+        return self::$tableConfigs;
+    }
+
+    private function getTableConfig(string $module): ?array
+    {
+        $configs = self::loadTableConfigs();
+        return $configs[$module] ?? null;
     }
 
     /**

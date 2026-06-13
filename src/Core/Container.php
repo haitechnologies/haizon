@@ -11,7 +11,7 @@ use RuntimeException;
 /**
  * Standard Dependency Injection Container (PSR-11)
  *
- * Manages service instantiation and lifecycle in the Haipulse application.
+ * Manages service instantiation and lifecycle in the Haizon application.
  */
 class Container implements ContainerInterface
 {

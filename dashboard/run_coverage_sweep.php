@@ -317,8 +317,8 @@ $coveragePct = $coverageStats['total'] > 0 ? round(($coverageStats['observed'] /
         <div class="content">
 
             <!-- Header -->
-            <div class="page-header page-header-light shadow-sm">
-                <div class="page-header-content d-lg-flex">
+            <div class="page-header page-header-light shadow carriers-page-header">
+                <div class="page-header-content d-lg-flex carriers-page-header-content">
                     <div class="d-flex align-items-center">
                         <h4 class="page-title mb-0">
                             Coverage Sweep Runner
@@ -603,4 +603,6 @@ function toggleModuleCard(moduleId) {
 })();
 </script>
 
+    <?php include('admin_elements/copyright.php'); ?>
+</div>
 <?php include('admin_elements/admin_footer.php'); ?>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Database;
+use App\Core\DB;
 use App\Model\LeaveRequest;
 
 /**
@@ -28,7 +29,7 @@ class LeaveRequestRepository
     public function find(int $id, int $organizationId): ?LeaveRequest
     {
         $sql = "SELECT id, organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by, created_at, updated_at 
-                FROM `erp_leave_requests` 
+                FROM DB::LEAVE_REQUESTS 
                 WHERE id = :id AND organization_id = :organization_id";
 
         $row = $this->db->fetchOne($sql, [
@@ -51,7 +52,7 @@ class LeaveRequestRepository
     public function findAll(int $organizationId): array
     {
         $sql = "SELECT id, organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by, created_at, updated_at 
-                FROM `erp_leave_requests` 
+                FROM DB::LEAVE_REQUESTS 
                 WHERE organization_id = :organization_id 
                 ORDER BY id DESC";
 
@@ -77,7 +78,7 @@ class LeaveRequestRepository
 
     private function insert(LeaveRequest $req): LeaveRequest
     {
-        $sql = "INSERT INTO `erp_leave_requests` (organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by) 
+        $sql = "INSERT INTO DB::LEAVE_REQUESTS (organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by) 
                 VALUES (:organization_id, :employee_id, :leave_type_id, :start_date, :end_date, :total_days, :reason, :status, :approved_by)";
 
         $params = [
@@ -98,7 +99,7 @@ class LeaveRequestRepository
 
     private function update(LeaveRequest $req): LeaveRequest
     {
-        $sql = "UPDATE `erp_leave_requests` 
+        $sql = "UPDATE DB::LEAVE_REQUESTS 
                 SET employee_id = :employee_id, 
                     leave_type_id = :leave_type_id, 
                     start_date = :start_date, 
@@ -131,7 +132,7 @@ class LeaveRequestRepository
      */
     public function delete(int $id, int $organizationId): bool
     {
-        $sql = "DELETE FROM `erp_leave_requests` WHERE id = :id AND organization_id = :organization_id";
+        $sql = "DELETE FROM DB::LEAVE_REQUESTS WHERE id = :id AND organization_id = :organization_id";
         $stmt = $this->db->execute($sql, [
             'id' => $id,
             'organization_id' => $organizationId,
@@ -144,7 +145,7 @@ class LeaveRequestRepository
      */
     public function hasRequestsForType(int $leaveTypeId, int $organizationId): bool
     {
-        $sql = "SELECT id FROM `erp_leave_requests` 
+        $sql = "SELECT id FROM DB::LEAVE_REQUESTS 
                 WHERE leave_type_id = :leave_type_id AND organization_id = :organization_id 
                 LIMIT 1";
         $row = $this->db->fetchOne($sql, [

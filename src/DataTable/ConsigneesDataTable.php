@@ -36,11 +36,12 @@ class ConsigneesDataTable extends BaseDataTable
             $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
         }
 
+        $consigneeLink = '<a href="#" class="view-consignee-details text-primary fw-semibold" data-id="' . $id . '">' . htmlspecialchars($name) . '</a>';
         return [
             $id,
-            htmlspecialchars($name),
+            $consigneeLink,
             htmlspecialchars($address1),
-            htmlspecialchars($timeAgoStr),
+            $timeAgoStr,
             $this->getActionButtons($id, 'consignees'),
         ];
     }

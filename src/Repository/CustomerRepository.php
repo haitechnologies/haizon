@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Database;
+use App\Core\DB;
 use App\Model\Customer;
 use App\Model\CustomerContact;
 use App\Model\CustomerAddress;
@@ -29,7 +30,7 @@ class CustomerRepository
      */
     public function find(int $id, int $orgId): ?Customer
     {
-        $sql = "SELECT * FROM `erp_customers` WHERE id = :id AND organization_id = :org_id";
+        $sql = "SELECT * FROM `{DB::CUSTOMERS}` WHERE id = :id AND organization_id = :org_id";
         $row = $this->db->fetchOne($sql, ['id' => $id, 'org_id' => $orgId]);
         if ($row === null) {
             return null;
@@ -42,7 +43,7 @@ class CustomerRepository
      */
     public function findByEmail(string $email, int $orgId): ?Customer
     {
-        $sql = "SELECT * FROM `erp_customers` WHERE email = :email AND organization_id = :org_id";
+        $sql = "SELECT * FROM `{DB::CUSTOMERS}` WHERE email = :email AND organization_id = :org_id";
         $row = $this->db->fetchOne($sql, ['email' => trim($email), 'org_id' => $orgId]);
         if ($row === null) {
             return null;
@@ -57,10 +58,10 @@ class CustomerRepository
     {
         $email = trim($email);
         if ($excludeId !== null) {
-            $sql = "SELECT id FROM `erp_customers` WHERE email = :email AND organization_id = :org_id AND id != :exclude_id LIMIT 1";
+            $sql = "SELECT id FROM `{DB::CUSTOMERS}` WHERE email = :email AND organization_id = :org_id AND id != :exclude_id LIMIT 1";
             $params = ['email' => $email, 'org_id' => $orgId, 'exclude_id' => $excludeId];
         } else {
-            $sql = "SELECT id FROM `erp_customers` WHERE email = :email AND organization_id = :org_id LIMIT 1";
+            $sql = "SELECT id FROM `{DB::CUSTOMERS}` WHERE email = :email AND organization_id = :org_id LIMIT 1";
             $params = ['email' => $email, 'org_id' => $orgId];
         }
 
@@ -81,7 +82,7 @@ class CustomerRepository
 
     private function insert(Customer $customer): Customer
     {
-        $sql = "INSERT INTO `erp_customers` (
+        $sql = "INSERT INTO `{DB::CUSTOMERS}` (
                     organization_id, lead_id, customer_owner, customer_type, customer_status,
                     customer_source, assigned_to, salutation, first_name, last_name,
                     company_name, display_name, address, email, phone, mobile,
@@ -89,7 +90,7 @@ class CustomerRepository
                     sales_person, lead_category, cs_agent, rating, currency,
                     opening_balance, exchange_rate, website, department, designation,
                     x, facebook, instagram, photo, description, tags, contacted_date,
-                    approved, approved_by, approved_at, publish, is_active,
+                    approved, approved_by, approved_at, is_active,
                     created_at, updated_at, updated_by, created_by, credit_limit,
                     discount_type, discount_type_value, subscription_tier, subscription_expires_at
                 ) VALUES (
@@ -100,7 +101,7 @@ class CustomerRepository
                     :sales_person, :lead_category, :cs_agent, :rating, :currency,
                     :opening_balance, :exchange_rate, :website, :department, :designation,
                     :x, :facebook, :instagram, :photo, :description, :tags, :contacted_date,
-                    :approved, :approved_by, :approved_at, :publish, :is_active,
+                    :approved, :approved_by, :approved_at, :is_active,
                     NOW(), NOW(), :updated_by, :created_by, :credit_limit,
                     :discount_type, :discount_type_value, :subscription_tier, :subscription_expires_at
                 )";
@@ -120,7 +121,7 @@ class CustomerRepository
 
     private function update(Customer $customer): Customer
     {
-        $sql = "UPDATE `erp_customers` SET
+        $sql = "UPDATE `{DB::CUSTOMERS}` SET
                     lead_id = :lead_id,
                     customer_owner = :customer_owner,
                     customer_type = :customer_type,
@@ -161,7 +162,6 @@ class CustomerRepository
                     approved = :approved,
                     approved_by = :approved_by,
                     approved_at = :approved_at,
-                    publish = :publish,
                     is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by,
@@ -195,31 +195,31 @@ class CustomerRepository
 
             // 1. Delete addresses
             $this->db->execute(
-                "DELETE FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND organization_id = :org_id",
+                "DELETE FROM `{DB::CUSTOMER_ADDRESSES}` WHERE addressable_type = 'Customer' AND addressable_id = :customer_id AND organization_id = :org_id",
                 ['customer_id' => $id, 'org_id' => $orgId]
             );
 
             // 2. Delete contacts
             $this->db->execute(
-                "DELETE FROM `erp_customer_contacts` WHERE customer_id = :customer_id AND organization_id = :org_id",
+                "DELETE FROM `{DB::CUSTOMER_CONTACTS}` WHERE contactable_type = 'Customer' AND contactable_id = :customer_id AND organization_id = :org_id",
                 ['customer_id' => $id, 'org_id' => $orgId]
             );
 
             // 3. Delete notes
             $this->db->execute(
-                "DELETE FROM `erp_entity_notes` WHERE entity_type = 'customer' AND entity_id = :entity_id",
+                "DELETE FROM `{DB::ENTITY_NOTES}` WHERE entity_type = 'customer' AND entity_id = :entity_id",
                 ['entity_id' => $id]
             );
 
             // 4. Delete logs
             $this->db->execute(
-                "DELETE FROM `erp_entity_logs` WHERE entity_type = 'customer' AND entity_id = :entity_id",
+                "DELETE FROM `{DB::ENTITY_LOGS}` WHERE entity_type = 'customer' AND entity_id = :entity_id",
                 ['entity_id' => $id]
             );
 
             // 5. Delete customer profile
             $stmt = $this->db->execute(
-                "DELETE FROM `erp_customers` WHERE id = :id AND organization_id = :org_id",
+                "DELETE FROM `{DB::CUSTOMERS}` WHERE id = :id AND organization_id = :org_id",
                 ['id' => $id, 'org_id' => $orgId]
             );
 
@@ -236,7 +236,7 @@ class CustomerRepository
      */
     public function findContact(int $id, int $orgId): ?CustomerContact
     {
-        $sql = "SELECT * FROM `erp_customer_contacts` WHERE id = :id AND organization_id = :org_id";
+        $sql = "SELECT * FROM `{DB::CUSTOMER_CONTACTS}` WHERE id = :id AND contactable_type = 'Customer' AND organization_id = :org_id";
         $row = $this->db->fetchOne($sql, ['id' => $id, 'org_id' => $orgId]);
         if ($row === null) {
             return null;
@@ -249,7 +249,7 @@ class CustomerRepository
      */
     public function findContactsByCustomer(int $customerId, int $orgId): array
     {
-        $sql = "SELECT * FROM `erp_customer_contacts` WHERE customer_id = :customer_id AND organization_id = :org_id ORDER BY is_primary DESC, id ASC";
+        $sql = "SELECT * FROM `{DB::CUSTOMER_CONTACTS}` WHERE contactable_type = 'Customer' AND contactable_id = :customer_id AND organization_id = :org_id ORDER BY is_primary DESC, id ASC";
         $rows = $this->db->fetchAll($sql, ['customer_id' => $customerId, 'org_id' => $orgId]);
         return array_map([$this, 'mapRowToContact'], $rows);
     }
@@ -259,7 +259,7 @@ class CustomerRepository
      */
     public function clearPrimaryContacts(int $customerId, int $orgId): void
     {
-        $sql = "UPDATE `erp_customer_contacts` SET is_primary = 0 WHERE customer_id = :customer_id AND organization_id = :org_id";
+        $sql = "UPDATE `{DB::CUSTOMER_CONTACTS}` SET is_primary = 0 WHERE contactable_type = 'Customer' AND contactable_id = :customer_id AND organization_id = :org_id";
         $this->db->execute($sql, ['customer_id' => $customerId, 'org_id' => $orgId]);
     }
 
@@ -269,12 +269,12 @@ class CustomerRepository
     public function saveContact(CustomerContact $contact): CustomerContact
     {
         if ($contact->id === null) {
-            $sql = "INSERT INTO `erp_customer_contacts` (
-                        organization_id, is_primary, customer_id, first_name, last_name,
-                        position, email, phone, notes, publish, is_active, created_by, created_at, updated_at
+            $sql = "INSERT INTO `{DB::CUSTOMER_CONTACTS}` (
+                        organization_id, contactable_type, contactable_id, is_primary, first_name, last_name,
+                        position, email, phone, notes, is_active, created_by, created_at, updated_at
                     ) VALUES (
-                        :organization_id, :is_primary, :customer_id, :first_name, :last_name,
-                        :position, :email, :phone, :notes, :publish, :is_active, :created_by, NOW(), NOW()
+                        :organization_id, 'Customer', :customer_id, :is_primary, :first_name, :last_name,
+                        :position, :email, :phone, :notes, :is_active, :created_by, NOW(), NOW()
                     )";
             $params = $contact->toArray();
             unset($params['id'], $params['created_at'], $params['updated_at'], $params['updated_by']);
@@ -286,7 +286,7 @@ class CustomerRepository
             return $inserted;
         }
 
-        $sql = "UPDATE `erp_customer_contacts` SET
+        $sql = "UPDATE `{DB::CUSTOMER_CONTACTS}` SET
                     is_primary = :is_primary,
                     first_name = :first_name,
                     last_name = :last_name,
@@ -294,11 +294,10 @@ class CustomerRepository
                     email = :email,
                     phone = :phone,
                     notes = :notes,
-                    publish = :publish,
                     is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by
-                WHERE id = :id AND organization_id = :organization_id";
+                WHERE id = :id AND contactable_type = 'Customer' AND organization_id = :organization_id";
         $params = $contact->toArray();
         unset($params['customer_id'], $params['created_at'], $params['updated_at'], $params['created_by']);
         $this->db->execute($sql, $params);
@@ -314,7 +313,7 @@ class CustomerRepository
      */
     public function deleteContact(int $id, int $orgId): bool
     {
-        $sql = "DELETE FROM `erp_customer_contacts` WHERE id = :id AND organization_id = :org_id";
+        $sql = "DELETE FROM `{DB::CUSTOMER_CONTACTS}` WHERE id = :id AND contactable_type = 'Customer' AND organization_id = :org_id";
         $stmt = $this->db->execute($sql, ['id' => $id, 'org_id' => $orgId]);
         return $stmt->rowCount() > 0;
     }
@@ -324,7 +323,7 @@ class CustomerRepository
      */
     public function findAddress(int $id, int $orgId): ?CustomerAddress
     {
-        $sql = "SELECT * FROM `erp_customer_addresses` WHERE id = :id AND organization_id = :org_id";
+        $sql = "SELECT * FROM `{DB::CUSTOMER_ADDRESSES}` WHERE id = :id AND addressable_type = 'Customer' AND organization_id = :org_id";
         $row = $this->db->fetchOne($sql, ['id' => $id, 'org_id' => $orgId]);
         if ($row === null) {
             return null;
@@ -337,7 +336,7 @@ class CustomerRepository
      */
     public function findAddressesByCustomer(int $customerId, int $orgId): array
     {
-        $sql = "SELECT * FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND organization_id = :org_id ORDER BY id ASC";
+        $sql = "SELECT * FROM `{DB::CUSTOMER_ADDRESSES}` WHERE addressable_type = 'Customer' AND addressable_id = :customer_id AND organization_id = :org_id ORDER BY id ASC";
         $rows = $this->db->fetchAll($sql, ['customer_id' => $customerId, 'org_id' => $orgId]);
         return array_map([$this, 'mapRowToAddress'], $rows);
     }
@@ -348,14 +347,14 @@ class CustomerRepository
     public function saveAddress(CustomerAddress $address): CustomerAddress
     {
         if ($address->id === null) {
-            $sql = "INSERT INTO `erp_customer_addresses` (
-                        organization_id, type, customer_id, attention, country,
+            $sql = "INSERT INTO `{DB::CUSTOMER_ADDRESSES}` (
+                        organization_id, addressable_type, addressable_id, type, attention, country,
                         address_line1, address_line2, city, state, zipcode, phone, fax,
-                        publish, is_active, created_by, created_at, updated_at
+                        is_active, created_by, created_at, updated_at
                     ) VALUES (
-                        :organization_id, :type, :customer_id, :attention, :country,
+                        :organization_id, 'Customer', :customer_id, :type, :attention, :country,
                         :address_line1, :address_line2, :city, :state, :zipcode, :phone, :fax,
-                        :publish, :is_active, :created_by, NOW(), NOW()
+                        :is_active, :created_by, NOW(), NOW()
                     )";
             $params = $address->toArray();
             unset($params['id'], $params['created_at'], $params['updated_at'], $params['updated_by']);
@@ -367,7 +366,7 @@ class CustomerRepository
             return $inserted;
         }
 
-        $sql = "UPDATE `erp_customer_addresses` SET
+        $sql = "UPDATE `{DB::CUSTOMER_ADDRESSES}` SET
                     attention = :attention,
                     country = :country,
                     address_line1 = :address_line1,
@@ -377,11 +376,10 @@ class CustomerRepository
                     zipcode = :zipcode,
                     phone = :phone,
                     fax = :fax,
-                    publish = :publish,
                     is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by
-                WHERE id = :id AND organization_id = :organization_id";
+                WHERE id = :id AND addressable_type = 'Customer' AND organization_id = :organization_id";
         $params = $address->toArray();
         unset($params['type'], $params['customer_id'], $params['created_at'], $params['updated_at'], $params['created_by']);
         $this->db->execute($sql, $params);
@@ -397,7 +395,7 @@ class CustomerRepository
      */
     public function deleteAddress(int $id, int $orgId): bool
     {
-        $sql = "DELETE FROM `erp_customer_addresses` WHERE id = :id AND organization_id = :org_id";
+        $sql = "DELETE FROM `{DB::CUSTOMER_ADDRESSES}` WHERE id = :id AND addressable_type = 'Customer' AND organization_id = :org_id";
         $stmt = $this->db->execute($sql, ['id' => $id, 'org_id' => $orgId]);
         return $stmt->rowCount() > 0;
     }
@@ -473,7 +471,7 @@ class CustomerRepository
             id: (int)$row['id'],
             organizationId: (int)$row['organization_id'],
             isPrimary: (bool)($row['is_primary'] ?? false),
-            customerId: (int)$row['customer_id'],
+            customerId: (int)($row['contactable_id'] ?? $row['customer_id'] ?? 0),
             firstName: (string)$row['first_name'],
             lastName: (string)$row['last_name'],
             position: $row['position'] !== null ? (string)$row['position'] : null,
@@ -498,7 +496,7 @@ class CustomerRepository
             id: (int)$row['id'],
             organizationId: (int)$row['organization_id'],
             type: (string)$row['type'],
-            customerId: (int)$row['customer_id'],
+            customerId: (int)($row['addressable_id'] ?? $row['customer_id'] ?? 0),
             attention: $row['attention'] !== null ? (string)$row['attention'] : null,
             country: (int)$row['country'],
             addressLine1: $row['address_line1'] !== null ? (string)$row['address_line1'] : null,
@@ -523,7 +521,7 @@ class CustomerRepository
     public function getReceivables(int $customerId, int $orgId): float
     {
         $sql = "SELECT COALESCE(SUM(grand_total), 0) as total 
-                FROM `erp_invoices` 
+                FROM `{DB::INVOICES}` 
                 WHERE customer_id = :customer_id 
                 AND organization_id = :org_id 
                 AND invoice_status IN ('sent', 'partially_paid', 'overdue')";
@@ -536,7 +534,7 @@ class CustomerRepository
      */
     public function clone(int $id, int $orgId, int $userId): int
     {
-        $sql = "INSERT INTO `erp_customers` (
+        $sql = "INSERT INTO `{DB::CUSTOMERS}` (
                     organization_id, lead_id, customer_owner, customer_type, customer_status,
                     customer_source, assigned_to, salutation, first_name, last_name,
                     company_name, display_name, address, email, phone, mobile,
@@ -544,7 +542,7 @@ class CustomerRepository
                     sales_person, lead_category, cs_agent, rating, currency,
                     opening_balance, exchange_rate, website, department, designation,
                     x, facebook, instagram, photo, description, tags, contacted_date,
-                    approved, approved_by, approved_at, publish, is_active,
+                    approved, approved_by, approved_at, is_active,
                     created_at, updated_at, created_by
                 )
                 SELECT 
@@ -555,9 +553,9 @@ class CustomerRepository
                     sales_person, lead_category, cs_agent, rating, currency,
                     opening_balance, exchange_rate, website, department, designation,
                     x, facebook, instagram, photo, description, tags, contacted_date,
-                    0, NULL, NULL, 0, 0,
+                    0, NULL, NULL, 0,
                     NOW(), NOW(), :user_id
-                FROM `erp_customers`
+                FROM `{DB::CUSTOMERS}`
                 WHERE id = :id AND organization_id = :org_id";
 
         return (int)$this->db->insert($sql, ['id' => $id, 'org_id' => $orgId, 'user_id' => $userId]);

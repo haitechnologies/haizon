@@ -98,8 +98,8 @@ class HSCodeMappings
                   LEFT JOIN " . DB::HS_CODE_TEXTS . " t 
                     ON h.id = t.hs_code_id AND t.lang = ?
                   INNER JOIN " . DB::SUBCATEGORY_HS_CODES . " shc 
-                    ON h.id = shc.hs_code_id
-                  WHERE shc.subcategory_id IN (
+                    ON h.id = shc.hs_code_id AND shc.mappable_type = 'Subcategory'
+                  WHERE shc.mappable_id IN (
                       SELECT id FROM " . DB::SUBCATEGORIES . " 
                       WHERE category_id = ?
                   )
@@ -129,8 +129,8 @@ class HSCodeMappings
                   LEFT JOIN " . DB::HS_CODE_TEXTS . " t 
                     ON h.id = t.hs_code_id AND t.lang = ?
                   INNER JOIN " . DB::CATEGORY_HS_CODES . " chc 
-                    ON h.id = chc.hs_code_id
-                  WHERE chc.category_id = ?
+                    ON h.id = chc.hs_code_id AND chc.mappable_type = 'Category'
+                  WHERE chc.mappable_id = ?
                   ORDER BY chc.relevance ASC, h.code ASC";
 
         try {
@@ -157,8 +157,8 @@ class HSCodeMappings
                   LEFT JOIN " . DB::HS_CODE_TEXTS . " t 
                     ON h.id = t.hs_code_id AND t.lang = ?
                   INNER JOIN " . DB::SUBCATEGORY_HS_CODES . " shc 
-                    ON h.id = shc.hs_code_id
-                  WHERE shc.subcategory_id = ?
+                    ON h.id = shc.hs_code_id AND shc.mappable_type = 'Subcategory'
+                  WHERE shc.mappable_id = ?
                   ORDER BY shc.relevance ASC, h.code ASC";
 
         try {
@@ -185,8 +185,8 @@ class HSCodeMappings
         $relevance = (int)$relevance;
 
         $query = "INSERT INTO " . DB::CATEGORY_HS_CODES . " 
-                  (category_id, hs_code_id, relevance, notes) 
-                  VALUES (?, ?, ?, ?)
+                  (mappable_type, mappable_id, hs_code_id, relevance, notes) 
+                  VALUES ('Category', ?, ?, ?, ?)
                   ON DUPLICATE KEY UPDATE 
                     relevance = VALUES(relevance),
                     notes = VALUES(notes),
@@ -217,8 +217,8 @@ class HSCodeMappings
         $relevance = (int)$relevance;
 
         $query = "INSERT INTO " . DB::SUBCATEGORY_HS_CODES . " 
-                  (subcategory_id, hs_code_id, relevance, notes) 
-                  VALUES (?, ?, ?, ?)
+                  (mappable_type, mappable_id, hs_code_id, relevance, notes) 
+                  VALUES ('Subcategory', ?, ?, ?, ?)
                   ON DUPLICATE KEY UPDATE 
                     relevance = VALUES(relevance),
                     notes = VALUES(notes),
@@ -246,7 +246,7 @@ class HSCodeMappings
         $hs_code_id = (int)$hs_code_id;
 
         $query = "DELETE FROM " . DB::CATEGORY_HS_CODES . " 
-                  WHERE category_id = ? AND hs_code_id = ?";
+                  WHERE mappable_type = 'Category' AND mappable_id = ? AND hs_code_id = ?";
 
         try {
             $this->conn->execute($query, [$category_id, $hs_code_id]);
@@ -270,7 +270,7 @@ class HSCodeMappings
         $hs_code_id = (int)$hs_code_id;
 
         $query = "DELETE FROM " . DB::SUBCATEGORY_HS_CODES . " 
-                  WHERE subcategory_id = ? AND hs_code_id = ?";
+                  WHERE mappable_type = 'Subcategory' AND mappable_id = ? AND hs_code_id = ?";
 
         try {
             $this->conn->execute($query, [$subcategory_id, $hs_code_id]);
@@ -292,7 +292,7 @@ class HSCodeMappings
         $category_id = (int)$category_id;
 
         $query = "SELECT COUNT(*) as total FROM " . DB::CATEGORY_HS_CODES . " 
-                  WHERE category_id = ?";
+                  WHERE mappable_type = 'Category' AND mappable_id = ?";
 
         try {
             $row = $this->conn->fetchOne($query, [$category_id]);
@@ -314,7 +314,7 @@ class HSCodeMappings
         $subcategory_id = (int)$subcategory_id;
 
         $query = "SELECT COUNT(*) as total FROM " . DB::SUBCATEGORY_HS_CODES . " 
-                  WHERE subcategory_id = ?";
+                  WHERE mappable_type = 'Subcategory' AND mappable_id = ?";
 
         try {
             $row = $this->conn->fetchOne($query, [$subcategory_id]);
@@ -404,7 +404,7 @@ class HSCodeMappings
         $query = "SELECT c.*, chc.relevance
                   FROM " . DB::CATEGORIES . " c
                   INNER JOIN " . DB::CATEGORY_HS_CODES . " chc 
-                    ON c.id = chc.category_id
+                    ON c.id = chc.mappable_id AND chc.mappable_type = 'Category'
                   WHERE chc.hs_code_id = ?
                   ORDER BY chc.relevance ASC, c.name ASC";
 
@@ -429,7 +429,7 @@ class HSCodeMappings
         $query = "SELECT s.*, shc.relevance
                   FROM " . DB::SUBCATEGORIES . " s
                   INNER JOIN " . DB::SUBCATEGORY_HS_CODES . " shc 
-                    ON s.id = shc.subcategory_id
+                    ON s.id = shc.mappable_id AND shc.mappable_type = 'Subcategory'
                   WHERE shc.hs_code_id = ?
                   ORDER BY shc.relevance ASC, s.name ASC";
 

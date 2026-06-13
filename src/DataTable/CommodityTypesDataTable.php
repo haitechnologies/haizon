@@ -12,19 +12,19 @@ class CommodityTypesDataTable extends BaseDataTable
 {
     protected $table = DB::COMMODITY_TYPES;
     protected $searchFields = ['commodity_type'];
-    protected $sortableColumns = [0 => 'id', 1 => 'commodity_type', 2 => 'created_at', 3 => 'publish', 4 => 'id'];
+    protected $sortableColumns = [0 => 'id', 1 => 'commodity_type', 2 => 'created_at', 3 => 'is_active', 4 => 'id'];
 
     protected function formatRow($row, $requestData = [])
     {
         $id      = (int)($row['id'] ?? 0);
         $name    = (string)($row['commodity_type'] ?? '');
         $created = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
+        $publish = (int)($row['is_active'] ?? 0);
         $badge   = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
             $id,
             htmlspecialchars($name),
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $badge,
             $this->getActionButtons($id, 'commodity_types'),
         ];

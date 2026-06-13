@@ -71,7 +71,10 @@ if (empty($id)) {
         $customer_id = 0;
     }
 
-    $mysqli->query("INSERT INTO `$tbl_name`(quotation_no, temporary, quotation_date, expiry_date, customer_id, lead_id) VALUES ('" . $quotation_no . "', 1, '" . date('Y-m-d', time()) . "', '" . date('Y-m-d', time()) . "', '" . $customer_id . "', '" . $lead_id . "'); ");
+    $sql_customer_id = (empty($customer_id) || $customer_id === '0') ? "NULL" : "'" . $customer_id . "'";
+    $sql_lead_id     = (empty($lead_id) || $lead_id === '0') ? "NULL" : "'" . $lead_id . "'";
+
+    $mysqli->query("INSERT INTO `$tbl_name`(quotation_no, temporary, quotation_date, expiry_date, customer_id, lead_id) VALUES ('" . $quotation_no . "', 1, '" . date('Y-m-d', time()) . "', '" . date('Y-m-d', time()) . "', " . $sql_customer_id . ", " . $sql_lead_id . "); ");
 
     $id = $mysqli->insert_id;
     fp__($tbl_name, $id);
@@ -313,16 +316,22 @@ if ($action == "update_$module" && !empty($id)) {
         // ---------------------------------------------
         // UPDATE 
         // ---------------------------------------------
+        $sql_customer_id  = (empty($customer_id) || $customer_id == 'Please select' || $customer_id == '0') ? "NULL" : "'" . $customer_id . "'";
+        $sql_lead_id      = (empty($lead_id) || $lead_id == 'Please select' || $lead_id == '0') ? "NULL" : "'" . $lead_id . "'";
+        $sql_warehouse_id = (empty($warehouse_id) || $warehouse_id == 'Please select' || $warehouse_id == '0') ? "NULL" : "'" . $warehouse_id . "'";
+        $sql_shipper_id   = (empty($shipper_id) || $shipper_id == 'Please select' || $shipper_id == '0') ? "NULL" : "'" . $shipper_id . "'";
+        $sql_consignee_id = (empty($consignee_id) || $consignee_id == 'Please select' || $consignee_id == '0') ? "NULL" : "'" . $consignee_id . "'";
+
         $update_row = $mysqli->query("
                                         UPDATE `$tbl_name` SET
                                             temporary		            = '0',
                                             quotation_date		        = '" . $quotation_date . "',
                                             expiry_date		            = '" . $expiry_date . "',
-                                            customer_id					= '" . $customer_id . "',
-                                            lead_id					= '" . $lead_id . "',
+                                            customer_id					= " . $sql_customer_id . ",
+                                            lead_id					= " . $sql_lead_id . ",
                                             quotation_status		    = '" . $quotation_status . "',
                                             job_reference_no		    = '" . $job_reference_no . "',
-                                            warehouse_id		        = '" . $warehouse_id . "',
+                                            warehouse_id		        = " . $sql_warehouse_id . ",
                                             
                                             expected_shipment_date		= '" . $expected_shipment_date . "',
                                             payment_term		        = '" . $payment_term . "',
@@ -331,8 +340,8 @@ if ($action == "update_$module" && !empty($id)) {
                                             sales_person		        = '" . $sales_person . "',
                                             mawb_bol		            = '" . $mawb_bol . "',
                                             hwb_hbol		            = '" . $hwb_hbol . "',
-                                            shipper_id		            = '" . $shipper_id . "',
-                                            consignee_id		        = '" . $consignee_id . "',
+                                            shipper_id		            = " . $sql_shipper_id . ",
+                                            consignee_id		        = " . $sql_consignee_id . ",
                                             origin_port		            = '" . $origin_port . "',
                                             origin_country		        = '" . $origin_country . "',
                                             destination_port		    = '" . $destination_port . "',
@@ -353,7 +362,7 @@ if ($action == "update_$module" && !empty($id)) {
                                             grand_tax		            = '" . $grand_tax . "',
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -574,7 +583,13 @@ if ($action == "update_$module" && !empty($id)) {
                         // ======================================================
 
 
-                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(quotation_no, customer_id, lead_id, quotation_status, quotation_date, expiry_date, job_reference_no, warehouse_id, expected_shipment_date, payment_term, shipment_type, sales_person, mawb_bol, hwb_hbol, shipper_id, consignee_id, origin_port, origin_country, destination_port, destination_country, gross_weight, volume, chargeable_weight, cbm, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total, publish) VALUES ('" . $quotation_no . "', '" . $customer_id . "', '" . $lead_id . "', '" . $quotation_status . "',  '" . $quotation_date . "', '" . $expiry_date . "', '" . $job_reference_no . "', '" . $warehouse_id . "', '" . $expected_shipment_date . "', '" . $payment_term . "', '" . $shipment_type . "', '" . $sales_person . "',  '" . $mawb_bol . "',  '" . $hwb_hbol . "', '" . $shipper_id . "', '" . $consignee_id . "', '" . $origin_port . "', '" . $origin_country . "', '" . $destination_port . "', '" . $destination_country . "', '" . $gross_weight . "', '" . $volume . "', '" . $chargeable_weight . "', '" . $cbm . "', '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $customer_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
+                        $sql_customer_id  = (empty($customer_id) || $customer_id == 'Please select' || $customer_id == '0') ? "NULL" : "'" . $customer_id . "'";
+                        $sql_lead_id      = (empty($lead_id) || $lead_id == 'Please select' || $lead_id == '0') ? "NULL" : "'" . $lead_id . "'";
+                        $sql_warehouse_id = (empty($warehouse_id) || $warehouse_id == 'Please select' || $warehouse_id == '0') ? "NULL" : "'" . $warehouse_id . "'";
+                        $sql_shipper_id   = (empty($shipper_id) || $shipper_id == 'Please select' || $shipper_id == '0') ? "NULL" : "'" . $shipper_id . "'";
+                        $sql_consignee_id = (empty($consignee_id) || $consignee_id == 'Please select' || $consignee_id == '0') ? "NULL" : "'" . $consignee_id . "'";
+
+                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(quotation_no, customer_id, lead_id, quotation_status, quotation_date, expiry_date, job_reference_no, warehouse_id, expected_shipment_date, payment_term, shipment_type, sales_person, mawb_bol, hwb_hbol, shipper_id, consignee_id, origin_port, origin_country, destination_port, destination_country, gross_weight, volume, chargeable_weight, cbm, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total, is_active) VALUES ('" . $quotation_no . "', " . $sql_customer_id . ", " . $sql_lead_id . ", '" . $quotation_status . "',  '" . $quotation_date . "', '" . $expiry_date . "', '" . $job_reference_no . "', " . $sql_warehouse_id . ", '" . $expected_shipment_date . "', '" . $payment_term . "', '" . $shipment_type . "', '" . $sales_person . "',  '" . $mawb_bol . "',  '" . $hwb_hbol . "', " . $sql_shipper_id . ", " . $sql_consignee_id . ", '" . $origin_port . "', '" . $origin_country . "', '" . $destination_port . "', '" . $destination_country . "', '" . $gross_weight . "', '" . $volume . "', '" . $chargeable_weight . "', '" . $cbm . "', '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $customer_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
 
                         $id = $mysqli->insert_id;
                         // if ($insert_row) {
@@ -685,7 +700,7 @@ if (
     $grand_tax                  = s__($row['grand_tax']);
     $grand_total                = s__($row['grand_total']);
 
-    $publish                    = s__($row['publish']);
+    $publish                    = s__($row['is_active']);
 
     $quotation_date             = processDateYtoD($quotation_date);
     $expiry_date                = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
@@ -748,7 +763,7 @@ if (
 
     // ------------------ TOTAL DIMENSION ITEMS ------------------
     // Updated to support multiple modules via new schema
-    $result_dim_items       = $mysqli->query("SELECT * FROM `" . tbl_dimension_items . "` WHERE module_type='quotations' AND record_id=$id ORDER BY id ASC");
+    $result_dim_items       = $mysqli->query("SELECT * FROM `" . DB::DIMENSION_ITEMS . "` WHERE module_type='quotations' AND record_id=$id ORDER BY id ASC");
     $total_dim_rows         = $result_dim_items->num_rows;
 
 
@@ -786,79 +801,52 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
 
 <div class="content-wrapper">
 
-
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="quotation_status" id="quotation_status" value="" />
-        <input type="hidden" name="save_and_send" id="save_and_send" value="" />
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
                 <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded mt-1">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Quotation #: <?php echo $quotation_no; ?></label>
-                        </div>
-                    </div>
+                    <span class="text-muted small">(Quotation #: <?php echo $quotation_no; ?>)</span>
+                <?php } ?>
+                <span class="text-muted small"><strong><?php echo ((!empty($quotation_status)) ? ucwords($quotation_status) : ''); ?></strong></span>
+            </div>
+
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <?php if (!empty($id)) { ?>
+                        <button type="button" onclick="document.getElementById('frmquotations').submit();" class="btn btn-primary btn-sm me-2">Save</button>
+                    <?php } else { ?>
+                        <button type="button" onclick="document.getElementById('quotation_status').value='draft'; document.getElementById('frmquotations').submit();" class="btn btn-primary btn-sm me-2">Save as Draft</button>
+                    <?php } ?>
+
+                    <button type="button" onclick="document.getElementById('save_and_send').value='1';<?php echo (!empty($id) ? '' : " document.getElementById('quotation_status').value='draft';"); ?> document.getElementById('frmquotations').submit();" class="btn btn-info btn-sm me-2">Save and Send</button>
                 <?php } ?>
 
-                <div class="p-3 rounded mt-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ((!empty($quotation_status)) ? ucwords($quotation_status) : ''); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <?php if (!empty($id)) { ?>
-                                    <button type="button" onclick=" this.form.submit();" class="btn btn-primary btn-sm me-2">Save</button>
-                                <?php } else { ?>
-                                    <button type="button" onclick=" document.getElementById('quotation_status').value='draft'; this.form.submit();" class="btn btn-primary btn-sm me-2">Save as Draft</button>
-                                <?php } ?>
-
-                                <button type="button" onclick=" document.getElementById('save_and_send').value='1';<?php echo (!empty($id) ? '' : " document.getElementById('quotation_status').value='draft';"); ?> this.form.submit();" class="btn btn-info btn-sm me-2">Save and Send</button>
-
-                            <?php } ?>
-
-                            <?php if (!empty($id)) { ?>
-                                <a href="quotation_overview.php?quotation_id=<?php echo $id; ?>" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-                            <?php } else { ?>
-                                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-
+                <?php if (!empty($id)) { ?>
+                    <a href="quotation_overview.php?quotation_id=<?php echo $id; ?>" class="btn btn-light btn-sm">Cancel</a>
+                <?php } else { ?>
+                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                <?php } ?>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="quotation_status" id="quotation_status" value="" />
+                <input type="hidden" name="save_and_send" id="save_and_send" value="" />
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
 
                 <div class="col-xl-12">
@@ -876,7 +864,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $customer_details = '';
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE publish=1 AND approved=1 ORDER BY id DESC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE is_active=1 AND approved=1 ORDER BY id DESC");
                                                 // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     // $display_name           = $rows["display_name"];
@@ -963,7 +951,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_payment_terms = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_TERMS  . "` WHERE publish=1 ORDER BY id ASC");
+                                                $result_payment_terms = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_TERMS  . "` WHERE is_active=1 ORDER BY id ASC");
                                                 while ($rows_payment_terms = $result_payment_terms->fetch_array()) {
                                                     // $payment_terms        = s__($rows_payment_terms['payment_terms']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -1004,7 +992,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="sales_person" id="sales_person" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -1041,7 +1029,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'></option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -1080,7 +1068,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="shipper_id" id="shipper_id" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::SHIPPERS  . "` WHERE publish=1 ORDER BY shipper_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::SHIPPERS  . "` WHERE is_active=1 ORDER BY shipper_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $shipper_name = $rows["shipper_name"];
                                                 ?>
@@ -1162,12 +1150,12 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                                     <option value="0"></option>
                                                                     <?php
                                                                     // -------------------------------------------------------------------------------------------------
-                                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                                     while ($rows = $result->fetch_array()) {
                                                                         // -------------------------------------------------------------------------------------------------
                                                                     ?>
                                                                         <option value="<?php echo $rows['id']; ?>">
-                                                                            <?php echo $rows['country_name']; ?>
+                                                                            <?php echo $rows['country']; ?>
                                                                         </option>
                                                                     <?php } ?>
                                                                 </select>
@@ -1272,7 +1260,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                             <select name="consignee_id" id="consignee_id" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE publish=1 ORDER BY consignee_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE is_active=1 ORDER BY consignee_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $consignee_name = $rows["consignee_name"];
                                                 ?>
@@ -1355,12 +1343,12 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                                     <option value="0"></option>
                                                                     <?php
                                                                     // -------------------------------------------------------------------------------------------------
-                                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                                     while ($rows = $result->fetch_array()) {
                                                                         // -------------------------------------------------------------------------------------------------
                                                                     ?>
                                                                         <option value="<?php echo $rows['id']; ?>">
-                                                                            <?php echo $rows['country_name']; ?>
+                                                                            <?php echo $rows['country']; ?>
                                                                         </option>
                                                                     <?php } ?>
                                                                 </select>
@@ -1459,9 +1447,9 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 if (!empty($origin_country)) {
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE publish=1 AND country_id=$origin_country ORDER BY port_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE is_active=1 AND country_id=$origin_country ORDER BY port_name");
                                                 } else {
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE publish=1 ORDER BY port_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE is_active=1 ORDER BY port_name");
                                                 }
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
@@ -1479,12 +1467,12 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <option value="0"></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
                                                     <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $origin_country) { ?>selected <?php } else if ($rows['id'] == $origin_country) { ?>selected <?php } ?>>
-                                                        <?php echo $rows['country_name']; ?>
+                                                        <?php echo $rows['country']; ?>
                                                     </option>
                                                 <?php } ?>
                                             </select>
@@ -1500,9 +1488,9 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 if (!empty($destination_country)) {
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE publish=1 AND country_id=$destination_country ORDER BY port_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE is_active=1 AND country_id=$destination_country ORDER BY port_name");
                                                 } else {
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE publish=1 ORDER BY port_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE is_active=1 ORDER BY port_name");
                                                 }
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
@@ -1520,12 +1508,12 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                 <option value="0"></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
                                                     <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $destination_country) { ?>selected <?php } else if ($rows['id'] == $destination_country) { ?>selected <?php } ?>>
-                                                        <?php echo $rows['country_name']; ?>
+                                                        <?php echo $rows['country']; ?>
                                                     </option>
                                                 <?php } ?>
                                             </select>
@@ -1686,6 +1674,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                             <?php
 
                                                             // ----------------------------------------------------------------------------
+                                                            $quotation_item = 1;
                                                             $total_pcs    = 0;
                                                             $total_cbm    = 0.0;
                                                             $total_volume = 0.0;
@@ -2311,7 +2300,7 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
                                                                 <select class="form-select" name="service[]" id="service<?php echo $quotation_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $quotation_item; ?>); ">
                                                                     <option value="0"></option>
                                                                     <?php
-                                                                    $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                    $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE is_active=1 AND item_type='services' ORDER BY item_name");
                                                                     while ($rows = $result->fetch_array()) {
                                                                         $service_id = $rows['id'];
                                                                     ?>
@@ -2835,17 +2824,12 @@ if ($total_dim_rows == 0)   $total_dim_rows = 1;
 
 
 
-                    </div>
-                </div>
-
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
-        </div>
-    </form>
+            </form>
+        </div></div>
+<?php include('admin_elements/copyright.php'); ?>
 </div>
-
+</div>
+</div>
 
 <?php include('admin_elements/admin_footer.php'); ?>
 

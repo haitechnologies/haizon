@@ -43,7 +43,7 @@ class PaymentsMadeDataTable extends BaseDataTable
         return [
             htmlspecialchars($date),
             (int)($row['id'] ?? 0),
-            htmlspecialchars($ref),
+            '<a href="payments_made_overview.php?id=' . (int)($row['id'] ?? 0) . '" class="text-decoration-none">' . htmlspecialchars($ref) . '</a>',
             htmlspecialchars($vendorName),
             '',
             htmlspecialchars($method),

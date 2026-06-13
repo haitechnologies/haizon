@@ -14,17 +14,23 @@ use App\Helper\ActionButtonHelper;
 
 class SetupTagsDataTable extends BaseDataTable
 {
-    protected $table = DB::SETUP_TAGS;
-    protected $searchFields = ['tag'];
+    protected $table = DB::TAXONOMIES;
+    protected $searchFields = ['value', 'type'];
     protected $sortableColumns = [
-        0 => 'id', 1 => 'tag', 2 => 'tag_type', 3 => 'created_at', 4 => 'id', 5 => 'is_active'
+        0 => 'id', 1 => 'value', 2 => 'type', 3 => 'created_at', 4 => 'is_active', 5 => 'id'
     ];
+
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT * FROM `" . $this->table . "` WHERE type IN ('customer_tag', 'lead_tag', 'job_tag')" . $this->getOrgIdWhereClause();
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
-        $tag = $row['tag'] ?? '';
-        $tagType = $row['tag_type'] ?? '';
+        $tag = $row['value'] ?? '';
+        $typeVal = $row['type'] ?? '';
+        $tagType = ($typeVal === 'customer_tag') ? 'customers' : (($typeVal === 'lead_tag') ? 'leads' : (($typeVal === 'job_tag') ? 'jobs' : $typeVal));
         $publish = (int)$row['is_active'];
         $createdAt = $row['created_at'] ?? '';
 

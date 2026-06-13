@@ -192,7 +192,7 @@ if (!empty($id)) {
     $grand_tax                  = s__($row['grand_tax']);
     $grand_total                = s__($row['grand_total']);
 
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 
 
 
@@ -286,32 +286,32 @@ if ($total_rows == 0)           $total_rows = 1;
 ?>
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="quotation.php" autocomplete="off" enctype="multipart/form-data">
+            <div class="my-1">
+                
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="quotation.php" autocomplete="off" enctype="multipart/form-data">
         <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
         <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-2">
-                    <div class="col-lg-12">
-                        <?php include('admin_elements/lead_navbar.php'); ?>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
                 <div class="row p-lg-2">
 
@@ -633,9 +633,9 @@ if ($total_rows == 0)           $total_rows = 1;
         </div>
 
 
-        <?php include('admin_elements/copyright.php'); ?>
+        </form>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
-</form>
 
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

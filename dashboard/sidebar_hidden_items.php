@@ -73,21 +73,21 @@ foreach ($hiddenItems as $itemKey) {
 }
 ?>
 
-<div class="container-xl">
-    <div class="page-wrapper">
-        <!-- Page header -->
-        <div class="page-header d-print-none">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h2 class="page-title">
-                        <?php echo e($module_caption); ?>
-                    </h2>
-                </div>
+<div class="content-wrapper">
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <?php echo e($module_caption); ?>
+                </h1>
             </div>
         </div>
     </div>
-    <div class="page-body">
-        <div class="container-xl">
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
             <!-- Messages -->
             <?php if (!empty($message)): ?>
                 <div class="alert alert-<?php echo e($messageType === 'success' ? 'success' : 'danger'); ?> alert-dismissible fade show" role="alert">
@@ -192,6 +192,6 @@ foreach ($hiddenItems as $itemKey) {
 
         </div>
     </div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
-
 <?php include('admin_elements/admin_footer.php'); ?>

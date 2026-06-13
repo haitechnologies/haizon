@@ -24,8 +24,8 @@ try {
     $testUserId = 12345;
 
     // Clean up any old test data
-    $db->execute("DELETE FROM `erp_customer_addresses` WHERE organization_id = :org", ['org' => $testOrgId]);
-    $db->execute("DELETE FROM `erp_customer_contacts` WHERE organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM `erp_addresses` WHERE addressable_type = 'Customer' AND organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM `erp_contacts` WHERE contactable_type = 'Customer' AND organization_id = :org", ['org' => $testOrgId]);
     $db->execute("DELETE FROM `erp_customers` WHERE organization_id = :org", ['org' => $testOrgId]);
 
     // Test 1: Create Customer
@@ -33,7 +33,7 @@ try {
     $customerData = [
         'display_name' => 'Integration Test Customer',
         'address' => '123 Test Street, Dubai',
-        'email' => 'integration.test@haipulse.com',
+        'email' => 'integration.test@haizon.com',
         'phone' => '+971 4 000 0000',
         'customer_type' => 'business',
         'opening_balance' => 100.50
@@ -140,7 +140,7 @@ try {
         'customer_id' => $customer->id,
         'first_name' => 'John',
         'last_name' => 'Doe',
-        'email' => 'john.doe@haipulse.com',
+        'email' => 'john.doe@haizon.com',
         'phone' => '+971 50 111 2222',
         'position' => 'Manager',
         'is_primary' => true
@@ -158,7 +158,7 @@ try {
         'customer_id' => $customer->id,
         'first_name' => 'Jane',
         'last_name' => 'Smith',
-        'email' => 'jane.smith@haipulse.com',
+        'email' => 'jane.smith@haizon.com',
         'is_primary' => true
     ], $testOrgId, $testUserId);
 

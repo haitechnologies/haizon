@@ -8,7 +8,8 @@ use App\Core\DB;
 	// Check if user is logged in
 	if ( !isset($_SESSION[$project_pre]['DASHBOARD']['user_id']) || $_SESSION[$project_pre]['DASHBOARD']['user_id']=='' || $_SESSION[$project_pre]['DASHBOARD']['user_id']=='0') 
 	{ 
-		header("Location:logout.php"); 
+		$redirectParam = isset($_SERVER['REQUEST_URI']) ? '?redirect_to=' . urlencode($_SERVER['REQUEST_URI']) : '';
+		header("Location:logout.php" . $redirectParam); 
 		exit;
 	}
 
@@ -31,9 +32,10 @@ use App\Core\DB;
 		
 		if ($inactive_time > $session_timeout) {
 			// Session expired due to inactivity
+			$redirectParam = isset($_SERVER['REQUEST_URI']) ? '&redirect_to=' . urlencode($_SERVER['REQUEST_URI']) : '';
 			session_unset();
 			session_destroy();
-			header("Location:login.php?session_expired=1");
+			header("Location:login.php?session_expired=1" . $redirectParam);
 			exit;
 		}
 	}
@@ -116,9 +118,10 @@ use App\Core\DB;
 				'current_ua' => substr($current_user_agent, 0, 100),
 				'user_id' => $_SESSION[$project_pre]['DASHBOARD']['user_id']
 			]);
+			$redirectParam = isset($_SERVER['REQUEST_URI']) ? '&redirect_to=' . urlencode($_SERVER['REQUEST_URI']) : '';
 			session_unset();
 			session_destroy();
-			header("Location:login.php?session_expired=1");
+			header("Location:login.php?session_expired=1" . $redirectParam);
 			exit;
 		}
 	}

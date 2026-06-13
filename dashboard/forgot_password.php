@@ -31,7 +31,7 @@ include('admin_elements/breadcrumb.php');
 ?>
 
 <div class="content-wrapper">
-    <div class="page-header">
+    <div class="page-header page-header-light shadow carriers-page-header">
         <h1><?php echo e($module_caption); ?></h1>
     </div>
 
@@ -56,6 +56,6 @@ include('admin_elements/breadcrumb.php');
             </div>
         </div>
     </div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
-
 <?php include('admin_elements/admin_footer.php'); ?>

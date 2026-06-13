@@ -69,14 +69,14 @@ if (($action == "delete_$module" && !empty($lead_id)) && granted('delete', $modu
     //SUPERADMIN CAN DELETE ANY DATA
     if ($_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1') {
 
-        $user_document_filename = getTableAttr('document_filename', DB::USER_DOCUMENTS, $document_id);
+        $user_document_filename = getTableAttr('filename', DB::USER_DOCUMENTS, $document_id);
         $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$document_id");
         unlink($document_upload_path  . $document_filename);
 
 
         //ADMIN CAN DELETE ONLY HIS/HER DATA
     } else {
-        $document_filename = getTableAttr('document_filename', DB::USER_DOCUMENTS, $document_id);
+        $document_filename = getTableAttr('filename', DB::USER_DOCUMENTS, $document_id);
         $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$document_id AND created_by='" . $_SESSION[$project_pre]['DASHBOARD']['user_id'] . "'");
         unlink($document_upload_path  . $document_filename);
     }
@@ -111,9 +111,9 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         /* ---------------------- QUERY ---------------------- */
         $update_row = $mysqli->query("
 										UPDATE `$tbl_name` SET
-											user			        = '" . $user . "',
+											attachable_id	        = '" . $user . "',
 											document_category       = '" . $document_category . "',
-											document_name			= '" . $document_name . "',
+											display_name			= '" . $document_name . "',
 											issued_date			    = '" . $issued_date . "',
 											expiry_date			    = '" . $expiry_date . "',
 											description			    = '" . $description . "'
@@ -175,7 +175,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 
 
                 /* ---------------------- QUERY ---------------------- */
-                $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(user, document_category, document_name, document_filename, issued_date, expiry_date, description) VALUES ('" . $user . "', '" . $document_category . "', '" . $document_name . "', '" . $document_filename . "', '" . $issued_date . "', '" . $expiry_date . "', '" . $description . "'); ");
+                $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(attachable_type, attachable_id, document_category, display_name, filename, issued_date, expiry_date, description) VALUES ('UserDoc', '" . $user . "', '" . $document_category . "', '" . $document_name . "', '" . $document_filename . "', '" . $issued_date . "', '" . $expiry_date . "', '" . $description . "'); ");
 
                 $document_filename = '';
 
@@ -201,7 +201,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 */
 if (!empty($id)) {
 
-    $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
+    $result = $mysqli->query("SELECT *, attachable_id AS user, display_name AS document_name, filename AS document_filename FROM `$tbl_name` WHERE id=$id");
     $row = $result->fetch_array();
 
     $user               = s__($row['user']);
@@ -229,7 +229,29 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
+                    <button type="submit" form="frmuser_documents" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
             <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
@@ -238,40 +260,7 @@ if (!empty($id)) {
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-2">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
 
                 <div class="row">
@@ -305,7 +294,7 @@ if (!empty($id)) {
                                         <select class="form-select" name="document_category" id="document_category">
                                             <option value='0'>Please select</option>
                                             <?php
-                                            $result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE publish=1 AND document_category_type='employees' ORDER BY document_category");
+                                            $result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active=1 AND document_category_type='employees' ORDER BY document_category");
                                             while ($rows = $result->fetch_array()) {
                                             ?>
                                                 <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $document_category) { ?>selected <?php } else if ($rows['id'] == $document_category) { ?>selected <?php } ?>>
@@ -396,9 +385,9 @@ if (!empty($id)) {
         </div>
 
 
-        <?php include('admin_elements/copyright.php'); ?>
+        </form>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
-</form>
 
 </div>
 

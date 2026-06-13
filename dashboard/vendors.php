@@ -372,7 +372,7 @@ if (!empty($id)) {
     $x                      = s__($row['x']);
     $facebook               = s__($row['facebook']);
     $instagram              = s__($row['instagram']);
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 }
 
 /*
@@ -384,62 +384,40 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+                <span class="text-muted small">(<?php if ($publish == '1') { ?>Active<?php } else { ?>InActive<?php } ?>)</span>
+            </div>
 
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="p-3 rounded mt-1">
-                    <label class="form-check-label text-muted small"><?php if ($publish == '1') { ?>Active <?php } else { ?> InActive <?php } ?></label>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <?php if (!empty($id)) { ?>
-                                <a href="vendor_overview.php?vendor_id=<?php echo $id; ?>" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-
-                            <?php } else { ?>
-                                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <?php if (!empty($id)) { ?>
+                    <a href="vendor_overview.php?vendor_id=<?php echo $id; ?>" class="btn btn-light btn-sm">Cancel</a>
+                <?php } else { ?>
+                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                <?php } ?>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
-        <div class="content-inner">
-            <div class="content">
+    <div class="content-inner">
+        <div class="content">
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
                 <div class="row">
 
@@ -569,14 +547,13 @@ if (!empty($id)) {
                                         <select name="tags[]" id="tags[]" class="form-control select" multiple="multiple" data-tags="true">
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_tags = $mysqli->query("SELECT * FROM `" . DB::SETUP_TAGS  . "` WHERE publish=1 AND tag_type='vendors' ORDER BY tag");
+                                            $result_tags = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type='vendor_tag' ORDER BY value");
                                             while ($rows_tags = $result_tags->fetch_array()) {
-                                                // $assigned_to        = s__($rows_tags['full_name']);
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>
 
                                                 <option value="<?php echo $rows_tags['id']; ?>" <?php if ($action == "edit_$module" && in_array($rows_tags['id'], $tags_arr)) { ?>selected <?php } else if (in_array($rows_tags['id'], $posted_tags_arr)) { ?>selected <?php } ?>>
-                                                    <?php echo $rows_tags['tag']; ?>
+                                                    <?php echo $rows_tags['value']; ?>
                                                 </option>
 
                                             <?php
@@ -597,13 +574,12 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_statuses = $mysqli->query("SELECT * FROM `" . DB::SETUP_STATUSES  . "` WHERE publish=1 AND status_type='vendors' ORDER BY status");
+                                                $result_statuses = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type='vendor_status' ORDER BY value");
                                                 while ($rows_statuses = $result_statuses->fetch_array()) {
-                                                    // $vendor_status        = s__($rows_statuses['vendor_status']);
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
                                                     <option value="<?php echo $rows_statuses['id']; ?>" <?php if ($action == "edit_$module" && $rows_statuses['id'] == $vendor_status) { ?>selected <?php } else if ($rows_statuses['id'] == $vendor_status) { ?>selected <?php } ?>>
-                                                        <?php echo $rows_statuses['status']; ?>
+                                                        <?php echo $rows_statuses['value']; ?>
                                                     </option>
 
                                                 <?php
@@ -623,14 +599,13 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_sources = $mysqli->query("SELECT * FROM `" . DB::SETUP_SOURCES  . "` WHERE publish=1 AND source_type='vendors' ORDER BY source");
+                                                $result_sources = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type='vendor_source' ORDER BY value");
                                                 while ($rows_sources = $result_sources->fetch_array()) {
-                                                    // $vendor_source        = s__($rows_sources['vendor_source']);
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
 
                                                     <option value="<?php echo $rows_sources['id']; ?>" <?php if ($action == "edit_$module" && $rows_sources['id'] == $vendor_source) { ?>selected <?php } else if ($rows_sources['id'] == $vendor_source) { ?>selected <?php } ?>>
-                                                        <?php echo $rows_sources['source']; ?>
+                                                        <?php echo $rows_sources['value']; ?>
                                                     </option>
 
                                                 <?php
@@ -734,7 +709,7 @@ if (!empty($id)) {
                                             <!-- <option value='0'></option> -->
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_payment_terms = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_TERMS  . "` WHERE publish=1 ORDER BY id ASC");
+                                            $result_payment_terms = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_TERMS  . "` WHERE is_active=1 ORDER BY id ASC");
                                             while ($rows_payment_terms = $result_payment_terms->fetch_array()) {
                                                 // $payment_terms        = s__($rows_payment_terms['payment_terms']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -759,7 +734,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_tax_treatment = $mysqli->query("SELECT * FROM `" . DB::TAX_TREATMENTS  . "` WHERE publish=1 ORDER BY id ASC");
+                                            $result_tax_treatment = $mysqli->query("SELECT * FROM `" . DB::TAX_TREATMENTS  . "` WHERE is_active=1 ORDER BY id ASC");
                                             while ($rows_tax_treatment = $result_tax_treatment->fetch_array()) {
                                                 // $tax_treatment        = s__($rows_tax_treatment['tax_treatment']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -804,7 +779,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE publish=1 ORDER BY id ASC");
+                                            $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE is_active=1 ORDER BY id ASC");
                                             while ($rows_currency = $result_currency->fetch_array()) {
                                                 // $currency        = s__($rows_currency['currency']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -993,19 +968,11 @@ if (!empty($id)) {
 
 
 
-                    </div>
-
-                </div>
-            </div>
-
-
-        </div>
-
-
-        <?php include('admin_elements/copyright.php'); ?>
+            </form>
+        </div></div>
 </div>
-</form>
-
+<?php include('admin_elements/copyright.php'); ?>
+</div>
 </div>
 
 

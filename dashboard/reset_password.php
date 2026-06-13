@@ -24,6 +24,9 @@ if (function_exists('custom_exception_handler')) {
 if (function_exists('handle_fatal_error')) {
 	register_shutdown_function('handle_fatal_error');
 }
+if (function_exists('backend_log_coverage_heartbeat')) {
+	backend_log_coverage_heartbeat();
+}
 
 include('admin_elements/grab_vars.php');
 

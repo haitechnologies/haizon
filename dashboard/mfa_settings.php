@@ -196,7 +196,7 @@ if ($action === 'disable_mfa' && empty($error_message)) {
 
 $setupSecret = (string)($_SESSION[$project_pre]['DASHBOARD']['mfa_setup_secret'] ?? '');
 $accountEmail = (string)$user['email'];
-$issuer = (string)($_ENV['MFA_TOTP_ISSUER'] ?? getenv('MFA_TOTP_ISSUER') ?: 'HAIPULSE Dashboard');
+$issuer = (string)($_ENV['MFA_TOTP_ISSUER'] ?? getenv('MFA_TOTP_ISSUER') ?: 'HAIZON Dashboard');
 $otpauthUri = '';
 $qrImageUrl = '';
 
@@ -226,8 +226,8 @@ if (!empty($_SESSION[$project_pre]['DASHBOARD']['mfa_last_recovery_codes']) && i
 ?>
 
 <div class="content-wrapper">
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3">
             <div class="d-flex">
                 <div class="breadcrumb py-2">
                     <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>

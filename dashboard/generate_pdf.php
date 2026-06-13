@@ -18,6 +18,9 @@ if (function_exists('custom_exception_handler')) {
 if (function_exists('handle_fatal_error')) {
 	register_shutdown_function('handle_fatal_error');
 }
+if (function_exists('backend_log_coverage_heartbeat')) {
+	backend_log_coverage_heartbeat();
+}
 
 include('../config/images.php');
 include('admin_elements/security.php');
@@ -321,7 +324,7 @@ if (!empty($id)) {
 
     $grand_total_in_words  = ucwords($spell_out);
 
-    $is_active = s__($row['publish']);
+    $is_active = s__($row['is_active']);
 
     $invoice_date       = date("d-M-Y", strtotime($invoice_date));
 

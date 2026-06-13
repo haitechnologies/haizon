@@ -46,26 +46,26 @@ if (isset($_REQUEST['document_expiry_type']) && !empty($_REQUEST['document_expir
 */
 if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id)) {
 
+    $document_upload_path = '../uploads/' . $module . '/';
+
     //SUPERADMIN CAN DELETE ANY DATA
     if ($_SESSION[$project_pre]['DASHBOARD']['type'] == 'superadmin') {
 
-        $photo = getTableAttr('photo', $tbl_name, $id);
-        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
+        $filename = getTableAttr('filename', $tbl_name, $id);
+        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND attachable_type = 'UserDoc' AND organization_id = $activeOrganizationId");
 
-        if (!empty($photo)) {
-            delete_photo($photo, $photo_upload_path, '1');   // DELETE OLD THUMB
-            delete_photo($photo, $photo_upload_path, '0');    // DELETE OLD PHOTO
+        if (!empty($filename)) {
+            @unlink($document_upload_path . $filename);
         }
 
         //ADMIN CAN DELETE ONLY HIS/HER DATA
     } else {
 
-        $photo = getTableAttr('photo', $tbl_name, $id);
-        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND created_by='" . $_SESSION[$project_pre]['DASHBOARD']['admin_id'] . "'");
+        $filename = getTableAttr('filename', $tbl_name, $id);
+        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND attachable_type = 'UserDoc' AND organization_id = $activeOrganizationId AND created_by='" . $_SESSION[$project_pre]['DASHBOARD']['admin_id'] . "'");
 
-        if (!empty($photo)) {
-            delete_photo($photo, $photo_upload_path, '1');   // DELETE OLD THUMB
-            delete_photo($photo, $photo_upload_path, '0');    // DELETE OLD PHOTO
+        if (!empty($filename)) {
+            @unlink($document_upload_path . $filename);
         }
     }
 
@@ -88,8 +88,8 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
             <div class="row mt-2">
                 <div class="col-lg-12">
                     <h5 class="ms-2 mb-0"> <a href="listing_<?php echo $module; ?>.php" class="text-dark">Employee Documents </a></h5>
@@ -150,14 +150,14 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
                         <?php
                         // ------------------------------------------------------------------------------------------------
-                        $result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE publish=1 AND document_category_type='employees' ORDER BY document_category LIMIT 50");
+                        $result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active=1 AND document_category_type='employees' ORDER BY document_category LIMIT 50");
                         while ($rows = $result->fetch_array()) {
                             $document_category = $rows['id'];
                             // ------------------------------------------------------------------------------------------------
                         ?>
                             <?php
                             // ======================================================
-                            $rs = $mysqli->query("SELECT id FROM `" . DB::USER_DOCUMENTS . "` WHERE document_category=$document_category");
+                            $rs = $mysqli->query("SELECT id FROM `" . DB::USER_DOCUMENTS . "` WHERE attachable_type = 'UserDoc' AND document_category=$document_category");
                             // echo $rs->num_rows;
                             // ======================================================
                             ?>
@@ -194,8 +194,9 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
                 </div>
             </div>
 
+</div>
+
 <?php include('admin_elements/copyright.php'); ?>
-    </div>
 </div>
 
 <script>

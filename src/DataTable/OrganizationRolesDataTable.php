@@ -28,7 +28,7 @@ class OrganizationRolesDataTable extends BaseDataTable
             htmlspecialchars($desc),
             0,
             $badge,
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $this->getActionButtons($id, 'organization_roles'),
         ];
     }

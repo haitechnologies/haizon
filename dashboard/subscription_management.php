@@ -218,6 +218,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
             </div>
         </div>
     </section>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 
 <script>

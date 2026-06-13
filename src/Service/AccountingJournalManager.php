@@ -82,7 +82,7 @@ class AccountingJournalManager
             $insertJournalSql = "INSERT INTO `" . DB::JOURNALS . "` (
                 journal_status, journal_no, reference_no, journal_date,
                 reference_type, reference_id, notes, reporting_method,
-                currency, grand_subtotal, grand_total, publish, created_by
+                currency, grand_subtotal, grand_total, is_active, created_by
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
 
             $journalIdStr = $this->db->insert($insertJournalSql, [

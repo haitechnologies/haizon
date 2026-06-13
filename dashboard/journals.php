@@ -39,7 +39,7 @@ function buildAccountTreeOptions($mysqli, $parent_id = 0, $level = 0, $selected_
     // $prefix = str_repeat("\xC2\xA0\xC2\xA0", $level * 2);
 
     // Get accounts for this level, ordered by account code and name
-    $result = $mysqli->query("SELECT * FROM `" . DB::ACCOUNTS . "` WHERE parent_id = $parent_id AND publish = 1 ORDER BY account_code ASC, account_name ASC");
+    $result = $mysqli->query("SELECT * FROM `" . DB::ACCOUNTS . "` WHERE parent_id = $parent_id AND is_active = 1 ORDER BY account_code ASC, account_name ASC");
 
     while ($row = $result->fetch_array()) {
         $account_id = $row['id'];
@@ -256,7 +256,7 @@ if ($action == "update_$module" && !empty($id)) {
                                             grand_subtotal		        = '" . $grand_subtotal . "',
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -447,7 +447,7 @@ if ($action == "update_$module" && !empty($id)) {
                         // ======================================================
                         // Insert journal first, then set journal_no = id
                         // ======================================================
-                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(journal_status, journal_date, journal_no, reference_no, notes, reporting_method, warehouse_id, grand_subtotal, grand_total, publish) VALUES ('" . $journal_status . "',  '" . $journal_date . "', '', '" . $reference_no . "', '" . $notes . "',  '" . $reporting_method . "',  '" . $grand_subtotal . "', '" . $grand_total . "', '" . $publish . "'); ");
+                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(journal_status, journal_date, journal_no, reference_no, notes, reporting_method, warehouse_id, grand_subtotal, grand_total, is_active) VALUES ('" . $journal_status . "',  '" . $journal_date . "', '', '" . $reference_no . "', '" . $notes . "',  '" . $reporting_method . "',  '" . $grand_subtotal . "', '" . $grand_total . "', '" . $publish . "'); ");
 
                         $id = $mysqli->insert_id;
 
@@ -528,7 +528,7 @@ if (
     $grand_subtotal       = s__($row['grand_subtotal']);
     $grand_total          = s__($row['grand_total']);
 
-    $publish              = s__($row['publish']);
+    $publish              = s__($row['is_active']);
 
     $journal_date = processDateYtoD($journal_date);
 
@@ -564,69 +564,39 @@ if ($total_rows == 0) $total_rows = 1;
 
 <div class="content-wrapper">
 
-
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="journal_status" id="journal_status" value="" />
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_<?php echo $module; ?>.php" class="breadcrumb-item">Journals</a>
-                        <span class="breadcrumb-item active"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
                 <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Journal #: <?php echo $journal_no; ?></label>
-                        </div>
-                    </div>
+                    <span class="text-muted small fw-semibold ms-2">Journal #: <?php echo $journal_no; ?></span>
                 <?php } ?>
+                <span class="badge bg-light text-primary border-primary ms-2"><?php echo ((!empty($journal_status)) ? ucwords($journal_status) : ''); ?></span>
+            </div>
 
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ucwords($journal_status); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-
-                        <button type="button" onclick="if(validateJournalEntry()) { document.getElementById('journal_status').value='draft'; this.form.submit(); }" class="btn btn-info my-1 me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save as Draft<?php } ?> </button>
-
-                        <button type="button" onclick="if(validateJournalEntry()) { this.form.submit(); }" class="btn btn-info my-1 me-2">Save and Publish</button>
-
-                        <a href="listing_journals.php" class="btn btn-light btn-outline-light my-1 me-2">
-                            <i class="ph-arrow-left"></i> Cancel
-                        </a>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <button type="button" onclick="if(validateJournalEntry()) { document.getElementById('journal_status').value='draft'; document.getElementById('frm<?php echo $module; ?>').submit(); }" class="btn btn-primary btn-sm me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save as Draft<?php } ?></button>
+                <button type="button" onclick="if(validateJournalEntry()) { document.getElementById('frm<?php echo $module; ?>').submit(); }" class="btn btn-info btn-sm me-2">Save and Publish</button>
+                <a href="listing_journals.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="journal_status" id="journal_status" value="<?php echo $journal_status; ?>" />
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
 
                 <div class="col-xl-12">
@@ -704,7 +674,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select class="form-select" name="currency" id="currency">
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE publish=1 ORDER BY id ASC");
+                                                $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE is_active=1 ORDER BY id ASC");
                                                 while ($rows_currency = $result_currency->fetch_array()) {
                                                     // $currency        = s__($rows_currency['currency']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -1196,15 +1166,12 @@ if ($total_rows == 0) $total_rows = 1;
 
 
 
-                    </div>
-                </div>
-
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
+            </form>
         </div>
-    </form>
+        </div>
+        </div>
+        <?php include('admin_elements/copyright.php'); ?>
+    </div>
 </div>
 
 

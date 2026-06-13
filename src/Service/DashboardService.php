@@ -115,7 +115,7 @@ class DashboardService
         $emailsSentTotal = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_HISTORY . "` WHERE status = 'sent'");
         $emailsSent24h = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_HISTORY . "` WHERE status = 'sent' AND DATE(COALESCE(sent_at, created_at)) = CURDATE()");
         $emailsSent7d = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_HISTORY . "` WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
-        
+
         $emailsSentDashboardTotal = $countFn(
             "SELECT COUNT(*) AS cnt
              FROM `" . DB::EMAIL_HISTORY . "` eh
@@ -131,11 +131,11 @@ class DashboardService
                  AND DATE(COALESCE(eh.sent_at, eh.created_at)) = CURDATE()
                  AND (du.id IS NOT NULL OR (eh.campaign_id IS NOT NULL AND eh.campaign_id > 0))"
         );
-        
+
         $emailsSentWebsiteTotal = max(0, $emailsSentTotal - $emailsSentDashboardTotal);
         $emailsSentWebsite24h = max(0, $emailsSent24h - $emailsSentDashboard24h);
         $emailsPending = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_QUEUE . "` WHERE status IN ('pending','queued','retry')");
-        
+
         $emailDailyLimitTotal = $countFn(
             "SELECT COALESCE(SUM(CASE WHEN daily_limit > 0 THEN daily_limit ELSE 100 END), 0) AS cnt
              FROM `" . DB::EMAIL_PROVIDERS . "`
@@ -148,7 +148,7 @@ class DashboardService
 
         $totalCustomers = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::CUSTOMERS . "`");
         $newCustomers7d = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::CUSTOMERS . "` WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
-        
+
         $totalDashboardUsers = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::USERS . "`");
 
         // Logs path setup

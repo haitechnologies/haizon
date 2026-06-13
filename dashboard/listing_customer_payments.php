@@ -132,7 +132,7 @@ if (($action == "delete_$module" && !empty($customer_id)) && granted('delete', $
         if (Roles::hasFullAccess($session_role_id)) {
 
             // Perform delete with prepared statement
-            $stmt = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id=?");
+            $stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id=? AND contactable_type='Customer'");
             $stmt->bind_param("i", $validContactId);
             
             if ($stmt->execute()) {
@@ -148,7 +148,7 @@ if (($action == "delete_$module" && !empty($customer_id)) && granted('delete', $
             //ADMIN CAN DELETE ONLY HIS/HER DATA
         } else {
             // Verify ownership before deleting
-            $ownershipCheck = $mysqli->prepare("SELECT id, created_by FROM `" . $tbl_name . "` WHERE id=? AND created_by=?");
+            $ownershipCheck = $mysqli->prepare("SELECT id, created_by FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id=? AND contactable_type='Customer' AND created_by=?");
             $ownershipCheck->bind_param("is", $validContactId, $_SESSION[$project_pre]['DASHBOARD']['user_id']);
             $ownershipCheck->execute();
             $ownershipResult = $ownershipCheck->get_result();
@@ -159,7 +159,7 @@ if (($action == "delete_$module" && !empty($customer_id)) && granted('delete', $
                 log_error("IDOR attempt: User " . $_SESSION[$project_pre]['DASHBOARD']['user_id'] . " tried to delete contact $validContactId", 'WARNING', __FILE__, __LINE__);
             } else {
                 // Perform delete with prepared statement
-                $stmt = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id=? AND created_by=?");
+                $stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id=? AND contactable_type='Customer' AND created_by=?");
                 $stmt->bind_param("is", $validContactId, $_SESSION[$project_pre]['DASHBOARD']['user_id']);
                 
                 if ($stmt->execute()) {
@@ -198,11 +198,11 @@ else $is_active = 0;
 */
 
 //COUNT QUERY
-$result         = $mysqli->query("SELECT id FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id>0 AND customer_id=$customer_id ");
+$result         = $mysqli->query("SELECT id FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id>0 AND contactable_type = 'Customer' AND contactable_id=$customer_id ");
 $total_pages      = $result->num_rows;
 
 //NORMAL QUERY
-$result_customer_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id>0 AND customer_id=$customer_id ORDER BY id DESC LIMIT $start, $limit");
+$result_customer_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id>0 AND contactable_type = 'Customer' AND contactable_id=$customer_id ORDER BY id DESC LIMIT $start, $limit");
 
 
 
@@ -225,8 +225,8 @@ $result_customer_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONT
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
+        <div class="page-header page-header-light shadow carriers-page-header">
+            <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
                 <div class="d-flex">
                     <div class="breadcrumb py-2">
                         <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
@@ -308,7 +308,7 @@ $result_customer_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONT
 
                                                         $contact_id             = $row_customer_contacts["id"];
 
-                                                        $customer_id            = s__($row_customer_contacts['customer_id']);
+                                                        $customer_id            = s__($row_customer_contacts['contactable_id']);
                                                         $first_name             = s__($row_customer_contacts['first_name']);
                                                         $last_name              = s__($row_customer_contacts['last_name']);
                                                         $position               = s__($row_customer_contacts['position']);
@@ -317,7 +317,7 @@ $result_customer_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONT
                                                         $notes                  = s__($row_customer_contacts['notes']);
 
                                                         $created_at             = s__($row_customer_contacts['created_at']);
-                                                        $is_active = s__($row_customer_contacts['publish']);
+                                                        $is_active = s__($row_customer_contacts['is_active']);
 
                                                         if ($is_active == 0)
                                                             $status = '<span class="badge bg-warning">InActive</span>';

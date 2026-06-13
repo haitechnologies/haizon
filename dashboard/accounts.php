@@ -81,8 +81,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 											account_name            = '" . $account_name . "',
 											account_code            = '" . $account_code . "',
 											description             = '" . $description . "',
-											publish                 = '" . $publish . "'
-										WHERE id=$id");
+										is_active                 = '" . $publish . "'
+									WHERE id=$id");
         if ($update_row) {
             $success_message = "The $module_caption has been updated successfully.";
             fp__($tbl_name, $id);
@@ -116,7 +116,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 
         $parent_account_type = getTableAttr('account_type', DB::ACCOUNTS, $parent_id);
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(parent_id, account_type, account_name, account_code, description, level, publish) 
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(parent_id, account_type, account_name, account_code, description, level, is_active) 
                                         VALUES ('" . $account_type . "', '" . $parent_account_type . "', '" . $account_name . "', '" . $account_code . "', '" . $description . "', '" . $next_level . "', '" . $publish . "'); ");
 
         if ($insert_row) {
@@ -147,7 +147,7 @@ if (!empty($id)) {
     $account_name       = s__($row['account_name']);
     $account_code       = s__($row['account_code']);
     $description        = s__($row['description']);
-    $publish            = s__($row['publish']);
+    $publish            = s__($row['is_active'] ?? 1);
     $level              = s__($row['level']);
     
     // Check if account is protected (system account or has transactions)
@@ -193,60 +193,46 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('delete', $module_id) && !empty($id)) { ?>
+                    <?php if (isset($is_protected) && $is_protected) { ?>
+                        <button type="button" class="btn btn-secondary btn-sm me-2" disabled title="Cannot delete system accounts or accounts with transactions">
+                            <i class="ph-trash me-1"></i>Delete
+                        </button>
+                    <?php } else { ?>
+                        <a href="listing_<?php echo $module; ?>.php" class="btn btn-danger btn-sm me-2">Delete</a>
+                    <?php } ?>
+                <?php } ?>
 
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('delete', $module_id) && !empty($id)) { ?>
-                                <?php if (isset($is_protected) && $is_protected) { ?>
-                                    <button type="button" class="btn btn-secondary btn-sm" disabled title="Cannot delete system accounts or accounts with transactions">
-                                        <i class="ph-trash me-1"></i>Delete
-                                    </button>
-                                <?php } else { ?>
-                                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-danger btn-sm">Delete</a>
-                                <?php } ?>
-                            <?php } ?>
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
                 <div class="row">
                     <div class="col-lg-6">
@@ -305,18 +291,12 @@ if (!empty($id)) {
                         </div>
 
                     </div>
-
                 </div>
-            </div>
-
-            <?php include('admin_elements/copyright.php'); ?>
+            </form>
         </div>
-    </form>
-
+    </div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
-<?php include('admin_elements/admin_footer.php'); ?>
-
-
 
 <!-- 
     // ---------------------------------------------------------

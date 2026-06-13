@@ -2,5 +2,37 @@ parameters:
     level: 5
     paths:
         - src/
+        - config/
+    excludePaths:
+        analyse:
+            - config/backups/
+            - config/index.html
+        analyseAndScan:
+            - vendor/
+            - tcpdf/
+            - assets/
     bootstrapFiles:
         - config/globals.php
+        - config/database.php
+    scanFiles:
+        - dashboard/bootstrap.php
+        - dashboard/login.php
+        - dashboard/logout.php
+        - dashboard/index.php
+    reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: false
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        - '#Variable property access on .*#'
+        - '#Dynamic call to static method#'
+        - '#Cannot access property .* on (null|mixed)#'
+        - '#Call to an undefined method .*::query\(\)#'
+        - '#\$GLOBALS\[#'
+        - '#Function (e|e_s__|s__|dd_|dd__|dec_|_err_) not found#'
+        -
+            message: '#^Variable \$mysqli might not be defined\.#'
+            path: config/globals.php
+        -
+            message: '#^Variable \$conn might not be defined\.#'
+            path: config/globals.php

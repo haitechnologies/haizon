@@ -93,7 +93,7 @@ if ($action == "convert" && !empty($id)) {
             description,
             tags,
             contacted_date,
-            publish,
+            is_active,
             created_at,
             updated_at,
             created_by
@@ -124,7 +124,7 @@ if ($action == "convert" && !empty($id)) {
                 description,
                 tags,
                 contacted_date,
-                publish,
+                is_active,
                 now(),
                 now(),
                 $session_user_id
@@ -161,10 +161,10 @@ if (!empty($id)) {
     $lead_owner             = getTableAttr('full_name', DB::USERS, $lead_owner);
 
     $lead_status            = s__($row['lead_status']);
-    $lead_status            = getTableAttr('status', DB::SETUP_STATUSES, $lead_status);
+    $lead_status            = getTableAttr('value', DB::TAXONOMIES, $lead_status);
 
     $lead_source            = s__($row['lead_source']);
-    $lead_source            = getTableAttr('source', DB::SETUP_SOURCES, $lead_source);
+    $lead_source            = getTableAttr('value', DB::TAXONOMIES, $lead_source);
 
     $assigned_to            = s__($row['assigned_to']);
     $assigned_to            = getTableAttr('full_name', DB::USERS, $assigned_to);
@@ -196,7 +196,7 @@ if (!empty($id)) {
         // $tags_captions = '';
 
         foreach ($tags_arr as $tag_id) {
-            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('value', DB::TAXONOMIES, $tag_id) . '</span> &nbsp;';
         }
     }
 
@@ -209,7 +209,7 @@ if (!empty($id)) {
     $state                  = getTableAttr('state_name', DB::GEO_STATES, $state);
     $pobox                  = s__($row['pobox']);
     $country                = s__($row['country']);
-    $country                = getTableAttr('country_name', DB::GEO_COUNTRIES, $country);
+    $country                = getTableAttr('country', DB::GEO_COUNTRIES, $country);
 
     $service                = s__($row['service']);
     $service_name           = getTableAttr('item_name', DB::ITEMS, $service);
@@ -220,7 +220,7 @@ if (!empty($id)) {
     $x                      = s__($row['x']);
     $facebook               = s__($row['facebook']);
     $instagram              = s__($row['instagram']);
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 }
 
 // $photo = getTableAttr('photo', $tbl_name, $id);
@@ -234,8 +234,8 @@ if (!empty($id)) {
 <div class="content-wrapper">
 
     <!-- page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
             <div class="row mt-2">
                 <div class="col-lg-12">
                     <?php include('admin_elements/lead_navbar.php'); ?>

@@ -41,7 +41,7 @@ class LeadsDataTable extends BaseDataTable
 
         $statusIds = array_values(array_filter(array_unique(array_map('intval', $statusIds))));
         if ($statusIds) {
-            $result = $this->mysqli->query("SELECT id, status FROM `" . DB::SETUP_STATUSES . "` WHERE id IN (" . implode(',', $statusIds) . ")");
+            $result = $this->mysqli->query("SELECT id, value as status FROM `" . DB::TAXONOMIES . "` WHERE id IN (" . implode(',', $statusIds) . ")");
             if ($result) {
                 while ($row = $result->fetch_assoc()) {
                     $this->relatedDataCache['statuses'][(int)$row['id']] = (string)($row['status'] ?? '');
@@ -64,7 +64,7 @@ class LeadsDataTable extends BaseDataTable
 
         return [
             $id,
-            htmlspecialchars($companyName),
+            '<a href="lead.php?id=' . $id . '">' . htmlspecialchars($companyName) . '</a>',
             htmlspecialchars((string)($row['address'] ?? '')),
             htmlspecialchars((string)($row['email'] ?? '')),
             htmlspecialchars((string)($row['phone'] ?? '')),

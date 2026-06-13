@@ -37,7 +37,7 @@ class RateLimiter
      */
     private static function tableName(): string
     {
-        return class_exists('DB') ? DB::RATE_LIMIT_ATTEMPTS : 'erp_rate_limit_attempts';
+        return class_exists('DB') ? DB::RATE_LIMIT_ATTEMPTS : 'erp_rate_limits';
     }
 
     /**
@@ -77,7 +77,7 @@ class RateLimiter
     }
 
     /**
-     * Create rate_limit_attempts table if it doesn't exist
+     * Create rate_limits table if it doesn't exist
      *
      * @return void
      */
@@ -86,6 +86,7 @@ class RateLimiter
         $db = self::getDatabase();
         $sql = "CREATE TABLE IF NOT EXISTS `" . self::tableName() . "` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `rate_limit_type` VARCHAR(20) NOT NULL DEFAULT 'attempt',
             `identifier` VARCHAR(255) NOT NULL COMMENT 'IP address or user identifier',
             `action` VARCHAR(100) NOT NULL COMMENT 'Action type (login, password_reset, etc.)',
             `attempts` INT(11) NOT NULL DEFAULT 1,
@@ -93,7 +94,7 @@ class RateLimiter
             `last_attempt_at` DATETIME NOT NULL,
             `banned_until` DATETIME DEFAULT NULL COMMENT 'NULL if not banned',
             PRIMARY KEY (`id`),
-            UNIQUE KEY `identifier_action` (`identifier`, `action`),
+            UNIQUE KEY `type_identifier_action` (`rate_limit_type`, `identifier`, `action`),
             KEY `banned_until` (`banned_until`),
             KEY `last_attempt_at` (`last_attempt_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
@@ -123,7 +124,7 @@ class RateLimiter
         self::cleanup($timeWindow);
 
         $db = self::getDatabase();
-        $sql = "SELECT banned_until, attempts FROM `" . self::tableName() . "` WHERE identifier = :identifier AND action = :action LIMIT 1";
+        $sql = "SELECT banned_until, attempts FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND identifier = :identifier AND action = :action LIMIT 1";
 
         try {
             $row = $db->fetchOne($sql, ['identifier' => $identifier, 'action' => $action]);
@@ -190,7 +191,7 @@ class RateLimiter
         $now = date('Y-m-d H:i:s');
 
         try {
-            $selectSql = "SELECT id, attempts FROM `" . self::tableName() . "` WHERE identifier = :identifier AND action = :action LIMIT 1";
+            $selectSql = "SELECT id, attempts FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND identifier = :identifier AND action = :action LIMIT 1";
             $row = $db->fetchOne($selectSql, ['identifier' => $identifier, 'action' => $action]);
 
             if ($row) {
@@ -213,8 +214,8 @@ class RateLimiter
                 ]);
             } else {
                 $insertSql = "INSERT INTO `" . self::tableName() . "` 
-                              (identifier, action, attempts, first_attempt_at, last_attempt_at) 
-                              VALUES (:identifier, :action, 1, :first_attempt_at, :last_attempt_at)";
+                              (rate_limit_type, identifier, action, attempts, first_attempt_at, last_attempt_at) 
+                              VALUES ('attempt', :identifier, :action, 1, :first_attempt_at, :last_attempt_at)";
                 $db->execute($insertSql, [
                     'identifier' => $identifier,
                     'action' => $action,
@@ -238,7 +239,7 @@ class RateLimiter
     {
         $db = self::getDatabase();
         try {
-            $sql = "DELETE FROM `" . self::tableName() . "` WHERE identifier = :identifier AND action = :action";
+            $sql = "DELETE FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND identifier = :identifier AND action = :action";
             $db->execute($sql, ['identifier' => $identifier, 'action' => $action]);
         } catch (Throwable $e) {
             error_log('RateLimiter::reset() - Failed: ' . $e->getMessage());
@@ -258,7 +259,7 @@ class RateLimiter
 
         try {
             $sql = "DELETE FROM `" . self::tableName() . "` 
-                    WHERE last_attempt_at < :expiredTime 
+                    WHERE rate_limit_type = 'attempt' AND last_attempt_at < :expiredTime 
                     AND (banned_until IS NULL OR banned_until < NOW())";
             $db->execute($sql, ['expiredTime' => $expiredTime]);
         } catch (Throwable $e) {
@@ -277,7 +278,7 @@ class RateLimiter
     {
         $db = self::getDatabase();
         try {
-            $sql = "SELECT * FROM `" . self::tableName() . "` WHERE identifier = :identifier AND action = :action LIMIT 1";
+            $sql = "SELECT * FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND identifier = :identifier AND action = :action LIMIT 1";
             return $db->fetchOne($sql, ['identifier' => $identifier, 'action' => $action]);
         } catch (Throwable $e) {
             error_log('RateLimiter::getStatus() - Failed: ' . $e->getMessage());
@@ -300,7 +301,7 @@ class RateLimiter
         $bannedUntil = date('Y-m-d H:i:s', time() + $duration);
 
         try {
-            $selectSql = "SELECT id FROM `" . self::tableName() . "` WHERE identifier = :identifier AND action = :action LIMIT 1";
+            $selectSql = "SELECT id FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND identifier = :identifier AND action = :action LIMIT 1";
             $row = $db->fetchOne($selectSql, ['identifier' => $identifier, 'action' => $action]);
 
             if ($row) {
@@ -315,8 +316,8 @@ class RateLimiter
                 ]);
             } else {
                 $insertSql = "INSERT INTO `" . self::tableName() . "` 
-                              (identifier, action, attempts, first_attempt_at, last_attempt_at, banned_until) 
-                              VALUES (:identifier, :action, 99, :first_attempt_at, :last_attempt_at, :banned_until)";
+                              (rate_limit_type, identifier, action, attempts, first_attempt_at, last_attempt_at, banned_until) 
+                              VALUES ('attempt', :identifier, :action, 99, :first_attempt_at, :last_attempt_at, :banned_until)";
                 $db->execute($insertSql, [
                     'identifier' => $identifier,
                     'action' => $action,
@@ -341,7 +342,7 @@ class RateLimiter
     {
         $db = self::getDatabase();
         try {
-            $sql = "UPDATE `" . self::tableName() . "` SET banned_until = NULL WHERE identifier = :identifier AND action = :action";
+            $sql = "UPDATE `" . self::tableName() . "` SET banned_until = NULL WHERE rate_limit_type = 'attempt' AND identifier = :identifier AND action = :action";
             $db->execute($sql, ['identifier' => $identifier, 'action' => $action]);
         } catch (Throwable $e) {
             error_log('RateLimiter::unban() - Failed: ' . $e->getMessage());
@@ -410,7 +411,7 @@ class RateLimiter
         $db = self::getDatabase();
         try {
             $sql = "SELECT * FROM `" . self::tableName() . "` 
-                    WHERE banned_until IS NOT NULL 
+                    WHERE rate_limit_type = 'attempt' AND banned_until IS NOT NULL 
                     AND banned_until > NOW() 
                     ORDER BY banned_until DESC";
             return $db->fetchAll($sql);
@@ -435,17 +436,17 @@ class RateLimiter
         ];
 
         try {
-            $row1 = $db->fetchOne("SELECT COUNT(*) as count FROM `" . self::tableName() . "`");
+            $row1 = $db->fetchOne("SELECT COUNT(*) as count FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt'");
             if ($row1) {
                 $stats['total_records'] = (int)$row1['count'];
             }
 
-            $row2 = $db->fetchOne("SELECT COUNT(*) as count FROM `" . self::tableName() . "` WHERE banned_until IS NOT NULL AND banned_until > NOW()");
+            $row2 = $db->fetchOne("SELECT COUNT(*) as count FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND banned_until IS NOT NULL AND banned_until > NOW()");
             if ($row2) {
                 $stats['currently_banned'] = (int)$row2['count'];
             }
 
-            $row3 = $db->fetchOne("SELECT SUM(attempts) as total FROM `" . self::tableName() . "` WHERE DATE(last_attempt_at) = CURDATE()");
+            $row3 = $db->fetchOne("SELECT SUM(attempts) as total FROM `" . self::tableName() . "` WHERE rate_limit_type = 'attempt' AND DATE(last_attempt_at) = CURDATE()");
             if ($row3) {
                 $stats['total_attempts_today'] = (int)($row3['total'] ?? 0);
             }
@@ -469,14 +470,14 @@ class RateLimiter
         try {
             if ($action === null) {
                 $sql = "SELECT id FROM `" . self::tableName() . "` 
-                        WHERE identifier = :identifier 
+                        WHERE rate_limit_type = 'attempt' AND identifier = :identifier 
                         AND banned_until IS NOT NULL 
                         AND banned_until > NOW() 
                         LIMIT 1";
                 $row = $db->fetchOne($sql, ['identifier' => $identifier]);
             } else {
                 $sql = "SELECT id FROM `" . self::tableName() . "` 
-                        WHERE identifier = :identifier 
+                        WHERE rate_limit_type = 'attempt' AND identifier = :identifier 
                         AND action = :action 
                         AND banned_until IS NOT NULL 
                         AND banned_until > NOW() 

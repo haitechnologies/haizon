@@ -92,7 +92,7 @@ class SEOAutoPopulator {
     /**
      * Generate canonical URL
      */
-    private function generateCanonicalUrl($slug, $baseUrl = 'https://haipulse.com') {
+    private function generateCanonicalUrl($slug, $baseUrl = 'https://haizon.com') {
         return rtrim($baseUrl, '/') . '/' . ltrim($slug, '/');
     }
     
@@ -103,7 +103,7 @@ class SEOAutoPopulator {
         echo "\n=== Populating hai_categories ===\n";
         
         $query = "SELECT id, name, slug, description FROM " . DB::CATEGORIES . " 
-                  WHERE publish = 1 AND is_active = 1 
+                  WHERE is_active = 1 AND is_active = 1 
                   AND (meta_title IS NULL OR meta_description IS NULL)
                   LIMIT 100";
         
@@ -153,7 +153,7 @@ class SEOAutoPopulator {
         echo "\n=== Populating hai_subcategories ===\n";
         
         $query = "SELECT id, name, slug, description FROM " . DB::SUBCATEGORIES . " 
-                  WHERE publish = 1 AND is_active = 1 
+                  WHERE is_active = 1 AND is_active = 1 
                   AND (meta_title IS NULL OR meta_description IS NULL)
                   LIMIT 200";
         

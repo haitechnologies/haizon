@@ -71,7 +71,7 @@ class Categories
         $params = [];
 
         if ($publishedOnly) {
-            $where[] = "publish = 1";
+            $where[] = "is_active = 1";
         }
 
         if (!empty($where)) {
@@ -100,7 +100,7 @@ class Categories
 
         $query = "SELECT * FROM " . DB::CATEGORIES . " 
                   WHERE id = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   LIMIT 1";
 
         try {
@@ -121,7 +121,7 @@ class Categories
     {
         $query = "SELECT * FROM " . DB::CATEGORIES . " 
                   WHERE slug = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   LIMIT 1";
 
         try {
@@ -148,7 +148,7 @@ class Categories
         // Get subcategories
         $subcatQuery = "SELECT * FROM " . DB::SUBCATEGORIES . " 
                         WHERE category_id = ? 
-                        AND publish = 1 
+                        AND is_active = 1 
                         ORDER BY sort_order ASC";
 
         try {
@@ -178,7 +178,7 @@ class Categories
         // Get subcategories
         $subcatQuery = "SELECT * FROM " . DB::SUBCATEGORIES . " 
                         WHERE category_id = ? 
-                        AND publish = 1 
+                        AND is_active = 1 
                         ORDER BY sort_order ASC";
 
         try {
@@ -187,7 +187,7 @@ class Categories
                 // Get items for this subcategory
                 $itemsQuery = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
                                WHERE subcategory_id = ? 
-                               AND publish = 1 
+                               AND is_active = 1 
                                ORDER BY sort_order ASC";
                 $subcategories[$idx]['items'] = $this->conn->fetchAll($itemsQuery, [$subcat['subcategory_id']]);
             }
@@ -211,7 +211,7 @@ class Categories
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::CATEGORIES . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND total_companies > 0 
                   ORDER BY total_companies DESC 
                   LIMIT {$limit}";
@@ -235,7 +235,7 @@ class Categories
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::CATEGORIES . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND featured = 1 
                   ORDER BY sort_order ASC 
                   LIMIT {$limit}";
@@ -267,7 +267,7 @@ class Categories
         $query = "SELECT comp.* 
                   FROM " . DB::COMPANIES . " comp 
                   WHERE comp.primary_category_id = ? 
-                  AND comp.publish = 1 
+                  AND comp.is_active = 1 
                   ORDER BY comp.created_at DESC 
                   LIMIT {$limit} OFFSET {$offset}";
 
@@ -292,7 +292,7 @@ class Categories
         $query = "SELECT COUNT(*) as total 
                   FROM " . DB::COMPANIES . " comp 
                   WHERE comp.primary_category_id = ? 
-                  AND comp.publish = 1";
+                  AND comp.is_active = 1";
 
         try {
             $row = $this->conn->fetchOne($query, [$categoryId]);
@@ -316,7 +316,7 @@ class Categories
         $params = [];
 
         if ($publishedOnly) {
-            $where[] = "publish = 1";
+            $where[] = "is_active = 1";
         }
 
         if (!empty($where)) {
@@ -344,7 +344,7 @@ class Categories
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::CATEGORIES . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND (name LIKE ? OR name_ar LIKE ?) 
                   ORDER BY total_companies DESC 
                   LIMIT {$limit}";

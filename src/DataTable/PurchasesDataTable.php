@@ -43,7 +43,7 @@ class PurchasesDataTable extends BaseDataTable
         $badge      = BadgeHelper::info(htmlspecialchars($status));
         return [
             htmlspecialchars($date),
-            htmlspecialchars($no),
+            '<a href="purchase_overview.php?id=' . (int)($row['id'] ?? 0) . '" class="text-decoration-none">' . htmlspecialchars($no) . '</a>',
             htmlspecialchars($ref),
             htmlspecialchars($vendorName),
             $badge,

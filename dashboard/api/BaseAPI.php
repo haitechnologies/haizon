@@ -72,7 +72,9 @@ abstract class BaseAPI {
      * Validate CSRF token
      */
     protected function validateCSRF() {
-        if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+        $storedToken = $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] ?? '';
+        if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $storedToken) {
             http_response_code(403);
             $this->response = [
                 'status' => 'error',
@@ -110,7 +112,7 @@ abstract class BaseAPI {
             case 'email':
                 return filter_var($value, FILTER_VALIDATE_EMAIL);
             case 'string':
-                return filter_var($value, FILTER_SANITIZE_STRING);
+                return is_string($value) ? strip_tags($value) : (string)$value;
             default:
                 return $value;
         }
@@ -169,6 +171,27 @@ abstract class BaseAPI {
             json_encode($data)
         );
         error_log($log_entry, 3, __DIR__ . '/../../api-requests.log');
+
+        // Route errors/warnings to centralized backend error logs
+        if (function_exists('log_error')) {
+            $errorEvents = ['QUERY_ERROR', 'CSRF_FAIL'];
+            $isError = false;
+            foreach ($errorEvents as $errEvent) {
+                if (stripos($event, $errEvent) !== false || stripos($event, 'ERROR') !== false) {
+                    $isError = true;
+                    break;
+                }
+            }
+            if ($isError) {
+                $errorMsg = $data['error'] ?? ($data['provided'] ?? $event);
+                log_error(
+                    '[API:' . $this->action . '] ' . $event . ': ' . $errorMsg,
+                    'ERROR',
+                    __FILE__,
+                    __LINE__
+                );
+            }
+        }
     }
     
     /**

@@ -68,8 +68,8 @@ $updated_at_display = (!empty($updated_at) ? dd__($updated_at) : '');
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <h5 class="ms-2">Project #<?php echo $project_id; ?><?php echo (!empty($project_name) ? ' - ' . $project_name : ''); ?></h5>

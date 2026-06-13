@@ -31,7 +31,6 @@ $sitemap = [
         ['name'=>'Customer Overview','url'=>'customer_overview.php','id'=>1],
         ['name'=>'Customer Contacts','url'=>'listing_customer_contacts.php'],
         ['name'=>'Add/Edit Contact','url'=>'customer_contacts.php','id'=>1],
-        ['name'=>'Customer Documents','url'=>'listing_customer_documents.php'],
         ['name'=>'Customer Invoices','url'=>'listing_customer_invoices.php'],
         ['name'=>'Customer Payments','url'=>'listing_customer_payments.php'],
         ['name'=>'Customer Statement','url'=>'customer_statement.php','id'=>1],
@@ -478,11 +477,10 @@ $total_pages=0;foreach($sitemap as $p)$total_pages+=count($p);
                 <?php endforeach;?>
             </div>
 
-            <!-- Footer -->
-            <?php include('admin_elements/copyright.php');?>
-
         </div>
     </div>
+            <!-- Footer -->
+            <?php include('admin_elements/copyright.php');?>
 </div>
 <script>
 $(function(){

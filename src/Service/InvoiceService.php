@@ -161,6 +161,7 @@ class InvoiceService
                 grandTotal: $grandTotal,
                 balanceDue: $grandTotal,
                 publish: isset($data['publish']) ? (bool)$data['publish'] : true,
+                isActive: isset($data['is_active']) ? (bool)$data['is_active'] : true,
                 createdBy: $userId,
                 recurring: !empty($data['recurring']) ? (int)$data['recurring'] : 0,
                 pdf: !empty($data['pdf']) ? trim((string)$data['pdf']) : null
@@ -286,6 +287,8 @@ class InvoiceService
                 grandTotal: $grandTotal,
                 balanceDue: isset($data['balance_due']) ? (float)$data['balance_due'] : ($invoice->balanceDue ?? $grandTotal),
                 publish: isset($data['publish']) ? (bool)$data['publish'] : $invoice->publish,
+                isActive: isset($data['is_active']) ? (bool)$data['is_active'] : $invoice->publish,
+                createdAt: $invoice->createdAt,
                 createdBy: $invoice->createdBy,
                 updatedBy: $userId,
                 recurring: isset($data['recurring']) ? (int)$data['recurring'] : $invoice->recurring,
@@ -425,6 +428,7 @@ class InvoiceService
                 grandTotal: $invoice->grandTotal,
                 balanceDue: $invoice->grandTotal,
                 publish: $invoice->publish,
+                isActive: $invoice->publish,
                 createdBy: $userId
             );
 

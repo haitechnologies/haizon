@@ -159,25 +159,55 @@ class InvoicesDataTable extends BaseDataTable
 
         $customerName = $this->relatedDataCache['customers'][$customerId] ?? '-';
 
-        // Build status badge
-        $statusBadge = '<span class="badge text-dark">' . ucwords(str_replace('_', ' ', $invoiceStatus)) . '</span>';
+        // 1. Format Dates according to strict standards: DD MMM YYYY, hh:mm A
+        $dateDisplay = '-';
+        if (!empty($invoiceDate) && $invoiceDate !== '1970-01-01') {
+            try {
+                $dt = new \DateTime($invoiceDate);
+                $dateDisplay = $dt->format('d M Y, h:i A');
+            } catch (\Throwable $e) {
+                $dateDisplay = $invoiceDate;
+            }
+        }
 
-        $expiryDisplay = (!empty($expiryDate) && $expiryDate !== '1970-01-01') ? (function_exists('timeAgo') ? timeAgo($expiryDate) : $expiryDate) : '-';
-        $dateDisplay = !empty($invoiceDate) ? (function_exists('timeAgo') ? timeAgo($invoiceDate) : $invoiceDate) : '-';
+        $expiryDisplay = '-';
+        if (!empty($expiryDate) && $expiryDate !== '1970-01-01') {
+            try {
+                $dt = new \DateTime($expiryDate);
+                $expiryDisplay = $dt->format('d M Y, h:i A');
+            } catch (\Throwable $e) {
+                $expiryDisplay = $expiryDate;
+            }
+        }
 
+        // 2. Format Currency according to strict standards: AED 1,250.00
         $currencyCode = defined('BASE_CURRENCY') ? BASE_CURRENCY['code'] : 'AED';
-        $formattedGrandTotal = function_exists('dec_') ? dec_($grandTotal) : number_format($grandTotal, 2);
-        $formattedBalanceDue = function_exists('dec_') ? dec_((float)$balanceDue) : number_format((float)$balanceDue, 2);
+        $formattedGrandTotal = $currencyCode . ' ' . number_format($grandTotal, 2);
+        $formattedBalanceDue = $currencyCode . ' ' . number_format((float)$balanceDue, 2);
+
+        // 3. Compute Days Overdue
+        $daysOverdue = 0;
+        if (!empty($expiryDate) && $expiryDate !== '1970-01-01' && !in_array(strtolower($invoiceStatus), ['paid', 'draft'], true)) {
+            try {
+                $expiryTime = strtotime(date('Y-m-d', strtotime($expiryDate)));
+                $todayTime = strtotime(date('Y-m-d'));
+                $daysOverdue = (int)round(($todayTime - $expiryTime) / 86400);
+            } catch (\Throwable $e) {
+                $daysOverdue = 0;
+            }
+        }
 
         return [
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-black"> ' . htmlspecialchars($dateDisplay) . ' </a>',
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-primary"> ' . htmlspecialchars($invoiceNo) . ' </a>',
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-black"> ' . htmlspecialchars((string)$saleOrderNo) . ' </a>',
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-black"> ' . htmlspecialchars($customerName) . ' </a>',
-            $statusBadge,
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-black"> ' . htmlspecialchars($expiryDisplay) . ' </a>',
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-black"> ' . $currencyCode . ' ' . $formattedGrandTotal . ' </a>',
-            '<a href="invoice_overview.php?invoice_id=' . $id . '" class="text-black"> ' . $currencyCode . ' ' . $formattedBalanceDue . ' </a>'
+            $dateDisplay,          // [0]
+            $invoiceNo,            // [1]
+            $saleOrderNo,          // [2]
+            $customerName,         // [3]
+            $invoiceStatus,        // [4]
+            $expiryDisplay,        // [5]
+            $formattedGrandTotal,  // [6]
+            $formattedBalanceDue,  // [7]
+            $id,                   // [8]
+            $daysOverdue           // [9]
         ];
     }
 

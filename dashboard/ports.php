@@ -77,7 +77,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                                             port_name	        = '" . $port_name . "',
                                             port_code	        = '" . $port_code . "',
 											country_id	        = '" . $country_id . "',
-											publish 		    = '" . $publish . "'
+											is_active 		    = '" . $publish . "'
 										WHERE id=$id");
         if ($update_row) {
             $success_message = "Item has been updated successfully.";
@@ -109,7 +109,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         $error_message = 'Please select Country.';
     } else {
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(country_id, port_name, port_code,  publish) VALUES ('" . $country_id . "', '" . $port_name . "', '" . $port_code . "', '" . $publish . "'); ");
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(country_id, port_name, port_code,  is_active) VALUES ('" . $country_id . "', '" . $port_name . "', '" . $port_code . "', '" . $publish . "'); ");
 
         if ($insert_row) {
             $id = $mysqli->insert_id;
@@ -138,7 +138,7 @@ if (!empty($id)) {
     $port_name          = s__($row['port_name']);
     $port_code          = s__($row['port_code']);
     $country_id         = s__($row['country_id']);
-    $publish            = s__($row['publish']);
+    $publish            = s__($row['is_active']);
 }
 
 
@@ -152,48 +152,35 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-2">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2 mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
-        <div class="content-inner">
-            <div class="content">
+    <div class="content-inner">
+        <div class="content">
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
                 <div class="card col-lg-6">
 
@@ -223,12 +210,12 @@ if (!empty($id)) {
                                     <option value="0">Please select</option>
                                     <?php
                                     // -------------------------------------------------------------------------------------------------
-                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                     while ($rows = $result->fetch_array()) {
                                         // -------------------------------------------------------------------------------------------------
                                     ?>
                                         <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $country_id) { ?>selected <?php } else if ($rows['id'] == $country_id) { ?>selected <?php } ?>>
-                                            <?php echo $rows['country_name']; ?>
+                                            <?php echo $rows['country']; ?>
                                         </option>
                                     <?php } ?>
                                 </select>
@@ -240,12 +227,12 @@ if (!empty($id)) {
                     </div>
 
                 </div>
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
+            </form>
         </div>
-    </form>
+
+
+        <?php include('admin_elements/copyright.php'); ?>
+    </div>
 
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

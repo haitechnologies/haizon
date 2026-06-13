@@ -78,7 +78,7 @@ if ($action == "update_$module" && !empty($id)) {
 										UPDATE `$tbl_name` SET
 											service_name    = '" . $service_name . "',
 											description	    = '" . $description . "',
-											publish 		= '" . $publish . "'
+											is_active 		= '" . $publish . "'
 										WHERE id=$id");
         if ($update_row) {
             $success_message = "The $module_caption has been updated successfully.";
@@ -104,7 +104,7 @@ if ($action == "update_$module" && !empty($id)) {
         $error_message = 'Service name already exists. Please enter a different one.';
     } else {
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(service_name, description, publish) VALUES ('" . $service_name . "', '" . $description . "', '" . $publish . "'); ");
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(service_name, description, is_active) VALUES ('" . $service_name . "', '" . $description . "', '" . $publish . "'); ");
 
         if ($insert_row) {
             $id = $mysqli->insert_id;
@@ -132,7 +132,7 @@ if (!empty($id)) {
 
     $service_name       = s__($row['service_name']);
     $description        = s__($row['description']);
-    $is_active = s__($row['publish']);
+    $is_active = s__($row['is_active']);
 }
 
 
@@ -146,7 +146,36 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?> form="frm<?php echo $module; ?>">
+                    <label class="form-check-label" for="is_active">Active</label>
+                </div>
+            </div>
+
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
             <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
@@ -156,44 +185,7 @@ if (!empty($id)) {
         <?php echo csrf_field(); ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_<?php echo $module; ?>.php" class="breadcrumb-item">Services</a>
-                        <span class="breadcrumb-item active"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?>>
-                        <label class="form-check-label" for="sc_r_success">Publish</label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <button type="submit" class="btn btn-info my-1 me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save<?php } ?> <?php echo $module_caption; ?> and Exit</button>
-                        <button type="button" class="btn btn-outline-dark my-1 me-2 nav-link" data-href="listing_<?php echo $module; ?>.php">Exit</button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-        <div class="content-inner">
-
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
                 <div class="card col-lg-6">
 

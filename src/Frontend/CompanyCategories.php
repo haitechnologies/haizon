@@ -52,7 +52,7 @@ class CompanyCategories
     {
         $orderBy = $options['order_by'] ?? 'name ASC';
 
-        $sql = "SELECT * FROM `{$this->table}` WHERE publish = 1 ORDER BY {$orderBy}";
+        $sql = "SELECT * FROM `{$this->table}` WHERE is_active = 1 ORDER BY {$orderBy}";
 
         try {
             return $this->conn->fetchAll($sql);
@@ -70,7 +70,7 @@ class CompanyCategories
      */
     public function getBySlug($slug)
     {
-        $sql = "SELECT * FROM `{$this->table}` WHERE slug = ? AND publish = 1 LIMIT 1";
+        $sql = "SELECT * FROM `{$this->table}` WHERE slug = ? AND is_active = 1 LIMIT 1";
 
         try {
             return $this->conn->fetchOne($sql, [$slug]);
@@ -88,7 +88,7 @@ class CompanyCategories
      */
     public function getById($id)
     {
-        $sql = "SELECT * FROM `{$this->table}` WHERE id = ? AND publish = 1 LIMIT 1";
+        $sql = "SELECT * FROM `{$this->table}` WHERE id = ? AND is_active = 1 LIMIT 1";
 
         try {
             return $this->conn->fetchOne($sql, [$id]);
@@ -107,7 +107,7 @@ class CompanyCategories
     public function getPopular($limit = 10)
     {
         $limit = (int)$limit;
-        $sql = "SELECT * FROM `{$this->table}` WHERE publish = 1 AND total_companies > 0 ORDER BY total_companies DESC LIMIT {$limit}";
+        $sql = "SELECT * FROM `{$this->table}` WHERE is_active = 1 AND total_companies > 0 ORDER BY total_companies DESC LIMIT {$limit}";
 
         try {
             return $this->conn->fetchAll($sql);

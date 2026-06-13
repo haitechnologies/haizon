@@ -35,21 +35,32 @@ class OrgIdInjectionMiddleware
         $this->activeOrgId = $activeOrgId;
         $this->logger = $logger;
 
-        // All tables with organization_id column
+        // All tables with organization_id column (auto-generated from schema audit)
         $this->orgScopedTables = [
-            'erp_customers', 'erp_customer_contacts', 'erp_customer_addresses',
-            'erp_customer_comments', 'erp_customer_documents', 'erp_customer_logs',
-            'erp_invoices', 'erp_invoice_items',
-            'erp_department', 'erp_designations', 'erp_attendance',
-            'erp_leave_requests', 'erp_leave_types', 'erp_payroll_components',
-            'erp_salary_structures', 'erp_employee_salaries', 'erp_payroll_runs',
-            'erp_payslips',
-            'erp_shipping_customers', 'erp_shipping_advices',
-            'erp_shipping_advice_items', 'erp_shipping_invoices',
-            'erp_shipping_invoice_items', 'erp_shipping_stocks',
-            'erp_carriers', 'erp_consignees', 'erp_shippers',
-            'erp_setup_sources', 'erp_setup_statuses', 'erp_setup_tags',
-            'erp_items', 'erp_ports'
+            'erp_addresses', 'erp_alerts', 'erp_attachments', 'erp_attendance',
+            'erp_audit_log', 'erp_carriers', 'erp_consignees', 'erp_contacts',
+            'erp_credit_notes', 'erp_currencies', 'erp_customer_transactions', 'erp_customers', 'erp_debit_notes',
+            'erp_departments', 'erp_designations', 'erp_document_types',
+            'erp_employee_salaries', 'erp_entity_logs', 'erp_entity_notes',
+            'erp_exit_points', 'erp_expenses',
+            'erp_hr_leave_balances', 'erp_hr_payroll_run_items', 'erp_incoterms',
+            'erp_inquiries', 'erp_inquiry_replies', 'erp_invoice_items',
+            'erp_invoices', 'erp_items', 'erp_job_items', 'erp_job_statuses',
+            'erp_jobs', 'erp_journal_items', 'erp_journals', 'erp_leads',
+            'erp_leave_requests', 'erp_leave_types', 'erp_organization_invites',
+            'erp_organization_memberships', 'erp_organization_roles',
+            'erp_organization_system_entitlements', 'erp_payment_made_items',
+            'erp_payment_methods', 'erp_payment_received_items',
+            'erp_payment_terms', 'erp_payments_made', 'erp_payments_received',
+            'erp_payroll_components', 'erp_payroll_runs', 'erp_payslips',
+            'erp_ports', 'erp_projects', 'erp_purchase_orders', 'erp_purchases',
+            'erp_quotations', 'erp_salary_structures', 'erp_sale_orders',
+            'erp_shippers', 'erp_shipping_advice_items', 'erp_shipping_advices',
+            'erp_shipping_invoice_items', 'erp_shipping_invoices',
+            'erp_shipping_stock_items', 'erp_shipping_stocks',
+            'erp_storage_types', 'erp_subscription_overrides', 'erp_tasks',
+            'erp_tax_treatments', 'erp_taxonomies', 'erp_vendors',
+            'erp_container_types'
         ];
     }
 
@@ -128,9 +139,11 @@ class OrgIdInjectionMiddleware
         }
 
         // Check if query involves org-scoped tables
+        $prefix = class_exists(DB::class) ? DB::getPrefix() : 'erp_';
         $involvesOrgTable = false;
         foreach ($this->orgScopedTables as $table) {
-            if (stripos($sql, $table) !== false) {
+            $currentTable = ($prefix !== 'erp_') ? str_replace('erp_', $prefix, $table) : $table;
+            if (stripos($sql, $table) !== false || ($prefix !== 'erp_' && stripos($sql, $currentTable) !== false)) {
                 $involvesOrgTable = true;
                 break;
             }
@@ -176,9 +189,11 @@ class OrgIdInjectionMiddleware
             return false;
         }
 
+        $prefix = class_exists(DB::class) ? DB::getPrefix() : 'erp_';
         $involvesOrgTable = false;
         foreach ($this->orgScopedTables as $table) {
-            if (stripos($sql, $table) !== false) {
+            $currentTable = ($prefix !== 'erp_') ? str_replace('erp_', $prefix, $table) : $table;
+            if (stripos($sql, $table) !== false || ($prefix !== 'erp_' && stripos($sql, $currentTable) !== false)) {
                 $involvesOrgTable = true;
                 break;
             }

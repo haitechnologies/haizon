@@ -31,15 +31,15 @@ $history_debug_message = '';
 
 $selected_provider_id = (int)($_POST['provider_id'] ?? $_GET['provider_id'] ?? 0);
 $recipient_value = trim((string)($_POST['recipient'] ?? ''));
-$subject_value = trim((string)($_POST['subject'] ?? 'Test Email from HAIPULSE'));
-$message_value = trim((string)($_POST['message'] ?? 'This is a test email from HAIPULSE.'));
+$subject_value = trim((string)($_POST['subject'] ?? 'Test Email from HAIZON'));
+$message_value = trim((string)($_POST['message'] ?? 'This is a test email from HAIZON.'));
 
 // Handle form submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && granted_('view', $module)) {
     $providerId = (int)($_POST['provider_id'] ?? 0);
     $recipient = trim($_POST['recipient'] ?? '');
-    $subject = trim($_POST['subject'] ?? 'Test Email from HAIPULSE');
-    $message = trim($_POST['message'] ?? 'This is a test email from HAIPULSE.');
+    $subject = trim($_POST['subject'] ?? 'Test Email from HAIZON');
+    $message = trim($_POST['message'] ?? 'This is a test email from HAIZON.');
     $csrf_token = $_POST['csrf_token'] ?? '';
     if (!validate_csrf_token($csrf_token)) {
         $error_message = 'Invalid CSRF token.';
@@ -161,8 +161,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && granted_('view', $module)) {
         <?php renderEmailQuickbar($visibleEmailLinks, $current_page); ?>
     <?php endif; ?>
 
-    <div class="page-header page-header-light shadow mb-3">
-        <div class="page-header-content d-flex">
+    <div class="page-header page-header-light shadow carriers-page-header mb-3">
+        <div class="page-header-content d-flex carriers-page-header-content">
             <div class="page-title">
                 <h4><i class="ph-envelope-simple me-2"></i><span class="fw-semibold">Send Test Email</span></h4>
             </div>
@@ -215,6 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && granted_('view', $module)) {
             </div>
         </div>
     </div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>
 

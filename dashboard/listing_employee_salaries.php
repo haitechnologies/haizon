@@ -23,18 +23,34 @@ if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
 ?>
 
 <div class="content-wrapper">
-    <?php include('admin_elements/page_header.php'); ?>
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo $module_caption; ?></a>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button)) { ?>
+                    <a href="salary_structures.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>Add Salary Component
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
 
     <div class="content-inner">
         <div class="content">
             <?php include('admin_elements/breadcrumb.php'); ?>
 
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
                     <h5 class="mb-0">Employee Salaries Overview</h5>
-                    <a href="salary_structures.php" class="btn btn-primary">
-                        <i class="ph-plus me-2"></i>Add Salary Component
-                    </a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

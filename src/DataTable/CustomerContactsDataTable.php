@@ -16,6 +16,11 @@ class CustomerContactsDataTable extends BaseDataTable
         0 => 'id', 1 => 'first_name', 2 => 'email', 3 => 'phone', 4 => 'position', 5 => 'created_at', 6 => 'is_active', 7 => 'id'
     ];
 
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT * FROM `" . $this->table . "` WHERE id > 0 AND contactable_type = 'Customer'" . $this->getOrgIdWhereClause();
+    }
+
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];

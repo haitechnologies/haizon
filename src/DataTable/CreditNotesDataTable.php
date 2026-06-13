@@ -32,6 +32,7 @@ class CreditNotesDataTable extends BaseDataTable
 
     protected function formatRow($row, $requestData = [])
     {
+        $id       = (int)($row['id'] ?? 0);
         $date     = (string)($row['credit_note_date'] ?? '');
         $no       = (string)($row['credit_note_no'] ?? '');
         $ref      = (string)($row['reference_no'] ?? '');
@@ -47,6 +48,7 @@ class CreditNotesDataTable extends BaseDataTable
             htmlspecialchars($custName),
             $badge,
             htmlspecialchars(number_format((float)$total, 2)),
+            $id,
         ];
     }
 }

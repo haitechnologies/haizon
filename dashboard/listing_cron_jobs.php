@@ -53,9 +53,7 @@ if (isset($_POST['run_job']) && isset($_POST['job_name'])) {
     // Validate job name
     $allowedJobs = [
         'email:queue' => 'email/EmailQueueWorker.php',
-        'email:bounce' => 'email/EmailBounceProcessor.php',
         'email:cleanup' => 'email/EmailQueueCleanup.php',
-        'email:stats' => 'email/EmailStatsAggregator.php',
         'db:backup' => 'database/DatabaseBackup.php',
         'db:cleanup' => 'database/DatabaseCleanup.php',
     ];
@@ -99,19 +97,6 @@ $cronJobs = [
         'color' => 'primary'
     ],
     [
-        'name' => 'email:bounce',
-        'title' => 'Email Bounce Processor',
-        'description' => 'Process email bounces and unsubscribes to maintain deliverability',
-        'schedule' => '0 * * * *',
-        'schedule_text' => 'Every hour',
-        'category' => 'Email Marketing',
-        'file' => 'email/EmailBounceProcessor.php',
-        'log_name' => 'email_bounce_processor',
-        'priority' => 'medium',
-        'icon' => 'ph-warning-circle',
-        'color' => 'warning'
-    ],
-    [
         'name' => 'email:cleanup',
         'title' => 'Email Queue Cleanup',
         'description' => 'Remove old processed queue items to prevent database bloat',
@@ -123,19 +108,6 @@ $cronJobs = [
         'priority' => 'low',
         'icon' => 'ph-broom',
         'color' => 'info'
-    ],
-    [
-        'name' => 'email:stats',
-        'title' => 'Email Stats Aggregator',
-        'description' => 'Aggregate email campaign statistics for reporting',
-        'schedule' => '0 3 * * *',
-        'schedule_text' => 'Daily at 3:00 AM',
-        'category' => 'Email Marketing',
-        'file' => 'email/EmailStatsAggregator.php',
-        'log_name' => 'email_stats_aggregator',
-        'priority' => 'low',
-        'icon' => 'ph-chart-bar',
-        'color' => 'success'
     ],
     [
         'name' => 'db:cleanup',
@@ -223,8 +195,8 @@ function time_elapsed_string($timestamp) {
 <div class="content-wrapper">
 
 <!-- Page header -->
-<div class="page-header page-header-light shadow">
-    <div class="page-header-content d-lg-flex">
+<div class="page-header page-header-light shadow carriers-page-header">
+    <div class="page-header-content d-lg-flex carriers-page-header-content py-2 px-3">
         <div class="d-flex">
             <h4 class="page-title mb-0">
                 <i class="ph-clock-clockwise me-2"></i>

@@ -30,21 +30,11 @@ $hide_add_button = true;
 // Status: working, partial, broken, untested
 $pages_audit = [
     
-    // ====== EMAIL MANAGEMENT (13 pages) ======
+    // ====== EMAIL MANAGEMENT (3 pages) ======
     'Email Management' => [
-        ['name' => 'listing_email_campaigns.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Backticks fixed, columns aligned'],
-        ['name' => 'listing_email_templates.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Backticks fixed, columns aligned'],
         ['name' => 'listing_email_history.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Backticks fixed, columns aligned'],
         ['name' => 'listing_email_queue.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
-        ['name' => 'listing_email_events.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
-        ['name' => 'listing_email_bounces.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
-        ['name' => 'listing_email_sends.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
-        ['name' => 'listing_email_unsubscribes.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
-        ['name' => 'listing_email_automation_rules.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
-        ['name' => 'listing_email_automation_queue.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Duplicate JS removed, columns aligned'],
         ['name' => 'listing_email_providers.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Column mismatch fixed (9→6), handler aligned'],
-        ['name' => 'listing_email_targets.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
-        ['name' => 'listing_email_automation_advanced.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
     ],
     
     // ====== SYSTEM ADMINISTRATION (10 pages) ======
@@ -113,7 +103,6 @@ $pages_audit = [
     'CRM - Customers' => [
         ['name' => 'listing_customers.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
         ['name' => 'listing_customer_contacts.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
-        ['name' => 'listing_customer_documents.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
         ['name' => 'listing_customer_invoices.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
         ['name' => 'listing_customer_payments.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
     ],
@@ -293,7 +282,31 @@ foreach ($pages_audit as $category => $pages) {
 </style>
 
 <div class="content-wrapper">
-    <?php include('admin_elements/page_header.php'); ?>
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
     
     <div class="content datatable-enhanced pages-audit-compact">
         <?php include('admin_elements/breadcrumb.php'); ?>

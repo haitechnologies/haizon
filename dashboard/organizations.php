@@ -217,7 +217,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 										phone			            = '" . $phone . "',
 										email			            = '" . $email . "',
 										trn			                = '" . $trn . "',
-										publish 						= '" . $publish . "'
+										is_active 						= '" . $publish . "'
 									WHERE id=$id");
         if ($update_row) {
             $success_message = "The $module_caption has been updated successfully.";
@@ -275,7 +275,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
             } //endif
         }
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(owner_user_id, warehouse_no, warehouse_name, slug, status, street1, street2, country, state, phone, email, trn, publish) VALUES ('" . (int)$session_user_id . "', '" . $warehouse_no . "', '" . $warehouse_name . "', '" . $organizationSlug . "', 'active', '" . $street1 . "', '" . $street2 . "',  '" . $country . "', '" . $state . "', '" . $phone . "', '" . $email . "', '" . $trn . "', '" . $publish . "'); ");
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(owner_user_id, warehouse_no, warehouse_name, slug, status, street1, street2, country, state, phone, email, trn, is_active) VALUES ('" . (int)$session_user_id . "', '" . $warehouse_no . "', '" . $warehouse_name . "', '" . $organizationSlug . "', 'active', '" . $street1 . "', '" . $street2 . "',  '" . $country . "', '" . $state . "', '" . $phone . "', '" . $email . "', '" . $trn . "', '" . $publish . "'); ");
 
         if ($insert_row) {
             $id = $mysqli->insert_id;
@@ -323,7 +323,7 @@ if (!empty($id)) {
     $phone                              = s__($row['phone']);
     $email                              = s__($row['email']);
     $trn                                = s__($row['trn']);
-    $is_active = s__($row['publish']);
+    $is_active = s__($row['is_active']);
 }
 
 $photo = getTableAttr('photo', $tbl_name, $id);
@@ -338,7 +338,35 @@ $photo = getTableAttr('photo', $tbl_name, $id);
 
 <div class="content-wrapper">
 
-    <form method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data" novalidate>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?> form="frmorganizations">
+                    <label class="form-check-label" for="is_active">Active</label>
+                </div>
+            </div>
+            <div class="my-1">
+                <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
+                    <button type="submit" form="frmorganizations" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data" novalidate>
         <input type="hidden" name="delete_photo" id="delete_photo" value="0" />
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
@@ -349,52 +377,7 @@ $photo = getTableAttr('photo', $tbl_name, $id);
         <?php echo csrf_field(); ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
-                <div class="p-3 rounded mt-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?>>
-                        <label class="form-check-label" for="sc_r_success">Publish</label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                                <a href="organization_invites.php?organization_id=<?php echo $id; ?>" class="btn btn-outline-primary btn-sm me-2">Manage Invites</a>
-                            <?php } ?>
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
                 <div class="row">
                     <div class="col-lg-6">

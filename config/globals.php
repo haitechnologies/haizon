@@ -18,6 +18,25 @@ if (!isset($admin_base_url) || $admin_base_url === '') {
 }
 
 /**
+ * Unified error logger — writes to both file and DB when available.
+ * Replaces bare _log_error() calls so errors are visible in view_backend_error_logs.php.
+ *
+ * Always writes to the PHP error log (file-based), and additionally writes
+ * to the erp_backend_error_logs database table if log_error() is defined.
+ */
+if (!function_exists('_log_error')) {
+  function _log_error(string $message, string $severity = 'ERROR', array $context = []): void {
+    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+    $file = $trace[1]['file'] ?? __FILE__;
+    $line = $trace[1]['line'] ?? __LINE__;
+        error_log("[$severity] $message in $file:$line");
+    if (function_exists('log_error')) {
+      log_error($message, $severity, $file, $line, $context);
+    }
+  }
+}
+
+/**
  * Check for mysqli database errors and return error message - Upgraded
  * Used for error checking after database queries
  *
@@ -27,13 +46,13 @@ if (!isset($admin_base_url) || $admin_base_url === '') {
 if (!function_exists('_err_')) {
   function _err_($mysqli): string|false {
     if (!$mysqli instanceof mysqli) {
-      error_log("_err_: Invalid mysqli object provided");
+      _log_error("_err_: Invalid mysqli object provided");
       return false;
     }
     
     if ($mysqli->error) {
       // Log error for debugging
-      error_log("MySQL Error: " . $mysqli->error);
+      _log_error("MySQL Error: " . $mysqli->error);
       return $mysqli->error;
     }
     
@@ -51,13 +70,13 @@ if (!function_exists('_err_')) {
 if (!function_exists('_err_throw_')) {
   function _err_throw_($mysqli): void {
     if (!$mysqli instanceof mysqli) {
-      error_log("_err_throw_: Invalid mysqli object provided");
+      _log_error("_err_throw_: Invalid mysqli object provided");
       throw new Exception("Invalid database connection object");
     }
     
     if ($mysqli->error) {
       $errorMsg = "Database error: " . $mysqli->error;
-      error_log($errorMsg);
+      _log_error($errorMsg);
       throw new Exception($errorMsg);
     }
   }
@@ -103,15 +122,6 @@ if (!function_exists('getModuleIdBySlug')) {
   }
 }
 
-  /** commenting style Make sure that the WordPress bootstrap has run before continuing. */
-
-  /*
-   * commenting style  This file is part of the Symfony package.
-   *
-   * (c) Fabien Potencier <fabien@symfony.com>
-   *
-   * For the full copyright and license information, please view the LICENSE
-  */
   /**
    * Convert date from Y-m-d to d-m-Y format - Upgraded with type hints
    * Example: 2024-12-01 -> 01-12-2024
@@ -121,7 +131,9 @@ if (!function_exists('getModuleIdBySlug')) {
    */
   if (!function_exists('processDateYtoD')) {
     function processDateYtoD(?string $date): string {
-      // Use dd_() for consistent date handling
+      if ($date === null || $date === '' || $date === '0000-00-00' || $date === '0000-00-00 00:00:00') {
+        return '';
+      }
       return dd_($date, 'd-m-Y');
     }
   }
@@ -150,7 +162,7 @@ if (!function_exists('getModuleIdBySlug')) {
           return $dt->format('Y-m-d');
         }
       } catch (Exception $e) {
-        error_log("processDateDtoY error for '{$date}': " . $e->getMessage());
+        _log_error("processDateDtoY error for '{$date}': " . $e->getMessage());
       }
 
       // Fallback to old method if DateTime fails
@@ -178,7 +190,9 @@ if (!function_exists('getModuleIdBySlug')) {
    */
 	if (!function_exists('processDateTimeYtoD')) {
 		function processDateTimeYtoD(?string $datetime): string {
-      // Use dd_() for consistent date handling
+      if ($datetime === null || $datetime === '' || $datetime === '0000-00-00' || $datetime === '0000-00-00 00:00:00') {
+        return '';
+      }
       return dd_($datetime, 'd-m-Y H:i');
     }
 	}
@@ -226,7 +240,7 @@ if (!function_exists('getModuleIdBySlug')) {
         return $dt->format($outputFormat);
       }
     } catch (Exception $e) {
-      error_log("Date formatting error for '{$datetime}': " . $e->getMessage());
+      _log_error("Date formatting error for '{$datetime}': " . $e->getMessage());
     }
     
     // Fallback for unparseable dates
@@ -322,7 +336,7 @@ if (!function_exists('getModuleIdBySlug')) {
         }
       }
     } catch (Exception $e) {
-      error_log("Relative time formatting error for '{$datetime}': " . $e->getMessage());
+      _log_error("Relative time formatting error for '{$datetime}': " . $e->getMessage());
     }
     
     // Fallback for unparseable dates
@@ -420,8 +434,14 @@ if (!function_exists('getModuleIdBySlug')) {
    * @param int $decimals Number of decimal places
    * @return string
    */
-  function dec_($number, int $decimals = 2): string
+  function dec_($number, $decimals = 2): string
   {
+    if (!is_numeric($decimals)) {
+      $decimals = 2;
+    } else {
+      $decimals = (int)$decimals;
+    }
+
     if ($number === null || $number === '') {
       return number_format(0, $decimals);
     }
@@ -501,9 +521,32 @@ if (!function_exists('getModuleIdBySlug')) {
       return '';
     }
 
+    if (strpos($tbl_name, 'geo_states') !== false || strpos($tbl_name, 'geo_countries') !== false) {
+      if (function_exists('getGeoAttr')) {
+        return getGeoAttr($field_name, $tbl_name, $id);
+      }
+    }
+
+    if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $field_name)) {
+      _log_error("getTableAttr: Invalid field name");
+      return '';
+    }
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', str_replace('`', '', $tbl_name))) {
+      _log_error("getTableAttr: Invalid table name");
+      return '';
+    }
+
     $mysqli = $GLOBALS['DB']['MSQLI'];
-    $result = $mysqli->query("SELECT " . $field_name . " FROM `" . $tbl_name . "` WHERE id='" . $id . "'");
+    $stmt = $mysqli->prepare("SELECT `" . $field_name . "` FROM `" . $tbl_name . "` WHERE `id` = ?");
+    if (!$stmt) {
+      _log_error("getTableAttr prepare failed: " . $mysqli->error);
+      return '';
+    }
+    $stmt->bind_param('s', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $row = $result ? $result->fetch_row() : null;
+    $stmt->close();
 
     if (!empty($row[0])) {
       return stripslashes($row[0]);
@@ -544,13 +587,13 @@ if (!function_exists('getModuleIdBySlug')) {
     // Validate permission type
     $allowed = array('view', 'create', 'edit', 'delete');
     if (!in_array($permission, $allowed, true)) {
-      error_log("granted(): Invalid permission type '{$permission}'");
+      _log_error("granted(): Invalid permission type '{$permission}'");
       return false;
     }
 
     $mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
     if (!$mysqli) {
-      error_log("granted(): Database connection not available");
+      _log_error("granted(): Database connection not available");
       return false;
     }
 
@@ -560,7 +603,7 @@ if (!function_exists('getModuleIdBySlug')) {
       if (!isset($moduleCache[$module_id])) {
         $stmt = $mysqli->prepare("SELECT id FROM " . DB::MODULES . " WHERE module_name = ? OR slug = ? LIMIT 1");
         if (!$stmt) {
-          error_log("granted(): Failed to prepare module query: " . $mysqli->error);
+          _log_error("granted(): Failed to prepare module query: " . $mysqli->error);
           return false;
         }
         $stmt->bind_param('ss', $module_id, $module_id);
@@ -574,7 +617,7 @@ if (!function_exists('getModuleIdBySlug')) {
     }
 
     if (!$module_id) {
-      error_log("granted(): Module not found");
+      _log_error("granted(): Module not found");
       return false;
     }
 
@@ -611,7 +654,7 @@ if (!function_exists('getModuleIdBySlug')) {
     if (!isset($permissionIdCache[$permissionKey])) {
       $stmt = $mysqli->prepare("SELECT id FROM " . DB::MODULE_PERMISSIONS . " WHERE module_id = ? AND slug = ? LIMIT 1");
       if (!$stmt) {
-        error_log("granted(): Failed to prepare module permission query: " . $mysqli->error);
+        _log_error("granted(): Failed to prepare module permission query: " . $mysqli->error);
         return false;
       }
       $stmt->bind_param('is', $module_id, $permission);
@@ -625,7 +668,7 @@ if (!function_exists('getModuleIdBySlug')) {
 
     $permissionId = $permissionIdCache[$permissionKey];
     if (!$permissionId) {
-      error_log("granted(): Permission '{$permission}' not defined for module_id {$module_id}");
+      _log_error("granted(): Permission '{$permission}' not defined for module_id {$module_id}");
       return false;
     }
 
@@ -638,7 +681,7 @@ if (!function_exists('getModuleIdBySlug')) {
     // Query permission mapping table
     $stmt = $mysqli->prepare("SELECT 1 FROM " . DB::PERMISSIONS . " WHERE role_id = ? AND module_id = ? AND permission_id = ? LIMIT 1");
     if (!$stmt) {
-      error_log("granted(): Failed to prepare permission mapping query: " . $mysqli->error);
+      _log_error("granted(): Failed to prepare permission mapping query: " . $mysqli->error);
       return false;
     }
     $stmt->bind_param('iii', $role_id, $module_id, $permissionId);
@@ -708,26 +751,26 @@ if (!function_exists('getModuleIdBySlug')) {
     
     // Validate table name (prevent SQL injection)
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
-      error_log("checkOwnership: Invalid table name - $tableName");
+      _log_error("checkOwnership: Invalid table name - $tableName");
       return false;
     }
     
     // Validate owner column (prevent SQL injection)
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $ownerColumn)) {
-      error_log("checkOwnership: Invalid column name - $ownerColumn");
+      _log_error("checkOwnership: Invalid column name - $ownerColumn");
       return false;
     }
     
     // Check if database connection exists
     if (!$conn) {
-      error_log("checkOwnership: Database connection not available");
+      _log_error("checkOwnership: Database connection not available");
       return false;
     }
     
     // Query to check ownership
     $stmt = $conn->prepare("SELECT id FROM `$tableName` WHERE id = ? AND `$ownerColumn` = ? LIMIT 1");
     if (!$stmt) {
-      error_log("checkOwnership: Failed to prepare statement - " . $conn->error);
+      _log_error("checkOwnership: Failed to prepare statement - " . $conn->error);
       return false;
     }
     
@@ -941,13 +984,13 @@ if (!function_exists('getModuleIdBySlug')) {
 
 			$mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
       if (!$mysqli) {
-        error_log("getTableAttrv: Database connection not available");
+        _log_error("getTableAttrv: Database connection not available");
         return null;
       }
       
       // Build safe query (condition is already escaped by caller, but we validate table/field names)
       if (!preg_match('/^[a-zA-Z0-9_]+$/', str_replace('`', '', $tbl_name))) {
-        error_log("getTableAttrv: Invalid table name: " . $tbl_name);
+        _log_error("getTableAttrv: Invalid table name: " . $tbl_name);
         return null;
       }
       
@@ -957,7 +1000,7 @@ if (!function_exists('getModuleIdBySlug')) {
 			$result = $mysqli->query($query);
       
       if (!$result) {
-        error_log("getTableAttrv query failed: " . $mysqli->error);
+        _log_error("getTableAttrv query failed: " . $mysqli->error);
         return null;
       }
       
@@ -1004,20 +1047,20 @@ if (!function_exists('getModuleIdBySlug')) {
 
       $mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
       if (!$mysqli) {
-        error_log("getTableAttrbySlug: Database connection not available");
+        _log_error("getTableAttrbySlug: Database connection not available");
         return null;
       }
       
       // Validate table name to prevent SQL injection
       if (!preg_match('/^[a-zA-Z0-9_]+$/', str_replace('`', '', $tbl_name))) {
-        error_log("getTableAttrbySlug: Invalid table name: " . $tbl_name);
+        _log_error("getTableAttrbySlug: Invalid table name: " . $tbl_name);
         return null;
       }
       
       // Use prepared statement for slug parameter
       $stmt = $mysqli->prepare("SELECT {$field_name} FROM `{$tbl_name}` WHERE slug = ? LIMIT 1");
       if (!$stmt) {
-        error_log("getTableAttrbySlug prepare failed: " . $mysqli->error);
+        _log_error("getTableAttrbySlug prepare failed: " . $mysqli->error);
         return null;
       }
       
@@ -1045,24 +1088,67 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
-		function log_user_block($email){
+		function log_auth_failed($email){
     $mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
     if (!$mysqli || empty($email)) {
       return;
     }
 
-    $user_id = (int)getTableAttrv('id', DB::USERS, "email = '" . $email . "'");
-    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $created_at = date("Y-m-d H:i:s");
+    $stmt = $mysqli->prepare("SELECT id FROM `" . DB::USERS . "` WHERE email = ? LIMIT 1");
+    if (!$stmt) {
+      return;
+    }
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_id = (int)(($result->fetch_row()[0] ?? 0));
+    $stmt->close();
 
     // Skip auth_activity insert when email has no matching user row.
     // This table enforces FK(user_id -> hai_users.id), so unknown emails cannot be inserted.
     if ($user_id <= 0) {
       return;
     }
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $created_at = date("Y-m-d H:i:s");
 
     $stmt = $mysqli->prepare("INSERT INTO `" . DB::AUTHENTICATION_ACTIVITY . "` (user_id, activity_type, ip_address, user_agent, created_at) VALUES (?, 'login_failed', ?, ?, ?)");
+    if ($stmt) {
+      $stmt->bind_param('isss', $user_id, $ip_address, $user_agent, $created_at);
+      $stmt->execute();
+      $stmt->close();
+    }
+	}
+
+	function log_user_block($email){
+    log_auth_failed($email);
+	}
+
+	function log_account_blocked($email){
+    $mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
+    if (!$mysqli || empty($email)) {
+      return;
+    }
+
+    $stmt = $mysqli->prepare("SELECT id FROM `" . DB::USERS . "` WHERE email = ? LIMIT 1");
+    if (!$stmt) {
+      return;
+    }
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_id = (int)(($result->fetch_row()[0] ?? 0));
+    $stmt->close();
+
+    if ($user_id <= 0) {
+      return;
+    }
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $created_at = date("Y-m-d H:i:s");
+
+    $stmt = $mysqli->prepare("INSERT INTO `" . DB::AUTHENTICATION_ACTIVITY . "` (user_id, activity_type, ip_address, user_agent, created_at) VALUES (?, 'account_blocked', ?, ?, ?)");
     if ($stmt) {
       $stmt->bind_param('isss', $user_id, $ip_address, $user_agent, $created_at);
       $stmt->execute();
@@ -1076,51 +1162,32 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
-    function updateLeadLogs($lead_id, $module, $record_id, $action) {
+    function updateEntityLog($entity_type, $entity_id, $module, $record_id = null, $action = 'edit') {
+      if (empty($entity_id) || empty($module) || empty($entity_type)) {
+        return;
+      }
+
       $mysqli = $GLOBALS['DB']['MSQLI'];
       $table = defined('DB::ENTITY_LOGS') ? constant('DB::ENTITY_LOGS') : 'erp_entity_logs';
+      $created_at = date('Y-m-d H:i:s');
 
-      if (!empty($lead_id) && !empty($module) && !empty($action)) {
-        $mysqli->query("INSERT INTO `" . $table . "` (entity_type, entity_id, record_id, module, action, created_at) VALUES ('lead', '" . $lead_id . "', '" . $record_id . "', '" . $module . "', '" . $action . "', '" . date('Y-m-d H:i:s') . "')");
+      $record_id_val = ($record_id === '' || $record_id === null) ? null : (int)$record_id;
+
+      $stmt = $mysqli->prepare("INSERT INTO `" . $table . "` (entity_type, entity_id, record_id, module, action, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+      if ($stmt) {
+        $stmt->bind_param('siisss', $entity_type, $entity_id, $record_id_val, $module, $action, $created_at);
+        $stmt->execute();
+        $stmt->close();
       }
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | 	CUSTOMER LOGS
-    |--------------------------------------------------------------------------
-    |
-    */
-    function updateCustomerLogs($customer_id, $module, $action) {
-      $mysqli = $GLOBALS['DB']['MSQLI'];
-      $table = defined('DB::ENTITY_LOGS') ? constant('DB::ENTITY_LOGS') : 'erp_entity_logs';
-
-      if (!empty($customer_id) && !empty($module) && !empty($action)) {
-        $mysqli->query("INSERT INTO `" . $table . "` (entity_type, entity_id, module, action, created_at) VALUES ('customer', '" . $customer_id . "', '" . $module . "', '" . $action . "', '" . date('Y-m-d H:i:s') . "')");
-      }
+    function updateLeadLogs($lead_id, $module, $record_id, $action = 'edit') {
+      updateEntityLog('lead', $lead_id, $module, $record_id, $action);
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | 	VENDOR LOGS
-    |--------------------------------------------------------------------------
-    |
-    */
-    function updateVendorLogs($vendor_id, $module, $action){
-      $mysqli = $GLOBALS['DB']['MSQLI'];
-      $vendorLogsTable = 'erp_vendor_logs';
-      if (defined('tbl_vendor_logs')) {
-        $vendorLogsTable = constant('tbl_vendor_logs');
-      }
-
-      if (!empty($vendor_id) && !empty($module) && !empty($action)) {
-        $mysqli->query("INSERT INTO `" . $vendorLogsTable . "` (vendor_id, module, action, created_at) VALUES ('" . $vendor_id . "', '" . $module . "','" . $action . "',  '" . date("Y-m-d H:i:s") . "')");
-      }	
-
+    function updateCustomerLogs($customer_id, $module, $action = 'edit') {
+      updateEntityLog('customer', $customer_id, $module, '', $action);
     }
-    
     /*
     |--------------------------------------------------------------------------
     | 	USER LOG
@@ -1133,7 +1200,16 @@ if (!function_exists('getModuleIdBySlug')) {
       return;
     }
 
-    $user_id  = (int)getTableAttrv('id', DB::USERS, "email = '" . $email . "'");
+    $stmt = $mysqli->prepare("SELECT id FROM `" . DB::USERS . "` WHERE email = ? LIMIT 1");
+    if (!$stmt) {
+      return;
+    }
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_id = (int)(($result->fetch_row()[0] ?? 0));
+    $stmt->close();
+
     if ($user_id <= 0) {
       return;
     }
@@ -1184,27 +1260,31 @@ if (!function_exists('getModuleIdBySlug')) {
     */
 		function checkDuplicateRow($tbl_name, $field_name, $field_value){
 
+			if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $field_name)) {
+				_log_error("checkDuplicateRow: Invalid field name");
+				return 0;
+			}
+			if (!preg_match('/^[a-zA-Z0-9_]+$/', str_replace('`', '', $tbl_name))) {
+				_log_error("checkDuplicateRow: Invalid table name");
+				return 0;
+			}
+
 			$mysqli = $GLOBALS['DB']['MSQLI'];
-			$result = $mysqli->query("SELECT count(id) FROM `$tbl_name` WHERE `".$field_name. "` = '".$field_value."'");
+			$stmt = $mysqli->prepare("SELECT count(id) FROM `" . $tbl_name . "` WHERE `" . $field_name . "` = ?");
+			if (!$stmt) {
+				_log_error("checkDuplicateRow prepare failed: " . $mysqli->error);
+				return 0;
+			}
+			$stmt->bind_param('s', $field_value);
+			$stmt->execute();
+			$result = $stmt->get_result();
 			$row = $result->fetch_row();
-					return stripslashes($row[0]);
+			$stmt->close();
+			return stripslashes($row[0] ?? '0');
 		}
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | 	getPageAttr
-    |--------------------------------------------------------------------------
-    |
-    */
-		function getPageAttr($field_name, $page_name){
-
-			$mysqli = $GLOBALS['DB']['MSQLI'];
-			$result = $mysqli->query("SELECT ".$field_name." FROM mhm_pages WHERE slug='".$page_name. "' AND publish=1");
-			$row = $result->fetch_array();
-					return $row[0];
-		}
-  
+   
     /*
     |--------------------------------------------------------------------------
     | 	fp__
@@ -1214,28 +1294,41 @@ if (!function_exists('getModuleIdBySlug')) {
 		function fp__($tbl_name, $id){
 			
       $mysqli     = $GLOBALS['DB']['MSQLI'];
-      $user_id	  = $_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'];
+      $user_id	  = (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0);
       $datetime   = date("Y-m-d H:i:s");
-    // $datetime   = date("Y-m-d H:i:s", strtotime('+3 hours'));  // UTC + 2
+      $id         = (int)$id;
 
-      $created_by       = getTableAttr("created_by", $tbl_name, $id);
+      if ($id <= 0 || !preg_match('/^[a-zA-Z0-9_]+$/', str_replace('`', '', $tbl_name))) {
+        return;
+      }
+
+      $created_by = getTableAttr("created_by", $tbl_name, $id);
       
       if ($created_by == '0000-00-00 00:00:00'){
-        $mysqli->query("UPDATE `$tbl_name` SET created_by='" . $user_id ."', created_at='" . $datetime . "', updated_at='" . $datetime . "' WHERE id=$id");
-
+        $stmt = $mysqli->prepare("UPDATE `" . $tbl_name . "` SET created_by = ?, created_at = ?, updated_at = ? WHERE id = ?");
+        if ($stmt) {
+          $stmt->bind_param('issi', $user_id, $datetime, $datetime, $id);
+          $stmt->execute();
+          $stmt->close();
+        }
       } else {
-        $mysqli->query("UPDATE `$tbl_name` SET created_by='" . $user_id ."', updated_at='" . $datetime . "' WHERE id=$id");
-
+        $stmt = $mysqli->prepare("UPDATE `" . $tbl_name . "` SET created_by = ?, updated_at = ? WHERE id = ?");
+        if ($stmt) {
+          $stmt->bind_param('isi', $user_id, $datetime, $id);
+          $stmt->execute();
+          $stmt->close();
+        }
       }
+    }
 
       /*
       |--------------------------------------------------------------------------
       | 	publish / unpublish
       |--------------------------------------------------------------------------
       | Legacy listing pages expect these helpers to toggle status fields.
-      | Supports default `publish` column and custom field (e.g. `is_active`).
-      */
-      function publish($module_caption, $tbl_name, $id, $status_field = 'publish'){
+      | Default status field is `is_active` (standard column name).
+      | */
+      function publish(string $module_caption, string $tbl_name, int $id, string $status_field = 'is_active'): bool {
         $mysqli = $GLOBALS['DB']['MSQLI'];
         $user_id = (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0);
         $datetime = date("Y-m-d H:i:s");
@@ -1270,7 +1363,7 @@ if (!function_exists('getModuleIdBySlug')) {
         return (bool)$mysqli->query($sql);
       }
 
-      function unpublish($module_caption, $tbl_name, $id, $status_field = 'publish'){
+      function unpublish(string $module_caption, string $tbl_name, int $id, string $status_field = 'is_active'): bool {
         $mysqli = $GLOBALS['DB']['MSQLI'];
         $user_id = (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0);
         $datetime = date("Y-m-d H:i:s");
@@ -1305,8 +1398,62 @@ if (!function_exists('getModuleIdBySlug')) {
         return (bool)$mysqli->query($sql);
       }
 
-		
-    }
+      /*
+      |--------------------------------------------------------------------------
+      | 	delete
+      |--------------------------------------------------------------------------
+      | Handles deletion of records in both tenant-isolated and global tables.
+      | */
+      if (!function_exists('delete')) {
+        function delete($tbl_name, $id) {
+          $mysqli = $GLOBALS['DB']['MSQLI'] ?? $GLOBALS['conn'] ?? null;
+          if (!$mysqli instanceof mysqli) {
+            _log_error("delete: Database connection not available");
+            return false;
+          }
+
+          $id = (int)$id;
+          if ($id <= 0) {
+            return false;
+          }
+
+          if (!preg_match('/^[a-zA-Z0-9_]+$/', (string)$tbl_name)) {
+            return false;
+          }
+
+          $activeOrgId = 0;
+          if (function_exists('dashboardGetActiveOrganizationId')) {
+            $activeOrgId = dashboardGetActiveOrganizationId(false);
+          }
+
+          // Check if organization_id column exists
+          $hasOrgId = false;
+          $columnCheck = $mysqli->query("SHOW COLUMNS FROM `" . $tbl_name . "` LIKE 'organization_id'");
+          if ($columnCheck && $columnCheck->num_rows > 0) {
+            $hasOrgId = true;
+          }
+
+          if ($hasOrgId && $activeOrgId > 0) {
+            $stmt = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id = ? AND organization_id = ?");
+            if (!$stmt) {
+              return false;
+            }
+            $stmt->bind_param('ii', $id, $activeOrgId);
+            $res = $stmt->execute();
+            $stmt->close();
+            return $res;
+          } else {
+            $stmt = $mysqli->prepare("DELETE FROM `" . $tbl_name . "` WHERE id = ?");
+            if (!$stmt) {
+              return false;
+            }
+            $stmt->bind_param('i', $id);
+            $res = $stmt->execute();
+            $stmt->close();
+            return $res;
+          }
+        }
+      }
 
     
   // function timezone($datetime)
@@ -1319,95 +1466,8 @@ if (!function_exists('getModuleIdBySlug')) {
   // }
 
     
-    /*
-    |--------------------------------------------------------------------------
-    | 	drawActiveDraft
-    |--------------------------------------------------------------------------
-    |
-    */
-    function drawActive($module, $id, $publish){
-      $buttons = '';
-
-      if ($publish==1)
-          $buttons = '<a href="listing_' . $module . '.php?action=unpublish_' . $module . '&id=' . $id . '" title="Published"><span class="badge bg-success">Published</span></a>';
-
-      return $buttons;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | 	drawNotActiveDraft
-    |--------------------------------------------------------------------------
-    |
-    */
-    function drawDraft($module, $id, $publish){
-    $buttons = '';
-
-    if ($publish == 0)
-      $buttons .= '<a href="listing_' . $module . '.php?action=publish_' . $module . '&id=' . $id . '" title="Published"><span class="badge bg-warning">InActive</span></a>';
-
-      return $buttons;
-    }
-
-
-    
-    /*
-    |--------------------------------------------------------------------------
-    | 	drawPublishedEditDelete
-    |--------------------------------------------------------------------------
-    |
-    */
-    function drawPublishedEditDelete($module, $id, $publish, $edit, $delete){
-      $buttons = '';
-
-      if ($publish==1)
-          $buttons .= '<a href="listing_'.$module.'.php?action=unpublish_'.$module.'&id='.$id. '" title="Active"><i class="ph-check"></i></a>';
-      
-      // --- EDIT Button
-      if ($edit == 1){
-        $buttons .= '<a href="' . $module . '.php?action=edit_' . $module . '&id=' . $id . '" title="Edit"><span class="text-dark opacity-50 me-1"><i class="ph-pencil"></i></span></a>';
-      }
-
-      // --- DELETE Button
-      if ($delete == 1){
-        
-        $buttons .= '<a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal"
-          onclick="confirmDeleteModal(\'listing_' . $module . '.php?action=delete_' . $module . '&id=' . $id . '\')" title="Delete"><span class="text-danger opacity-50"><i class="ph-trash"></i></span></a>';
-      }
-
-      return $buttons;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | 	drawNotPublishedEditDelete
-    |--------------------------------------------------------------------------
-    |
-    */
-    function drawNotPublishedEditDelete($module, $id, $publish, $edit, $delete){
-    $buttons = '';
-
-    if ($publish == 1){
-      $buttons .= '<a href="listing_' . $module . '.php?action=publish_' . $module . '&id=' . $id . '" title="InActive"><i class="ph-check"></i></a>;';
-    }
-
-
-    // --- EDIT Button
-    if ($edit == 1){
-      $buttons .= '<a href="' . $module . '.php?action=edit_' . $module . '&id=' . $id . '" title="Edit"><span class="text-dark opacity-50 me-1"><i class="ph-pencil"></i></span></a>';
-    }
-
-
-    // --- DELETE Button
-    if ($delete == 1){
      
-      $buttons .= '<a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="confirmDeleteModal(\'listing_' . $module . '.php?action=delete_' . $module . '&id=' . $id . '\')"><span class="text-danger opacity-50"><i class="ph-trash"></i></span></a>';
-    }
-      
-
-      return $buttons;
-    }
-
+    /*
 
     /*
     |--------------------------------------------------------------------------
@@ -1494,7 +1554,7 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
-    function getCount($table_name, $condition=''){
+    function getCount(string $table_name, string $condition = ''): int {
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
       if (!empty($condition))
@@ -1742,7 +1802,7 @@ function fetchHsCodes($parent_id = null)
 {
   $mysqli = $GLOBALS['DB']['MSQLI'];
 
-  $sql = "SELECT * FROM `" . DB::HS_CODES . "` WHERE parent_id " . ($parent_id === null ? "IS NULL" : "= ?");
+  $sql = "SELECT h.*, te.description as hscode_name FROM `" . DB::HS_CODES . "` h LEFT JOIN `" . DB::HS_CODE_TEXTS . "` te ON h.id = te.hs_code_id AND te.lang = 'en' WHERE h.parent_id " . ($parent_id === null ? "IS NULL" : "= ?");
   $stmt = $mysqli->prepare($sql);
 
   if ($parent_id !== null) {
@@ -1783,7 +1843,7 @@ function fetchHsCodesDropdown($parent_id = null, $prefix = '', $selected = null)
 {
   $mysqli = $GLOBALS['DB']['MSQLI'];
 
-  $sql = "SELECT * FROM `" . DB::HS_CODES . "` WHERE parent_id " . ($parent_id === null ? "IS NULL" : "= ?");
+  $sql = "SELECT h.*, te.description as hscode_name FROM `" . DB::HS_CODES . "` h LEFT JOIN `" . DB::HS_CODE_TEXTS . "` te ON h.id = te.hs_code_id AND te.lang = 'en' WHERE h.parent_id " . ($parent_id === null ? "IS NULL" : "= ?");
   $stmt = $mysqli->prepare($sql);
 
   if ($parent_id !== null) {
@@ -2153,7 +2213,7 @@ function getSystemSetting(string $slug, mixed $default = ''): string {
     // Query database with prepared statement
     $mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
     if (!$mysqli instanceof mysqli) {
-        error_log("getSystemSetting: Database connection not available");
+        _log_error("getSystemSetting: Database connection not available");
         return $default;
     }
     
@@ -2162,7 +2222,7 @@ function getSystemSetting(string $slug, mixed $default = ''): string {
     
     $stmt = $mysqli->prepare("SELECT setting_value FROM {$table_name} WHERE setting_slug = ? LIMIT 1");
     if (!$stmt) {
-        error_log("getSystemSetting prepare failed: " . $mysqli->error);
+        _log_error("getSystemSetting prepare failed: " . $mysqli->error);
         return $default;
     }
     
@@ -2542,7 +2602,7 @@ function getEmailQueueStats() {
  */
 if (!function_exists('csrf_token')) {
     function csrf_token() {
-        $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+        $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
         
         if (!isset($_SESSION[$project_pre]['DASHBOARD']['csrf_token'])) {
             $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
@@ -2559,7 +2619,7 @@ if (!function_exists('csrf_token')) {
      */
     if (!function_exists('csrf_token_frontend')) {
       function csrf_token_frontend() {
-        $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+        $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
         
         if (!isset($_SESSION[$project_pre]['FRONTEND']['csrf_token'])) {
           $_SESSION[$project_pre]['FRONTEND']['csrf_token'] = bin2hex(random_bytes(32));
@@ -2610,7 +2670,7 @@ if (!function_exists('csrf_field')) {
  */
 if (!function_exists('validate_csrf_token')) {
     function validate_csrf_token($token = '') {
-        $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+        $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
         
         // Check if token is provided
         if (empty($token)) {
@@ -2644,7 +2704,7 @@ if (!function_exists('validate_csrf_token')) {
      */
     if (!function_exists('validate_csrf_token_frontend')) {
       function validate_csrf_token_frontend($token = '') {
-        $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+        $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
         
         // Check if token is provided
         if (empty($token)) {
@@ -2692,7 +2752,7 @@ if (!function_exists('regenerate_csrf_token')) {
  * @return string WHERE clause condition
  */
 if (!function_exists('is_active_where')) {
-    function is_active_where($alias = '') {
+    function is_active_where(string $alias = ''): string {
         $field = $alias ? "$alias.is_active" : 'is_active';
         return "$field = 1";
     }
@@ -2706,7 +2766,7 @@ if (!function_exists('is_active_where')) {
  * @return string WHERE clause condition
  */
 if (!function_exists('is_inactive_where')) {
-    function is_inactive_where($alias = '') {
+    function is_inactive_where(string $alias = ''): string {
         $field = $alias ? "$alias.is_active" : 'is_active';
         return "$field = 0";
     }
@@ -2720,27 +2780,8 @@ if (!function_exists('is_inactive_where')) {
  * @return string WHERE clause condition (returns '1=1' - always true)
  */
 if (!function_exists('is_active_any')) {
-    function is_active_any($alias = '') {
+    function is_active_any(string $alias = ''): string {
         return '1=1';
-    }
-}
-
-/**
- * Toggle is_active status for a record
- * Updates a single record's is_active value
- * 
- * Usage: toggle_is_active($conn, DB::BLOGS, $blog_id);
- * 
- * @param mysqli $conn Database connection
- * @param string $table Table name (use DB:: constants)
- * @param int $id Record ID
- * @return bool True if successful, false otherwise
- */
-if (!function_exists('toggle_is_active')) {
-    function toggle_is_active($conn, $table, $id) {
-        $id = intval($id);
-        $query = "UPDATE `$table` SET is_active = IF(is_active = 1, 0, 1) WHERE id = $id";
-        return $conn->query($query);
     }
 }
 
@@ -2760,30 +2801,6 @@ if (!function_exists('set_is_active')) {
         $id = intval($id);
         $status = $status ? 1 : 0;
         $query = "UPDATE `$table` SET is_active = $status WHERE id = $id";
-        return $conn->query($query);
-    }
-}
-
-/**
- * Bulk update is_active for multiple records
- * 
- * Usage: bulk_set_is_active($conn, DB::BLOGS, [1,2,3], true);
- * 
- * @param mysqli $conn Database connection
- * @param string $table Table name (use DB:: constants)
- * @param array $ids Array of record IDs
- * @param bool $status True for active, false for inactive
- * @return bool True if successful, false otherwise
- */
-if (!function_exists('bulk_set_is_active')) {
-    function bulk_set_is_active($conn, $table, $ids, $status) {
-        if (empty($ids)) return false;
-        
-        $ids = array_map('intval', $ids);
-        $ids_str = implode(',', $ids);
-        $status = $status ? 1 : 0;
-        
-        $query = "UPDATE `$table` SET is_active = $status WHERE id IN ($ids_str)";
         return $conn->query($query);
     }
 }
@@ -2823,3 +2840,4 @@ if (!function_exists('flash_warning')) {
         \App\Core\FlashMessage::warning($message);
     }
 }
+

@@ -41,7 +41,7 @@ try {
             $employeeId = (int)$allUsers[0]['id'];
         } else {
             // Create user
-            $db->execute("INSERT INTO erp_users (email, full_name, password, role_id) VALUES ('test_leave@haipulse.com', 'Leave Tester', 'password', 3)");
+            $db->execute("INSERT INTO erp_users (email, full_name, password, role_id) VALUES ('test_leave@haizon.com', 'Leave Tester', 'password', 3)");
             $employeeId = (int)$db->getLastInsertId();
         }
     }

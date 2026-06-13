@@ -27,8 +27,16 @@ class DatabaseSchemaInitializer
      */
     private static function tableName(string $constantName, string $fallback): string
     {
-        if (class_exists('DB') && defined('DB::' . $constantName)) {
-            return (string) constant('DB::' . $constantName);
+        $prefix = class_exists(DB::class) ? DB::getPrefix() : 'erp_';
+        if (class_exists(DB::class) && defined(DB::class . '::' . $constantName)) {
+            $name = (string) constant(DB::class . '::' . $constantName);
+            if ($prefix !== 'erp_') {
+                $name = (string) preg_replace('/^erp_/', $prefix, $name);
+            }
+            return $name;
+        }
+        if ($prefix !== 'erp_') {
+            $fallback = (string) preg_replace('/^erp_/', $prefix, $fallback);
         }
         return $fallback;
     }
@@ -154,17 +162,18 @@ class DatabaseSchemaInitializer
      */
     private static function createRateLimitTable(mixed $conn): void
     {
-        $tableName = self::tableName('RATE_LIMIT_ATTEMPTS', 'erp_rate_limit_attempts');
+        $tableName = self::tableName('RATE_LIMIT_ATTEMPTS', 'erp_rate_limits');
         $sql = "CREATE TABLE IF NOT EXISTS `{$tableName}` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `rate_limit_type` VARCHAR(20) NOT NULL DEFAULT 'attempt',
             `identifier` VARCHAR(255) NOT NULL COMMENT 'IP address or user identifier',
-            `action` VARCHAR(100) NOT NULL COMMENT 'Action type (login, password_reset, contact_form, etc.)',
+            `action` VARCHAR(100) NOT NULL COMMENT 'Action type',
             `attempts` INT(11) NOT NULL DEFAULT 1,
             `first_attempt_at` DATETIME NOT NULL,
             `last_attempt_at` DATETIME NOT NULL,
             `banned_until` DATETIME DEFAULT NULL COMMENT 'NULL if not banned',
             PRIMARY KEY (`id`),
-            UNIQUE KEY `identifier_action` (`identifier`, `action`),
+            UNIQUE KEY `type_identifier_action` (`rate_limit_type`, `identifier`, `action`),
             KEY `banned_until` (`banned_until`),
             KEY `last_attempt_at` (`last_attempt_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

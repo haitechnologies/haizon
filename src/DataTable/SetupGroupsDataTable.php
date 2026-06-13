@@ -10,23 +10,28 @@ use App\Helper\ActionButtonHelper;
 
 class SetupGroupsDataTable extends BaseDataTable
 {
-    protected $table = DB::SETUP_GROUPS;
-    protected $searchFields = ['group_name', 'description'];
-    protected $sortableColumns = [0 => 'id', 1 => 'group_name', 2 => 'description', 3 => 'created_at', 4 => 'publish', 5 => 'id'];
+    protected $table = DB::TAXONOMIES;
+    protected $searchFields = ['value', 'description'];
+    protected $sortableColumns = [0 => 'id', 1 => 'value', 2 => 'description', 3 => 'created_at', 4 => 'is_active', 5 => 'id'];
+
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT * FROM `" . $this->table . "` WHERE type = 'setup_group'" . $this->getOrgIdWhereClause();
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id      = (int)($row['id'] ?? 0);
-        $name    = (string)($row['group_name'] ?? '');
+        $name    = (string)($row['value'] ?? '');
         $desc    = (string)($row['description'] ?? '');
         $created = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
+        $publish = (int)($row['is_active'] ?? 0);
         $badge   = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
             $id,
             htmlspecialchars($name),
             htmlspecialchars($desc),
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $badge,
             $this->getActionButtons($id, 'setup_groups'),
         ];

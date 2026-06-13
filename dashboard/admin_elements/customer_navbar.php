@@ -38,12 +38,7 @@ if ($customer_id > 0):
                     <i class="ph-currency-dollar me-2"></i>Payments
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="listing_customer_documents.php?customer_id=<?php echo $customer_id; ?>" 
-                   class="nav-link <?php echo (basename($_SERVER['PHP_SELF']) == 'listing_customer_documents.php') ? 'active' : ''; ?>">
-                    <i class="ph-folder me-2"></i>Documents
-                </a>
-            </li>
+
             <li class="nav-item">
                 <a href="customer_logs.php?customer_id=<?php echo $customer_id; ?>" 
                    class="nav-link <?php echo (basename($_SERVER['PHP_SELF']) == 'customer_logs.php') ? 'active' : ''; ?>">

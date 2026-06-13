@@ -36,11 +36,12 @@ class ShippersDataTable extends BaseDataTable
             $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
         }
 
+        $shipperLink = '<a href="#" class="view-shipper-details text-primary fw-semibold" data-id="' . $id . '">' . htmlspecialchars($name) . '</a>';
         return [
             $id,
-            htmlspecialchars($name),
+            $shipperLink,
             htmlspecialchars($address1),
-            htmlspecialchars($timeAgoStr),
+            $timeAgoStr,
             $this->getActionButtons($id, 'shippers'),
         ];
     }

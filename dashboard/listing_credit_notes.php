@@ -93,7 +93,28 @@ if (($action == "delete_$module" && !empty($id))) {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <?php include('admin_elements/page_header.php'); ?>
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
     <!-- /page header -->
 
 
@@ -118,9 +139,8 @@ if (($action == "delete_$module" && !empty($id))) {
                 </table>
             </div>
         </div>
-
-        <?php include('admin_elements/copyright.php'); ?>
     </div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 
 <script>
@@ -132,7 +152,20 @@ $(document).ready(function() {
             { data: 2 },
             { data: 3 },
             { data: 4, className: 'col-center' },
-            { data: 5, className: 'text-end' }
+            { data: 5, className: 'text-end' },
+            { data: 6, visible: false }
+        ],
+        columnDefs: [
+            {
+                targets: 1,
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        var id = row[6];
+                        return '<a href="credit_note_overview.php?credit_note_id=' + id + '" class="text-primary fw-semibold">' + data + '</a>';
+                    }
+                    return data;
+                }
+            }
         ],
         order: [[0, 'desc']],
         pageLength: 25,

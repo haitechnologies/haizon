@@ -49,11 +49,15 @@ class Roles
      * Get role name by ID
      * First checks static constants, then falls back to database
      *
-     * @param int $role_id The role ID
+     * @param int|null $role_id The role ID
      * @return string The role name or 'Unknown Role' if not found
      */
-    public static function getName(int $role_id): string
+    public static function getName(?int $role_id): string
     {
+        if ($role_id === null) {
+            return 'Unknown Role';
+        }
+
         // First check static role names
         if (isset(self::$role_names[$role_id])) {
             return self::$role_names[$role_id];
@@ -114,7 +118,7 @@ class Roles
             $sql = "SELECT id, role_name 
                     FROM " . DB::ROLES . " 
                     WHERE id NOT IN ($placeholdersStr) 
-                    AND publish = 1";
+                    AND is_active = 1";
 
             $rows = $db->fetchAll($sql, $params);
 
@@ -130,22 +134,29 @@ class Roles
     /**
      * Check if a role ID has full system access
      *
-     * @param int $role_id The role ID to check
+     * @param int|null $role_id The role ID to check
      * @return bool True if role has full access, false otherwise
      */
-    public static function hasFullAccess(int $role_id): bool
+    public static function hasFullAccess(?int $role_id): bool
     {
+        if ($role_id === null) {
+            return false;
+        }
         return in_array($role_id, [self::SYSTEM_ADMIN, self::SUPER_ADMIN], true);
     }
 
     /**
      * Validate if a role ID exists (in constants or database)
      *
-     * @param int $role_id The role ID to validate
+     * @param int|null $role_id The role ID to validate
      * @return bool True if valid role ID, false otherwise
      */
-    public static function isValid(int $role_id): bool
+    public static function isValid(?int $role_id): bool
     {
+        if ($role_id === null) {
+            return false;
+        }
+
         // Check static roles first
         if (isset(self::$role_names[$role_id])) {
             return true;
@@ -160,7 +171,7 @@ class Roles
     /**
      * Check if role is System Admin
      */
-    public static function isSystemAdmin(int $role_id): bool
+    public static function isSystemAdmin(?int $role_id): bool
     {
         return $role_id === self::SYSTEM_ADMIN;
     }
@@ -168,7 +179,7 @@ class Roles
     /**
      * Check if role is Super Admin
      */
-    public static function isSuperAdmin(int $role_id): bool
+    public static function isSuperAdmin(?int $role_id): bool
     {
         return $role_id === self::SUPER_ADMIN;
     }
@@ -176,7 +187,7 @@ class Roles
     /**
      * Check if role is Sales
      */
-    public static function isSales(int $role_id): bool
+    public static function isSales(?int $role_id): bool
     {
         return $role_id === self::SALES;
     }
@@ -184,7 +195,7 @@ class Roles
     /**
      * Check if role is Operations
      */
-    public static function isOperations(int $role_id): bool
+    public static function isOperations(?int $role_id): bool
     {
         return $role_id === self::OPERATIONS;
     }
@@ -192,7 +203,7 @@ class Roles
     /**
      * Check if role is Accounts
      */
-    public static function isAccounts(int $role_id): bool
+    public static function isAccounts(?int $role_id): bool
     {
         return $role_id === self::ACCOUNTS;
     }
@@ -207,7 +218,7 @@ class Roles
     {
         if ($project_prefix === null) {
             global $project_pre;
-            $project_prefix = $project_pre ?? 'haipulse';
+            $project_prefix = $project_pre ?? 'haizon';
         }
 
         $roleId = $_SESSION[$project_prefix]['DASHBOARD']['role_id'] ?? null;
@@ -235,7 +246,7 @@ class Roles
     public static function requireRole(int|array $required_roles, ?string $message = null, bool $log = true): void
     {
         global $project_pre;
-        $project_prefix = $project_pre ?? 'haipulse';
+        $project_prefix = $project_pre ?? 'haizon';
 
         // Get current user's role
         $current_role_id = $_SESSION[$project_prefix]['DASHBOARD']['role_id'] ?? null;
@@ -313,7 +324,7 @@ class Roles
     public static function requireFullAccess(?string $message = null): void
     {
         global $project_pre;
-        $project_prefix = $project_pre ?? 'haipulse';
+        $project_prefix = $project_pre ?? 'haizon';
 
         $current_role_id = $_SESSION[$project_prefix]['DASHBOARD']['role_id'] ?? null;
 
@@ -332,7 +343,7 @@ class Roles
     public static function currentUserHasRole(int|array $roles): bool
     {
         global $project_pre;
-        $project_prefix = $project_pre ?? 'haipulse';
+        $project_prefix = $project_pre ?? 'haizon';
 
         $current_role_id = $_SESSION[$project_prefix]['DASHBOARD']['role_id'] ?? null;
 
@@ -358,7 +369,7 @@ class Roles
             include($forbidden_page);
         } else {
             global $project_pre;
-            $project_prefix = $project_pre ?? 'haipulse';
+            $project_prefix = $project_pre ?? 'haizon';
 
             http_response_code(403);
 

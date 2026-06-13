@@ -1,7 +1,7 @@
-﻿# HAIPULSE - Crontab Configuration
+# HAIZON - Crontab Configuration
 # Generated: 2026-02-18
 # Installation: crontab -e, then paste this content
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
 
 # Set environment variables
 SHELL=/bin/bash
@@ -9,14 +9,14 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Project paths (ADJUST THESE FOR YOUR ENVIRONMENT)
 PHP=/usr/bin/php
-PROJECT_ROOT=/var/www/haipulse
-CRON_DIR=/var/www/haipulse/dashboard/cron
-LOG_DIR=/var/log/haipulse
+PROJECT_ROOT=/var/www/haizon
+CRON_DIR=/var/www/haizon/dashboard/cron
+LOG_DIR=/var/log/haizon
 
 # For Windows/XAMPP, use:
 # PHP=G:\xampp\php\php.exe
-# PROJECT_ROOT=G:\xampp\htdocs\haipulse
-# CRON_DIR=G:\xampp\htdocs\haipulse\dashboard\cron
+# PROJECT_ROOT=G:\xampp\htdocs\haizon
+# CRON_DIR=G:\xampp\htdocs\haizon\dashboard\cron
 
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Email Marketing Jobs
@@ -67,10 +67,10 @@ LOG_DIR=/var/log/haipulse
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 # Check cron logs for errors (daily at 9:00 AM)
-# 0 9 * * * grep ERROR ${LOG_DIR}/cron.log | mail -s "HAIPULSE Cron Errors" admin@haipulse.com
+# 0 9 * * * grep ERROR ${LOG_DIR}/cron.log | mail -s "HAIZON Cron Errors" admin@haizon.com
 
 # Verify backups exist (daily at 9:30 AM)
-# 30 9 * * * [ -f ${PROJECT_ROOT}/dashboard/backups/backup_$(date +\%Y-\%m-\%d)*.sql.gz ] || echo "Backup missing" | mail -s "HAIPULSE Backup Alert" admin@haipulse.com
+# 30 9 * * * [ -f ${PROJECT_ROOT}/dashboard/backups/backup_$(date +\%Y-\%m-\%d)*.sql.gz ] || echo "Backup missing" | mail -s "HAIZON Backup Alert" admin@haizon.com
 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # Notes

@@ -77,7 +77,7 @@ try {
     exit;
 }
 
-$is_active = $invoice->publish ? 1 : 0;
+$is_active = $invoice->isActive ? 1 : 0;
 
 $invoice_status_req = '';
 if (isset($_REQUEST['invoice_status']) && !empty($_REQUEST['invoice_status'])) {
@@ -252,7 +252,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                 $grand_tax                  = $invoice->grandTax;
                 $grand_total                = $invoice->grandTotal;
 
-                $is_active = $invoice->publish ? 1 : 0;
+                $is_active = $invoice->isActive ? 1 : 0;
 
                 // --- Customer Information
                 $customerRepo = \App\Core\Container::getInstance()->get(\App\Repository\CustomerRepository::class);
@@ -272,7 +272,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                 $trn                    = s__($customer->trn);
 
                 $db = \App\Core\Container::getInstance()->get(\App\Core\Database::class);
-                $row_billing = $db->fetchOne("SELECT * FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND type = 'billing' AND organization_id = :org_id", [
+                $row_billing = $db->fetchOne("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE addressable_type = 'Customer' AND addressable_id = :customer_id AND type = 'billing' AND organization_id = :org_id", [
                     'customer_id' => $customer_id,
                     'org_id' => $activeOrganizationId
                 ]);
@@ -398,7 +398,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                                 $street2            = s__($row_warehouse['street2'] ?? '');
 
                                 $country            = s__($row_warehouse['country'] ?? '');
-                                $country            = getTableAttr('country_name', DB::GEO_COUNTRIES, $country);
+                                $country            = getTableAttr('country', DB::GEO_COUNTRIES, $country);
 
                                 $state              = s__($row_warehouse['state'] ?? '');
                                 $state            = getTableAttr('state_name', DB::GEO_STATES, $state);
@@ -491,7 +491,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                                     <div class="row">
                                         <label class="col-lg-5 col-form-label">Origin:</label>
                                         <div class="col-lg-7 mt-2">
-                                            <?php echo getTableAttr('alpha3_code', DB::GEO_COUNTRIES, $origin); ?> - <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $origin); ?>
+                                            <?php echo getTableAttr('alpha3_code', DB::GEO_COUNTRIES, $origin); ?> - <?php echo getTableAttr('country', DB::GEO_COUNTRIES, $origin); ?>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -537,7 +537,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                                     <div class="row">
                                         <label class="col-lg-5 col-form-label">Destination:</label>
                                         <div class="col-lg-7 mt-2">
-                                            <?php echo getTableAttr('alpha3_code', DB::GEO_COUNTRIES, $destination); ?> - <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $destination); ?>
+                                            <?php echo getTableAttr('alpha3_code', DB::GEO_COUNTRIES, $destination); ?> - <?php echo getTableAttr('country', DB::GEO_COUNTRIES, $destination); ?>
                                         </div>
                                     </div>
                                     <div class="row">

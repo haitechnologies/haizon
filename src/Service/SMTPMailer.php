@@ -35,6 +35,15 @@ class SMTPMailer
     private string $lastSMTPResponse = '';
     private bool $skipHistoryLog = false;
 
+    private static function _log(string $message): void
+    {
+        if (function_exists('_log_error')) {
+            _log_error($message, 'ERROR', ['module' => 'smtp_mailer']);
+            return;
+        }
+        error_log($message);
+    }
+
     public function __construct()
     {
         $this->provider = 'database';
@@ -70,7 +79,7 @@ class SMTPMailer
             // Validate email address
             if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
                 $this->lastError = "Invalid recipient email: $to";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -80,12 +89,12 @@ class SMTPMailer
 
             // Log sending attempt
             $providerRef = !empty($this->activeProvider['id']) ? ('#' . $this->activeProvider['id']) : $this->from_address;
-            error_log("[SMTPMailer] Sending email to $to via database provider {$providerRef}");
+            self::_log("[SMTPMailer] Sending email to $to via database provider {$providerRef}");
 
             return $this->sendViaSMTP($to, $subject, $body, $headers);
         } catch (Throwable $e) {
             $this->lastError = $e->getMessage();
-            error_log("[SMTPMailer] Exception: " . $this->lastError);
+            self::_log("[SMTPMailer] Exception: " . $this->lastError);
             return false;
         }
     }
@@ -100,7 +109,7 @@ class SMTPMailer
     {
         if (!$this->providerManager) {
             $this->lastError = 'EmailProviderManager is unavailable. DB provider resolution failed.';
-            error_log('[SMTPMailer] ' . $this->lastError);
+            self::_log('[SMTPMailer] ' . $this->lastError);
             return false;
         }
 
@@ -127,7 +136,7 @@ class SMTPMailer
 
         if (!$provider) {
             $this->lastError = 'No active email provider found in email_providers table.';
-            error_log('[SMTPMailer] ' . $this->lastError);
+            self::_log('[SMTPMailer] ' . $this->lastError);
             return false;
         }
 
@@ -167,22 +176,22 @@ class SMTPMailer
                 }
 
                 if ($sentToday >= $dailyLimit) {
-                    error_log("[SMTPMailer] Provider #$providerId has reached daily limit ($sentToday/$dailyLimit). Switching to next available provider.");
+                    self::_log("[SMTPMailer] Provider #$providerId has reached daily limit ($sentToday/$dailyLimit). Switching to next available provider.");
                     $fallback = $this->providerManager->getAvailableWithQuota([$providerId]);
                     if (!$fallback) {
                         $this->lastError = "All email providers have reached their daily sending limit for today.";
-                        error_log('[SMTPMailer] ' . $this->lastError);
+                        self::_log('[SMTPMailer] ' . $this->lastError);
                         return false;
                     }
                     $provider = $fallback;
-                    error_log('[SMTPMailer] Switched to provider #' . (int)$provider['id'] . ' (' . ($provider['email'] ?? '') . ').');
+                    self::_log('[SMTPMailer] Switched to provider #' . (int)$provider['id'] . ' (' . ($provider['email'] ?? '') . ').');
                 }
             }
         }
 
         $this->activeProvider = $provider;
         $this->from_address = trim((string)($provider['email'] ?? ''));
-        $this->from_name = trim((string)($headers['from_name'] ?? $provider['provider_name'] ?? 'HAIPULSE'));
+        $this->from_name = trim((string)($headers['from_name'] ?? $provider['provider_name'] ?? (defined('APP_NAME') ? APP_NAME : 'HAIZON')));
         $this->smtp_host = trim((string)($provider['smtp_host'] ?? ''));
         $this->smtp_port = (int)($provider['smtp_port'] ?? 0);
         $this->smtp_encryption = strtolower(trim((string)($provider['email_encryption'] ?? 'tls')));
@@ -202,7 +211,7 @@ class SMTPMailer
             $this->smtp_password === ''
         ) {
             $this->lastError = 'Selected email provider has incomplete SMTP configuration.';
-            error_log('[SMTPMailer] ' . $this->lastError);
+            self::_log('[SMTPMailer] ' . $this->lastError);
             return false;
         }
 
@@ -223,20 +232,21 @@ class SMTPMailer
         // Prepare headers
         $mail_headers = "Date: " . date('r') . "\r\n";
         $mail_headers .= "MIME-Version: 1.0\r\n";
-        $mail_headers .= "X-Mailer: HAI-SMTP-Mailer/2.0\r\n";
+        $app_name_slug = defined('APP_NAME') ? str_replace(' ', '-', APP_NAME) : 'HAIZON';
+        $mail_headers .= "X-Mailer: {$app_name_slug}-SMTP-Mailer/2.0\r\n";
         $mail_headers .= "Content-Type: text/html; charset=UTF-8\r\n";
         if (!empty($headers['Message-ID'])) {
             $mail_headers .= "Message-ID: {$headers['Message-ID']}\r\n";
         } else {
             $domain = preg_replace('/^.*@/', '', (string)$this->from_address);
             if ($domain === '' || strpos($domain, '.') === false) {
-                $domain = 'haipulse.local';
+                $domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
             }
             $mail_headers .= "Message-ID: <" . uniqid('hai-', true) . "@{$domain}>\r\n";
         }
 
         // Add custom headers
-        $replyTo = !empty($headers['Reply-To']) ? $headers['Reply-To'] : 'support@haipulse.com';
+        $replyTo = !empty($headers['Reply-To']) ? $headers['Reply-To'] : (defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'support@haizon.com');
         $mail_headers .= "Reply-To: {$replyTo}\r\n";
         if (!empty($headers['CC'])) {
             $mail_headers .= "CC: {$headers['CC']}\r\n";
@@ -257,7 +267,7 @@ class SMTPMailer
         }
 
         $this->lastError = "No SMTP credentials provided. Email not sent. (host: {$this->smtp_host}, user: {$this->smtp_username})";
-        error_log("[SMTPMailer] " . $this->lastError);
+        self::_log("[SMTPMailer] " . $this->lastError);
         return false;
     }
 
@@ -327,7 +337,7 @@ class SMTPMailer
 
             if (!$socket) {
                 $this->lastError = "SMTP connection failed: [$errno] $errstr";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -338,17 +348,18 @@ class SMTPMailer
             if ($code !== '220') {
                 fclose($socket);
                 $this->lastError = "Invalid SMTP greeting: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
             // Send EHLO
-            fwrite($socket, "EHLO haipulse.local\r\n");
+            $ehlo_domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
+            fwrite($socket, "EHLO {$ehlo_domain}\r\n");
             $code = $this->readSMTPResponse($socket);
             if (strpos($code, '2') === false) {
                 fclose($socket);
                 $this->lastError = "EHLO failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -360,7 +371,7 @@ class SMTPMailer
                 if (strpos($code, '220') === false) {
                     fclose($socket);
                     $this->lastError = "STARTTLS failed: $code";
-                    error_log("[SMTPMailer] " . $this->lastError);
+                    self::_log("[SMTPMailer] " . $this->lastError);
                     return false;
                 }
 
@@ -371,17 +382,18 @@ class SMTPMailer
                 if ($tlsEnabled !== true) {
                     fclose($socket);
                     $this->lastError = "TLS negotiation failed";
-                    error_log("[SMTPMailer] " . $this->lastError);
+                    self::_log("[SMTPMailer] " . $this->lastError);
                     return false;
                 }
 
                 // Send EHLO again after TLS
-                fwrite($socket, "EHLO haipulse.local\r\n");
+                $ehlo_domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
+                fwrite($socket, "EHLO {$ehlo_domain}\r\n");
                 $code = $this->readSMTPResponse($socket);
                 if (strpos($code, '2') === false) {
                     fclose($socket);
                     $this->lastError = "EHLO after STARTTLS failed: $code";
-                    error_log("[SMTPMailer] " . $this->lastError);
+                    self::_log("[SMTPMailer] " . $this->lastError);
                     return false;
                 }
             }
@@ -393,7 +405,7 @@ class SMTPMailer
             if ($code !== '334') {
                 fclose($socket);
                 $this->lastError = "AUTH LOGIN failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -404,7 +416,7 @@ class SMTPMailer
             if ($code !== '334') {
                 fclose($socket);
                 $this->lastError = "Username submission failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -415,7 +427,7 @@ class SMTPMailer
             if ($code !== '235') {
                 fclose($socket);
                 $this->lastError = "Authentication failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -425,7 +437,7 @@ class SMTPMailer
             if (strpos($code, '2') === false) {
                 fclose($socket);
                 $this->lastError = "MAIL FROM failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -435,7 +447,7 @@ class SMTPMailer
             if (strpos($code, '2') === false) {
                 fclose($socket);
                 $this->lastError = "RCPT TO failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -445,7 +457,7 @@ class SMTPMailer
             if ($code !== '354') {
                 fclose($socket);
                 $this->lastError = "DATA failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -463,7 +475,7 @@ class SMTPMailer
             if (strpos($code, '2') === false) {
                 fclose($socket);
                 $this->lastError = "Message send failed: $code";
-                error_log("[SMTPMailer] " . $this->lastError);
+                self::_log("[SMTPMailer] " . $this->lastError);
                 return false;
             }
 
@@ -481,7 +493,7 @@ class SMTPMailer
             return $success;
         } catch (Throwable $e) {
             $this->lastError = $e->getMessage();
-            error_log("[SMTPMailer] SMTP connection error: " . $this->lastError);
+            self::_log("[SMTPMailer] SMTP connection error: " . $this->lastError);
             return false;
         }
     }
@@ -522,7 +534,7 @@ class SMTPMailer
                  VALUES (?, ?, ?, 'sent', NOW(), ?, ?)"
             );
             if (!$stmt) {
-                error_log('[SMTPMailer] logToHistory prepare failed: ' . $conn->error);
+                self::_log('[SMTPMailer] logToHistory prepare failed: ' . $conn->error);
                 return;
             }
             $stmt->bind_param('ssiss', $to, $subjectEsc, $providerId, $fromName, $fromEmail);
@@ -537,7 +549,7 @@ class SMTPMailer
                 );
                 $stmt->execute([$to, $subjectEsc, $providerId, $fromName, $fromEmail]);
             } catch (PDOException $e) {
-                error_log('[SMTPMailer] logToHistory execute failed: ' . $e->getMessage());
+                self::_log('[SMTPMailer] logToHistory execute failed: ' . $e->getMessage());
             }
         }
     }
@@ -610,7 +622,8 @@ class SMTPMailer
                 return ['success' => false, 'message' => "Invalid SMTP greeting: $code"];
             }
 
-            fwrite($socket, "EHLO haipulse.local\r\n");
+            $ehlo_domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
+            fwrite($socket, "EHLO {$ehlo_domain}\r\n");
             $code = $this->readSMTPResponse($socket);
             if (strpos($code, '2') !== 0) {
                 fclose($socket);
@@ -629,7 +642,8 @@ class SMTPMailer
                 stream_context_set_option($socket, 'ssl', 'verify_peer_name', false);
                 stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
 
-                fwrite($socket, "EHLO haipulse.local\r\n");
+                $ehlo_domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
+                fwrite($socket, "EHLO {$ehlo_domain}\r\n");
                 $code = $this->readSMTPResponse($socket);
                 if (strpos($code, '2') !== 0) {
                     fclose($socket);

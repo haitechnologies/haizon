@@ -231,7 +231,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 											x			            = '" . $x . "',
 											facebook			    = '" . $facebook . "',
 											instagram			    = '" . $instagram . "',
-                                            publish 			    = '" . $publish . "'
+                                            is_active 			    = '" . $publish . "'
 										WHERE id=$id");
         if ($update_row) {
             $success_message = "The $module_caption has been updated successfully.";
@@ -270,7 +270,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         $state          = (empty($state) ? '0' : $state);
         $country        = (empty($country) ? '0' : $country);
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(lead_type, lead_owner, lead_status, lead_source, assigned_to, salutation, first_name, last_name, display_name, address, email, phone, mobile, trn, contacted_date, description, tags, street1, street2, city, state, pobox, country, service, website, department, designation, x, facebook, instagram, publish) VALUES ('" . $lead_type . "', '" . $lead_owner . "', '" . $lead_status . "', '" . $lead_source . "', '" . $assigned_to . "', '" . $salutation . "', '" . $first_name . "', '" . $last_name . "', '" . $display_name . "', '" . $address . "', '" . $email . "', '" . $phone . "', '" . $mobile . "', '" . $trn . "', '" . $contacted_date . "', '" . $description . "', '" . $tags_string . ",', '" . $street1 . "', '" . $street2 . "', '" . $city . "', '" . $state . "',   '" . $pobox . "',  '" . $country . "',  '" . $service . "',  '" . $website . "', '" . $department . "', '" . $designation . "', '" . $x . "', '" . $facebook . "', '" . $instagram . "',  '" . $publish . "'); ");
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(lead_type, lead_owner, lead_status, lead_source, assigned_to, salutation, first_name, last_name, display_name, address, email, phone, mobile, trn, contacted_date, description, tags, street1, street2, city, state, pobox, country, service, website, department, designation, x, facebook, instagram, is_active) VALUES ('" . $lead_type . "', '" . $lead_owner . "', '" . $lead_status . "', '" . $lead_source . "', '" . $assigned_to . "', '" . $salutation . "', '" . $first_name . "', '" . $last_name . "', '" . $display_name . "', '" . $address . "', '" . $email . "', '" . $phone . "', '" . $mobile . "', '" . $trn . "', '" . $contacted_date . "', '" . $description . "', '" . $tags_string . ",', '" . $street1 . "', '" . $street2 . "', '" . $city . "', '" . $state . "',   '" . $pobox . "',  '" . $country . "',  '" . $service . "',  '" . $website . "', '" . $department . "', '" . $designation . "', '" . $x . "', '" . $facebook . "', '" . $instagram . "',  '" . $publish . "'); ");
 
 
         if ($insert_row) {
@@ -347,7 +347,7 @@ if (!empty($id)) {
     $x                      = s__($row['x']);
     $facebook               = s__($row['facebook']);
     $instagram              = s__($row['instagram']);
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 }
 
 /*
@@ -359,49 +359,36 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+                <span class="text-muted small">(<?php if ($publish == '1') { ?>Active<?php } else { ?>InActive<?php } ?>)</span>
+            </div>
 
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-2">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
-        <div class="content-inner">
-            <div class="content">
+    <div class="content-inner">
+        <div class="content">
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
                 <div class="row">
 
@@ -526,14 +513,13 @@ if (!empty($id)) {
                                         <select name="tags[]" id="tags[]" class="form-control select" multiple="multiple" data-tags="true">
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_tags = $mysqli->query("SELECT * FROM `" . DB::SETUP_TAGS  . "` WHERE publish=1 AND tag_type='leads' ORDER BY tag");
+                                            $result_tags = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type='lead_tag' ORDER BY value");
                                             while ($rows_tags = $result_tags->fetch_array()) {
-                                                // $assigned_to        = s__($rows_tags['full_name']);
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>
 
                                                 <option value="<?php echo $rows_tags['id']; ?>" <?php if ($action == "edit_$module" && in_array($rows_tags['id'], $tags_arr)) { ?>selected <?php } else if (in_array($rows_tags['id'], $posted_tags_arr)) { ?>selected <?php } ?>>
-                                                    <?php echo $rows_tags['tag']; ?>
+                                                    <?php echo $rows_tags['value']; ?>
                                                 </option>
 
                                             <?php
@@ -555,13 +541,12 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_statuses = $mysqli->query("SELECT * FROM `" . DB::SETUP_STATUSES  . "` WHERE publish=1 AND status_type='leads' ORDER BY status");
+                                                $result_statuses = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type='lead_status' ORDER BY value");
                                                 while ($rows_statuses = $result_statuses->fetch_array()) {
-                                                    // $lead_status        = s__($rows_statuses['lead_status']);
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
                                                     <option value="<?php echo $rows_statuses['id']; ?>" <?php if ($action == "edit_$module" && $rows_statuses['id'] == $lead_status) { ?>selected <?php } else if ($rows_statuses['id'] == $lead_status) { ?>selected <?php } ?>>
-                                                        <?php echo $rows_statuses['status']; ?>
+                                                        <?php echo $rows_statuses['value']; ?>
                                                     </option>
 
                                                 <?php
@@ -581,14 +566,13 @@ if (!empty($id)) {
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_sources = $mysqli->query("SELECT * FROM `" . DB::SETUP_SOURCES  . "` WHERE publish=1 AND source_type='leads' ORDER BY source");
+                                                $result_sources = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type='lead_source' ORDER BY value");
                                                 while ($rows_sources = $result_sources->fetch_array()) {
-                                                    // $lead_source        = s__($rows_sources['lead_source']);
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
 
                                                     <option value="<?php echo $rows_sources['id']; ?>" <?php if ($action == "edit_$module" && $rows_sources['id'] == $lead_source) { ?>selected <?php } else if ($rows_sources['id'] == $lead_source) { ?>selected <?php } ?>>
-                                                        <?php echo $rows_sources['source']; ?>
+                                                        <?php echo $rows_sources['value']; ?>
                                                     </option>
 
                                                 <?php
@@ -694,12 +678,12 @@ if (!empty($id)) {
                                             <option value="0">&nbsp;</option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                            $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                             while ($rows = $result->fetch_array()) {
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>
                                                 <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $country) { ?>selected <?php } else if ($rows['id'] == $country) { ?>selected <?php } ?>>
-                                                    <?php echo $rows['country_name']; ?>
+                                                    <?php echo $rows['country']; ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
@@ -740,7 +724,7 @@ if (!empty($id)) {
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
                                             if (!empty($country)) {
-                                                $result_states = $mysqli->query("SELECT * FROM `" . DB::GEO_STATES  . "` WHERE publish=1 AND country_id=$country");
+                                                $result_states = $mysqli->query("SELECT * FROM `" . DB::GEO_STATES  . "` WHERE is_active=1 AND country_id=$country");
                                             } else {
                                                 $result_states = $mysqli->query("SELECT * FROM `" . DB::GEO_STATES  . "` WHERE id=0");
                                             }
@@ -794,7 +778,7 @@ if (!empty($id)) {
                                             <option value='0'></option>
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_items = $mysqli->query("SELECT * FROM `" . DB::ITEMS  . "` WHERE publish=1 AND item_type = 'services' ORDER BY item_name");
+                                            $result_items = $mysqli->query("SELECT * FROM `" . DB::ITEMS  . "` WHERE is_active=1 AND item_type = 'services' ORDER BY item_name");
                                             while ($rows_items = $result_items->fetch_array()) {
                                                 $item_name        = s__($rows_items['item_name']);
                                                 // -------------------------------------------------------------------------------------------------
@@ -892,6 +876,7 @@ if (!empty($id)) {
 
 
 
+                    <?php if (false) { ?>
                     <!-- <div class="col-lg-2">
 
                         <div class="card card-body">
@@ -918,18 +903,17 @@ if (!empty($id)) {
                         </div>
 
                     </div> -->
+                    <?php } ?>
 
                 </div>
             </div>
 
 
+            </form>
         </div>
 
-
         <?php include('admin_elements/copyright.php'); ?>
-</div>
-</form>
-
+    </div>
 </div>
 
 

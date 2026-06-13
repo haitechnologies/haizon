@@ -109,8 +109,8 @@ if (isset($_POST['lead_id']))           $lead_id     = e_s__($_POST['lead_id']);
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
             <div class="row mt-2">
                 <div class="col-lg-12">
                     <?php include('admin_elements/lead_navbar.php'); ?>

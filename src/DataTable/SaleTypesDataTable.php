@@ -10,23 +10,28 @@ use App\Helper\ActionButtonHelper;
 
 class SaleTypesDataTable extends BaseDataTable
 {
-    protected $table = DB::SALE_TYPES;
-    protected $searchFields = ['sale_type', 'description'];
-    protected $sortableColumns = [0 => 'id', 1 => 'sale_type', 2 => 'description', 3 => 'created_at', 4 => 'publish', 5 => 'id'];
+    protected $table = DB::DOCUMENT_TYPES;
+    protected $searchFields = ['name', 'description'];
+    protected $sortableColumns = [0 => 'id', 1 => 'name', 2 => 'description', 3 => 'created_at', 4 => 'is_active', 5 => 'id'];
+
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT * FROM `" . $this->table . "` WHERE context = 'sale'" . $this->getOrgIdWhereClause();
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id      = (int)($row['id'] ?? 0);
-        $name    = (string)($row['sale_type'] ?? '');
+        $name    = (string)($row['name'] ?? '');
         $desc    = (string)($row['description'] ?? '');
         $created = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
-        $badge   = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
+        $active  = (int)($row['is_active'] ?? 0);
+        $badge   = $active ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
             $id,
             htmlspecialchars($name),
             htmlspecialchars($desc),
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $badge,
             $this->getActionButtons($id, 'sale_types'),
         ];

@@ -205,8 +205,8 @@ $result_customer_invoices = $db->fetchAll(
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
+        <div class="page-header page-header-light shadow carriers-page-header">
+            <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
                 <div class="d-flex">
                     <div class="breadcrumb py-2">
                         <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
@@ -295,7 +295,7 @@ $result_customer_invoices = $db->fetchAll(
                                                 $grand_tax              = s__($row['grand_tax']);
                                                 $grand_total            = s__($row['grand_total']);
                                                 $created_at             = s__($row['created_at']);
-                                                $is_active = s__($row['publish']);
+                                                $is_active = s__($row['is_active']);
 
                                                 $invoice_date       = processDateYtoD($invoice_date);
                                                 $expiry_date        = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));

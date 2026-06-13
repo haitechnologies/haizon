@@ -39,7 +39,7 @@ class DeletionManager
     public static function init(mixed $db, ?string $project_pre = null): void
     {
         self::$db = $db;
-        self::$project_pre = $project_pre ?? $GLOBALS['project_pre'] ?? 'HAI';
+        self::$project_pre = $project_pre ?? $GLOBALS['project_pre'] ?? 'haizon';
     }
 
     /**
@@ -207,7 +207,7 @@ class DeletionManager
 
     private static function tableToModuleSlug(string $table_name): string
     {
-        $slug = preg_replace('/^(hai_|haipulse_|erp_)/', '', $table_name);
+        $slug = preg_replace('/^(hai_|haizon_|erp_)/', '', $table_name);
         if ($slug === null) {
             $slug = $table_name;
         }

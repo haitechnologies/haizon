@@ -1,8 +1,9 @@
 <div class="col-lg-4">
 
     <?php
+    use App\Core\DB;
     // ----------------------------------------------------------------
-    $result_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=$customer_id AND is_primary=1");
+    $result_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE contactable_type='Customer' AND contactable_id=$customer_id AND is_primary=1");
     while ($rows_contacts = $result_contacts->fetch_array()) {
         // ----------------------------------------------------------------
     ?>
@@ -58,7 +59,7 @@
 
                 <?php
                 $billing_country = ((empty($billing_country)) ? '0' : $billing_country);
-                $rs_billing     = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE customer_id=$customer_id AND type='billing' ");
+                $rs_billing     = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE addressable_type='Customer' AND addressable_id=$customer_id AND type='billing' ");
                 $row_billing    = $rs_billing->fetch_array();
 
                 // IF EXISTS - UPDATE
@@ -106,7 +107,7 @@
 
                 <?php
                 $shipping_country = ((empty($shipping_country)) ? '0' : $shipping_country);
-                $rs_shipping     = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE customer_id=$customer_id AND type='shipping' ");
+                $rs_shipping     = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE addressable_type='Customer' AND addressable_id=$customer_id AND type='shipping' ");
                 $row_shipping    = $rs_shipping->fetch_array();
 
                 // IF EXISTS - UPDATE
@@ -189,7 +190,7 @@
 
     <?php
     //COUNT QUERY
-    $rs                     = $mysqli->query("SELECT id FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=$customer_id ");
+    $rs                     = $mysqli->query("SELECT id FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE contactable_type='Customer' AND contactable_id=$customer_id ");
     $total_contact_persons  = $rs->num_rows;
 
     ?>
@@ -213,7 +214,7 @@
 
                 <?php
                 // ----------------------------------------------------------------
-                $result_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE customer_id=$customer_id AND is_primary=0");
+                $result_contacts = $mysqli->query("SELECT * FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE contactable_type='Customer' AND contactable_id=$customer_id AND is_primary=0");
                 while ($rows_contacts = $result_contacts->fetch_array()) {
                     // ----------------------------------------------------------------
                 ?>

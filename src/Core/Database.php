@@ -63,7 +63,7 @@ class Database
         ];
 
         try {
-            $this->pdo = new PDO($dsn, $this->user, $this->password, $options);
+            $this->pdo = new DynamicPrefixPdo($dsn, $this->user, $this->password, $options);
             return $this->pdo;
         } catch (PDOException $e) {
             throw new RuntimeException(
@@ -85,6 +85,7 @@ class Database
     {
         $pdo = $this->getConnection();
         try {
+            $params = DynamicPrefixRewriter::rewriteParams($params);
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt;
@@ -133,6 +134,7 @@ class Database
     {
         $pdo = $this->getConnection();
         try {
+            $params = DynamicPrefixRewriter::rewriteParams($params);
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             return $pdo->lastInsertId();

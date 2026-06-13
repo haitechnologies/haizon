@@ -65,9 +65,7 @@ switch ($module) {
         exportCustomerContacts($exporter, $mysqli, $filters);
         break;
     
-    case 'customer_documents':
-        exportCustomerDocuments($exporter, $mysqli, $filters);
-        break;
+
     
     
     case 'categories':
@@ -452,7 +450,7 @@ function exportCustomerContacts($exporter, $mysqli, $filters) {
             cc.email,
             cc.phone,
             cc.notes,
-            cc.publish AS is_active,
+            cc.is_active,
             cc.created_at
         FROM `" . DB::CUSTOMER_CONTACTS . "` cc
         LEFT JOIN `" . DB::CUSTOMERS . "` c ON cc.customer_id = c.id
@@ -484,13 +482,6 @@ function exportCustomerContacts($exporter, $mysqli, $filters) {
     $exporter->exportFromQuery($query, 'customer_contacts', $columns, $columnHeaders);
 }
 
-/**
- * Export Customer Documents
- */
-function exportCustomerDocuments($exporter, $mysqli, $filters) {
-    // erp_customer_documents table decommissioned — export returns empty result
-    return;
-}
 
 /**
  * Export Geo Cities

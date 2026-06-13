@@ -24,18 +24,22 @@ if (isRemote()) {
     $db_password = $_ENV['REMOTE_DB_PASSWORD'];
 } else {
     $db_hostname = $_ENV['DB_HOSTNAME'] ?? 'localhost';
-    $db_database = $_ENV['DB_DATABASE'] ?? 'haipulse';
+    $db_database = $_ENV['DB_DATABASE'] ?? 'haizon';
     $db_username = $_ENV['DB_USERNAME'] ?? 'root';
     $db_password = $_ENV['DB_PASSWORD'] ?? 'hai@30';
 }
 
 // Create connection
-$conn = new mysqli($db_hostname, $db_username, $db_password, $db_database);
+$conn = new \App\Core\DynamicPrefixMysqli($db_hostname, $db_username, $db_password, $db_database);
 
 // Check connection
 if ($conn->connect_error) {
     die("Database connection failed: " . $conn->connect_error . "\n");
 }
+
+// Set global table prefix
+$tbl_prefix = $_ENV['DB_PREFIX'] ?? 'erp_';
+$GLOBALS['TBL']['PREFIX'] = $tbl_prefix;
 
 // Set charset
 $conn->set_charset("utf8mb4");

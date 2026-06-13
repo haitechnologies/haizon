@@ -41,7 +41,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
     } else {
         $update_row = $mysqli->query("
             UPDATE `" . DB::CATEGORY_HS_CODES . "` SET
-                category_id     = '" . $category_id . "',
+                mappable_type   = 'Category',
+                mappable_id     = '" . $category_id . "',
                 hs_code_id      = '" . $hs_code_id . "',
                 relevance       = '" . $relevance . "',
                 notes           = '" . $notes . "',
@@ -62,9 +63,9 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         $error_message = 'Category ID and HS Code ID are mandatory.';
     } else {
         $insert_row = $mysqli->query("INSERT INTO `" . DB::CATEGORY_HS_CODES . "`
-            (category_id, hs_code_id, relevance, notes) 
+            (mappable_type, mappable_id, hs_code_id, relevance, notes) 
             VALUES 
-            ('" . $category_id . "', '" . $hs_code_id . "', '" . $relevance . "', '" . $notes . "')");
+            ('Category', '" . $category_id . "', '" . $hs_code_id . "', '" . $relevance . "', '" . $notes . "')");
         
         if ($insert_row) {
             $success_message = "The $module_caption has been saved successfully.";
@@ -77,7 +78,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 }
 
 if (!empty($id)) {
-    $result = $mysqli->query("SELECT * FROM `" . DB::CATEGORY_HS_CODES . "` WHERE id=$id");
+    $result = $mysqli->query("SELECT *, mappable_id AS category_id FROM `" . DB::CATEGORY_HS_CODES . "` WHERE id=$id AND mappable_type = 'Category'");
     $row = $result ? $result->fetch_array() : null;
 
     if ($row) {
@@ -91,7 +92,30 @@ if (!empty($id)) {
 ?>
 
 <div class="content-wrapper">
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
+                    <button type="submit" form="frmcategory_hs_codes" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
             <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
@@ -100,30 +124,6 @@ if (!empty($id)) {
         <?php } ?>
         <?php echo csrf_field(); ?>
 
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php echo (($action == "edit_$module" || $action == "update_$module") && !empty($id)) ? 'Edit' : 'New'; ?> <?php echo $module_caption; ?></h5>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="content-inner">
-            <div class="content">
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
                 <div class="card">
                     <div class="card-body">
@@ -182,6 +182,8 @@ if (!empty($id)) {
             </div>
         </div>
     </form>
+</div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

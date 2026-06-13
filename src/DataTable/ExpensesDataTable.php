@@ -89,7 +89,7 @@ class ExpensesDataTable extends BaseDataTable
         return [
             htmlspecialchars((string)($row['expense_date'] ?? '')),
             htmlspecialchars((string)($this->relatedDataCache['expense_accounts'][$id] ?? '')),
-            htmlspecialchars((string)($row['reference_no'] ?? '')),
+            '<a href="expense_overview.php?id=' . $id . '" class="text-decoration-none">' . htmlspecialchars((string)($row['reference_no'] ?? '')) . '</a>',
             htmlspecialchars((string)($this->relatedDataCache['vendors'][$vendorId] ?? '')),
             htmlspecialchars((string)($this->relatedDataCache['accounts'][$paidThroughId] ?? '')),
             htmlspecialchars((string)($this->relatedDataCache['customers'][$customerId] ?? '')),

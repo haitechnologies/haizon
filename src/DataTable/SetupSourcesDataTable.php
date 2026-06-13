@@ -14,17 +14,23 @@ use App\Helper\ActionButtonHelper;
 
 class SetupSourcesDataTable extends BaseDataTable
 {
-    protected $table = DB::SETUP_SOURCES;
-    protected $searchFields = ['source'];
+    protected $table = DB::TAXONOMIES;
+    protected $searchFields = ['value', 'type'];
     protected $sortableColumns = [
-        0 => 'id', 1 => 'source', 2 => 'source_type', 3 => 'created_at', 4 => 'is_active', 5 => 'id'
+        0 => 'id', 1 => 'value', 2 => 'type', 3 => 'created_at', 4 => 'is_active', 5 => 'id'
     ];
+
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT * FROM `" . $this->table . "` WHERE type IN ('customer_source', 'lead_source')" . $this->getOrgIdWhereClause();
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
-        $source = $row['source'] ?? '';
-        $sourceType = $row['source_type'] ?? '';
+        $source = $row['value'] ?? '';
+        $typeVal = $row['type'] ?? '';
+        $sourceType = ($typeVal === 'customer_source') ? 'customers' : (($typeVal === 'lead_source') ? 'leads' : $typeVal);
         $publish = (int)$row['is_active'];
         $createdAt = $row['created_at'] ?? '';
 

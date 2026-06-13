@@ -1,4 +1,12 @@
 <?php
+/**
+ * @db-table erp_invoices
+ * @db-table erp_invoice_items
+ * @org-scoped true
+ * @permissions invoices
+ * @see src/Service/InvoiceService.php
+ * @see src/DataTable/InvoicesDataTable.php
+ */
 
 
 use App\Core\DB;
@@ -117,7 +125,7 @@ if ($action == "update_$module" || $action == "add_$module") {
         array_push($tax_arr,                    e_s__($post_tax));
         array_push($tax_amount_arr,             e_s__($post_tax_amount));
         array_push($total_arr,                  e_s__($post_total));
-    } //for 
+    } //for
 }
 
 
@@ -162,6 +170,7 @@ if ($action == "update_$module" || $action == "add_$module") {
     $grand_tax                  = e_s__($_POST['grand_tax']);
     $grand_total                = e_s__($_POST['grand_total']);
 } else {
+    $invoice_status             = 'draft';
     $invoice_date               = date('d-m-Y', time());
     $expiry_date                = '';
     $reference_no               = '';
@@ -422,7 +431,7 @@ if (
         $grand_tax                  = (string)$invoice->grandTax;
         $grand_total                = (string)$invoice->grandTotal;
 
-        $is_active = $invoice->publish ? 1 : 0;
+        $is_active = $invoice->isActive ? 1 : 0;
 
         $invoice_date               = processDateYtoD($invoice_date);
         $expiry_date                = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
@@ -464,79 +473,51 @@ if ($total_rows == 0) $total_rows = 1;
 <div class="content-wrapper">
 
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="invoice_status" id="invoice_status" value="" />
-        <input type="hidden" name="save_and_send" id="save_and_send" value="" />
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-        <?php echo csrf_field(); ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h1 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h1>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
                 <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded mt-1">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Invoice #: <?php echo $invoice_no; ?></label>
-                        </div>
-                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success ms-2">Invoice #: <?php echo $invoice_no; ?></span>
+                <?php } ?>
+                <span class="badge bg-primary bg-opacity-10 text-primary ms-2"><?php echo ((!empty($invoice_status)) ? ucwords($invoice_status) : ''); ?></span>
+            </div>
+
+            <div class="my-1 d-flex align-items-center gap-2">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <?php if (!empty($id)) { ?>
+                        <button type="button" form="frminvoices" class="submit-form btn btn-primary btn-sm">Save</button>
+                    <?php } else { ?>
+                        <button type="button" form="frminvoices" class="save-draft-invoice btn btn-primary btn-sm">Save as Draft</button>
+                    <?php } ?>
+                    <button type="button" form="frminvoices" class="save-and-send-invoice btn btn-info btn-sm">Save and Send</button>
                 <?php } ?>
 
-                <div class="p-3 rounded mt-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ((!empty($invoice_status)) ? ucwords($invoice_status) : ''); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <?php if (!empty($id)) { ?>
-                                    <button type="button" class="submit-form btn btn-primary btn-sm me-2">Save</button>
-                                <?php } else { ?>
-                                    <button type="button" class="save-draft-invoice btn btn-primary btn-sm me-2">Save as Draft</button>
-                                <?php } ?>
-
-                                <button type="button" class="save-and-send-invoice btn btn-info btn-sm me-2">Save and Send</button>
-
-                            <?php } ?>
-
-                            <?php if (!empty($id)) { ?>
-                                <a href="invoice_overview.php?invoice_id=<?php echo $id; ?>" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-                            <?php } else { ?>
-                                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-
+                <?php if (!empty($id)) { ?>
+                    <a href="invoice_overview.php?invoice_id=<?php echo $id; ?>" class="btn btn-light btn-sm">Cancel</a>
+                <?php } else { ?>
+                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                <?php } ?>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="invoice_status" id="invoice_status" value="<?php echo $invoice_status; ?>" />
+                <input type="hidden" name="save_and_send" id="save_and_send" value="" />
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
+                <?php echo csrf_field(); ?>
 
 
                 <div class="col-xl-12">
@@ -912,7 +893,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                                     <option value="<?php echo $i; ?>" <?php echo ((!empty($tax_arr[$index]) && $tax_arr[$index] == $i) ? 'selected="selected"' : ''); ?>>
                                                                         <?php echo $i; ?>%
                                                                     </option>
-                                                                <?php } // for 
+                                                                <?php } // for
                                                                 ?>
                                                             </select>
 
@@ -950,9 +931,9 @@ if ($total_rows == 0) $total_rows = 1;
                                         </div>
 
                                     <?php
-                                        // -------------------------------------------------- 
-                                    } // for 
-                                    // -------------------------------------------------- 
+                                        // --------------------------------------------------
+                                    } // for
+                                    // --------------------------------------------------
                                     ?>
 
                                     <div id="add_row_here"></div>
@@ -1396,15 +1377,13 @@ if ($total_rows == 0) $total_rows = 1;
 
 
 
-                    </div>
-                </div>
-
             </div>
+        </form>
+    </div>
 
-
-            <?php include('admin_elements/copyright.php'); ?>
-        </div>
-    </form>
+    <?php include('admin_elements/copyright.php'); ?>
+</div>
+</div>
 </div>
 
 

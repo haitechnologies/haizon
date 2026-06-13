@@ -155,9 +155,7 @@ if ($trial_result) {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="card">
-
-        <div class="page-header">
+    <div class="page-header page-header-light shadow carriers-page-header">
             <div class="page-header-content">
 
                 <div class="row mt-2">
@@ -191,7 +189,7 @@ if ($trial_result) {
                 }
             </script>
 
-            <div class="page-header-content border-top">
+            <div class="page-header-content border-top carriers-page-header-content">
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -266,8 +264,7 @@ if ($trial_result) {
                 </div>
 
             </div>
-        </div>
-    </div>
+</div>
     <!-- /page header -->
 
 

@@ -370,7 +370,7 @@ function updateSystemColorSetting(&$mysqli, $slug, $value) {
                   WHERE setting_slug = '{$slug}'";
 	} else {
 		// Record doesn't exist - INSERT
-		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) 
+		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) 
 				  VALUES ('{$slug}', '{$settingName}', '{$value}', '{$hint}', 1, 1, 1, NOW(), NOW())";
 	}
     
@@ -398,7 +398,7 @@ function updateSystemSetting(&$mysqli, $slug, $value, $type = 'text') {
                   WHERE setting_slug = '{$slug}'";
 	} else {
 		// Record doesn't exist - INSERT
-		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) 
+		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) 
 				  VALUES ('{$slug}', '{$settingName}', '{$value}', '{$hint}', 1, 1, 1, NOW(), NOW())";
 	}
     
@@ -956,7 +956,7 @@ $login_logo			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting
 								<div class="settings-group">
 									<div class="form-section">
 										<label class="form-label"><i class="ph-text"></i> Software Name</label>
-										<input type="text" class="form-control" name="software_name" id="software_name" value="<?php echo $software_name; ?>" placeholder="e.g., HAIPULSE">
+										<input type="text" class="form-control" name="software_name" id="software_name" value="<?php echo $software_name; ?>" placeholder="e.g., HAIZON">
 										<div class="form-text">Name displayed throughout the application</div>
 									</div>
 
@@ -1629,11 +1629,11 @@ $login_logo			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting
 					</div>
 				</div>
 				<!-- /Tab Content -->
-				<?php include('admin_elements/copyright.php'); ?>
 			</div>
 		</div>
 	</form>
-
+	<?php include('admin_elements/copyright.php'); ?>
+</div>
 </div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

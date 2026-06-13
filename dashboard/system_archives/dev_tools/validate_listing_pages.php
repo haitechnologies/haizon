@@ -10,7 +10,7 @@
  *   php dashboard/validate_listing_pages.php
  * 
  * Or from browser:
- *   http://localhost/haipulse/dashboard/validate_listing_pages.php
+ *   http://localhost/haizon/dashboard/validate_listing_pages.php
  */
 
 // Check if CLI mode
@@ -19,11 +19,11 @@ $isCLI = (php_sapi_name() === 'cli');
 // Load requirements based on mode
 if ($isCLI) {
     // CLI mode: minimal bootstrapping
-    require_once __DIR__ . '/../config/database.php';
-    require_once __DIR__ . '/../config/globals.php';
+    require_once __DIR__ . '/../../../config/database.php';
+    require_once __DIR__ . '/../../../config/globals.php';
 } else {
     // Web mode: full bootstrap with security
-    require_once __DIR__ . '/bootstrap.php';
+    require_once __DIR__ . '/../../bootstrap.php';
     
     // Require System Admin access
     if (!has_full_access()) {
@@ -31,7 +31,7 @@ if ($isCLI) {
     }
 }
 
-$dashboardPath = __DIR__;
+$dashboardPath = dirname(__DIR__, 2);
 $listingFiles = glob($dashboardPath . '/listing_*.php');
 
 if (!$isCLI) {

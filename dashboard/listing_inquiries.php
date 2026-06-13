@@ -255,12 +255,12 @@ if (($_POST['action'] ?? null) == 'update_inquiries' && !empty($_POST['id'])) {
 			. '<div style="background:#f9f9f9;border-left:4px solid #0d6efd;padding:12px 16px;margin:16px 0;">'
 			. nl2br(htmlspecialchars($replyBody))
 			. '</div>'
-			. '<p style="color:#888;font-size:13px;margin-top:24px;">This is a reply to your inquiry submitted on HAIPULSE.</p>'
+			. '<p style="color:#888;font-size:13px;margin-top:24px;">This is a reply to your inquiry submitted on HAIZON.</p>'
 			. '</div>';
 
-		$supportEmail  = $_ENV['MAIL_FROM_ADDRESS'] ?? 'support@haipulse.com';
-		$originalMsgId = '<inquiry-' . $inquiryId . '@haipulse.com>';
-		$replyMsgId    = '<inquiry-' . $inquiryId . '-r-' . time() . '@haipulse.com>';
+		$supportEmail  = $_ENV['MAIL_FROM_ADDRESS'] ?? 'support@haizon.com';
+		$originalMsgId = '<inquiry-' . $inquiryId . '@haizon.com>';
+		$replyMsgId    = '<inquiry-' . $inquiryId . '-r-' . time() . '@haizon.com>';
 
 		$headers = [
 			'Reply-To' => $supportEmail,

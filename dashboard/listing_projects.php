@@ -92,8 +92,8 @@ if (($action == "delete_$module" && !empty($id))) {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <h5 class="ms-2"> <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords($module); ?></a></h5>
@@ -132,8 +132,9 @@ if (($action == "delete_$module" && !empty($id))) {
             </div>
         </div>
 
+        </div>
+
         <?php include('admin_elements/copyright.php'); ?>
-    </div>
 </div>
 
 <script>

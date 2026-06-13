@@ -587,64 +587,6 @@ foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
 </div>
 <!-- /organizations -->
 
-<!-- Account Panel -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="accountPanel" aria-labelledby="accountPanelLabel">
-  <div class="offcanvas-header py-2 border-bottom">
-    <h5 class="offcanvas-title" id="accountPanelLabel">My Account</h5>
-    <button type="button" class="btn btn-light btn-sm btn-icon border-transparent rounded-pill" data-bs-dismiss="offcanvas">
-      <i class="ph-x"></i>
-    </button>
-  </div>
-
-  <div class="offcanvas-body p-0">
-    <div class="p-3 border-bottom d-flex align-items-center gap-3">
-      <img src="<?php echo htmlspecialchars($footerProfilePhoto, ENT_QUOTES, 'UTF-8'); ?>" alt="Profile" class="rounded-pill" style="width:44px;height:44px;object-fit:cover;">
-      <div>
-        <div class="fw-semibold"><?php echo htmlspecialchars($footerProfileName, ENT_QUOTES, 'UTF-8'); ?></div>
-        <div class="small text-muted">Admin Account</div>
-      </div>
-    </div>
-
-    <?php if (Roles::isSystemAdmin($session_role_id)): ?>
-      <div class="p-3 border-bottom">
-        <div class="text-muted text-uppercase fs-sm fw-semibold mb-2">Admin Options</div>
-        <div class="d-grid gap-2">
-          <a href="listing_modules.php" class="btn btn-sm btn-light text-start">
-            <i class="ph-list-numbers me-2"></i> Modules
-          </a>
-          <a href="global_settings.php" class="btn btn-sm btn-light text-start">
-            <i class="ph-sliders-horizontal me-2"></i> Global Settings
-          </a>
-          <a href="setup.php" class="btn btn-sm btn-light text-start">
-            <i class="ph-wrench me-2"></i> System Tools
-          </a>
-        </div>
-      </div>
-    <?php endif; ?>
-
-    <div class="p-3">
-      <div class="text-muted text-uppercase fs-sm fw-semibold mb-2">Profile & Security</div>
-      <div class="d-grid gap-2">
-        <a href="profile.php" class="btn btn-sm btn-light text-start">
-          <i class="ph-user-circle me-2"></i> My Profile
-        </a>
-        <a href="change_password.php" class="btn btn-sm btn-light text-start">
-          <i class="ph-key me-2"></i> Change Password
-        </a>
-        <a href="mfa_settings.php" class="btn btn-sm btn-light text-start">
-          <i class="ph-shield-check me-2"></i> Two-Factor Authentication
-        </a>
-      </div>
-
-      <div class="pt-3 mt-3 border-top">
-        <a href="logout.php" class="btn btn-sm btn-outline-danger w-100 text-start">
-          <i class="ph-sign-out me-2"></i> Logout
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- /account panel -->
 
 <!-- Systems Panel -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="systemsPanel" aria-labelledby="systemsPanelLabel">
@@ -667,9 +609,11 @@ foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
       <?php else: ?>
         <div class="d-grid gap-2">
           <?php foreach ($footerAvailableSystems as $sys): ?>
-            <a href="<?php echo htmlspecialchars((string)$sys['href'], ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-sm btn-light text-start">
-              <i class="<?php echo htmlspecialchars((string)$sys['icon'], ENT_QUOTES, 'UTF-8'); ?> me-2"></i>
-              <span class="fw-semibold"><?php echo htmlspecialchars((string)$sys['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+            <a href="<?php echo htmlspecialchars((string)$sys['href'], ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-sm btn-light text-start w-100 d-flex flex-column align-items-start">
+              <div class="d-flex align-items-center mb-1">
+                <i class="<?php echo htmlspecialchars((string)$sys['icon'], ENT_QUOTES, 'UTF-8'); ?> me-2"></i>
+                <span class="fw-semibold"><?php echo htmlspecialchars((string)$sys['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+              </div>
               <div class="small text-muted ms-4"><?php echo htmlspecialchars((string)$sys['desc'], ENT_QUOTES, 'UTF-8'); ?></div>
             </a>
           <?php endforeach; ?>
@@ -679,6 +623,10 @@ foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
   </div>
 </div>
 <!-- /systems panel -->
+
+<?php if (!empty($pageHelpData)): ?>
+    <?php include(__DIR__ . '/page_help_panel.php'); ?>
+<?php endif; ?>
 
 </main>
 <!-- /main content -->

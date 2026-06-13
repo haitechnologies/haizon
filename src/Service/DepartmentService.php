@@ -67,6 +67,7 @@ class DepartmentService
             organizationId: $organizationId,
             department: $name,
             publish: true,
+            isActive: true,
             createdBy: $createdBy
         );
 
@@ -101,6 +102,7 @@ class DepartmentService
             organizationId: $dept->organizationId,
             department: $name,
             publish: $publish,
+            isActive: $publish,
             createdAt: $dept->createdAt,
             updatedAt: null,
             createdBy: $dept->createdBy

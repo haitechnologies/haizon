@@ -31,8 +31,8 @@ class DesignationRepository
      */
     public function find(int $id): ?Designation
     {
-        $sql = "SELECT id, organization_id, designation, publish, created_at, updated_at, created_by 
-                FROM `erp_designations` 
+        $sql = "SELECT id, organization_id, designation, is_active, created_at, updated_at, created_by 
+                FROM `{DB::DESIGNATIONS}` 
                 WHERE id = :id";
 
         $row = $this->db->fetchOne($sql, ['id' => $id]);
@@ -51,8 +51,8 @@ class DesignationRepository
      */
     public function findAll(int $organizationId): array
     {
-        $sql = "SELECT id, organization_id, designation, publish, created_at, updated_at, created_by 
-                FROM `erp_designations` 
+        $sql = "SELECT id, organization_id, designation, is_active, created_at, updated_at, created_by 
+                FROM `{DB::DESIGNATIONS}` 
                 WHERE organization_id = :organization_id 
                 ORDER BY designation ASC";
 
@@ -75,10 +75,10 @@ class DesignationRepository
     public function existsByName(string $name, ?int $excludeId = null): bool
     {
         if ($excludeId !== null) {
-            $sql = "SELECT id FROM `erp_designations` WHERE designation = :name AND id != :exclude_id LIMIT 1";
+            $sql = "SELECT id FROM `{DB::DESIGNATIONS}` WHERE designation = :name AND id != :exclude_id LIMIT 1";
             $params = ['name' => $name, 'exclude_id' => $excludeId];
         } else {
-            $sql = "SELECT id FROM `erp_designations` WHERE designation = :name LIMIT 1";
+            $sql = "SELECT id FROM `{DB::DESIGNATIONS}` WHERE designation = :name LIMIT 1";
             $params = ['name' => $name];
         }
 
@@ -105,13 +105,13 @@ class DesignationRepository
      */
     private function insert(Designation $designation): Designation
     {
-        $sql = "INSERT INTO `erp_designations` (organization_id, designation, publish, created_by) 
-                VALUES (:organization_id, :designation, :publish, :created_by)";
+        $sql = "INSERT INTO `{DB::DESIGNATIONS}` (organization_id, designation, is_active, created_by) 
+                VALUES (:organization_id, :designation, :is_active, :created_by)";
 
         $params = [
             'organization_id' => $designation->organizationId,
             'designation' => $designation->designation,
-            'publish' => $designation->publish ? 1 : 0,
+            'is_active' => $designation->publish ? 1 : 0,
             'created_by' => $designation->createdBy,
         ];
 
@@ -124,17 +124,17 @@ class DesignationRepository
      */
     private function update(Designation $designation): Designation
     {
-        $sql = "UPDATE `erp_designations` 
+        $sql = "UPDATE `{DB::DESIGNATIONS}` 
                 SET organization_id = :organization_id, 
                     designation = :designation, 
-                    publish = :publish, 
+                    is_active = :is_active, 
                     created_by = :created_by 
                 WHERE id = :id";
 
         $params = [
             'organization_id' => $designation->organizationId,
             'designation' => $designation->designation,
-            'publish' => $designation->publish ? 1 : 0,
+            'is_active' => $designation->publish ? 1 : 0,
             'created_by' => $designation->createdBy,
             'id' => $designation->id,
         ];
@@ -151,7 +151,7 @@ class DesignationRepository
      */
     public function delete(int $id): bool
     {
-        $sql = "DELETE FROM `erp_designations` WHERE id = :id";
+        $sql = "DELETE FROM `{DB::DESIGNATIONS}` WHERE id = :id";
         $stmt = $this->db->execute($sql, ['id' => $id]);
         return $stmt->rowCount() > 0;
     }
@@ -166,6 +166,7 @@ class DesignationRepository
             organizationId: $row['organization_id'] !== null ? (int)$row['organization_id'] : null,
             designation: (string)$row['designation'],
             publish: (bool)$row['publish'],
+            isActive: (bool)($row['is_active'] ?? $row['publish'] ?? true),
             createdAt: (string)($row['created_at'] ?? ''),
             updatedAt: (string)($row['updated_at'] ?? ''),
             createdBy: (int)($row['created_by'] ?? 0)

@@ -177,8 +177,8 @@ if ($action == "generate_report") {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
             <div class="d-flex">
                 <div class="breadcrumb py-2">
                     <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
@@ -258,7 +258,7 @@ if ($action == "generate_report") {
                                             <select name="consignee_id" id="consignee_id" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE publish=1 ORDER BY consignee_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE is_active=1 ORDER BY consignee_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $consignee_name = $rows["consignee_name"];
                                                 ?>
@@ -480,7 +480,7 @@ if ($action == "generate_report") {
 
                                 // Calculate Remaining QTY (same formula as shipping_stocks.php)
                                 $remaining_qty = 0;
-                                $rs         = $mysqli->query("SELECT sum(out_qty) FROM `" . tbl_shipping_stock_items . "` WHERE shipping_advice_item_id=$id");
+                                $rs         = $mysqli->query("SELECT sum(out_qty) FROM `" . DB::SHIPPING_STOCK_ITEMS . "` WHERE shipping_advice_item_id=$id");
                                 $rw         = $rs->fetch_array();
                                 $total_out_qty = (($rw[0] > 0) ? $rw[0] : 0);
                                 $remaining_qty = $qty - $total_out_qty;

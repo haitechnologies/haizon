@@ -50,7 +50,27 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
 ?>
 
 <div class="content-wrapper">
-    <?php include('admin_elements/page_header.php'); ?>
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo $module_caption; ?></a>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button)) { ?>
+                    <a href="leave_requests.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>Add Leave
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
     <div class="content-inner">
         <div class="content">
             <?php include('admin_elements/breadcrumb.php'); ?>
@@ -63,9 +83,8 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
             <?php } ?>
 
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
                     <h5 class="mb-0">Leave Requests</h5>
-                    <a href="leave_requests.php" class="btn btn-primary">Add Leave</a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

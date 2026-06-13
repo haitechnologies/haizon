@@ -309,7 +309,7 @@ if (
     $approved_time_resubmission = '';
 
 
-    $publish                = s__($row['publish'] ?? '');
+    $publish                = s__($row['is_active'] ?? '');
 
     // $expiry_date        = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
 
@@ -350,8 +350,35 @@ if (
 
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="publish" id="publish" <?php if ($publish == '1') { ?>checked="checked" <?php } ?> form="frmprojects">
+                    <label class="form-check-label" for="publish">Publish</label>
+                </div>
+            </div>
+            <div class="my-1">
+                <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
+                    <button type="submit" form="frmprojects" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
             <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
@@ -360,54 +387,7 @@ if (
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_<?php echo $module; ?>.php" class="breadcrumb-item">Projects</a>
-                        <span class="breadcrumb-item active"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
-                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Project #: <?php echo $id; ?></label>
-                        </div>
-                    </div>
-                <?php } ?>
-
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong> Job ID #<?php if (!empty($job_id)) echo ucwords($job_id); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-
-                        <button type="submit" class="btn btn-primary my-1 me-2">Save</button>
-
-                        <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm my-1">Cancel</a>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
 
                 <div class="col-xl-12">

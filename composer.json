@@ -1,6 +1,6 @@
 {
-    "name": "haitechnologies/haipulse",
-    "description": "Haipulse business directory and classifieds platform",
+    "name": "haitechnologies/haizon",
+    "description": "Haizon business directory and classifieds platform",
     "license": "proprietary",
     "require": {
         "phpoffice/phpspreadsheet": "^2.1",

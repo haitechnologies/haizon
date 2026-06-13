@@ -10,6 +10,31 @@ namespace App\Core;
  * Central location for all database table names with organized categories.
  * Provides IDE autocomplete, type safety, and eliminates runtime database queries.
  *
+ * ALIAS MAP — Constants that share the same physical table:
+ * ┌──────────────────────────────┬──────────────────────────┬────────────────────────────┐
+ * │ Constants                    │ Physical Table           │ Notes                      │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ RATE_LIMIT_ATTEMPTS,         │ erp_rate_limits          │ Single rate-limit table     │
+ * │ RATE_LIMIT_PUBLIC            │                          │                            │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ CUSTOMER_CONTACTS,           │ erp_contacts             │ Polymorphic: entity_type    │
+ * │ VENDOR_CONTACTS              │                          │ column distinguishes owner  │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ CUSTOMER_ADDRESSES,          │ erp_addresses            │ Polymorphic: entity_type    │
+ * │ VENDOR_ADDRESSES             │                          │ column distinguishes owner  │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ ATTACHMENTS, USER_DOCUMENTS, │ erp_attachments          │ Polymorphic: entity_type    │
+ * │ LEAD_ATTACHMENTS,            │                          │ column distinguishes owner  │
+ * │ VENDOR_ATTACHMENTS           │                          │                            │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ CATEGORY_HS_CODES,           │ erp_hs_code_mappings     │ Junction: category<->hscode │
+ * │ SUBCATEGORY_HS_CODES         │                          │                            │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ DEPARTMENTS, DEPARTMENT      │ erp_departments          │ Singular alias for compat   │
+ * ├──────────────────────────────┼──────────────────────────┼────────────────────────────┤
+ * │ WAREHOUSES, ORGANIZATIONS    │ erp_organizations        │ Warehouses ARE organizations│
+ * └──────────────────────────────┴──────────────────────────┴────────────────────────────┘
+ *
  * @package App\Core
  */
 class DB
@@ -33,10 +58,10 @@ class DB
     public const AUTHENTICATION_ACTIVITY = self::PREFIX . 'authentication_activity';
 
     /** Rate limiting attempts tracking table */
-    public const RATE_LIMIT_ATTEMPTS = self::PREFIX . 'rate_limit_attempts';
+    public const RATE_LIMIT_ATTEMPTS = self::PREFIX . 'rate_limits';
 
     /** Rate limiting public attempts tracking table */
-    public const RATE_LIMIT_PUBLIC = self::PREFIX . 'rate_limit_public';
+    public const RATE_LIMIT_PUBLIC = self::PREFIX . 'rate_limits';
 
     /** System permissions table */
     public const PERMISSIONS = self::PREFIX . 'permissions';
@@ -45,20 +70,35 @@ class DB
     public const MODULE_PERMISSIONS = self::PREFIX . 'module_permissions';
 
     // ================================
+    // FRONTEND TABLES
+    // ================================
+
+    /** @deprecated Table dropped — frontend users moved to erp_users */
+    public const FRONTEND_USERS = self::PREFIX . 'frontend_users';
+
+    /** @deprecated Table dropped — favorites removed */
+    public const FRONTEND_USER_FAVORITES = self::PREFIX . 'frontend_user_favorites';
+
+    // ================================
     // HR & PAYROLL TABLES
     // ================================
 
     /** Department master data */
-    public const DEPARTMENTS = self::PREFIX . 'department';
-
-    /** Department master data (modern singular) */
-    public const DEPARTMENT = self::PREFIX . 'department';
+    public const DEPARTMENTS = self::PREFIX . 'departments';
+    /** @alias DEPARTMENTS */
+    public const DEPARTMENT = self::PREFIX . 'departments';
 
     /** Employee designations */
     public const DESIGNATIONS = self::PREFIX . 'designations';
 
+    /** @deprecated Merged into erp_users — use DB::USERS with employee_code, designation_id, join_date, employment_status */
+    public const HR_EMPLOYEES = self::PREFIX . 'hr_employees';
+
+    /** HR leave balance snapshots */
+    public const HR_LEAVE_BALANCES = self::PREFIX . 'hr_leave_balances';
+
     /** User document records */
-    public const USER_DOCUMENTS = self::PREFIX . 'user_documents';
+    public const USER_DOCUMENTS = self::PREFIX . 'attachments';
 
     /** Attendance records */
     public const ATTENDANCE = self::PREFIX . 'attendance';
@@ -84,6 +124,12 @@ class DB
     /** Generated payslips */
     public const PAYSLIPS = self::PREFIX . 'payslips';
 
+    /** Payroll run line items */
+    public const HR_PAYROLL_RUN_ITEMS = self::PREFIX . 'hr_payroll_run_items';
+
+    /** Payroll component-to-account mappings */
+    public const HR_PAYROLL_COMPONENT_ACCOUNTS = self::PREFIX . 'hr_payroll_component_accounts';
+
     // ================================
     // SYSTEM & CONFIGURATION TABLES
     // ================================
@@ -94,7 +140,10 @@ class DB
     /** System modules table */
     public const MODULES = self::PREFIX . 'modules';
 
-    /** Error log read status tracking */
+    /** Schema migration tracking */
+    public const SCHEMA_MIGRATIONS = self::PREFIX . 'schema_migrations';
+
+    /** @deprecated Merged into BACKEND_ERROR_LOGS — kept for backward compat */
     public const ERROR_LOG_STATUS = self::PREFIX . 'error_log_status';
 
     /** Canonical backend error events sink */
@@ -124,10 +173,13 @@ class DB
     public const CUSTOMERS = self::PREFIX . 'customers';
 
     /** Customer contact persons */
-    public const CUSTOMER_CONTACTS = self::PREFIX . 'customer_contacts';
+    public const CUSTOMER_CONTACTS = self::PREFIX . 'contacts';
 
     /** Customer addresses (delivery, billing, etc.) */
-    public const CUSTOMER_ADDRESSES = self::PREFIX . 'customer_addresses';
+    public const CUSTOMER_ADDRESSES = self::PREFIX . 'addresses';
+
+    /** Customer transaction records (ledger entries) */
+    public const CUSTOMER_TRANSACTIONS = self::PREFIX . 'customer_transactions';
 
     /** Unified entity activity logs (leads + customers) */
     public const ENTITY_LOGS = self::PREFIX . 'entity_logs';
@@ -159,6 +211,9 @@ class DB
     /** System audit log for tracking user actions and events */
     public const AUDIT_LOG = self::PREFIX . 'audit_log';
 
+    /** Unified attachments and documents table */
+    public const ATTACHMENTS = self::PREFIX . 'attachments';
+
     /** Subscription tier change audit log */
     public const SUBSCRIPTION_LOGS = self::PREFIX . 'subscription_logs';
 
@@ -179,18 +234,20 @@ class DB
     /** API keys for Pro/Enterprise users */
     public const API_KEYS = self::PREFIX . 'api_keys';
 
+    /** Subscription payment records */
+    public const SUBSCRIPTION_PAYMENTS = self::PREFIX . 'subscription_payments';
+
     // ================================
     // BUSINESS LISTING SUBSCRIPTION TABLES
     // ================================
 
-    /** Business listing plan catalog (Free, Silver, Gold, Platinum) */
+    /** @deprecated Merged into SUBSCRIPTION_PLANS with plan_type='listing' — table dropped */
     public const LISTING_PLANS = self::PREFIX . 'listing_plans';
 
-    /** Per-company listing subscription records */
+    /** @deprecated Merged into SUBSCRIPTIONS — table dropped */
     public const LISTING_SUBSCRIPTIONS = self::PREFIX . 'listing_subscriptions';
 
-    /** @deprecated Decommissioned table */
-    public const PUBLIC_ADS = self::PREFIX . 'public_ads';
+    // PUBLIC_ADS removed — decommissioned table
 
     // ================================
     // GEOGRAPHY & LOCATION TABLES
@@ -234,7 +291,7 @@ class DB
     // SHIPPING & LOGISTICS TABLES
     // ================================
 
-    /** Shipping customers master data */
+    /** @deprecated Table dropped. Merged into CUSTOMERS with entity_type='shipping' */
     public const SHIPPING_CUSTOMERS = self::PREFIX . 'shipping_customers';
 
     /** Shipping advice documents */
@@ -252,6 +309,9 @@ class DB
     /** Shipping inventory snapshots */
     public const SHIPPING_STOCKS = self::PREFIX . 'shipping_stocks';
 
+    /** Shipping inventory snapshot items */
+    public const SHIPPING_STOCK_ITEMS = self::PREFIX . 'shipping_stock_items';
+
     /** Ports master data */
     public const PORTS = self::PREFIX . 'ports';
 
@@ -264,27 +324,30 @@ class DB
     /** Shippers master data */
     public const SHIPPERS = self::PREFIX . 'shippers';
 
+    /** Drivers master data */
+    /** @deprecated Use DB::USERS with vehicle_id instead */
+    public const DRIVERS = self::PREFIX . 'drivers';
+
     // ================================
     // SETUP & MASTER DATA TABLES
     // ================================
 
-    /** Lead/Customer sources (website, referral, etc.) */
-    public const SETUP_SOURCES = self::PREFIX . 'setup_sources';
+    // Note: SETUP_STATUSES, SETUP_TAGS, JOB_STATUSES are standalone tables (not in DB.php constants).
+    // They use publish/is_active sync triggers. See erp_setup_statuses, erp_setup_tags, erp_job_statuses.
+    /** Polymorphic taxonomies table for categorization (not for statuses/tags) */
+    public const TAXONOMIES = self::PREFIX . 'taxonomies';
 
-    /** Lead/Customer statuses */
-    public const SETUP_STATUSES = self::PREFIX . 'setup_statuses';
-
-    /** Tags for categorization */
-    public const SETUP_TAGS = self::PREFIX . 'setup_tags';
+    /** @deprecated Dummy constant for dynamic reports — no physical table */
+    public const BALANCE_SHEET = self::PREFIX . 'balance_sheet_dummy';
+    /** @deprecated Dummy constant for dynamic reports — no physical table */
+    public const GENERAL_LEDGER = self::PREFIX . 'general_ledger_dummy';
+    /** @deprecated Dummy constant for dynamic reports — no physical table */
+    public const TRIAL_BALANCE = self::PREFIX . 'trial_balance_dummy';
 
     /** Content moderation - banned words */
     public const BANNED_WORDS = self::PREFIX . 'banned_words';
 
-    /** @deprecated Decommissioned table */
-    public const BLOG_CATEGORIES = self::PREFIX . 'blog_categories';
-
-    /** @deprecated Decommissioned table */
-    public const BLOGS = self::PREFIX . 'blogs';
+    // BLOG_CATEGORIES, BLOGS removed — decommissioned tables
 
     /** CMS pages */
     public const PAGES = self::PREFIX . 'pages';
@@ -293,37 +356,28 @@ class DB
     // HS CODES (HARMONIZED SYSTEM)
     // ================================
 
-    /** @deprecated Decommissioned table */
-    public const HS_CODE_SETS = self::PREFIX . 'hs_code_sets';
+    // HS_CODE_SETS removed — decommissioned tables
+    /** @deprecated Table does not exist. HS code texts are embedded in erp_hscodes. */
+    public const HS_CODE_TEXTS = self::PREFIX . 'hscodes_texts';
 
     /** HS Codes master table */
     public const HS_CODES = self::PREFIX . 'hscodes';
 
-    /** @deprecated Decommissioned table */
-    public const HS_CODE_TEXTS = self::PREFIX . 'hs_code_texts';
-
     /** HS Code to Category mappings (junction table) */
-    public const CATEGORY_HS_CODES = self::PREFIX . 'category_hs_codes';
+    public const CATEGORY_HS_CODES = self::PREFIX . 'hs_code_mappings';
 
     /** HS Code to Subcategory mappings (junction table) */
-    public const SUBCATEGORY_HS_CODES = self::PREFIX . 'subcategory_hs_codes';
+    public const SUBCATEGORY_HS_CODES = self::PREFIX . 'hs_code_mappings';
 
     // ================================
     // COMPANY DIRECTORY
     // ================================
 
-    /** @deprecated Decommissioned table */
+    // COMPANIES_DETAILS, COMPANY_SOURCES, COMPANY_ENGAGEMENT removed — decommissioned tables
+    /** @deprecated Table dropped in Phase 1 migration. Do not use. */
     public const COMPANIES = self::PREFIX . 'companies';
 
-    /** @deprecated Decommissioned table */
-    public const COMPANIES_DETAILS = self::PREFIX . 'companies_details';
-
-    /** @deprecated Decommissioned table */
-    public const COMPANY_SOURCES = self::PREFIX . 'setup_sources';
-
-    /** @deprecated Decommissioned table */
-    public const COMPANY_ENGAGEMENT = self::PREFIX . 'company_engagement';
-    /** Referral tracking codes (legacy compatibility) */
+    /** @deprecated Table dropped. Referral codes decommissioned. */
     public const REFERRAL_CODES = self::PREFIX . 'referral_codes';
 
 
@@ -338,11 +392,11 @@ class DB
     /** Level 2: Subcategories under main categories (111 total) */
     public const SUBCATEGORIES = self::PREFIX . 'subcategories';
 
-    /** Category items junction table */
+    /** Category items junction table
+     *  @deprecated Table not yet created. Use TAXONOMIES with type mapping. */
     public const CATEGORY_ITEMS = self::PREFIX . 'category_items';
 
-    /** @deprecated Decommissioned table */
-    public const IP_COUNTRIES = self::PREFIX . 'ip_countries';
+    // IP_COUNTRIES removed — decommissioned table
 
     // ================================
     // ALERTS & NOTIFICATIONS
@@ -351,12 +405,14 @@ class DB
     /** System alerts and notifications */
     public const ALERTS = self::PREFIX . 'alerts';
 
+    /** User/system notifications */
+    public const NOTIFICATIONS = self::PREFIX . 'notifications';
+
     // ================================
     // SEARCH & ANALYTICS TABLES
     // ================================
 
-    /** @deprecated Decommissioned table */
-    public const SEARCHES = self::PREFIX . 'searches';
+    // SEARCHES removed — decommissioned table
 
     /** Contact form inquiries */
     public const INQUIRIES = self::PREFIX . 'inquiries';
@@ -381,6 +437,9 @@ class DB
 
     /** Account report subcategories */
     public const ACCOUNTS_REPORT_SUBCATEGORIES = self::PREFIX . 'accounts_report_subcategories';
+
+    /** Accounting dimension items (cost centers, projects, etc.) */
+    public const DIMENSION_ITEMS = self::PREFIX . 'dimension_items';
 
     // ================================
     // ACCOUNTING - JOURNALS
@@ -408,11 +467,17 @@ class DB
     /** Sale order line items */
     public const SALE_ORDER_ITEMS = self::PREFIX . 'sale_order_items';
 
-    /** Sale type definitions */
+    /** Unified document type definitions (sale + purchase) */
+    public const DOCUMENT_TYPES = self::PREFIX . 'document_types';
+
+    /** @deprecated Use DOCUMENT_TYPES with context='sale' — table dropped */
     public const SALE_TYPES = self::PREFIX . 'sale_types';
 
     /** Payments received from customers */
     public const PAYMENTS_RECEIVED = self::PREFIX . 'payments_received';
+
+    /** Payment received line items */
+    public const PAYMENT_RECEIVED_ITEMS = self::PREFIX . 'payment_received_items';
 
     /** Credit note headers */
     public const CREDIT_NOTES = self::PREFIX . 'credit_notes';
@@ -428,7 +493,13 @@ class DB
     public const VENDORS = self::PREFIX . 'vendors';
 
     /** Vendor contact persons */
-    public const VENDOR_CONTACTS = self::PREFIX . 'vendor_contacts';
+    public const VENDOR_CONTACTS = self::PREFIX . 'contacts';
+
+    /** Vendor addresses */
+    public const VENDOR_ADDRESSES = self::PREFIX . 'addresses';
+
+    /** Vendor attachments */
+    public const VENDOR_ATTACHMENTS = self::PREFIX . 'attachments';
 
     /** Purchase transactions */
     public const PURCHASES = self::PREFIX . 'purchases';
@@ -442,11 +513,14 @@ class DB
     /** Purchase order line items */
     public const PURCHASE_ORDER_ITEMS = self::PREFIX . 'purchase_order_items';
 
-    /** Purchase type definitions */
+    /** @deprecated Use DOCUMENT_TYPES with context='purchase' — table dropped */
     public const PURCHASE_TYPES = self::PREFIX . 'purchase_types';
 
     /** Payments made to vendors */
     public const PAYMENTS_MADE = self::PREFIX . 'payments_made';
+
+    /** Payment made line items */
+    public const PAYMENT_MADE_ITEMS = self::PREFIX . 'payment_made_items';
 
     /** Debit note headers */
     public const DEBIT_NOTES = self::PREFIX . 'debit_notes';
@@ -460,6 +534,9 @@ class DB
 
     /** Expense transactions */
     public const EXPENSES = self::PREFIX . 'expenses';
+
+    /** Expense line items */
+    public const EXPENSE_ITEMS = self::PREFIX . 'expense_items';
 
     // ================================
     // ACCOUNTING - BANKING & FINANCE SETUP
@@ -485,7 +562,7 @@ class DB
     public const LEADS = self::PREFIX . 'leads';
 
     /** Lead attachments */
-    public const LEAD_ATTACHMENTS = self::PREFIX . 'lead_attachments';
+    public const LEAD_ATTACHMENTS = self::PREFIX . 'attachments';
 
     // ================================
     // CRM - PROJECTS & JOBS
@@ -497,8 +574,14 @@ class DB
     /** Jobs / service orders */
     public const JOBS = self::PREFIX . 'jobs';
 
+    /** Job line items */
+    public const JOB_ITEMS = self::PREFIX . 'job_items';
+
     /** Job status definitions */
     public const JOB_STATUSES = self::PREFIX . 'job_statuses';
+
+    /** Task/work items linked to jobs/projects */
+    public const TASKS = self::PREFIX . 'tasks';
 
     // ================================
     // OPERATIONAL SETUP
@@ -510,30 +593,48 @@ class DB
     /** Exit points / customs checkpoints */
     public const EXIT_POINTS = self::PREFIX . 'exit_points';
 
-    /** Container type definitions */
+    /** Container type definitions
+     *  @deprecated Table not yet created. Use INCOTERMS or create migration. */
     public const CONTAINER_TYPES = self::PREFIX . 'container_types';
 
-    /** Commodity type definitions */
+    /** Commodity type definitions
+     *  @deprecated Table not yet created. Use TAXONOMIES or create migration. */
     public const COMMODITY_TYPES = self::PREFIX . 'commodity_types';
+
+    /** Industry classifications */
+    public const INDUSTRIES = self::PREFIX . 'industries';
+
+    /**
+     * Timezone reference data.
+     * @deprecated Table dropped; use config/timezones.php array instead.
+     */
+    public const TIMEZONES = self::PREFIX . 'timezones';
+
+    /**
+     * System/feature registry.
+     * @deprecated Table merged into erp_modules (P9). Use MODULES with module_type='system'.
+     */
+    public const SYSTEMS = self::PREFIX . 'systems';
 
     // ================================
     // WAREHOUSE & STORAGE SETUP
     // ================================
 
-    /** Warehouses master data */
-    public const WAREHOUSES = self::PREFIX . 'warehouses';
+    /** Warehouses master data (aliased to organizations) */
+    public const WAREHOUSES = self::PREFIX . 'organizations';
 
     /** Storage type definitions */
     public const STORAGE_TYPES = self::PREFIX . 'storage_types';
 
-    /** Storage subtype definitions */
+    /** @deprecated Table dropped. Merged into STORAGE_TYPES with parent_id */
     public const STORAGE_SUBTYPES = self::PREFIX . 'storage_subtypes';
 
     // ================================
     // PRODUCT / SERVICE SETUP
     // ================================
 
-    /** Services master table */
+    /** Services master table
+     *  @deprecated Table not yet created. Use ITEMS with type='service'. */
     public const SERVICES = self::PREFIX . 'services';
 
     /** Units of measure */
@@ -543,8 +644,7 @@ class DB
     // SETUP GROUPS & DOCUMENT MANAGEMENT
     // ================================
 
-    /** Setup groups (for CRM pipeline stages) */
-    public const SETUP_GROUPS = self::PREFIX . 'setup_groups';
+    // SETUP_GROUPS removed — consolidated into TAXONOMIES
 
     /** Document categories */
     public const DOCUMENT_CATEGORIES = self::PREFIX . 'document_categories';
@@ -561,7 +661,7 @@ class DB
      */
     public static function table(string $tableName): string
     {
-        return self::PREFIX . $tableName;
+        return self::getPrefix() . $tableName;
     }
 
     /**
@@ -599,7 +699,7 @@ class DB
      */
     public static function getPrefix(): string
     {
-        return self::PREFIX;
+        return $GLOBALS['TBL']['PREFIX'] ?? self::PREFIX;
     }
 
     /**

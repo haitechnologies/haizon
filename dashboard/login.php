@@ -2,6 +2,7 @@
 
 
 use App\Core\DB;
+use App\Security\RateLimiter;
 require_once __DIR__ . '/../config/session.php';
 
 header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
@@ -27,6 +28,9 @@ if (function_exists('custom_exception_handler')) {
 if (function_exists('handle_fatal_error')) {
 	register_shutdown_function('handle_fatal_error');
 }
+if (function_exists('backend_log_coverage_heartbeat')) {
+	backend_log_coverage_heartbeat();
+}
 
 $isLiveServer = function_exists('isRemote') ? isRemote() : false;
 
@@ -44,9 +48,15 @@ if (isset($_REQUEST['message']) && !empty($_REQUEST['message'])) {
 	$message = e_s__($_REQUEST['message']);
 }
 
-// Generate CSRF token if not exists
-if (!isset($_SESSION['csrf_token'])) {
-	$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+// Store redirect_to for post-login redirect
+if (isset($_GET['redirect_to']) && !empty($_GET['redirect_to'])) {
+	$_SESSION[$project_pre]['DASHBOARD']['redirect_to'] = $_GET['redirect_to'];
+}
+$storedRedirect = $_SESSION[$project_pre]['DASHBOARD']['redirect_to'] ?? '';
+
+// Generate CSRF token if not exists (use scoped session key matching globals.php)
+if (!isset($_SESSION[$project_pre]['DASHBOARD']['csrf_token'])) {
+	$_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 // Get client IP address
@@ -77,7 +87,7 @@ function complete_dashboard_login($row, $client_ip, $project_pre) {
 	$_SESSION[$project_pre]['DASHBOARD']['mfa_verified_at'] = time();
 
 	// Regenerate CSRF token after login
-	$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+	$_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 $client_ip = get_client_ip();
@@ -93,7 +103,10 @@ $client_ip = get_client_ip();
 // SUCCESS LOGIN -> DASHBOARD
 // ---------------------------
 if (isset($_SESSION[$project_pre]['email']) && !empty($_SESSION[$project_pre]['DASHBOARD']['email'])) {
-	header('location:index.php');
+	$target = !empty($storedRedirect) ? $storedRedirect : 'index.php';
+	unset($_SESSION[$project_pre]['DASHBOARD']['redirect_to']);
+	header('location:' . $target);
+	exit;
 }
 
 /*
@@ -141,9 +154,10 @@ if ($action == 'login' && empty($email)) {
 	$email = ''; // Clear email on error
 } else if ($action == 'login' && empty($password)) {
 	$message = 'Please enter your Password.';
-} else if ($action == 'login' && !empty($csrf_token) && $csrf_token !== $_SESSION['csrf_token']) {
+} else if ($action == 'login' && !empty($csrf_token) && $csrf_token !== $_SESSION[$project_pre]['DASHBOARD']['csrf_token']) {
 	$message = 'Invalid security token. Please refresh the page and try again.';
 	log_error('CSRF token mismatch on login attempt', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
+	$_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
 	$email = '';
 } else if ($action == 'login' && !empty($email) && !empty($password)) {
 	$rateLimitEnabled = $isLiveServer;
@@ -177,9 +191,12 @@ if ($action == 'login' && empty($email)) {
 			// RATE LIMITING: Record failed attempt
 			if ($rateLimitEnabled) {
 				RateLimiter::recordAttempt($client_ip, 'login', 5, 1800); // Ban for 30 minutes after 5 attempts
+				if (RateLimiter::isBlocked($client_ip, 'login')) {
+					log_account_blocked($email);
+				}
 			}
 			
-			log_user_block($email);
+			log_auth_failed($email);
 			log_error('Failed login attempt - invalid credentials', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
 			$message = 'Invalid Email / Password.';
 			$email = ''; // Clear email on failed attempt
@@ -269,10 +286,15 @@ if ($action == 'login' && empty($email)) {
 					| SUCCESS LOGIN -> DASHBOARD
 					----------------------------- */
 
-					header('location:index.php');
+					$target = !empty($storedRedirect) ? $storedRedirect : 'index.php';
+					unset($_SESSION[$project_pre]['DASHBOARD']['redirect_to']);
+					header('location:' . $target);
 				} else {
 					if ($rateLimitEnabled) {
 						RateLimiter::recordAttempt($client_ip, 'login', 5, 1800);
+						if (RateLimiter::isBlocked($client_ip, 'login')) {
+							log_account_blocked($email);
+						}
 					}
 					log_error('Failed login attempt - MFA check failed', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
 					$email = '';
@@ -281,9 +303,12 @@ if ($action == 'login' && empty($email)) {
 				// Invalid password - RATE LIMITING: Record failed attempt
 				if ($rateLimitEnabled) {
 					RateLimiter::recordAttempt($client_ip, 'login', 5, 1800); // Ban for 30 minutes after 5 attempts
+					if (RateLimiter::isBlocked($client_ip, 'login')) {
+						log_account_blocked($email);
+					}
 				}
 				
-				log_user_block($email);
+				log_auth_failed($email);
 				log_error('Failed login attempt - incorrect password', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
 				$message = 'Invalid Email / Password.';
 				$email = ''; // Clear email on failed attempt
@@ -343,29 +368,10 @@ $loginColors = getLoginPageColors();
 			<div class="container-fluid">
 				<div class="navbar-brand">
 								<a href="login.php" class="d-inline-flex align-items-center" style="color: <?php echo $loginColors['header_text']; ?>;">
-						<!-- <img src="assets/images/logo_text_light.svg" class="d-none d-sm-inline-block h-16px ms-3" alt=""> -->
-						<!-- <img src="../images/logo.png" alt=""> -->
-
 						<?php
-						// ---------------------------------- LOGO ---------------------------------- 
-					// Use login-specific logo if available, otherwise fallback to main logo
-					$login_logo = getSystemSetting('login_logo', '');
-					$logo = getSystemSetting('logo', '');
-					$software_name = getSystemSetting('software_name', 'Admin Dashboard');
-
-					// First priority: login_logo, second: logo, fallback: default
-					$logo_to_use = !empty($login_logo) ? $login_logo : $logo;
-
-					if (!empty($logo_to_use) && file_exists('../uploads/system_settings/' . $logo_to_use)) {
-						$display_logo = '../uploads/system_settings/' . htmlspecialchars($logo_to_use);
-						} else {
-							$display_logo = '../images/default_logo.png';
-						}
-						// ----------------------------------------------------------------------------- 
+						$software_name = getSystemSetting('software_name', 'Admin Dashboard');
+						echo htmlspecialchars($software_name);
 						?>
-					<img src="<?php echo $display_logo; ?>" alt="Logo"> &nbsp; 
-					<?php echo htmlspecialchars($software_name); ?>
-
 					</a>
 				</div>
 			</div>
@@ -389,7 +395,7 @@ $loginColors = getLoginPageColors();
 					<!-- Login form -->
 					<form class="login-form" id="form_login" action="login.php" method="post" autocomplete="off" style="width: 100%; max-width: 400px;">
 						<input type="hidden" name="action" id="action" value="login" />
-						<input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>" />
+						<input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo $_SESSION[$project_pre]['DASHBOARD']['csrf_token']; ?>" />
 
 
 						<?php
@@ -402,33 +408,6 @@ $loginColors = getLoginPageColors();
 						<div class="card">
 							<div class="card-body">
 								<div class="text-center mb-3">
-									<div class="card-img-actions d-inline-block mb-3">
-										<?php
-										// ---------------------------------- LOGO ---------------------------------- 
-										// Use login-specific logo if available, otherwise fallback to main logo
-										$login_logo = getSystemSetting('login_logo', '');
-										$logo = getSystemSetting('logo', '');
-
-										// First priority: login_logo, second: logo
-										$logo_to_use = !empty($login_logo) ? $login_logo : $logo;
-
-										if (!empty($logo_to_use) && file_exists('../uploads/system_settings/' . $logo_to_use)) {
-											$display_logo = '../uploads/system_settings/' . htmlspecialchars($logo_to_use);
-										} else {
-											// Try to find any available logo in uploads
-											$logo_files = @glob('../uploads/system_settings/*logo*');
-											if (!empty($logo_files) && file_exists($logo_files[0])) {
-												$display_logo = $logo_files[0];
-											} else {
-												// Use dashboard default
-												$display_logo = 'assets/images/logo_icon.svg';
-											}
-										}
-										// ----------------------------------------------------------------------------- 
-										?>
-										<img class="rounded-circle" src="<?php echo $display_logo; ?>" width="160" height="160" alt="Logo" style="object-fit: cover; border: 3px solid #f0f0f0;">
-									</div>
-
 									<h5 class="mb-0">Login to your account</h5>
 									<span class="d-block text-muted">Enter your credentials below</span>
 								</div>

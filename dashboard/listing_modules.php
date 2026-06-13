@@ -100,7 +100,28 @@ if ($action == "delete_module_permissions" && !empty($id) && !empty($module_id))
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <?php include('admin_elements/page_header.php'); ?>
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
     <!-- /page header -->
 
 
@@ -116,7 +137,8 @@ if ($action == "delete_module_permissions" && !empty($id) && !empty($module_id))
         <div class="card">
 
             <div class="card-body">
-                    <table id="grid-modules" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%" data-ajax-source="datatables.php" data-ajax-action="listing_modules" data-page-length="25">
+                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                <table id="grid-modules" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%" data-ajax-source="datatables.php" data-ajax-action="listing_modules" data-page-length="25">
                         <thead>
                             <tr>
                                 <th width="80">ID</th>
@@ -153,10 +175,7 @@ $(document).ready(function() {
                 url: 'datatables.php',
                 type: 'POST',
                 data: function(d) {
-                    d.csrf_token = window.HAI_CSRF_TOKEN || $('input[name="csrf_token"]').first().val() || '';
                     d.module = 'modules';
-                    d.ajax_action = 'listing_modules';
-                    d.action = 'listing_modules';
                     d.edit_permission = <?php echo granted_('edit', 'modules') ? 1 : 0; ?>;
                     d.delete_permission = <?php echo granted_('delete', 'modules') ? 1 : 0; ?>;
                     d.session_user_id = '<?php echo $_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? ''; ?>';
@@ -164,8 +183,7 @@ $(document).ready(function() {
                     return d;
                 },
                 error: function(xhr, status, error) {
-                    console.error('[Modules] DataTable AJAX Error');
-                    console.error('Status:', xhr.status, '|', status, '|', error);
+                    console.error('[Modules] DataTable AJAX Error:', error);
                     console.error('Response:', xhr.responseText);
                 }
             },

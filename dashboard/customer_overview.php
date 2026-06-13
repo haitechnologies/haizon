@@ -160,8 +160,8 @@ if ($action == "approved" && !empty($customer_id)) {
 */
 $customer_owner             = $customerObj->customerOwner ? getTableAttr('full_name', DB::USERS, $customerObj->customerOwner) : '';
 $payment_term               = $customerObj->paymentTerm ? (string)$customerObj->paymentTerm : '';
-$customer_status            = $customerObj->customerStatus ? getTableAttr('status', DB::SETUP_STATUSES, $customerObj->customerStatus) : '';
-$customer_source            = $customerObj->customerSource ? getTableAttr('source', DB::SETUP_SOURCES, $customerObj->customerSource) : '';
+$customer_status            = $customerObj->customerStatus ? getTableAttr('value', DB::TAXONOMIES, $customerObj->customerStatus) : '';
+$customer_source            = $customerObj->customerSource ? getTableAttr('value', DB::TAXONOMIES, $customerObj->customerSource) : '';
 $assigned_to                = $customerObj->assignedTo ? getTableAttr('full_name', DB::USERS, $customerObj->assignedTo) : '';
 
 $salutation                 = $customerObj->salutation ? ucwords(s__($customerObj->salutation)) : '';
@@ -200,7 +200,7 @@ $tags_captions              = '';
 if ($tags != NULL) {
     $tags_arr               = explode(',', $tags);
     foreach ($tags_arr as $tag_id) {
-        $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
+        $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('value', DB::TAXONOMIES, $tag_id) . '</span> &nbsp;';
     }
 }
 
@@ -215,7 +215,7 @@ $approved                   = s__($customerObj->approved);
 $approved_by                = s__($customerObj->approvedBy);
 $approved_at                = s__($customerObj->approvedAt);
 
-$is_active                  = s__($customerObj->publish);
+$is_active                  = s__($customerObj->isActive);
 $created_at                 = s__($customerObj->createdAt);
 $created_by                 = s__($customerObj->createdBy);
 

@@ -10,23 +10,35 @@ use App\Helper\ActionButtonHelper;
 
 class StorageSubtypesDataTable extends BaseDataTable
 {
-    protected $table = DB::STORAGE_SUBTYPES;
-    protected $searchFields = ['storage_subtype', 'storage_type'];
-    protected $sortableColumns = [0 => 'id', 1 => 'storage_subtype', 2 => 'storage_type', 3 => 'created_at', 4 => 'publish', 5 => 'id'];
+    protected $table = DB::STORAGE_TYPES;
+    protected $searchFields = ['st.name', 'parent.name'];
+    protected $sortableColumns = [0 => 'st.id', 1 => 'st.name', 2 => 'parent.name', 3 => 'st.created_at', 4 => 'st.is_active', 5 => 'st.id'];
+
+    protected function buildBaseQuery($requestData)
+    {
+        $orgClause = '';
+        if ($this->organizationId !== null) {
+            $orgClause = ' AND st.organization_id = :active_org_id';
+        }
+        return "SELECT st.*, parent.name AS parent_name
+                FROM `" . $this->table . "` st
+                LEFT JOIN `" . $this->table . "` parent ON parent.id = st.parent_id
+                WHERE st.parent_id IS NOT NULL" . $orgClause;
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id      = (int)($row['id'] ?? 0);
-        $sub     = (string)($row['storage_subtype'] ?? '');
-        $type    = (string)($row['storage_type'] ?? '');
+        $sub     = (string)($row['name'] ?? '');
+        $type    = (string)($row['parent_name'] ?? '');
         $created = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
-        $badge   = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
+        $active  = (int)($row['is_active'] ?? 0);
+        $badge   = $active ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
             $id,
             htmlspecialchars($sub),
             htmlspecialchars($type),
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $badge,
             $this->getActionButtons($id, 'storage_subtypes'),
         ];

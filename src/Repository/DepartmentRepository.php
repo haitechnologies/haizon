@@ -11,7 +11,7 @@ use App\Core\DB;
 /**
  * Department Repository
  *
- * Handles PDO-based data access for erp_department table.
+ * Handles PDO-based data access for erp_departments table.
  * Adheres strictly to PSR.md rules: no raw SQL, no SELECT *, no string interpolation.
  */
 class DepartmentRepository
@@ -31,8 +31,8 @@ class DepartmentRepository
      */
     public function find(int $id): ?Department
     {
-        $sql = "SELECT id, organization_id, department, publish, created_at, updated_at, created_by 
-                FROM `erp_department` 
+        $sql = "SELECT id, organization_id, department, is_active, created_at, updated_at, created_by 
+                FROM DB::DEPARTMENTS 
                 WHERE id = :id";
 
         $row = $this->db->fetchOne($sql, ['id' => $id]);
@@ -51,8 +51,8 @@ class DepartmentRepository
      */
     public function findAll(int $organizationId): array
     {
-        $sql = "SELECT id, organization_id, department, publish, created_at, updated_at, created_by 
-                FROM `erp_department` 
+        $sql = "SELECT id, organization_id, department, is_active, created_at, updated_at, created_by 
+                FROM DB::DEPARTMENTS 
                 WHERE organization_id = :organization_id 
                 ORDER BY department ASC";
 
@@ -75,10 +75,10 @@ class DepartmentRepository
     public function existsByName(string $name, ?int $excludeId = null): bool
     {
         if ($excludeId !== null) {
-            $sql = "SELECT id FROM `erp_department` WHERE department = :name AND id != :exclude_id LIMIT 1";
+            $sql = "SELECT id FROM DB::DEPARTMENTS WHERE department = :name AND id != :exclude_id LIMIT 1";
             $params = ['name' => $name, 'exclude_id' => $excludeId];
         } else {
-            $sql = "SELECT id FROM `erp_department` WHERE department = :name LIMIT 1";
+            $sql = "SELECT id FROM DB::DEPARTMENTS WHERE department = :name LIMIT 1";
             $params = ['name' => $name];
         }
 
@@ -105,13 +105,13 @@ class DepartmentRepository
      */
     private function insert(Department $dept): Department
     {
-        $sql = "INSERT INTO `erp_department` (organization_id, department, publish, created_by) 
-                VALUES (:organization_id, :department, :publish, :created_by)";
+        $sql = "INSERT INTO DB::DEPARTMENTS (organization_id, department, is_active, created_by) 
+                VALUES (:organization_id, :department, :is_active, :created_by)";
 
         $params = [
             'organization_id' => $dept->organizationId,
             'department' => $dept->department,
-            'publish' => $dept->publish ? 1 : 0,
+            'is_active' => $dept->publish ? 1 : 0,
             'created_by' => $dept->createdBy,
         ];
 
@@ -124,17 +124,17 @@ class DepartmentRepository
      */
     private function update(Department $dept): Department
     {
-        $sql = "UPDATE `erp_department` 
+        $sql = "UPDATE DB::DEPARTMENTS 
                 SET organization_id = :organization_id, 
                     department = :department, 
-                    publish = :publish, 
+                    is_active = :is_active, 
                     created_by = :created_by 
                 WHERE id = :id";
 
         $params = [
             'organization_id' => $dept->organizationId,
             'department' => $dept->department,
-            'publish' => $dept->publish ? 1 : 0,
+            'is_active' => $dept->publish ? 1 : 0,
             'created_by' => $dept->createdBy,
             'id' => $dept->id,
         ];
@@ -151,7 +151,7 @@ class DepartmentRepository
      */
     public function delete(int $id): bool
     {
-        $sql = "DELETE FROM `erp_department` WHERE id = :id";
+        $sql = "DELETE FROM DB::DEPARTMENTS WHERE id = :id";
         $stmt = $this->db->execute($sql, ['id' => $id]);
         return $stmt->rowCount() > 0;
     }
@@ -166,6 +166,7 @@ class DepartmentRepository
             organizationId: $row['organization_id'] !== null ? (int)$row['organization_id'] : null,
             department: (string)$row['department'],
             publish: (bool)$row['publish'],
+            isActive: (bool)($row['is_active'] ?? $row['publish'] ?? true),
             createdAt: (string)($row['created_at'] ?? ''),
             updatedAt: (string)($row['updated_at'] ?? ''),
             createdBy: (int)($row['created_by'] ?? 0)

@@ -1155,6 +1155,7 @@ if (file_exists('../robots.txt')) {
             </div>
 
         </div>
+        <?php include('admin_elements/copyright.php'); ?>
     </div>
 </div>
 

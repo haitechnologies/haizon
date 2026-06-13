@@ -1,5 +1,6 @@
 <?php declare(strict_types=1); 
 use App\Core\DB;
+global $start_page_time, $session_email;
 ?>
 	<!-- Footer -->
 

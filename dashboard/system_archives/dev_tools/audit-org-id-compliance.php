@@ -2,21 +2,20 @@
 <?php
 /**
  * PHASE 8A: Organization ID Compliance Audit
- * 
+ *
  * Scans all dashboard pages for SQL queries on org-scoped tables
  * and verifies they include organization_id filtering
- * 
+ *
  * Run: php audit-org-id-compliance.php
  */
 
 // Tables with organization_id column
 $orgScopedTables = [
     'customers' => 'erp_customers',
-    'customer_contacts' => 'erp_customer_contacts',
-    'customer_addresses' => 'erp_customer_addresses',
-    'customer_comments' => 'erp_customer_comments',
-    'customer_documents' => 'erp_customer_documents',
-    'customer_logs' => 'erp_customer_logs',
+    'contacts' => 'erp_contacts',
+    'addresses' => 'erp_addresses',
+    'entity_notes' => 'erp_entity_notes',
+    'entity_logs' => 'erp_entity_logs',
     'invoices' => 'erp_invoices',
     'invoice_items' => 'erp_invoice_items',
     'departments' => 'erp_departments',
@@ -29,7 +28,7 @@ $orgScopedTables = [
     'employee_salaries' => 'erp_employee_salaries',
     'payroll_runs' => 'erp_payroll_runs',
     'payslips' => 'erp_payslips',
-    'shipping_customers' => 'erp_shipping_customers',
+    'shipping_customers' => 'erp_customers',
     'shipping_advices' => 'erp_shipping_advices',
     'shipping_advice_items' => 'erp_shipping_advice_items',
     'shipping_invoices' => 'erp_shipping_invoices',
@@ -57,35 +56,35 @@ $files = glob($dashboardDir . '/*.php');
 
 foreach ($files as $file) {
     $filename = basename($file);
-    
+
     // Skip utility files
     if (in_array($filename, ['datatables_dispatcher.php', 'bootstrap.php', 'PHASE-7B-QUERY-TEMPLATE.php'])) {
         continue;
     }
-    
+
     $content = file_get_contents($file);
-    
+
     // Skip files without database queries
     if (!preg_match('/mysqli|DB::|query|prepare|execute/i', $content)) {
         continue;
     }
-    
+
     $hasIssues = false;
     $issues = [];
-    
+
     // Check for queries on org-scoped tables without org_id filter
     foreach ($orgScopedTables as $shortName => $fullName) {
         // Look for SELECT queries
         if (preg_match('/SELECT\s+.*?\s+FROM\s+.*?' . preg_quote($fullName) . '.*?WHERE/is', $content)) {
             // Check if organization_id is mentioned
             $selectBlock = preg_match('/SELECT\s+.*?\s+FROM\s+.*?' . preg_quote($fullName) . '.*?(?:WHERE|;|$)/is', $content, $m) ? $m[0] : '';
-            
+
             if (!empty($selectBlock) && !preg_match('/organization_id|org_id|org\.id/i', $selectBlock)) {
                 $hasIssues = true;
                 $issues[] = "SELECT on $fullName without org_id filter";
             }
         }
-        
+
         // Look for DELETE queries
         if (preg_match('/DELETE\s+FROM\s+.*?' . preg_quote($fullName) . '/i', $content)) {
             if (!preg_match('/organization_id|org_id/i', $content)) {
@@ -94,10 +93,10 @@ foreach ($files as $file) {
             }
         }
     }
-    
+
     // Check if uses DataTable (which auto-filters)
     $usesDataTable = preg_match('/DataTable|datatables_dispatcher/i', $content);
-    
+
     if ($usesDataTable) {
         $results['datatable_handlers'][] = $filename;
     } elseif ($hasIssues) {

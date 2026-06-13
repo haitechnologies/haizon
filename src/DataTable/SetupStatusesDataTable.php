@@ -14,17 +14,23 @@ use App\Helper\ActionButtonHelper;
 
 class SetupStatusesDataTable extends BaseDataTable
 {
-    protected $table = DB::SETUP_STATUSES;
-    protected $searchFields = ['status'];
+    protected $table = DB::TAXONOMIES;
+    protected $searchFields = ['value', 'type'];
     protected $sortableColumns = [
-        0 => 'id', 1 => 'status', 2 => 'status_type', 3 => 'created_at', 4 => 'is_active', 5 => 'id'
+        0 => 'id', 1 => 'value', 2 => 'type', 3 => 'created_at', 4 => 'is_active', 5 => 'id'
     ];
+
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT * FROM `" . $this->table . "` WHERE type IN ('customer_status', 'lead_status', 'vendor_status')" . $this->getOrgIdWhereClause();
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
-        $status = $row['status'] ?? '';
-        $statusType = $row['status_type'] ?? '';
+        $status = $row['value'] ?? '';
+        $typeVal = $row['type'] ?? '';
+        $statusType = ($typeVal === 'customer_status') ? 'customers' : (($typeVal === 'lead_status') ? 'leads' : (($typeVal === 'vendor_status') ? 'vendors' : $typeVal));
         $publish = (int)$row['is_active'];
         $createdAt = $row['created_at'] ?? '';
 

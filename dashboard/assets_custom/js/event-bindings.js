@@ -62,7 +62,12 @@ $(document).ready(function() {
      */
     $(document).on('click', '.submit-form', function(e) {
         e.preventDefault();
-        $(this).closest('form').submit();
+        var formId = $(this).attr('form');
+        if (formId) {
+            $('#' + formId).submit();
+        } else {
+            $(this).closest('form').submit();
+        }
     });
     
     /**
@@ -233,7 +238,12 @@ $(document).ready(function() {
     $(document).on('click', '.save-draft-invoice', function(e) {
         e.preventDefault();
         document.getElementById('invoice_status').value = 'draft';
-        $(this).closest('form').submit();
+        var formId = $(this).attr('form');
+        if (formId) {
+            $('#' + formId).submit();
+        } else {
+            $(this).closest('form').submit();
+        }
     });
     
     /**
@@ -248,7 +258,12 @@ $(document).ready(function() {
         if (!document.getElementById('id') || !document.getElementById('id').value) {
             document.getElementById('invoice_status').value = 'draft';
         }
-        $(this).closest('form').submit();
+        var formId = $(this).attr('form');
+        if (formId) {
+            $('#' + formId).submit();
+        } else {
+            $(this).closest('form').submit();
+        }
     });
     
     /**

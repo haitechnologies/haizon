@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<ruleset name="Haipulse">
+    <description>Haipulse PHP CodeSniffer configuration (PSR-12 baseline)</description>
+
+    <file>src/</file>
+    <file>config/</file>
+    <file>dashboard/</file>
+    <file>database/</file>
+    <file>tests/</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/tcpdf/*</exclude-pattern>
+    <exclude-pattern>*/dashboard/vendor/*</exclude-pattern>
+    <exclude-pattern>*/assets/*</exclude-pattern>
+    <exclude-pattern>*/uploads/*</exclude-pattern>
+    <exclude-pattern>*/pdfs_invoices/*</exclude-pattern>
+    <exclude-pattern>*/logs/*</exclude-pattern>
+    <exclude-pattern>*/backups/*</exclude-pattern>
+
+    <rule ref="PSR12"/>
+
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="var_dump" value="null"/>
+                <element key="die" value="exit"/>
+                <element key="print_r" value="null"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="Squiz.PHP.GlobalKeyword">
+        <exclude name="Squiz.PHP.GlobalKeyword.NotAllowed"/>
+    </rule>
+
+    <rule ref="PSR2.Methods.MethodDeclaration.Underscore">
+        <exclude-pattern>*/config/globals.php</exclude-pattern>
+    </rule>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="160"/>
+            <property name="absoluteLineLimit" value="200"/>
+        </properties>
+    </rule>
+
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <exclude-pattern>*/config/globals.php</exclude-pattern>
+        <exclude-pattern>*/dashboard/*</exclude-pattern>
+    </rule>
+
+    <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+        <exclude-pattern>*/dashboard/*</exclude-pattern>
+        <exclude-pattern>*/config/*</exclude-pattern>
+        <exclude-pattern>*/migrations/*</exclude-pattern>
+        <exclude-pattern>*/scripts/*</exclude-pattern>
+        <exclude-pattern>*/tests/*</exclude-pattern>
+    </rule>
+
+    <arg name="colors"/>
+    <arg name="tab-width" value="4"/>
+</ruleset>

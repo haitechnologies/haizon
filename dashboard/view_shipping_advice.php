@@ -101,47 +101,32 @@ if ($action == "add_$module") {
 
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="import_<?php echo $module; ?>.php" enctype="multipart/form-data">
+            <div class="my-1">
+                
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="import_<?php echo $module; ?>.php" enctype="multipart/form-data">
 
         <input type="hidden" name="action" id="action" value="" />
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_<?php echo $module; ?>.php" class="breadcrumb-item">Shpping Invoices</a>
-                        <!-- <span class="breadcrumb-item active"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span> -->
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-
-                        <?php $token = hash("sha512", 'bushogai' . $id); ?>
-
-                        <button type="button" onclick=" window.location.href='pdf_shipping_advice.php?id=<?php echo $id; ?>&token=<?php echo $token; ?>';" class="btn btn-info my-1 me-2"> Download <?php echo $module_caption; ?> </button>
-                        <button type="button" onclick="window.location.href='listing_<?php echo $module; ?>.php';" class=" btn btn-outline-dark my-1 me-2">Exit</button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
                 <?php
                 /*
@@ -199,7 +184,7 @@ if ($action == "add_$module") {
                         $invoice_weight_unit        = s__($row['invoice_weight_unit']);
                         $invoice_grand_qty          = s__($row['invoice_grand_qty']);
                         $invoice_grand_total_amount = s__($row['invoice_grand_total_amount']);
-                        $publish                    = s__($row['publish']);
+                        $publish                    = s__($row['is_active'] ?? 0);
                     } else {
                         // Initialize with default values if no row found
                         $shipment_type        = '';

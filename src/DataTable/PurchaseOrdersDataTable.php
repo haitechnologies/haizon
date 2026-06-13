@@ -44,7 +44,7 @@ class PurchaseOrdersDataTable extends BaseDataTable
         return [
             $id,
             htmlspecialchars($date),
-            htmlspecialchars($no),
+            '<a href="purchase_order_overview.php?id=' . $id . '" class="text-decoration-none">' . htmlspecialchars($no) . '</a>',
             htmlspecialchars($ref),
             htmlspecialchars($vendorName),
             $badge,

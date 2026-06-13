@@ -71,8 +71,8 @@ if (($action == "delete_$module" && !empty($lead_id)) && granted('delete', $modu
 
     if (is_SystemAdmin() || is_SuperAdmin()) {
 
-        $attachment_filename = getTableAttr('attachment_filename', DB::LEAD_ATTACHMENTS, $attachment_id);
-        unlink($attachment_upload_path  . $attachment_filename);
+        $attachment_filename = getTableAttr('filename', DB::LEAD_ATTACHMENTS, $attachment_id);
+        @unlink($attachment_upload_path  . $attachment_filename);
 
         $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$attachment_id");
 
@@ -80,8 +80,8 @@ if (($action == "delete_$module" && !empty($lead_id)) && granted('delete', $modu
         updateLeadLogs($lead_id, 'attachment', $attachment_id, 'deleted');
     } else {
 
-        $attachment_filename = getTableAttr('attachment_filename', DB::LEAD_ATTACHMENTS, $attachment_id);
-        unlink($attachment_upload_path  . $attachment_filename);
+        $attachment_filename = getTableAttr('filename', DB::LEAD_ATTACHMENTS, $attachment_id);
+        @unlink($attachment_upload_path  . $attachment_filename);
 
         $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$attachment_id AND created_by='" . $_SESSION[$project_pre]['DASHBOARD']['user_id'] . "'");
 
@@ -106,13 +106,14 @@ if (($action == "delete_$module" && !empty($lead_id)) && granted('delete', $modu
 | 	UPDATE
 |--------------------------------------------------------------------------
 |
+|
 */
 if ($action == "update_$module" && !empty($lead_id) && granted('edit', $module_id)) {
 
     /* ---------------------- QUERY ---------------------- */
     $update_row = $mysqli->query("
                                 UPDATE `$tbl_name` SET
-                                    attachment_name           = '" . $attachment_name . "'
+                                    display_name           = '" . $attachment_name . "'
                                 WHERE id=$attachment_id");
     if ($update_row) {
         $attachment_name = '';
@@ -157,7 +158,7 @@ if ($action == "update_$module" && !empty($lead_id) && granted('edit', $module_i
         if (move_uploaded_file($_FILES['document']['tmp_name'], $attachment_upload_path . $attachment_filename)) {
 
             /* ---------------------- QUERY ---------------------- */
-            $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(lead_id, attachment_name, attachment_filename) VALUES ('" . $lead_id . "', '" . $attachment_name . "', '" . $attachment_filename . "'); ");
+            $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(attachable_type, attachable_id, display_name, filename) VALUES ('Lead', '" . $lead_id . "', '" . $attachment_name . "', '" . $attachment_filename . "'); ");
 
             $attachment_filename = '';
 
@@ -186,7 +187,7 @@ if ($action == "update_$module" && !empty($lead_id) && granted('edit', $module_i
 
 if ($action == "edit_$module" && !empty($attachment_id) && !empty($lead_id)) {
 
-    $result     = $mysqli->query("SELECT * FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE id=$attachment_id AND lead_id=$lead_id");
+    $result     = $mysqli->query("SELECT *, display_name AS attachment_name, filename AS attachment_filename FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE id=$attachment_id AND attachable_type='Lead' AND attachable_id=$lead_id");
     $row        = $result->fetch_array();
 
     $attachment_name            = s__($row['attachment_name']);
@@ -204,7 +205,29 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($lead_id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
+                    <button type="submit" form="frmlead_attachments" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" autocomplete="off" enctype="multipart/form-data">
         <input type="hidden" name="lead_id" id="lead_id" value="<?php echo $lead_id; ?>" />
 
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($lead_id)) { ?>
@@ -216,34 +239,7 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($lead_id)) {
 
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-2">
-                    <div class="col-lg-12">
-                        <?php include('admin_elements/lead_navbar.php'); ?>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                    <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                        <div class="d-lg-flex mb-2 mb-lg-0 mt-1">
-                            <button type="submit" class="btn btn-primary btn-sm my-1 me-2">Save</button>
-                        </div>
-                    </div>
-                <?php } ?>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
                 <div class="row">
 
@@ -317,7 +313,7 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($lead_id)) {
                                     <span class="text-muted">
                                         <?php
                                         // ----------------------------------------------------------------
-                                        $result = $mysqli->query("SELECT id FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE lead_id=$lead_id");
+                                        $result = $mysqli->query("SELECT id FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE attachable_type='Lead' AND attachable_id=$lead_id");
                                         echo '(' . $result->num_rows . ')';
                                         // ----------------------------------------------------------------
                                         ?>
@@ -330,7 +326,7 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($lead_id)) {
 
                                 <?php
                                 // ======================================================
-                                $result = $mysqli->query("SELECT * FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE lead_id=$lead_id ORDER BY id DESC");
+                                $result = $mysqli->query("SELECT *, display_name AS attachment_name, filename AS attachment_filename FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE attachable_type='Lead' AND attachable_id=$lead_id ORDER BY id DESC");
                                 while ($rows = $result->fetch_array()) {
                                     $attachment_id          = $rows['id'];
                                     $attachment_name        = $rows['attachment_name'];
@@ -385,9 +381,9 @@ if ($action == "edit_$module" && !empty($attachment_id) && !empty($lead_id)) {
         </div>
 
 
-        <?php include('admin_elements/copyright.php'); ?>
+        </form>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
-</form>
 
 </div>
 

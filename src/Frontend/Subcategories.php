@@ -93,7 +93,7 @@ class Subcategories
             $params[] = $categoryId;
         }
         if ($publishedOnly) {
-            $where[] = "publish = 1";
+            $where[] = "is_active = 1";
         }
 
         if (!empty($where)) {
@@ -120,7 +120,7 @@ class Subcategories
     {
         $query = "SELECT * FROM " . DB::SUBCATEGORIES . " 
                   WHERE category_id = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   ORDER BY sort_order ASC";
 
         try {
@@ -141,7 +141,7 @@ class Subcategories
     {
         $query = "SELECT * FROM " . DB::SUBCATEGORIES . " 
                   WHERE subcategory_id = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   LIMIT 1";
 
         try {
@@ -162,7 +162,7 @@ class Subcategories
     {
         $query = "SELECT * FROM " . DB::SUBCATEGORIES . " 
                   WHERE slug = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   LIMIT 1";
 
         try {
@@ -189,7 +189,7 @@ class Subcategories
         // Get items
         $itemsQuery = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
                        WHERE subcategory_id = ? 
-                       AND publish = 1 
+                       AND is_active = 1 
                        ORDER BY sort_order ASC";
 
         try {
@@ -218,7 +218,7 @@ class Subcategories
         $query = "SELECT comp.* 
                   FROM " . DB::COMPANIES . " comp 
                   WHERE comp.primary_subcategory_id = ? 
-                  AND comp.publish = 1 
+                  AND comp.is_active = 1 
                   ORDER BY comp.created_at DESC 
                   LIMIT {$limit} OFFSET {$offset}";
 
@@ -244,7 +244,7 @@ class Subcategories
         $query = "SELECT COUNT(*) as total 
                   FROM " . DB::COMPANIES . " comp 
                   WHERE comp.primary_subcategory_id = ? 
-                  AND comp.publish = 1";
+                  AND comp.is_active = 1";
 
         try {
             $row = $this->conn->fetchOne($query, [$subcategoryId]);
@@ -266,7 +266,7 @@ class Subcategories
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::SUBCATEGORIES . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND total_companies > 0 
                   ORDER BY total_companies DESC 
                   LIMIT {$limit}";
@@ -291,7 +291,7 @@ class Subcategories
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::SUBCATEGORIES . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND (name LIKE ? OR name_ar LIKE ?) 
                   ORDER BY total_companies DESC 
                   LIMIT {$limit}";

@@ -114,7 +114,24 @@ if (!empty($id)) {
 ?>
 
 <div class="content-wrapper">
-    <?php include('admin_elements/page_header.php'); ?>
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (!empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1">
+                <?php if (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr') { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
     <div class="content-inner">
         <div class="content">
             <?php include('admin_elements/breadcrumb.php'); ?>
@@ -126,7 +143,7 @@ if (!empty($id)) {
                         <div class="alert alert-danger"> <?php echo $error_message; ?> </div>
                     <?php } ?>
 
-                    <form method="post">
+                    <form method="post" id="frm<?php echo $module; ?>">
                         <input type="hidden" name="action" value="<?php echo !empty($id) ? 'update_'.$module : 'add_'.$module; ?>">
                         <input type="hidden" name="id" value="<?php echo $id; ?>">
 
@@ -202,10 +219,6 @@ if (!empty($id)) {
                             </div>
                         </div>
 
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light">Cancel</a>
-                        </div>
                     </form>
                 </div>
             </div>

@@ -4,9 +4,9 @@
 use App\Core\DB;
 include('admin_elements/admin_header.php');
 
-$module = 'drivers';
+$module = 'documents';
 $module_caption = 'Documents';
-$tbl_name = DB::DRIVERS;
+$tbl_name = DB::USERS;
 $error_message = '';
 $success_message = '';
 
@@ -56,14 +56,14 @@ if (isset($_GET['page_no']) && !empty($_GET['page_no'])) {
     $page_no            = 1;
 }
 
-if (isset($_GET['driver_status']) && !empty($_GET['driver_status'])) {
-    $driver_status            = e_s__($_GET['driver_status']);
+if (isset($_GET['is_active']) && !empty($_GET['is_active'])) {
+    $is_active            = e_s__($_GET['is_active']);
 } else {
-    $driver_status            = 'all';
+    $is_active            = 'all';
 }
 
 
-$targetpage            = 'listing_drivers.php?driver_status=' . $driver_status;
+$targetpage            = 'listing_documents.php?is_active=' . $is_active;
 
 
 
@@ -76,8 +76,8 @@ $targetpage            = 'listing_drivers.php?driver_status=' . $driver_status;
 if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
 
-    // echo "UPDATE `" . tbl_drivers . "` SET vehicle_id = $vehicle_id WHERE id= $driver_id";
-    $result = $mysqli->query("UPDATE `" . tbl_drivers . "` SET vehicle_id = $vehicle_id WHERE id= $driver_id");
+    // echo "UPDATE `" . DB::USERS . "` SET vehicle_id = $vehicle_id WHERE id= $driver_id";
+    $result = $mysqli->query("UPDATE `" . DB::USERS . "` SET vehicle_id = $vehicle_id WHERE id= $driver_id");
 
 
     if ($result) {
@@ -96,7 +96,7 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 } else if ($action == "unassign_vehicle" && !empty($driver_id)) {
 
 
-    $result = $mysqli->query("UPDATE `" . tbl_drivers . "` SET vehicle_id = 0 WHERE id=$driver_id");
+    $result = $mysqli->query("UPDATE `" . DB::USERS . "` SET vehicle_id = 0 WHERE id=$driver_id");
 
 
     if ($result) {
@@ -158,8 +158,8 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
             <div class="d-flex">
                 <div class="breadcrumb py-2">
                     <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
@@ -199,16 +199,16 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
                         <ul class="nav nav-tabs nav-tabs-solid nav-justified rounded col-lg-6">
                             <li class="nav-item">
-                                <a href="listing_<?php echo $module; ?>.php?driver_status=all" class="nav-link rounded-start <?php echo (($driver_status == 'all') ? 'active' : '') ?> ">All</a>
+                                <a href="listing_<?php echo $module; ?>.php?is_active=all" class="nav-link rounded-start <?php echo (($is_active == 'all') ? 'active' : '') ?> ">All</a>
                             </li>
                             <li class="nav-item bg-success">
-                                <a href="listing_drivers.php?driver_status=on_route" class="nav-link text-white <?php echo (($driver_status == 'on_route') ? 'active' : '') ?>">UP-TO-DATE</a>
+                                <a href="listing_documents.php?is_active=on_route" class="nav-link text-white <?php echo (($is_active == 'on_route') ? 'active' : '') ?>">UP-TO-DATE</a>
                             </li>
                             <li class="nav-item bg-warning">
-                                <a href="listing_drivers.php?driver_status=booked" class="nav-link text-white <?php echo (($driver_status == 'booked') ? 'active' : '') ?>">NEAR EXPIRY</a>
+                                <a href="listing_documents.php?is_active=booked" class="nav-link text-white <?php echo (($is_active == 'booked') ? 'active' : '') ?>">NEAR EXPIRY</a>
                             </li>
                             <li class="nav-item bg-danger">
-                                <a href="listing_drivers.php?driver_status=free" class="nav-link text-white <?php echo (($driver_status == 'free') ? 'active' : '') ?>">EXPIRED</a>
+                                <a href="listing_documents.php?is_active=free" class="nav-link text-white <?php echo (($is_active == 'free') ? 'active' : '') ?>">EXPIRED</a>
                             </li>
                         </ul>
                     </div>
@@ -243,28 +243,28 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
             $search_query = '';
 
-            if ($driver_status == 'booked') {
+            if ($is_active == 'booked') {
                 $search_query = " AND id IN (SELECT driver_id FROM `" . tbl_trips . "` WHERE requested_date_time = '" . date('Y-m-d') . "' )";
-            } else if ($driver_status == 'free') {
+            } else if ($is_active == 'free') {
                 $search_query = " AND id NOT IN (SELECT driver_id FROM `" . tbl_trips . "` WHERE requested_date_time = '" . date('Y-m-d') . "' )";
-            } else if ($driver_status == 'on_route') {
+            } else if ($is_active == 'on_route') {
                 $search_query = " AND id IN (SELECT driver_id FROM `" . tbl_trips . "` WHERE trip_status = 'started' )";
             }
 
             //COUNT QUERY
-            // $result = $mysqli->query("SELECT id FROM `" . tbl_drivers . "` WHERE id>0 " . $search_query);
-            $result = $mysqli->query("SELECT id FROM `" . tbl_drivers . "` WHERE id>0 ");
+            // $result = $mysqli->query("SELECT id FROM `" . DB::USERS . "` WHERE id>0 " . $search_query);
+            $result = $mysqli->query("SELECT id FROM `" . DB::USERS . "` WHERE id>0 ");
             $total_pages  = $result->num_rows;
 
             //NORMAL QUERY
-            // echo "SELECT * FROM `" . tbl_drivers . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit";
-            $result = $mysqli->query("SELECT * FROM `" . tbl_drivers . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit");
+            // echo "SELECT * FROM `" . DB::USERS . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit";
+            $result = $mysqli->query("SELECT * FROM `" . DB::USERS . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit");
 
             while ($row = $result->fetch_array()) {
 
                 $id                         = $row['id'];
                 $photo                         = $row['photo'];
-                $driver_name                   = $row['driver_name'];
+                $driver_name                   = $row['full_name'];
                 $vehicle_id                   = $row['vehicle_id'];
                 $driver_vehicle_type        = $row['vehicle_type'];
                 $contact1                   = $row['contact1'];
@@ -347,7 +347,7 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
                                 <?php
 
-                                $driver_vehicle_type_id         = getTableAttr('vehicle_type', tbl_drivers, $id);
+                                $driver_vehicle_type_id         = getTableAttr('vehicle_type', DB::USERS, $id);
                                 $driver_vehicle_type_caption     = getTableAttr('vehicle_type', tbl_vehicle_types, $driver_vehicle_type_id);
 
                                 if (empty($vehicle_id)) {
@@ -508,8 +508,9 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 			</div>
 		</div> -->
 
+        </div>
+
         <?php include('admin_elements/copyright.php'); ?>
-    </div>
 </div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

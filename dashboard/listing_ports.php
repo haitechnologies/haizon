@@ -1,6 +1,30 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 
 use App\Core\DB;
+
+if (($_POST['action'] ?? null) == 'get_port_details' && !empty($_POST['id'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+        echo json_encode(['success' => false, 'message' => 'Invalid security token.']);
+        exit;
+    }
+    $id = (int)$_POST['id'];
+    $stmt = $mysqli->prepare("SELECT p.*, c.country AS country_name FROM `" . DB::PORTS . "` p LEFT JOIN `" . DB::GEO_COUNTRIES . "` c ON p.country_id = c.id WHERE p.id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $data = $res->fetch_assoc();
+    $stmt->close();
+
+    if ($data) {
+        echo json_encode(['success' => true, 'data' => $data]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Record not found.']);
+    }
+    exit;
+}
+
 include('admin_elements/admin_header.php');
 $module = 'ports';
 $module_caption = 'Port';
@@ -164,7 +188,28 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <?php include('admin_elements/page_header.php'); ?>
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
     <!-- /page header -->
 
 
@@ -191,8 +236,58 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
                 </div>
             </div>
 
-        <?php include('admin_elements/copyright.php'); ?>
+            <!-- Details Modal -->
+            <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detailsModalLabel">Port Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="modal-loading" class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div id="modal-content" class="d-none">
+                                <table class="table table-bordered table-striped">
+                                    <tr>
+                                        <th width="35%">Port ID</th>
+                                        <td id="det-id"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Port Name</th>
+                                        <td id="det-name"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Port Code</th>
+                                        <td id="det-code"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Country</th>
+                                        <td id="det-country"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Status</th>
+                                        <td id="det-status"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Created At</th>
+                                        <td id="det-created"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
     </div>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 
 <script>
@@ -209,7 +304,7 @@ $(document).ready(function() {
             { data: 2, name: 'port_code',  title: 'PORT CODE' },
             { data: 3, name: 'country',    title: 'PORT COUNTRY' },
             { data: 4, name: 'created_at', title: 'CREATED AT' },
-            { data: 5, name: 'publish',    title: 'STATUS' },
+            { data: 5, name: 'is_active',    title: 'STATUS' },
             { data: 6, title: 'ACTION', orderable: false, searchable: false }
         ],
         order: [[0, 'desc']],
@@ -217,6 +312,48 @@ $(document).ready(function() {
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         responsive: true,
         autoWidth: false
+    });
+
+    var detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+
+    $(document).on('click', '.view-port-details', function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('#modal-loading').removeClass('d-none');
+        $('#modal-content').addClass('d-none');
+        detailsModal.show();
+
+        $.ajax({
+            url: 'listing_ports.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'get_port_details',
+                id: id,
+                csrf_token: $('input[name="csrf_token"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    var data = response.data;
+                    $('#det-id').text(data.id);
+                    $('#det-name').text(data.port_name);
+                    $('#det-code').text(data.port_code);
+                    $('#det-country').text(data.country_name || ('Country #' + data.country_id));
+                    $('#det-status').html(data.is_active == 1 ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>');
+                    $('#det-created').text(data.created_at || '-');
+                    
+                    $('#modal-loading').addClass('d-none');
+                    $('#modal-content').removeClass('d-none');
+                } else {
+                    alert(response.message || 'Failed to fetch details.');
+                    detailsModal.hide();
+                }
+            },
+            error: function() {
+                alert('Error fetching details.');
+                detailsModal.hide();
+            }
+        });
     });
 
     $(document).on('click', 'a[data-action="delete_record"]', function(e) {

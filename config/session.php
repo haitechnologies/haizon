@@ -1,7 +1,7 @@
 <?php
 
-if (!function_exists('haipulseSessionIsProduction')) {
-    function haipulseSessionIsProduction(): bool
+if (!function_exists('haizonSessionIsProduction')) {
+    function haizonSessionIsProduction(): bool
     {
         $appEnv = getenv('APP_ENV') ?: '';
         $serverName = $_SERVER['SERVER_NAME'] ?? '';
@@ -11,8 +11,8 @@ if (!function_exists('haipulseSessionIsProduction')) {
     }
 }
 
-if (!function_exists('haipulseSessionBasePath')) {
-    function haipulseSessionBasePath(): string
+if (!function_exists('haizonSessionBasePath')) {
+    function haizonSessionBasePath(): string
     {
         $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
         $scriptDir = rtrim(dirname($scriptName), '/');
@@ -26,10 +26,10 @@ if (!function_exists('haipulseSessionBasePath')) {
     }
 }
 
-if (!function_exists('haipulseSessionCookiePath')) {
-    function haipulseSessionCookiePath(string $scope): string
+if (!function_exists('haizonSessionCookiePath')) {
+    function haizonSessionCookiePath(string $scope): string
     {
-        $basePath = haipulseSessionBasePath();
+        $basePath = haizonSessionBasePath();
 
         if ($scope === 'dashboard') {
             return $basePath === '/' ? '/dashboard' : rtrim($basePath, '/') . '/dashboard';
@@ -52,7 +52,7 @@ if (!function_exists('startScopedSession')) {
             return;
         }
 
-        $isProduction = haipulseSessionIsProduction();
+        $isProduction = haizonSessionIsProduction();
 
         ini_set('session.cookie_httponly', '1');
         ini_set('session.cookie_samesite', 'Strict');
@@ -60,31 +60,32 @@ if (!function_exists('startScopedSession')) {
         ini_set('session.use_only_cookies', '1');
         ini_set('session.cookie_secure', $isProduction ? '1' : '0');
 
-        session_name($normalizedScope === 'dashboard' ? 'HAIPULSE_DASHBOARD_SESSID' : 'HAIPULSE_FRONTEND_SESSID');
-        session_set_cookie_params(0, haipulseSessionCookiePath($normalizedScope), '', $isProduction, true);
+        $sess_prefix = strtoupper(defined('PROJECT_PREFIX') ? PROJECT_PREFIX : 'haizon');
+        session_name($normalizedScope === 'dashboard' ? $sess_prefix . '_DASHBOARD_SESSID' : $sess_prefix . '_FRONTEND_SESSID');
+        session_set_cookie_params(0, haizonSessionCookiePath($normalizedScope), '', $isProduction, true);
         session_start();
     }
 }
 
 // Backward-compatible aliases for older includes that may still call legacy helper names.
-if (!function_exists('haipulseSessionIsProduction')) {
-    function haipulseSessionIsProduction(): bool
+if (!function_exists('haizonSessionIsProduction')) {
+    function haizonSessionIsProduction(): bool
     {
-        return haipulseSessionIsProduction();
+        return haizonSessionIsProduction();
     }
 }
 
-if (!function_exists('haipulseSessionBasePath')) {
-    function haipulseSessionBasePath(): string
+if (!function_exists('haizonSessionBasePath')) {
+    function haizonSessionBasePath(): string
     {
-        return haipulseSessionBasePath();
+        return haizonSessionBasePath();
     }
 }
 
-if (!function_exists('haipulseSessionCookiePath')) {
-    function haipulseSessionCookiePath(string $scope): string
+if (!function_exists('haizonSessionCookiePath')) {
+    function haizonSessionCookiePath(string $scope): string
     {
-        return haipulseSessionCookiePath($scope);
+        return haizonSessionCookiePath($scope);
     }
 }
 

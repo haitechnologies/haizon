@@ -42,7 +42,7 @@ class DebitNotesDataTable extends BaseDataTable
         $badge      = BadgeHelper::info(htmlspecialchars($status));
         return [
             htmlspecialchars($date),
-            htmlspecialchars($no),
+            '<a href="debit_note_overview.php?id=' . (int)($row['id'] ?? 0) . '" class="text-decoration-none">' . htmlspecialchars($no) . '</a>',
             htmlspecialchars($ref),
             htmlspecialchars($vendorName),
             $badge,

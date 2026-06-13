@@ -8,7 +8,6 @@ use App\Core\Container;
 use App\Service\CustomerService;
 use App\Exception\NotFoundException;
 use App\Exception\ValidationException;
-use App\Core\Roles;
 
 $container = Container::getInstance();
 $customerService = $container->get(CustomerService::class);
@@ -212,7 +211,7 @@ if ($action == "edit_$module" && !empty($contact_id) && !empty($customer_id)) {
         $email              = s__($contactObj->email);
         $phone              = s__($contactObj->phone);
         $notes              = s__($contactObj->notes);
-        $is_active          = s__($contactObj->publish);
+        $is_active          = s__($contactObj->isActive);
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();
     }

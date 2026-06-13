@@ -12,7 +12,11 @@ class BanksDataTable extends BaseDataTable
 {
     protected $table = DB::BANKS;
     protected $searchFields = ['account_name', 'bank_name', 'account_code'];
-    protected $sortableColumns = [0 => 'id', 1 => 'is_primary', 2 => 'account_name', 3 => 'currency', 4 => 'account_code', 5 => 'bank_name', 6 => 'routing_number', 7 => 'created_at', 8 => 'publish', 9 => 'id'];
+    protected $sortableColumns = [
+        0 => 'id', 1 => 'is_primary', 2 => 'account_name', 3 => 'currency',
+        4 => 'account_code', 5 => 'bank_name', 6 => 'routing_number',
+        7 => 'created_at', 8 => 'is_active', 9 => 'id'
+    ];
 
     protected function formatRow($row, $requestData = [])
     {
@@ -24,7 +28,7 @@ class BanksDataTable extends BaseDataTable
         $bankName = (string)($row['bank_name'] ?? '');
         $routing  = (string)($row['routing_number'] ?? '');
         $created  = (string)($row['created_at'] ?? '');
-        $publish  = (int)($row['publish'] ?? 0);
+        $publish  = (int)($row['is_active'] ?? 0);
         $badge    = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
             $id, $primary,
@@ -33,7 +37,7 @@ class BanksDataTable extends BaseDataTable
             htmlspecialchars($code),
             htmlspecialchars($bankName),
             htmlspecialchars($routing),
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $badge,
             $this->getActionButtons($id, 'banks'),
         ];

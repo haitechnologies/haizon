@@ -21,7 +21,7 @@ $customers_ordering = $_SESSION['customers_ordering'];
 // Build search query with array mapping
 $status_map = [
     'active'    => "c.is_active=1",
-    'inactive'  => "c.publish=0",
+    'inactive'  => "c.is_active=0",
     'crm'       => "c.is_active=1",
     'duplicate' => "SPECIAL_DUPLICATE",
     'overdue'   => "SPECIAL_OVERDUE",
@@ -52,7 +52,7 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                     'duplicate' => 'Duplicate Customers',
                     'inactive'  => 'Inactive Customers'
                 ];
-                
+
                 foreach ($ordering_options as $value => $label) {
                     $selected = ($customers_ordering === $value) ? 'selected' : '';
                     echo "<option value=\"{$value}\" {$selected}>{$label}</option>";
@@ -92,12 +92,12 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                              ORDER BY c.display_name ASC
                              LIMIT 25"
                         );
-                        
+
                         $total_customers = $result->num_rows;
                     } elseif ($customers_ordering === 'overdue') {
                         // Overdue customers - customers with overdue invoices
                         $result = $mysqli->query(
-                            "SELECT c.id, c.display_name, c.publish,
+                            "SELECT c.id, c.display_name, c.is_active,
                                     0 as total_attachments
                              FROM `" . DB::CUSTOMERS . "` c
                              INNER JOIN `" . DB::INVOICES . "` i ON c.id = i.customer_id
@@ -106,7 +106,7 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                              ORDER BY c.display_name ASC
                              LIMIT 25"
                         );
-                        
+
                         // Get total count
                         $result_count = $mysqli->query(
                             "SELECT COUNT(DISTINCT c.id) as total FROM `" . DB::CUSTOMERS . "` c
@@ -118,7 +118,7 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                     } elseif ($customers_ordering === 'unpaid') {
                         // Unpaid customers - customers with any unpaid invoices (sent, partially_paid, overdue)
                         $result = $mysqli->query(
-                            "SELECT c.id, c.display_name, c.publish,
+                            "SELECT c.id, c.display_name, c.is_active,
                                     0 as total_attachments
                              FROM `" . DB::CUSTOMERS . "` c
                              INNER JOIN `" . DB::INVOICES . "` i ON c.id = i.customer_id
@@ -127,7 +127,7 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                              ORDER BY c.display_name ASC
                              LIMIT 25"
                         );
-                        
+
                         // Get total count
                         $result_count = $mysqli->query(
                             "SELECT COUNT(DISTINCT c.id) as total FROM `" . DB::CUSTOMERS . "` c
@@ -139,14 +139,14 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                     } else {
                         // Standard query with attachment count using JOIN
                         $result = $mysqli->query(
-                            "SELECT c.id, c.display_name, c.publish,
+                            "SELECT c.id, c.display_name, c.is_active,
                                     0 as total_attachments
                              FROM `" . DB::CUSTOMERS . "` c
                              WHERE c.id > 0 {$search_query}
                              ORDER BY c.id DESC
                              LIMIT 25"
                         );
-                        
+
                         // Get total count
                         $result_count = $mysqli->query(
                             "SELECT COUNT(DISTINCT c.id) as total FROM `" . DB::CUSTOMERS . "` c
@@ -159,14 +159,14 @@ $current_id = (int)($_GET['customer_id'] ?? 0);
                     // Render rows
                     while ($row = $result->fetch_array()) {
                         $isSelected = ($row['id'] == $current_id) ? 'table-primary shadow-sm' : '';
-                        
+
                         // Calculate outstanding receivables (unpaid invoices)
                         $customer_receivables = 0;
                         $rec_query = $mysqli->query("SELECT SUM(grand_total) as total FROM " . DB::INVOICES . " WHERE customer_id = {$row['id']} AND invoice_status NOT IN ('paid', 'cancelled')");
                         if ($rec_query && $rec_row = $rec_query->fetch_assoc()) {
                             $customer_receivables = (float)($rec_row['total'] ?? 0);
                         }
-                        
+
                         $formatted_amount = BASE_CURRENCY['code'] . dec_($customer_receivables);
                         $attachment_icon = ($row['total_attachments'] > 0) ? '<i class="ph-paperclip"></i>' : '';
                     ?>

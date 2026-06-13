@@ -456,7 +456,7 @@ if ($action == "update_$module" && !empty($id)) {
                                             referral                    = '" . $referral . "',
                                             notes                       = '" . $notes . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -588,8 +588,7 @@ if ($action == "update_$module" && !empty($id)) {
         // ======================================================
         $insert_row = $mysqli->query("
                                         INSERT INTO `$tbl_name` (
-                                            job_date, job_status, warehouse_id, customer_id, job_seq, sales_person, currency, exchange_rate, transport_mode, shipment_type, job_owner, tags, job_no, job_ref_no, cs_agent, services, incoterm, email, supplier_rate, estimated_net_profit, estimated_invoice_amount, etd, eta, carrier, vessel_name, vessel_departure_date, flight_no, flight_departure_date, job_completion_date, payment_terms, hawb, mawb, estimated_cost_amount, declaration_no, gross_weight, volume_weight, chargeable_weight, no_of_pieces, commodity_type, no_of_containers, insurance_needed, container_type, temperature_control_required, container_number, special_comments, landing_country, landing_port, loading_place, billing_city, billing_state, billing_code, billing_country, destination_country, destination_port, fdp, shipping_city, shipping_state,shipping_code, shipping_country, happy_customer, unhappy_reason, shipment_on_time, referral, notes, books_customer_id, publish
-                                        ) VALUES (
+                                            job_date, job_status, warehouse_id, customer_id, job_seq, sales_person, currency, exchange_rate, transport_mode, shipment_type, job_owner, tags, job_no, job_ref_no, cs_agent, services, incoterm, email, supplier_rate, estimated_net_profit, estimated_invoice_amount, etd, eta, carrier, vessel_name, vessel_departure_date, flight_no, flight_departure_date, job_completion_date, payment_terms, hawb, mawb, estimated_cost_amount, declaration_no, gross_weight, volume_weight, chargeable_weight, no_of_pieces, commodity_type, no_of_containers, insurance_needed, container_type, temperature_control_required, container_number, special_comments, landing_country, landing_port, loading_place, billing_city, billing_state, billing_code, billing_country, destination_country, destination_port, fdp, shipping_city, shipping_state,shipping_code, shipping_country, happy_customer, unhappy_reason, shipment_on_time, referral, notes, books_customer_id, is_active) VALUES (
                                             '" . $job_date . "', 
                                             '" . $job_status . "', 
                                             '" . $warehouse_id . "', 
@@ -835,7 +834,7 @@ if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'account
     $approved_time_resubmission = s__($row['approved_time_resubmission']);
 
 
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active'] ?? 0);
 
     // $expiry_date        = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
 
@@ -874,8 +873,35 @@ if ($total_rows == 0) $total_rows = 1;
 
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="publish" id="publish" <?php if ($publish == '1') { ?>checked="checked" <?php } ?> form="frmjobs">
+                    <label class="form-check-label" for="publish">Publish</label>
+                </div>
+            </div>
+            <div class="my-1">
+                <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
+                    <button type="submit" form="frmjobs" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
             <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
@@ -884,56 +910,7 @@ if ($total_rows == 0) $total_rows = 1;
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="mt-3 rounded">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Job #: <?php echo $id; ?></label>
-                        </div>
-                    </div>
-                <?php } ?>
-
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success">
-                            <?php if (!empty($job_status)) echo ucwords(getTableAttr('job_status', DB::JOB_STATUSES, $job_status)); ?>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
 
                 <div class="col-xl-12">
@@ -949,7 +926,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'></option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1 LIMIT 1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1 LIMIT 1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -1040,7 +1017,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <option value='0'></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE publish=1 ORDER BY id ASC");
+                                                $result_currency = $mysqli->query("SELECT * FROM `" . DB::CURRENCIES  . "` WHERE is_active=1 ORDER BY id ASC");
                                                 while ($rows_currency = $result_currency->fetch_array()) {
                                                     // $currency        = s__($rows_currency['currency']);
                                                     // -------------------------------------------------------------------------------------------------
@@ -1125,14 +1102,13 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="tags[]" id="tags[]" class="form-control select" multiple="multiple" data-tags="true">
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_tags = $mysqli->query("SELECT * FROM `" . DB::SETUP_TAGS  . "` WHERE publish=1 AND tag_type = 'jobs' ORDER BY tag");
+                                                $result_tags = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES  . "` WHERE is_active=1 AND type = 'job_tag' ORDER BY value");
                                                 while ($rows_tags = $result_tags->fetch_array()) {
-                                                    // $assigned_to        = s__($rows_tags['full_name']);
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
 
                                                     <option value="<?php echo $rows_tags['id']; ?>" <?php if ($action == "edit_$module" && in_array($rows_tags['id'], $tags_arr)) { ?>selected <?php } else if (in_array($rows_tags['id'], $posted_tags_arr)) { ?>selected <?php } ?>>
-                                                        <?php echo $rows_tags['tag']; ?>
+                                                        <?php echo $rows_tags['value']; ?>
                                                     </option>
 
                                                 <?php
@@ -1173,7 +1149,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <!-- <option value='0'></option> -->
                                             <?php
                                             // -------------------------------------------------------------------------------------------------
-                                            $result_job_status = $mysqli->query("SELECT * FROM `" . DB::JOB_STATUSES  . "` WHERE publish=1 ORDER BY job_status");
+                                            $result_job_status = $mysqli->query("SELECT * FROM `" . DB::JOB_STATUSES  . "` WHERE is_active=1 ORDER BY job_status");
                                             while ($rows_job_status = $result_job_status->fetch_array()) {
                                                 // -------------------------------------------------------------------------------------------------
                                             ?>
@@ -1190,7 +1166,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <!-- <label class="col-lg-2">
                                         <button type="button" class="btn btn-light">Create Sales Order</button></label> -->
                                     <!-- <div class="col-lg-4">
-                                            <input type="text" class="form-control" placeholder="Reference no" name="reference_no" id="reference_no" value="<?php echo $reference_no; ?>">
+                                            <input type="text" class="form-control" placeholder="Reference no" name="reference_no" id="reference_no" value="<?php echo $reference_no ?? ''; ?>">
                                         </div> -->
                                 </div>
 
@@ -1257,7 +1233,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="services[]" id="services[]" class="form-control select" multiple="multiple" data-tags="true">
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result_services = $mysqli->query("SELECT * FROM `" . DB::ITEMS  . "` WHERE publish=1 ORDER BY item_name");
+                                                $result_services = $mysqli->query("SELECT * FROM `" . DB::ITEMS  . "` WHERE is_active=1 ORDER BY item_name");
                                                 while ($rows_services = $result_services->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -1992,7 +1968,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value='0'></option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . DB::COMMODITY_TYPES  . "` WHERE publish=1 ORDER BY commodity_type");
+                                                    $result = $mysqli->query("SELECT * FROM `" . DB::COMMODITY_TYPES  . "` WHERE is_active=1 ORDER BY commodity_type");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
@@ -2062,7 +2038,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value='0'></option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . DB::CONTAINER_TYPES  . "` WHERE publish=1 ORDER BY container_type");
+                                                    $result = $mysqli->query("SELECT * FROM `" . DB::CONTAINER_TYPES  . "` WHERE is_active=1 ORDER BY container_type");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
@@ -2131,12 +2107,12 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value="0">Please select</option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
                                                         <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $landing_country) { ?>selected <?php } else if ($rows['id'] == $landing_country) { ?>selected <?php } ?>>
-                                                            <?php echo $rows['country_name']; ?>
+                                                            <?php echo $rows['country']; ?>
                                                         </option>
                                                     <?php } ?>
                                                 </select>
@@ -2152,7 +2128,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
                                                     if (!empty($landing_country)) {
-                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE publish=1 AND country=$landing_country");
+                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE is_active=1 AND country=$landing_country");
                                                     } else {
                                                         $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE id=0");
                                                     }
@@ -2209,12 +2185,12 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value="0">Please select</option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
                                                         <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $billing_country) { ?>selected <?php } else if ($rows['id'] == $billing_country) { ?>selected <?php } ?>>
-                                                            <?php echo $rows['country_name']; ?>
+                                                            <?php echo $rows['country']; ?>
                                                         </option>
                                                     <?php } ?>
                                                 </select>
@@ -2244,12 +2220,12 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value="0">Please select</option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
                                                         <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $destination_country) { ?>selected <?php } else if ($rows['id'] == $destination_country) { ?>selected <?php } ?>>
-                                                            <?php echo $rows['country_name']; ?>
+                                                            <?php echo $rows['country']; ?>
                                                         </option>
                                                     <?php } ?>
                                                 </select>
@@ -2265,7 +2241,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
                                                     if (!empty($destination_country)) {
-                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE publish=1 AND country=$destination_country");
+                                                        $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE is_active=1 AND country=$destination_country");
                                                     } else {
                                                         $result_ports = $mysqli->query("SELECT * FROM `" . DB::PORTS  . "` WHERE id=0");
                                                     }
@@ -2323,12 +2299,12 @@ if ($total_rows == 0) $total_rows = 1;
                                                     <option value="0">Please select</option>
                                                     <?php
                                                     // -------------------------------------------------------------------------------------------------
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                     while ($rows = $result->fetch_array()) {
                                                         // -------------------------------------------------------------------------------------------------
                                                     ?>
                                                         <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $shipping_country) { ?>selected <?php } else if ($rows['id'] == $shipping_country) { ?>selected <?php } ?>>
-                                                            <?php echo $rows['country_name']; ?>
+                                                            <?php echo $rows['country']; ?>
                                                         </option>
                                                     <?php } ?>
                                                 </select>

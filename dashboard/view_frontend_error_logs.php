@@ -30,10 +30,10 @@ if (!Roles::hasFullAccess($session_role_id)) {
 }
 
 // Load FrontendErrorLogger class if not already loaded
-$logger_class_exists = class_exists('FrontendErrorLogger');
+$logger_class_exists = class_exists(\App\Frontend\FrontendErrorLogger::class);
 if (!$logger_class_exists && file_exists(__DIR__ . '/../classes/frontend/ErrorLogger.php')) {
     // Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/frontend/ErrorLogger.php';
-    $logger_class_exists = class_exists('FrontendErrorLogger');
+    $logger_class_exists = class_exists(\App\Frontend\FrontendErrorLogger::class);
 }
 
 // Log file path (frontend)
@@ -115,7 +115,7 @@ function is_synthetic_entry($entry) {
     }
 
     $syntheticMarkers = [
-        'haipulse-manualtester',
+        'haizon-manualtester',
         'curl/',
         '/this-page-does-not-exist-404-test',
     ];
@@ -490,8 +490,8 @@ $log_file_missing = false;
 if (!file_exists($log_file) || filesize($log_file) === 0) {
     $log_file_missing = true;
     $all_entries = [];
-} elseif ($logger_class_exists && method_exists('FrontendErrorLogger', 'parseLogFile')) {
-    $all_entries = FrontendErrorLogger::parseLogFile($log_file);
+} elseif ($logger_class_exists && method_exists(\App\Frontend\FrontendErrorLogger::class, 'parseLogFile')) {
+    $all_entries = \App\Frontend\FrontendErrorLogger::parseLogFile($log_file);
     if (!is_array($all_entries)) {
         $all_entries = [];
     }

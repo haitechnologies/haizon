@@ -511,61 +511,44 @@ if (
 <div class="content-wrapper">
 
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="customer_id" id="customer_id" value="<?php echo $customer_id; ?>" />
-        <input type="hidden" name="post_invoice_id" id="post_invoice_id" value="<?php echo $post_invoice_id; ?>" />
-        <input type="hidden" name="payment_status" id="payment_status" value="" />
-        <input type="hidden" name="save_and_send" id="save_and_send" value="" />
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-        <?php if (($action == "edit_payments_received" || $action == "update_payments_received") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_payments_received" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_payments_received" />
-        <?php } ?>
+            <div class="my-1 d-flex align-items-center gap-2">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="button" onclick="document.getElementById('payment_status').value='draft'; document.getElementById('frmpayments_received').submit();" class="btn btn-primary btn-sm">Save</button>
+                <?php } ?>
 
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="button" onclick=" document.getElementById('payment_status').value='draft'; this.form.submit();" class="btn btn-primary btn-sm me-2">Save</button>
-
-                            <?php } ?>
-
-                            <?php if (!empty($id)) { ?>
-                                <a href="payment_received_overview.php?payment_received_id=<?php echo $id; ?>" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-                            <?php } else { ?>
-                                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-
+                <?php if (!empty($id)) { ?>
+                    <a href="payment_received_overview.php?payment_received_id=<?php echo $id; ?>" class="btn btn-light btn-sm">Cancel</a>
+                <?php } else { ?>
+                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                <?php } ?>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-        <div class="content-inner">
-            <div class="content">
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="customer_id" id="customer_id" value="<?php echo $customer_id; ?>" />
+                <input type="hidden" name="post_invoice_id" id="post_invoice_id" value="<?php echo $post_invoice_id; ?>" />
+                <input type="hidden" name="payment_status" id="payment_status" value="<?php echo $payment_status; ?>" />
+                <input type="hidden" name="save_and_send" id="save_and_send" value="" />
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+                <?php if (($action == "edit_payments_received" || $action == "update_payments_received") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_payments_received" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_payments_received" />
+                <?php } ?>
 
 
                 <div class="col-xl-12">
@@ -641,7 +624,7 @@ if (
                                                 <!-- <option value='0'></option> -->
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_METHODS  . "` WHERE publish=1 ORDER BY payment_method");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::PAYMENT_METHODS  . "` WHERE is_active=1 ORDER BY payment_method");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
@@ -969,15 +952,14 @@ if (
 
 
 
-                    </div>
-                </div>
-
             </div>
+        </form>
+    </div>
 
-
-            <?php include('admin_elements/copyright.php'); ?>
-        </div>
-    </form>
+    </div>
+</div>
+<?php include('admin_elements/copyright.php'); ?>
+</div>
 </div>
 
 

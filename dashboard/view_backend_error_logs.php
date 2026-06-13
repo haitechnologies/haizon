@@ -667,7 +667,7 @@ $db_entries = fetch_backend_db_entries($mysqli);
 $coverage_summary = fetch_backend_coverage_summary($mysqli);
 $unobserved_inventory = fetch_backend_unobserved_inventory($mysqli, 20);
 $coverage_gaps = fetch_backend_coverage_gaps($mysqli, 15);
-$pages_error_summary = fetch_backend_pages_error_summary($mysqli, 50);
+$pages_error_summary = [];
 
 $unobserved_by_module = [];
 $unobserved_by_source = [];
@@ -799,17 +799,22 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
     }
 
     .stat-strip {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
         gap: 8px;
+        scrollbar-width: thin;
     }
 
     .stat-chip {
+        flex: 1 1 0px;
+        min-width: 100px;
         border: 1px solid #dfe6ef;
         border-radius: 8px;
         background: #fff;
         padding: 8px 10px;
         line-height: 1.2;
+        text-align: center;
     }
 
     .stat-chip strong {
@@ -940,6 +945,18 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
                         <small class="text-muted">Dense view for fast triage with reduced scrolling.</small>
                     </div>
                         <div class="d-flex gap-2 align-items-center">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="offcanvas" data-bs-target="#filtersOffcanvas" aria-controls="filtersOffcanvas">
+                                <i class="ph-funnel"></i> Filters
+                                <?php
+                                $activeFilterCount = 0;
+                                foreach ($filters as $k => $v) {
+                                    if ($k === 'hide_info' && $v === '1') continue;
+                                    if (!empty($v)) $activeFilterCount++;
+                                }
+                                if ($activeFilterCount > 0): ?>
+                                    <span class="badge bg-white text-primary ms-1"><?php echo $activeFilterCount; ?></span>
+                                <?php endif; ?>
+                            </button>
                             <a href="?<?php echo build_query_params($filters, ['export' => 'json']); ?>" class="btn btn-sm btn-success"><i class="ph-download"></i> JSON</a>
                             <form method="post" action="view_backend_error_logs.php" class="d-inline" onsubmit="return confirm('Clear all error logs? This cannot be undone.');">
                                 <?php echo csrf_field(); ?>
@@ -959,21 +976,15 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
                     <a href="?severity=WARNING" class="stat-chip text-decoration-none">
                         <small class="text-muted">Warnings</small><strong class="text-warning"><?php echo number_format($statistics['by_severity']['WARNING'] ?? 0); ?></strong>
                     </a>
-                    <a href="?error_type=404" class="stat-chip text-decoration-none">
-                        <small class="text-muted">404</small><strong class="text-warning"><?php echo number_format($statistics['errors_404']); ?></strong>
-                    </a>
                     <a href="?error_type=500" class="stat-chip text-decoration-none">
                         <small class="text-muted">500</small><strong class="text-danger"><?php echo number_format($statistics['errors_500']); ?></strong>
                     </a>
-                    <a href="?error_type=403" class="stat-chip text-decoration-none">
-                        <small class="text-muted">403</small><strong class="text-secondary"><?php echo number_format($statistics['errors_403']); ?></strong>
+                    <a href="?error_type=404" class="stat-chip text-decoration-none">
+                        <small class="text-muted">404</small><strong class="text-warning"><?php echo number_format($statistics['errors_404']); ?></strong>
                     </a>
-                    <div class="stat-chip"><small class="text-muted">Inventory</small><strong><?php echo number_format($coverage_summary['inventory_pages'] ?? 0); ?></strong></div>
-                    <div class="stat-chip"><small class="text-muted">Observed Pages</small><strong><?php echo number_format($coverage_summary['observed_pages'] ?? 0); ?></strong></div>
-                    <div class="stat-chip"><small class="text-muted">Unobserved</small><strong><?php echo number_format($coverage_summary['unobserved_pages'] ?? 0); ?></strong></div>
-                    <div class="stat-chip"><small class="text-muted">Pages With Errors</small><strong><?php echo number_format($coverage_summary['pages_with_errors'] ?? 0); ?></strong></div>
-                    <div class="stat-chip"><small class="text-muted">Coverage Gaps</small><strong><?php echo number_format(count($coverage_gaps)); ?></strong></div>
-                    <div class="stat-chip"><small class="text-muted">Files</small><strong><?php echo number_format(count($statistics['by_file'])); ?></strong></div>
+                    <a href="run_coverage_sweep.php?source=dashboard_runtime" class="stat-chip text-decoration-none">
+                        <small class="text-muted">Unobserved</small><strong class="text-warning"><?php echo number_format($coverage_summary['unobserved_pages'] ?? 0); ?></strong>
+                    </a>
                     <div class="stat-chip"><small class="text-muted">Log Size</small><strong><?php echo htmlspecialchars($log_file_size); ?></strong></div>
                 </div>
 
@@ -987,163 +998,78 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
                     </small>
                 </div>
 
-                <?php if ($viewer_source_mode === 'database' && !empty($pages_error_summary)): ?>
-                    <div class="card border-info-subtle">
-                        <div class="card-header bg-info-subtle py-2">
-                            <strong>Pages With Errors</strong>
-                            <small class="text-muted">Grouped summary of backend pages with logged issues.</small>
-                        </div>
-                        <div class="table-responsive log-scroll-area" style="max-height: 360px;">
-                            <table class="table table-sm mb-0 log-table">
-                                <thead>
-                                    <tr>
-                                        <th>Page</th>
-                                        <th>Module</th>
-                                        <th>Errors</th>
-                                        <th>Warnings</th>
-                                        <th>Total</th>
-                                        <th>Last Error</th>
-                                        <th>Open</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pages_error_summary as $pageSummary): ?>
-                                        <?php
-                                            $pageName = trim((string)($pageSummary['page_name'] ?? ''));
-                                            $moduleSlug = trim((string)($pageSummary['module_slug'] ?? ''));
-                                            $fileFilter = build_query_params($filters, ['file' => $pageName, 'page' => 1]);
-                                        ?>
-                                        <tr>
-                                            <td><code><?php echo htmlspecialchars($pageName !== '' ? $pageName : 'unknown'); ?></code></td>
-                                            <td><?php echo htmlspecialchars($moduleSlug !== '' ? $moduleSlug : 'unknown'); ?></td>
-                                            <td><span class="text-danger fw-semibold"><?php echo (int)($pageSummary['error_count'] ?? 0); ?></span></td>
-                                            <td><span class="text-warning fw-semibold"><?php echo (int)($pageSummary['warning_count'] ?? 0); ?></span></td>
-                                            <td><?php echo (int)($pageSummary['total_count'] ?? 0); ?></td>
-                                            <td><?php echo htmlspecialchars((string)($pageSummary['last_error_at'] ?? '-')); ?></td>
-                                            <td>
-                                                <a class="btn btn-sm btn-outline-primary" href="view_backend_error_logs.php?<?php echo htmlspecialchars($fileFilter); ?>">
-                                                    Filter
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                <?php endif; ?>
 
-                <form method="get" class="filters-sticky">
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-2">
-                            <label class="form-label" for="severity">Severity</label>
-                            <select name="severity" id="severity" class="form-select form-select-sm">
-                                <option value="">All</option>
-                                <?php foreach (['CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG'] as $severityOption): ?>
-                                    <option value="<?php echo htmlspecialchars($severityOption); ?>" <?php echo $filters['severity'] === $severityOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($severityOption); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="module">Module</label>
-                            <select name="module" id="module" class="form-select form-select-sm">
-                                <option value="">All</option>
-                                <?php foreach ($unique_modules as $moduleOption): ?>
-                                    <option value="<?php echo htmlspecialchars($moduleOption); ?>" <?php echo $filters['module'] === $moduleOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($moduleOption); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="source_channel">Source</label>
-                            <select name="source_channel" id="source_channel" class="form-select form-select-sm">
-                                <option value="">All</option>
-                                <?php foreach ($unique_channels as $channelOption): ?>
-                                    <option value="<?php echo htmlspecialchars($channelOption); ?>" <?php echo $filters['source_channel'] === $channelOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($channelOption); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="file">File</label>
-                            <input type="text" name="file" id="file" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['file']); ?>" placeholder="file.php">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="error_type">HTTP/Error Type</label>
-                            <input type="text" name="error_type" id="error_type" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['error_type']); ?>" placeholder="404, 500, timeout">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="search">Search</label>
-                            <input type="text" name="search" id="search" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['search']); ?>" placeholder="message or context">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="date_from">Date From</label>
-                            <input type="date" name="date_from" id="date_from" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['date_from']); ?>">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="date_to">Date To</label>
-                            <input type="date" name="date_to" id="date_to" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['date_to']); ?>">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" for="hide_info">Info Rows</label>
-                            <select name="hide_info" id="hide_info" class="form-select form-select-sm">
-                                <option value="1" <?php echo ($filters['hide_info'] ?? '1') === '1' ? 'selected' : ''; ?>>Hide INFO/DEBUG</option>
-                                <option value="0" <?php echo ($filters['hide_info'] ?? '1') === '0' ? 'selected' : ''; ?>>Show INFO/DEBUG</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 d-flex gap-2">
-                            <button type="submit" class="btn btn-sm btn-primary"><i class="ph-funnel"></i> Apply</button>
-                            <a href="view_backend_error_logs.php" class="btn btn-sm btn-light"><i class="ph-x"></i> Reset</a>
-                            <a href="view_backend_error_logs.php?<?php echo htmlspecialchars(build_query_params($filters, ['export' => 'json', 'page' => null])); ?>" class="btn btn-sm btn-outline-dark"><i class="ph-download-simple"></i> Export JSON</a>
-                            <?php if (!empty($unobserved_inventory)): ?>
-                                <a href="run_coverage_sweep.php?source=dashboard_runtime" class="btn btn-sm btn-success"><i class="ph-rocket-launch"></i> Run Coverage Sweep</a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </form>
 
-                <?php if (!empty($unobserved_inventory)): ?>
-                    <div class="card border-secondary-subtle">
-                        <div class="card-header bg-light py-2">
-                            <strong>Unobserved Inventory</strong>
-                            <small class="text-muted">Entrypoints discovered by the scanner but not yet seen in runtime logging.</small>
-                            <div class="small mt-2">
-                                <strong>Details to proceed:</strong>
-                                Visit each listed backend page at least once while authenticated as admin so runtime logging can register coverage.
-                                <?php if ($unobserved_top_module !== ''): ?>
-                                    Prioritize module <code><?php echo htmlspecialchars($unobserved_top_module); ?></code>
-                                    (<?php echo (int)$unobserved_top_module_count; ?> pending).
-                                <?php endif; ?>
-                                <?php if ($unobserved_top_source !== ''): ?>
-                                    Most pending source: <code><?php echo htmlspecialchars($unobserved_top_source); ?></code>
-                                    (<?php echo (int)$unobserved_top_source_count; ?>).
-                                <?php endif; ?>
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel">
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title" id="filtersOffcanvasLabel"><i class="ph-funnel text-primary"></i> Filter Logs</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <form method="get">
+                            <div class="d-flex flex-column gap-3">
+                                <div>
+                                    <label class="form-label" for="severity">Severity</label>
+                                    <select name="severity" id="severity" class="form-select">
+                                        <option value="">All</option>
+                                        <?php foreach (['CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG'] as $severityOption): ?>
+                                            <option value="<?php echo htmlspecialchars($severityOption); ?>" <?php echo $filters['severity'] === $severityOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($severityOption); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="module">Module</label>
+                                    <select name="module" id="module" class="form-select">
+                                        <option value="">All</option>
+                                        <?php foreach ($unique_modules as $moduleOption): ?>
+                                            <option value="<?php echo htmlspecialchars($moduleOption); ?>" <?php echo $filters['module'] === $moduleOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($moduleOption); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="source_channel">Source</label>
+                                    <select name="source_channel" id="source_channel" class="form-select">
+                                        <option value="">All</option>
+                                        <?php foreach ($unique_channels as $channelOption): ?>
+                                            <option value="<?php echo htmlspecialchars($channelOption); ?>" <?php echo $filters['source_channel'] === $channelOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($channelOption); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="file">File</label>
+                                    <input type="text" name="file" id="file" class="form-control" value="<?php echo htmlspecialchars($filters['file']); ?>" placeholder="file.php">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="error_type">HTTP/Error Type</label>
+                                    <input type="text" name="error_type" id="error_type" class="form-control" value="<?php echo htmlspecialchars($filters['error_type']); ?>" placeholder="404, 500, timeout">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="search">Search</label>
+                                    <input type="text" name="search" id="search" class="form-control" value="<?php echo htmlspecialchars($filters['search']); ?>" placeholder="message or context">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="date_from">Date From</label>
+                                    <input type="date" name="date_from" id="date_from" class="form-control" value="<?php echo htmlspecialchars($filters['date_from']); ?>">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="date_to">Date To</label>
+                                    <input type="date" name="date_to" id="date_to" class="form-control" value="<?php echo htmlspecialchars($filters['date_to']); ?>">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="hide_info">Info Rows</label>
+                                    <select name="hide_info" id="hide_info" class="form-select">
+                                        <option value="1" <?php echo ($filters['hide_info'] ?? '1') === '1' ? 'selected' : ''; ?>>Hide INFO/DEBUG</option>
+                                        <option value="0" <?php echo ($filters['hide_info'] ?? '1') === '0' ? 'selected' : ''; ?>>Show INFO/DEBUG</option>
+                                    </select>
+                                </div>
+                                <div class="d-grid gap-2 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary"><i class="ph-funnel"></i> Apply Filters</button>
+                                    <a href="view_backend_error_logs.php" class="btn btn-light"><i class="ph-x"></i> Reset Filters</a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="table-responsive log-scroll-area">
-                            <table class="table table-sm mb-0 log-table">
-                                <thead>
-                                    <tr>
-                                        <th>Module</th>
-                                        <th>Page</th>
-                                        <th>Entrypoint</th>
-                                        <th>Source</th>
-                                        <th>Seen</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($unobserved_inventory as $row): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars((string)($row['module_slug'] ?? 'unknown')); ?></td>
-                                            <td><code><?php echo htmlspecialchars((string)($row['page_path'] ?? ($row['page_name'] ?? 'unknown'))); ?></code></td>
-                                            <td><?php echo htmlspecialchars((string)($row['entrypoint_type'] ?? 'unknown')); ?></td>
-                                            <td><?php echo htmlspecialchars((string)($row['source_channel'] ?? 'unknown')); ?></td>
-                                            <td><?php echo (int)($row['seen_count'] ?? 0); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                        </form>
                     </div>
-                <?php endif; ?>
+                </div>
 
                 <?php if (!empty($coverage_gaps)): ?>
                     <div class="card border-warning-subtle">

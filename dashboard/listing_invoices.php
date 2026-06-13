@@ -120,38 +120,83 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 */
 ?>
 
+<style>
+.hover-primary:hover {
+    color: #0d6efd !important;
+}
+.fs-7 {
+    font-size: 0.85rem !important;
+}
+.fs-8 {
+    font-size: 0.75rem !important;
+}
+.badge.bg-opacity-10 {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.dropdown-menu {
+    border-radius: 8px;
+}
+.dropdown-item {
+    transition: background-color 0.15s ease;
+}
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
 <div class="content-wrapper">
 
-    <!-- Page header -->
-    <?php include('admin_elements/page_header.php'); ?>
-    <!-- /page header -->
+    <!-- Standardized Navbar/Header -->
+    <div class="page-header page-header-light shadow mb-4 carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <!-- Left Side: Heading & Subtitle -->
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <!-- Right Side: Action Buttons -->
+            <div class="my-1 d-flex align-items-center gap-2">
+                <?php if (empty($hide_add_button) && isset($module_id) && granted('create', $module_id)): ?>
+                    <a href="invoices.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
 
-    <div class="content datatable-enhanced">
+    <div class="content datatable-enhanced px-4">
 
         <?php include('admin_elements/breadcrumb.php'); ?>
 
-        <div class="card">
-
-            <div class="card-body">
-                    <!-- CSRF Protection Token -->
-                    <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                    
-                    <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
-                        <thead>
-                            <tr>
-                                <th width="100">DATE</th>
-                                <th width="150">INVOICE #</th>
-                                <th>ORDER NUMBER</th>
-                                <th>CUSTOMER NAME</th>
-                                <th class="col-center">STATUS</th>
-                                <th>DUE DATE</th>
-                                <th class="col-center">AMOUNT</th>
-                                <th class="col-center">BALANCE DUE</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="card-body p-0">
+                <!-- CSRF Protection Token -->
+                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                
+                <table id="grid-<?php echo $module; ?>" class="table table-hover align-middle mb-0 custom_datatables datatable-professional display responsive nowrap" width="100%">
+                    <thead class="table-light border-bottom text-uppercase fs-8 fw-semibold text-muted">
+                        <tr>
+                            <th class="ps-4">Invoice Info</th>
+                            <th>Customer</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-end">Balance Due</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Days Overdue</th>
+                            <th>Dates</th>
+                            <th class="text-end pe-4" style="width: 80px;">Actions</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -184,26 +229,159 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 0 },
-            { data: 1 },
-            { data: 2 },
-            { data: 3 },
-            { data: 4 },
-            { data: 5 },
-            { data: 6 },
-            { data: 7 }
+            { data: null }, // col 0: Invoice Info
+            { data: null }, // col 1: Customer
+            { data: 6, className: 'text-end fw-semibold text-dark' }, // col 2: Amount
+            { data: 7, className: 'text-end' }, // col 3: Balance Due
+            { data: 4, className: 'text-center' }, // col 4: Status
+            { data: 9, className: 'text-center' }, // col 5: Days Overdue
+            { data: null }, // col 6: Dates
+            { data: null, orderable: false, searchable: false, className: 'text-end pe-4' } // col 7: Actions
         ],
         columnDefs: [
-            { targets: [4, 6, 7], className: 'col-center' }
+            {
+                targets: 0,
+                render: function(data, type, row) {
+                    var invNo = row[1] || '';
+                    var orderNo = row[2] || '';
+                    var id = row[8] || '';
+                    var html = '<div class="d-flex flex-column">';
+                    html += '<a href="invoice_overview.php?invoice_id=' + id + '" class="fw-semibold text-primary text-decoration-none hover-primary">' + invNo + '</a>';
+                    if (orderNo) {
+                        html += '<span class="text-muted fs-8">SO: ' + orderNo + '</span>';
+                    }
+                    html += '</div>';
+                    return html;
+                }
+            },
+            {
+                targets: 1,
+                render: function(data, type, row) {
+                    var custName = row[3] || '';
+                    var id = row[8] || '';
+                    return '<div class="d-flex flex-column">' +
+                           '<a href="invoice_overview.php?invoice_id=' + id + '" class="text-dark fw-medium text-decoration-none hover-primary">' + custName + '</a>' +
+                           '</div>';
+                }
+            },
+            {
+                targets: 3,
+                render: function(data, type, row) {
+                    var balanceText = row[7] || '';
+                    var numericVal = parseFloat(balanceText.replace(/[^0-9.-]+/g, '')) || 0;
+                    var textClass = numericVal > 0 ? 'text-danger fw-semibold' : 'text-success fw-medium';
+                    return '<span class="' + textClass + '">' + balanceText + '</span>';
+                }
+            },
+            {
+                targets: 4,
+                render: function(data, type, row) {
+                    var status = (row[4] || '').toLowerCase().trim();
+                    var badgeClass = 'bg-secondary text-dark bg-opacity-10';
+                    
+                    if (status === 'paid') badgeClass = 'bg-success bg-opacity-10 text-success';
+                    else if (status === 'unpaid' || status === 'overdue') badgeClass = 'bg-danger bg-opacity-10 text-danger';
+                    else if (status === 'draft') badgeClass = 'bg-warning bg-opacity-10 text-warning';
+                    else if (status === 'sent') badgeClass = 'bg-info bg-opacity-10 text-info';
+                    
+                    return '<span class="badge ' + badgeClass + ' px-2.5 py-1.5 rounded-pill text-uppercase fw-bold fs-8">' + status + '</span>';
+                }
+            },
+            {
+                targets: 5,
+                render: function(data, type, row) {
+                    var days = parseInt(row[9]) || 0;
+                    var status = (row[4] || '').toLowerCase().trim();
+                    if (status === 'paid') {
+                        return '<span class="text-muted fs-7">-</span>';
+                    }
+                    if (days > 0) {
+                        return '<span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1 rounded fw-bold fs-8">' + days + ' Days Overdue</span>';
+                    } else if (days < 0) {
+                        return '<span class="text-success fs-7 fw-medium">Due in ' + Math.abs(days) + ' days</span>';
+                    } else {
+                        return '<span class="text-warning fs-7 fw-medium">Due Today</span>';
+                    }
+                }
+            },
+            {
+                targets: 6,
+                render: function(data, type, row) {
+                    var invDate = row[0] || '';
+                    var dueDate = row[5] || '';
+                    var htmlDate = '';
+                    var htmlDue = '';
+                    if (invDate && invDate !== '-') {
+                        htmlDate = '<span class="text-dark"><span class="text-muted me-1">Issued:</span>' + invDate + '</span>';
+                    } else {
+                        htmlDate = '<span class="text-muted">Issued: -</span>';
+                    }
+                    if (dueDate && dueDate !== '-') {
+                        htmlDue = '<span class="text-dark mt-0.5"><span class="text-muted me-1">Due:</span>' + dueDate + '</span>';
+                    } else {
+                        htmlDue = '<span class="text-muted mt-0.5">Due: -</span>';
+                    }
+                    return '<div class="d-flex flex-column fs-7">' + htmlDate + htmlDue + '</div>';
+                }
+            },
+            {
+                targets: 7,
+                render: function(data, type, row) {
+                    var id = row[8] || '';
+                    var module = 'invoices';
+                    var html = '<div class="dropdown d-inline-block">';
+                    html += '<button class="btn btn-link text-muted p-1 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions menu">';
+                    html += '<i class="ph-dots-three-vertical fs-4"></i>';
+                    html += '</button>';
+                    html += '<ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 fs-7">';
+                    html += '<li><a class="dropdown-item py-2" href="invoice_overview.php?invoice_id=' + id + '"><i class="ph-eye me-2 align-middle text-muted"></i> View Details</a></li>';
+                    html += '<li><a class="dropdown-item py-2" href="invoices.php?action=edit_invoices&id=' + id + '"><i class="ph-pencil me-2 align-middle text-muted"></i> Edit Invoice</a></li>';
+                    html += '<li><a class="dropdown-item py-2" href="generate_pdf.php?invoice_id=' + id + '" target="_blank"><i class="ph-file-pdf me-2 align-middle text-muted"></i> Download PDF</a></li>';
+                    html += '<li><hr class="dropdown-divider my-1"></li>';
+                    html += '<li><a class="dropdown-item py-2 text-danger fw-semibold" href="#" data-action="delete_record" data-module="' + module + '" data-id="' + id + '"><i class="ph-trash me-2 align-middle text-danger"></i> Delete</a></li>';
+                    html += '</ul>';
+                    html += '</div>';
+                    return html;
+                }
+            }
         ],
         order: [[0, 'desc']],
         pageLength: 10,
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-        dom: "<'dt-header'<'dt-head-left'fl><'dt-head-right'>>rt<'dt-footer'<'dt-foot-left'i><'dt-foot-right'p>>",
-        language: {
-            search: "",
-            searchPlaceholder: "Search invoices...",
-            lengthMenu: "_MENU_"
+        dom: "<'dt-header d-flex justify-content-between align-items-center mb-3'<'dt-head-left'f><'dt-head-right'l>>rt<'dt-footer d-flex justify-content-between align-items-center mt-3'<'dt-foot-left'i><'dt-foot-right'p>>"
+    });
+
+    // ========================================
+    // CSRF-Protected Delete Record Handler
+    // ========================================
+    $(document).off('click.haiDatatableDelete', 'a[data-action="delete_record"]');
+    $(document).on('click', 'a[data-action="delete_record"]', function(e) {
+        e.preventDefault();
+        
+        var id = $(this).data('id');
+        var module = $(this).data('module');
+        var csrfToken = $('input[name="csrf_token"]').first().val() || '';
+        
+        if (confirm('Are you sure you want to delete this record?')) {
+            var form = $('<form>', {
+                'method': 'POST',
+                'action': 'listing_' + module + '.php'
+            }).append($('<input>', {
+                'type': 'hidden',
+                'name': 'action',
+                'value': 'delete_' + module
+            })).append($('<input>', {
+                'type': 'hidden',
+                'name': 'id',
+                'value': id
+            })).append($('<input>', {
+                'type': 'hidden',
+                'name': 'csrf_token',
+                'value': csrfToken
+            }));
+            
+            $('body').append(form);
+            form.submit();
         }
     });
 

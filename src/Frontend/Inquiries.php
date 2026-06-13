@@ -77,7 +77,7 @@ class Inquiries
         }
 
         $sql = "INSERT INTO `{$this->table}` 
-                (subject, full_name, email, mobile, message, ip_address, user_agent, status, publish, created_at) 
+                (subject, full_name, email, mobile, message, ip_address, user_agent, status, is_active, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())";
 
         $mobile = $data['mobile'] ?? null;
@@ -138,7 +138,7 @@ class Inquiries
 
         // Filter by publish
         if (isset($options['publish'])) {
-            $where[] = "publish = ?";
+            $where[] = "is_active = ?";
             $params[] = $options['publish'];
         }
 
@@ -188,7 +188,7 @@ class Inquiries
 
         // Filter by publish
         if (isset($options['publish'])) {
-            $where[] = "publish = ?";
+            $where[] = "is_active = ?";
             $params[] = $options['publish'];
         }
 

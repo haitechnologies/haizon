@@ -26,6 +26,8 @@
  */
 function output_seo_meta_tags($seo_data = []) {
     // Defaults
+    $app_name_clean = defined('APP_NAME') ? APP_NAME : 'HAIZON';
+    $app_name_lower = strtolower($app_name_clean);
     $defaults = [
         'title' => '',
         'description' => '',
@@ -33,8 +35,8 @@ function output_seo_meta_tags($seo_data = []) {
         'image' => asset_url('images/default-og-image.jpg'),
         'url' => current_url(),
         'type' => 'website',
-        'author' => 'HAIPULSE',
-        'twitter_handle' => '@haipulse',
+        'author' => $app_name_clean,
+        'twitter_handle' => '@' . $app_name_lower,
         'facebook_app_id' => '123456789',
         'locale' => 'en_US',
     ];
@@ -72,7 +74,7 @@ function output_seo_meta_tags($seo_data = []) {
     echo "<meta property=\"og:title\" content=\"$title\">\n";
     echo "<meta property=\"og:description\" content=\"$description\">\n";
     echo "<meta property=\"og:image\" content=\"$image\">\n";
-    echo "<meta property=\"og:site_name\" content=\"HAIPULSE\">\n";
+    echo "<meta property=\"og:site_name\" content=\"" . htmlspecialchars($app_name_clean, ENT_QUOTES, 'UTF-8') . "\">\n";
     echo "<meta property=\"og:locale\" content=\"en_US\">\n";
     
     if (!empty($data['facebook_app_id'])) {
@@ -111,7 +113,7 @@ function extract_seo_data($record, $overrides = []) {
         'keywords' => $record['meta_keywords'] ?? $record['seo_keywords'] ?? '',
         'image' => $record['og_image'] ?? $record['featured_image'] ?? asset_url('images/default-og-image.jpg'),
         'url' => $record['canonical_url'] ?? current_url(),
-        'author' => $record['created_by_name'] ?? 'HAIPULSE',
+        'author' => $record['created_by_name'] ?? (defined('APP_NAME') ? APP_NAME : 'HAIZON'),
     ];
     
     // Apply overrides (for dynamic content)
@@ -125,22 +127,26 @@ function extract_seo_data($record, $overrides = []) {
  * Usage: echo generate_json_ld_organization();
  */
 function generate_json_ld_organization() {
+    $name = defined('APP_NAME') ? APP_NAME : 'HAIZON';
+    $domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.com';
+    $name_lower = strtolower($name);
+    
     $data = [
         "@context" => "https://schema.org/",
         "@type" => "Organization",
-        "name" => "HAIPULSE",
-        "url" => "https://haipulse.com",
-        "logo" => "https://haipulse.com/assets/images/logo.png",
-        "description" => "UAE Business Directory & Trade Platform",
+        "name" => $name,
+        "url" => "https://" . $domain,
+        "logo" => "https://" . $domain . "/assets/images/logo.png",
+        "description" => $name . " Business Directory & Trade Platform",
         "address" => [
             "@type" => "PostalAddress",
             "addressCountry" => "AE",
             "addressLocality" => "Dubai",
         ],
         "sameAs" => [
-            "https://www.facebook.com/haipulse",
-            "https://www.twitter.com/haipulse",
-            "https://www.instagram.com/haipulse",
+            "https://www.facebook.com/" . $name_lower,
+            "https://www.twitter.com/" . $name_lower,
+            "https://www.instagram.com/" . $name_lower,
         ],
     ];
     
@@ -191,14 +197,14 @@ function generate_json_ld_article($article) {
         "image" => ($article['image'] ?? null) ? [$article['image']] : [],
         "author" => [
             "@type" => "Person",
-            "name" => $article['author'] ?? 'HAIPULSE',
+            "name" => $article['author'] ?? (defined('APP_NAME') ? APP_NAME : 'HAIZON'),
         ],
         "publisher" => [
             "@type" => "Organization",
-            "name" => "HAIPULSE",
+            "name" => (defined('APP_NAME') ? APP_NAME : 'HAIZON'),
             "logo" => [
                 "@type" => "ImageObject",
-                "url" => "https://haipulse.com/assets/images/logo.png",
+                "url" => "https://" . (defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.com') . "/assets/images/logo.png",
             ],
         ],
         "datePublished" => $article['published_date'] ?? date('c'),

@@ -105,7 +105,7 @@ if (!empty($id) && $action !== "update_$module") {
     try {
         $desg = $designationService->getById((int)$id);
         $designation = s__($desg->designation);
-        $publish = $desg->publish ? 1 : 0;
+        $publish = $desg->isActive ? 1 : 0;
     } catch (NotFoundException $e) {
         $error_message = $e->getMessage();
     }
@@ -115,66 +115,45 @@ $formTitle = (($action == "edit_$module" || $action == "update_$module") && !emp
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>"
-          name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php"
-          enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php echo $formTitle . ' ' . $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements"
-                       class="btn btn-light align-self-center collapsed d-lg-none
-                              border-transparent rounded-pill p-0 ms-auto"
-                       data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php echo $formTitle . ' ' . $module_caption; ?></h5>
+                <div class="form-check form-check-inline form-switch ms-2 my-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success"
+                           name="publish" id="publish" form="frm<?php echo $module; ?>"
+                           <?php if ($publish == '1') :
+                                ?>checked="checked"<?php
+                           endif; ?>>
+                    <label class="form-check-label" for="publish">Publish</label>
                 </div>
+            </div>
 
-
-                <div class="p-3 rounded mt-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <input type="checkbox" class="form-check-input form-check-input-success"
-                               name="publish" id="publish"
-                               <?php if ($publish == '1') :
-                                    ?>checked="checked"<?php
-                               endif; ?>>
-                        <label class="form-check-label" for="sc_r_success">Publish</label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php"
-                               class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
-        <div class="content-inner">
-            <div class="content">
+    <div class="content-inner">
+        <div class="content">
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>"
+                  name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php"
+                  enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
                 <div class="card col-lg-6">
 
@@ -195,12 +174,10 @@ $formTitle = (($action == "edit_$module" || $action == "update_$module") && !emp
 
                 </div>
 
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
+            </form>
         </div>
-    </form>
 
+        <?php include('admin_elements/copyright.php'); ?>
+    </div>
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

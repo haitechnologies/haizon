@@ -48,14 +48,14 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
 
         // --- Delete Lead Attachments
-        $result = $mysqli->query("SELECT * FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE lead_id=$id");
+        $result = $mysqli->query("SELECT * FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE attachable_type = 'Lead' AND attachable_id=$id");
 
         while ($rows = $result->fetch_array()) {
 
             $attachment_id          = $rows['id'];
-            $attachment_filename    = $rows['attachment_filename'];
+            $attachment_filename    = $rows['filename'];
 
-            unlink('../uploads/lead_attachments/' . $attachment_filename);
+            @unlink('../uploads/lead_attachments/' . $attachment_filename);
             $mysqli->query("DELETE FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE id=$attachment_id");
         } // while
 
@@ -74,14 +74,14 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
 
         // --- Delete Lead Attachments
-        $result = $mysqli->query("SELECT * FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE lead_id=$id AND created_by ='" . $session_user_id . "'");
+        $result = $mysqli->query("SELECT * FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE attachable_type = 'Lead' AND attachable_id=$id AND created_by ='" . $session_user_id . "'");
 
         while ($rows = $result->fetch_array()) {
 
             $attachment_id          = $rows['id'];
-            $attachment_filename    = $rows['attachment_filename'];
+            $attachment_filename    = $rows['filename'];
 
-            unlink('../uploads/lead_attachments/' . $attachment_filename);
+            @unlink('../uploads/lead_attachments/' . $attachment_filename);
             $mysqli->query("DELETE FROM `" . DB::LEAD_ATTACHMENTS . "` WHERE id=$attachment_id");
         } // while
 
@@ -113,7 +113,28 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <?php include('admin_elements/page_header.php'); ?>
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
     <!-- /page header -->
 
 
@@ -128,7 +149,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 
                     <?php
                     // ------------------------------------------------------------------------------------------------
-                    $result = $mysqli->query("SELECT * FROM `" . DB::SETUP_STATUSES . "` WHERE publish=1 AND status_type='leads' ORDER BY status LIMIT 50");
+                    $result = $mysqli->query("SELECT * FROM `" . DB::TAXONOMIES . "` WHERE is_active=1 AND type='lead_status' ORDER BY value LIMIT 50");
                     while ($rows = $result->fetch_array()) {
                         $status = $rows['id'];
                         // ------------------------------------------------------------------------------------------------
@@ -140,7 +161,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
                         // ======================================================
                         ?>
                         <span class="badge bg-light text-dark">
-                            <a href="listing_leads.php?lead_status=<?php echo $status; ?>" class="text-black fw-normal"><?php echo $rows['status']; ?> (<?php echo $rs->num_rows; ?>)</a>
+                            <a href="listing_leads.php?lead_status=<?php echo $status; ?>" class="text-black fw-normal"><?php echo $rows['value']; ?> (<?php echo $rs->num_rows; ?>)</a>
                         </span>
 
                     <?php } // while 

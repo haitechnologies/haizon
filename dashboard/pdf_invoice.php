@@ -18,6 +18,9 @@ if (function_exists('custom_exception_handler')) {
 if (function_exists('handle_fatal_error')) {
 	register_shutdown_function('handle_fatal_error');
 }
+if (function_exists('backend_log_coverage_heartbeat')) {
+	backend_log_coverage_heartbeat();
+}
 
 include('../config/images.php');
 // include('admin_elements/timeout.php');  // File doesn't exist
@@ -261,6 +264,22 @@ $row_bg = '';
 
 if (!empty($id)) {
     $container = \App\Core\Container::getInstance();
+    if (!$container->has(\App\Core\Database::class)) {
+        $container->register(\App\Core\Database::class, fn() => new \App\Core\Database());
+    }
+    if (!$container->has(\App\Repository\InvoiceRepository::class)) {
+        $container->register(\App\Repository\InvoiceRepository::class, fn($c) => new \App\Repository\InvoiceRepository($c->get(\App\Core\Database::class)));
+    }
+    if (!$container->has(\App\Repository\CustomerRepository::class)) {
+        $container->register(\App\Repository\CustomerRepository::class, fn($c) => new \App\Repository\CustomerRepository($c->get(\App\Core\Database::class)));
+    }
+    if (!$container->has(\App\Service\InvoiceService::class)) {
+        $container->register(\App\Service\InvoiceService::class, fn($c) => new \App\Service\InvoiceService(
+            $c->get(\App\Repository\InvoiceRepository::class),
+            $c->get(\App\Repository\CustomerRepository::class),
+            $c->get(\App\Core\Database::class)
+        ));
+    }
     $invoiceService = $container->get(\App\Service\InvoiceService::class);
     $db = $container->get(\App\Core\Database::class);
 
@@ -313,7 +332,7 @@ if (!empty($id)) {
     $grand_tax                  = $invoice->grandTax;
     $grand_total                = $invoice->grandTotal;
 
-    $is_active = $invoice->publish ? 1 : 0;
+    $is_active = $invoice->isActive ? 1 : 0;
 
     $invoice_date               = processDateYtoD($invoice_date);
     $expiry_date                = ($expiry_date === '1970-01-01' || empty($expiry_date) ? '' : processDateDtoY($expiry_date));
@@ -339,10 +358,10 @@ if (!empty($id)) {
 
     $grand_total_in_words  = ucwords($spell_out);
 
-    $is_active = $invoice->publish ? 1 : 0;
+    $is_active = $invoice->isActive ? 1 : 0;
 
     // Customer Billing Address 
-    $row_billing = $db->fetchOne("SELECT * FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND type = 'billing'", [
+    $row_billing = $db->fetchOne("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE addressable_type = 'Customer' AND addressable_id = :customer_id AND type = 'billing'", [
         'customer_id' => $customer_id
     ]);
 
@@ -357,7 +376,7 @@ if (!empty($id)) {
     $billing_fax            = (!empty($row_billing['fax']) ? s__($row_billing['fax']) : '');
 
     // Customer Shipping Address
-    $row_shipping = $db->fetchOne("SELECT * FROM `erp_customer_addresses` WHERE customer_id = :customer_id AND type = 'shipping'", [
+    $row_shipping = $db->fetchOne("SELECT * FROM `" . DB::CUSTOMER_ADDRESSES . "` WHERE addressable_type = 'Customer' AND addressable_id = :customer_id AND type = 'shipping'", [
         'customer_id' => $customer_id
     ]);
 

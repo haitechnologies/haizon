@@ -115,7 +115,7 @@ if ($action == "update_$module" && !empty($id)) {
                                             
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -222,8 +222,8 @@ if ($action == "update_$module" && !empty($id)) {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content py-2 px-3">
             <div class="row mt-2">
                 <div class="col-lg-12">
                     <h5 class="ms-2 mb-2"> <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a></h5>
@@ -274,7 +274,7 @@ if ($action == "update_$module" && !empty($id)) {
                         <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
                             <thead>
                                 <tr>
-                                    <th width="100">SELECT</th>
+                                    <th width="100"><input type="checkbox" class="form-check-input" id="select-all" title="Select all"></th>
                                     <th width="100">ID</th>
                                     <th>HS CODE</th>
                                     <th>DESCRIPTION</th>
@@ -292,15 +292,18 @@ if ($action == "update_$module" && !empty($id)) {
 
             </div>
 
+        </div>
+
         <?php include('admin_elements/copyright.php'); ?>
-    </div>
 </div>
 
 <script>
 $(document).ready(function() {
+    var selectedItems = new Set();
+
     window.HAIDatatableInitializer.init('#grid-<?php echo $module; ?>', '<?php echo $module; ?>', {
         columns: [
-            { data: 0 },
+            { data: 0, orderable: false, searchable: false },
             { data: 1 },
             { data: 2 },
             { data: 3 },
@@ -315,6 +318,73 @@ $(document).ready(function() {
         pageLength: 25,
         dom: "<'dt-header'<'dt-head-left'fl><'dt-head-right'>>rt<'dt-footer'<'dt-foot-left'i><'dt-foot-right'p>>",
         language: { search: '', searchPlaceholder: 'Search items...', lengthMenu: '_MENU_' }
+    });
+
+    // Handle individual checkbox changes
+    $(document).on('change', '.item-checkbox', function() {
+        var id = $(this).val();
+        if (this.checked) {
+            selectedItems.add(id);
+        } else {
+            selectedItems.delete(id);
+        }
+        updateSelectAllState();
+    });
+
+    // Handle Select All checkbox change
+    $(document).on('change', '#select-all', function() {
+        var checked = this.checked;
+        $('.item-checkbox').each(function() {
+            this.checked = checked;
+            var id = $(this).val();
+            if (checked) {
+                selectedItems.add(id);
+            } else {
+                selectedItems.delete(id);
+            }
+        });
+    });
+
+    // Restore checkbox state on DataTable draw
+    $('#grid-<?php echo $module; ?>').on('draw.dt', function() {
+        $('.item-checkbox').each(function() {
+            var id = $(this).val();
+            if (selectedItems.has(id)) {
+                this.checked = true;
+            } else {
+                this.checked = false;
+            }
+        });
+        updateSelectAllState();
+    });
+
+    function updateSelectAllState() {
+        var total = $('.item-checkbox').length;
+        var checked = $('.item-checkbox:checked').length;
+        $('#select-all').prop('checked', total > 0 && total === checked);
+    }
+
+    // Intercept form submission to inject selected items
+    $('#dataForm').on('submit', function(e) {
+        // Remove old dynamic inputs
+        $(this).find('.dynamic-selected-item').remove();
+
+        if (selectedItems.size === 0) {
+            e.preventDefault();
+            alert('Please select at least one item.');
+            return false;
+        }
+
+        // Add hidden inputs for each selected item
+        var form = this;
+        selectedItems.forEach(function(id) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_items[]';
+            input.value = id;
+            input.className = 'dynamic-selected-item';
+            form.appendChild(input);
+        });
     });
 });
 </script>

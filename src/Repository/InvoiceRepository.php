@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Database;
+use App\Core\DB;
 use App\Model\Invoice;
 use App\Model\InvoiceItem;
 
@@ -28,7 +29,7 @@ class InvoiceRepository
      */
     public function find(int $id, int $orgId): ?Invoice
     {
-        $sql = "SELECT * FROM `erp_invoices` WHERE id = :id AND organization_id = :org_id";
+        $sql = "SELECT * FROM `{DB::INVOICES}` WHERE id = :id AND organization_id = :org_id";
         $row = $this->db->fetchOne($sql, ['id' => $id, 'org_id' => $orgId]);
         if ($row === null) {
             return null;
@@ -41,7 +42,7 @@ class InvoiceRepository
      */
     public function findItemsByInvoice(int $invoiceId, int $orgId): array
     {
-        $sql = "SELECT * FROM `erp_invoice_items` WHERE invoice_id = :invoice_id AND organization_id = :org_id ORDER BY id ASC";
+        $sql = "SELECT * FROM `{DB::INVOICE_ITEMS}` WHERE invoice_id = :invoice_id AND organization_id = :org_id ORDER BY id ASC";
         $rows = $this->db->fetchAll($sql, ['invoice_id' => $invoiceId, 'org_id' => $orgId]);
         $items = [];
         foreach ($rows as $row) {
@@ -55,7 +56,7 @@ class InvoiceRepository
      */
     public function getLastInvoiceNoForMonth(string $prefix, int $orgId): ?string
     {
-        $sql = "SELECT invoice_no FROM `erp_invoices` 
+        $sql = "SELECT invoice_no FROM `{DB::INVOICES}` 
                 WHERE invoice_no LIKE :prefix AND organization_id = :org_id 
                 ORDER BY invoice_no DESC LIMIT 1";
         $row = $this->db->fetchOne($sql, ['prefix' => $prefix . '-%', 'org_id' => $orgId]);
@@ -75,14 +76,14 @@ class InvoiceRepository
 
     private function insert(Invoice $invoice): Invoice
     {
-        $sql = "INSERT INTO `erp_invoices` (
+        $sql = "INSERT INTO `{DB::INVOICES}` (
                     organization_id, invoice_no, customer_id, invoice_status, invoice_date, expiry_date,
                     reference_no, warehouse_id, expected_shipment_date, payment_term, shipment_type,
                     sales_person, job_reference_no, master_awb_no, shipper, consignee, origin,
                     destination, no_of_packs, gross_weight, chargeable_weight, volume,
                     terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value,
                     grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total,
-                    publish, created_at, updated_at, updated_by, created_by, recurring, pdf
+                    is_active, created_at, updated_at, updated_by, created_by, recurring, pdf
                 ) VALUES (
                     :organization_id, :invoice_no, :customer_id, :invoice_status, :invoice_date, :expiry_date,
                     :reference_no, :warehouse_id, :expected_shipment_date, :payment_term, :shipment_type,
@@ -90,7 +91,7 @@ class InvoiceRepository
                     :destination, :no_of_packs, :gross_weight, :chargeable_weight, :volume,
                     :terms_and_conditions, :grand_subtotal, :grand_discount_type, :grand_discount_type_value,
                     :grand_discount_amount, :grand_after_discount, :customer_notes, :grand_tax, :grand_total,
-                    :publish, NOW(), NOW(), :updated_by, :created_by, :recurring, :pdf
+                    :is_active, NOW(), NOW(), :updated_by, :created_by, :recurring, :pdf
                 )";
 
         $params = $invoice->toArray();
@@ -111,7 +112,7 @@ class InvoiceRepository
 
     private function update(Invoice $invoice): Invoice
     {
-        $sql = "UPDATE `erp_invoices` SET
+        $sql = "UPDATE `{DB::INVOICES}` SET
                     invoice_no = :invoice_no,
                     customer_id = :customer_id,
                     invoice_status = :invoice_status,
@@ -142,7 +143,7 @@ class InvoiceRepository
                     customer_notes = :customer_notes,
                     grand_tax = :grand_tax,
                     grand_total = :grand_total,
-                    publish = :publish,
+                    is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by,
                     recurring = :recurring,
@@ -178,7 +179,7 @@ class InvoiceRepository
 
     private function insertItem(InvoiceItem $item): InvoiceItem
     {
-        $sql = "INSERT INTO `erp_invoice_items` (
+        $sql = "INSERT INTO `{DB::INVOICE_ITEMS}` (
                     organization_id, invoice_id, service, description, qty, rate, sub_total,
                     tax, tax_amount, total, discount_type, discount_type_value, discount_amount,
                     created_at, updated_at, updated_by, created_by
@@ -203,7 +204,7 @@ class InvoiceRepository
 
     private function updateItem(InvoiceItem $item): InvoiceItem
     {
-        $sql = "UPDATE `erp_invoice_items` SET
+        $sql = "UPDATE `{DB::INVOICE_ITEMS}` SET
                     invoice_id = :invoice_id,
                     service = :service,
                     description = :description,
@@ -238,7 +239,7 @@ class InvoiceRepository
      */
     public function findItem(int $id, int $orgId): ?InvoiceItem
     {
-        $sql = "SELECT * FROM `erp_invoice_items` WHERE id = :id AND organization_id = :org_id";
+        $sql = "SELECT * FROM `{DB::INVOICE_ITEMS}` WHERE id = :id AND organization_id = :org_id";
         $row = $this->db->fetchOne($sql, ['id' => $id, 'org_id' => $orgId]);
         if ($row === null) {
             return null;
@@ -253,7 +254,7 @@ class InvoiceRepository
     {
         // Service should wrap this in database transaction, but we also ensure items are deleted.
         $this->deleteItemsByInvoice($id, $orgId);
-        $sql = "DELETE FROM `erp_invoices` WHERE id = :id AND organization_id = :org_id";
+        $sql = "DELETE FROM `{DB::INVOICES}` WHERE id = :id AND organization_id = :org_id";
         $stmt = $this->db->execute($sql, ['id' => $id, 'org_id' => $orgId]);
         return $stmt->rowCount() > 0;
     }
@@ -263,7 +264,7 @@ class InvoiceRepository
      */
     public function deleteItemsByInvoice(int $invoiceId, int $orgId): bool
     {
-        $sql = "DELETE FROM `erp_invoice_items` WHERE invoice_id = :invoice_id AND organization_id = :org_id";
+        $sql = "DELETE FROM `{DB::INVOICE_ITEMS}` WHERE invoice_id = :invoice_id AND organization_id = :org_id";
         $stmt = $this->db->execute($sql, ['invoice_id' => $invoiceId, 'org_id' => $orgId]);
         return true;
     }
@@ -284,7 +285,7 @@ class InvoiceRepository
             $params[$key] = (int)$id;
         }
         $inClause = implode(', ', $placeholders);
-        $sql = "DELETE FROM `erp_invoice_items` 
+        $sql = "DELETE FROM `{DB::INVOICE_ITEMS}` 
                 WHERE id IN ($inClause) AND invoice_id = :invoice_id AND organization_id = :org_id";
         $this->db->execute($sql, $params);
     }
@@ -294,7 +295,7 @@ class InvoiceRepository
      */
     public function updateStatus(int $id, string $status, int $orgId): bool
     {
-        $sql = "UPDATE `erp_invoices` SET invoice_status = :status, updated_at = NOW() 
+        $sql = "UPDATE `{DB::INVOICES}` SET invoice_status = :status, updated_at = NOW() 
                 WHERE id = :id AND organization_id = :org_id";
         $stmt = $this->db->execute($sql, ['status' => $status, 'id' => $id, 'org_id' => $orgId]);
         return $stmt->rowCount() > 0;
@@ -305,7 +306,7 @@ class InvoiceRepository
      */
     public function updatePdf(int $id, string $pdfFilename, int $orgId): bool
     {
-        $sql = "UPDATE `erp_invoices` SET pdf = :pdf, updated_at = NOW() 
+        $sql = "UPDATE `{DB::INVOICES}` SET pdf = :pdf, updated_at = NOW() 
                 WHERE id = :id AND organization_id = :org_id";
         $stmt = $this->db->execute($sql, ['pdf' => $pdfFilename, 'id' => $id, 'org_id' => $orgId]);
         return $stmt->rowCount() > 0;
@@ -316,7 +317,7 @@ class InvoiceRepository
      */
     public function findByIdOnly(int $id): ?Invoice
     {
-        $sql = "SELECT * FROM `erp_invoices` WHERE id = :id";
+        $sql = "SELECT * FROM `{DB::INVOICES}` WHERE id = :id";
         $row = $this->db->fetchOne($sql, ['id' => $id]);
         if ($row === null) {
             return null;
@@ -329,7 +330,7 @@ class InvoiceRepository
      */
     public function findItemsByInvoiceIdOnly(int $invoiceId): array
     {
-        $sql = "SELECT * FROM `erp_invoice_items` WHERE invoice_id = :invoice_id ORDER BY id ASC";
+        $sql = "SELECT * FROM `{DB::INVOICE_ITEMS}` WHERE invoice_id = :invoice_id ORDER BY id ASC";
         $rows = $this->db->fetchAll($sql, ['invoice_id' => $invoiceId]);
         $items = [];
         foreach ($rows as $row) {
@@ -378,6 +379,7 @@ class InvoiceRepository
             grandTotal: (float)($row['grand_total'] ?? 0.0),
             balanceDue: null,
             publish: (bool)($row['publish'] ?? false),
+            isActive: (bool)($row['is_active'] ?? $row['publish'] ?? true),
             createdAt: $row['created_at'] !== null ? (string)$row['created_at'] : null,
             updatedAt: $row['updated_at'] !== null ? (string)$row['updated_at'] : null,
             updatedBy: $row['updated_by'] !== null ? (int)$row['updated_by'] : null,

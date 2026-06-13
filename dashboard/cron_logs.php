@@ -103,8 +103,8 @@ if (isset($_GET['download']) && $_GET['download']) {
 <div class="content-wrapper">
 
 <!-- Page header -->
-<div class="page-header page-header-light shadow">
-    <div class="page-header-content d-lg-flex">
+<div class="page-header page-header-light shadow carriers-page-header">
+    <div class="page-header-content d-lg-flex carriers-page-header-content py-2 px-3">
         <div class="d-flex">
             <h4 class="page-title mb-0">
                 <i class="ph-file-text me-2"></i>

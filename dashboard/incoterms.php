@@ -65,7 +65,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         $update_row = $mysqli->query("
 										UPDATE `$tbl_name` SET
 											incoterm	        = '" . $incoterm . "',
-											publish 		    = '" . $publish . "'
+											is_active 		    = '" . $publish . "'
 										WHERE id=$id");
         if ($update_row) {
             $success_message = "Item has been updated successfully.";
@@ -91,7 +91,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         $error_message = 'Incoterm already exists. Please enter a different one.';
     } else {
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(incoterm, publish) VALUES ('" . $incoterm . "', '" . $publish . "'); ");
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(incoterm, is_active) VALUES ('" . $incoterm . "', '" . $publish . "'); ");
 
         if ($insert_row) {
             $id = $mysqli->insert_id;
@@ -118,7 +118,7 @@ if (!empty($id)) {
     $row = $result->fetch_array();
 
     $incoterm           = s__($row['incoterm']);
-    $publish            = s__($row['publish']);
+    $publish            = s__($row['is_active']);
 }
 
 
@@ -132,48 +132,42 @@ if (!empty($id)) {
 ?>
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="publish" id="publish" <?php if ($publish == '1') { ?>checked="checked" <?php } ?> form="frm<?php echo $module; ?>">
+                    <label class="form-check-label" for="publish">Publish</label>
                 </div>
+            </div>
 
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
-        <div class="content-inner">
-            <div class="content">
+    <div class="content-inner">
+        <div class="content">
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
                 <div class="card col-lg-6">
 
@@ -183,19 +177,18 @@ if (!empty($id)) {
                             <label class="col-lg-3 col-form-label"><span class="text-danger">Incoterm:*</span></label>
                             <div class="col-lg-9">
                                 <input required type="text" name="incoterm" id="incoterm" value="<?php echo $incoterm; ?>" class="form-control">
-                                <!-- <small class="text-muted ">DXB, SHJ </small> -->
                             </div>
                         </div>
 
                     </div>
 
                 </div>
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
+            </form>
         </div>
-    </form>
+
+
+        <?php include('admin_elements/copyright.php'); ?>
+    </div>
 
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

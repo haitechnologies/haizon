@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Database;
+use App\Core\DB;
 use App\Model\User;
 
 /**
@@ -27,7 +28,7 @@ class UserRepository
      */
     public function hasUsersInDepartment(int $departmentId): bool
     {
-        $sql = "SELECT id FROM `erp_users` WHERE department_id = :department_id LIMIT 1";
+        $sql = "SELECT id FROM DB::USERS WHERE department_id = :department_id LIMIT 1";
         $row = $this->db->fetchOne($sql, ['department_id' => $departmentId]);
         return $row !== null;
     }
@@ -39,8 +40,8 @@ class UserRepository
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
                        full_name, mobile, contact1, contact2, address, dob, 
-                       department_id, last_login, photo, publish, created_at, updated_at, created_by 
-                FROM `erp_users` 
+                       department_id, last_login, photo, created_at, updated_at, created_by 
+                FROM DB::USERS 
                 WHERE id = :id";
 
         $row = $this->db->fetchOne($sql, ['id' => $id]);
@@ -58,8 +59,8 @@ class UserRepository
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
                        full_name, mobile, contact1, contact2, address, dob, 
-                       department_id, last_login, photo, publish, created_at, updated_at, created_by 
-                FROM `erp_users` 
+                       department_id, last_login, photo, created_at, updated_at, created_by 
+                FROM DB::USERS 
                 WHERE email = :email";
 
         $row = $this->db->fetchOne($sql, ['email' => trim($email)]);
@@ -77,10 +78,10 @@ class UserRepository
     {
         $email = trim($email);
         if ($excludeId !== null) {
-            $sql = "SELECT id FROM `erp_users` WHERE email = :email AND id != :exclude_id LIMIT 1";
+            $sql = "SELECT id FROM DB::USERS WHERE email = :email AND id != :exclude_id LIMIT 1";
             $params = ['email' => $email, 'exclude_id' => $excludeId];
         } else {
-            $sql = "SELECT id FROM `erp_users` WHERE email = :email LIMIT 1";
+            $sql = "SELECT id FROM DB::USERS WHERE email = :email LIMIT 1";
             $params = ['email' => $email];
         }
 
@@ -101,14 +102,14 @@ class UserRepository
 
     private function insert(User $user): User
     {
-        $sql = "INSERT INTO `erp_users` (
+        $sql = "INSERT INTO DB::USERS (
                     can_access_system, is_active, role_id, email, password, 
                     full_name, mobile, contact1, contact2, address, dob, 
-                    department_id, photo, publish, created_by, created_at
+                    department_id, photo, created_by, created_at
                 ) VALUES (
                     :can_access_system, :is_active, :role_id, :email, :password, 
                     :full_name, :mobile, :contact1, :contact2, :address, :dob, 
-                    :department_id, :photo, :publish, :created_by, NOW()
+                    :department_id, :photo, :created_by, NOW()
                 )";
 
         $params = [
@@ -125,7 +126,6 @@ class UserRepository
             'dob' => $user->dob,
             'department_id' => $user->departmentId,
             'photo' => $user->photo,
-            'publish' => $user->publish ? 1 : 0,
             'created_by' => $user->createdBy,
         ];
 
@@ -141,7 +141,7 @@ class UserRepository
 
     private function update(User $user): User
     {
-        $sql = "UPDATE `erp_users` 
+        $sql = "UPDATE DB::USERS 
                 SET can_access_system = :can_access_system, 
                     is_active = :is_active, 
                     role_id = :role_id, 
@@ -155,7 +155,6 @@ class UserRepository
                     dob = :dob, 
                     department_id = :department_id, 
                     photo = :photo, 
-                    publish = :publish, 
                     updated_at = NOW()
                 WHERE id = :id";
 
@@ -173,7 +172,6 @@ class UserRepository
             'dob' => $user->dob,
             'department_id' => $user->departmentId,
             'photo' => $user->photo,
-            'publish' => $user->publish ? 1 : 0,
             'id' => $user->id,
         ];
 
@@ -192,7 +190,7 @@ class UserRepository
      */
     public function delete(int $id): bool
     {
-        $sql = "DELETE FROM `erp_users` WHERE id = :id";
+        $sql = "DELETE FROM DB::USERS WHERE id = :id";
         $stmt = $this->db->execute($sql, ['id' => $id]);
         return $stmt->rowCount() > 0;
     }

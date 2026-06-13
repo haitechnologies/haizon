@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Database;
+use App\Core\DB;
 use App\Model\LeaveType;
 
 /**
@@ -28,7 +29,7 @@ class LeaveTypeRepository
     public function find(int $id, int $organizationId): ?LeaveType
     {
         $sql = "SELECT id, organization_id, leave_type, max_per_year, paid, created_at, updated_at 
-                FROM `erp_leave_types` 
+                FROM DB::LEAVE_TYPES 
                 WHERE id = :id AND organization_id = :organization_id";
 
         $row = $this->db->fetchOne($sql, [
@@ -51,7 +52,7 @@ class LeaveTypeRepository
     public function findAll(int $organizationId): array
     {
         $sql = "SELECT id, organization_id, leave_type, max_per_year, paid, created_at, updated_at 
-                FROM `erp_leave_types` 
+                FROM DB::LEAVE_TYPES 
                 WHERE organization_id = :organization_id 
                 ORDER BY leave_type ASC";
 
@@ -70,7 +71,7 @@ class LeaveTypeRepository
     public function existsByName(string $name, int $organizationId, ?int $excludeId = null): bool
     {
         if ($excludeId !== null) {
-            $sql = "SELECT id FROM `erp_leave_types` 
+            $sql = "SELECT id FROM DB::LEAVE_TYPES 
                     WHERE leave_type = :name AND organization_id = :organization_id AND id != :exclude_id 
                     LIMIT 1";
             $params = [
@@ -79,7 +80,7 @@ class LeaveTypeRepository
                 'exclude_id' => $excludeId,
             ];
         } else {
-            $sql = "SELECT id FROM `erp_leave_types` 
+            $sql = "SELECT id FROM DB::LEAVE_TYPES 
                     WHERE leave_type = :name AND organization_id = :organization_id 
                     LIMIT 1";
             $params = [
@@ -105,7 +106,7 @@ class LeaveTypeRepository
 
     private function insert(LeaveType $type): LeaveType
     {
-        $sql = "INSERT INTO `erp_leave_types` (organization_id, leave_type, max_per_year, paid) 
+        $sql = "INSERT INTO DB::LEAVE_TYPES (organization_id, leave_type, max_per_year, paid) 
                 VALUES (:organization_id, :leave_type, :max_per_year, :paid)";
 
         $params = [
@@ -121,7 +122,7 @@ class LeaveTypeRepository
 
     private function update(LeaveType $type): LeaveType
     {
-        $sql = "UPDATE `erp_leave_types` 
+        $sql = "UPDATE DB::LEAVE_TYPES 
                 SET leave_type = :leave_type, 
                     max_per_year = :max_per_year, 
                     paid = :paid 
@@ -144,7 +145,7 @@ class LeaveTypeRepository
      */
     public function delete(int $id, int $organizationId): bool
     {
-        $sql = "DELETE FROM `erp_leave_types` WHERE id = :id AND organization_id = :organization_id";
+        $sql = "DELETE FROM DB::LEAVE_TYPES WHERE id = :id AND organization_id = :organization_id";
         $stmt = $this->db->execute($sql, [
             'id' => $id,
             'organization_id' => $organizationId,

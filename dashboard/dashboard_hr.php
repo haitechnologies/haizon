@@ -132,8 +132,8 @@ $attendance_percentage = $total_employees > 0 ? round(($today_present / $total_e
 <div class="content-wrapper">
 
 	<!-- Page header -->
-	<div class="page-header page-header-light shadow">
-		<div class="page-header-content d-lg-flex border-top">
+	<div class="page-header page-header-light shadow carriers-page-header">
+		<div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
 			<div class="d-flex align-items-center py-3 mb-2 mb-lg-0 flex-fill">
 				<div class="me-3 ms-2">
 					<div class="bg-info bg-opacity-10 text-info rounded-circle p-2">

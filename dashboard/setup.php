@@ -36,11 +36,26 @@ $setupSections = [
 		'title' => 'Operations & Master Data',
 		'icon' => 'ph-database',
 		'links' => [
+			['href' => 'listing_inquiries.php', 'label' => 'Inquiries', 'desc' => 'Customer inquiries and follow-ups.', 'icon' => 'ph-chat-circle-dots', 'visible' => setupCanSee('inquiries')],
 			['href' => 'listing_warehouses.php', 'label' => 'Warehouses', 'desc' => 'Warehouse and location records.', 'icon' => 'ph-warehouse', 'visible' => setupCanSee('warehouses')],
 			['href' => 'listing_setup_groups.php', 'label' => 'Setup Groups', 'desc' => 'Reusable setup group definitions.', 'icon' => 'ph-sliders', 'visible' => setupCanSee('setup_groups')],
 			['href' => 'listing_document_categories.php', 'label' => 'Document Categories', 'desc' => 'Document taxonomy and filing categories.', 'icon' => 'ph-folders', 'visible' => setupCanSee('document_categories')],
 			['href' => 'listing_incoterms.php', 'label' => 'Incoterms', 'desc' => 'Trade incoterm definitions.', 'icon' => 'ph-globe-hemisphere-west', 'visible' => setupCanSee('incoterms')],
 			['href' => 'listing_units.php', 'label' => 'Units of Measure', 'desc' => 'Measurement units used in pricing and inventory.', 'icon' => 'ph-ruler', 'visible' => setupCanSee('units')],
+			['href' => 'listing_storage_types.php', 'label' => 'Storage Types', 'desc' => 'Warehouse storage unit types.', 'icon' => 'ph-stack', 'visible' => setupCanSee('storage_types')],
+			['href' => 'listing_storage_subtypes.php', 'label' => 'Storage Subtypes', 'desc' => 'Detailed classifications of storage types.', 'icon' => 'ph-tree-structure', 'visible' => setupCanSee('storage_subtypes')],
+			['href' => 'listing_container_types.php', 'label' => 'Container Types', 'desc' => 'Shipping container specifications.', 'icon' => 'ph-cube', 'visible' => setupCanSee('container_types')],
+			['href' => 'listing_commodity_types.php', 'label' => 'Commodity Types', 'desc' => 'Product and materials classification.', 'icon' => 'ph-box', 'visible' => setupCanSee('commodity_types')],
+			['href' => 'listing_exit_points.php', 'label' => 'Exit Points', 'desc' => 'Customs and shipping exit gate locations.', 'icon' => 'ph-door-open', 'visible' => setupCanSee('exit_points')],
+			['href' => 'listing_services.php', 'label' => 'Services', 'desc' => 'Service catalog and service definitions.', 'icon' => 'ph-lightning', 'visible' => setupCanSee('services')],
+		],
+	],
+	[
+		'title' => 'Catalog & Classification',
+		'icon' => 'ph-folder-open',
+		'links' => [
+			['href' => 'listing_categories.php', 'label' => 'Categories', 'desc' => 'Category taxonomy for organizing items.', 'icon' => 'ph-folder-open', 'visible' => setupCanSee('categories')],
+			['href' => 'listing_subcategories.php', 'label' => 'Subcategories', 'desc' => 'Subcategory levels within main categories.', 'icon' => 'ph-folders', 'visible' => setupCanSee('subcategories')],
 		],
 	],
 	[
@@ -68,8 +83,8 @@ $visibleSectionCount = 0;
 ?>
 
 <div class="content-wrapper">
-	<div class="page-header page-header-light shadow-sm">
-		<div class="page-header-content d-lg-flex align-items-center justify-content-between border-top">
+	<div class="page-header page-header-light shadow carriers-page-header">
+		<div class="page-header-content d-lg-flex align-items-center justify-content-between border-top carriers-page-header-content">
 			<div class="d-flex align-items-center gap-2 py-2">
 				<i class="ph-wrench fs-3 text-primary"></i>
 				<div>

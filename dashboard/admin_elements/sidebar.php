@@ -133,20 +133,6 @@ $menuConfig = [
             ],
         ],
     ],
-    'operations' => [
-        'label' => 'Operations',
-        'items' => [
-            [
-                'href' => 'listing_inquiries.php',
-                'label' => 'Inquiries',
-                'icon' => 'ph-chat-circle-dots',
-                'pages' => ['listing_inquiries.php', 'inquiries.php', 'inquiry_detail.php'],
-                'condition' => function() { return hasModuleAccess('inquiries'); }
-            ],
-
-            // Decommissioned: Searches
-        ]
-    ],
     'shipping' => [
         'label' => 'Shipping System',
         'items' => [
@@ -177,6 +163,13 @@ $menuConfig = [
                 'icon' => 'ph-users-three',
                 'pages' => ['listing_shipping_customers.php', 'shipping_customers.php'],
                 'condition' => function() { return has_full_access() || hasModuleAccess('shipping_customers'); }
+            ],
+            [
+                'href' => 'listing_hscodes.php',
+                'label' => 'HS Codes',
+                'icon' => 'ph-barcode',
+                'pages' => ['listing_hscodes.php', 'hscodes.php', 'hscode_detail.php'],
+                'condition' => function() { return has_full_access() && hasModuleAccess('hscodes'); }
             ],
             [
                 'href' => '#shipping-master-data-submenu',
@@ -320,10 +313,10 @@ $menuConfig = [
                 ]
             ],
             [
-                'href' => 'report_profit_and_loss.php',
+                'href' => 'reports.php',
                 'label' => 'Reports - Accounts',
                 'icon' => 'ph-chart-bar',
-                'pages' => ['report_profit_and_loss.php', 'report_balance_sheet.php', 'report_trial_balance.php', 'report_general_ledger.php'],
+                'pages' => ['reports.php', 'report_profit_and_loss.php', 'report_balance_sheet.php', 'report_trial_balance.php', 'report_general_ledger.php'],
                 'condition' => function() { return has_full_access() || hasModuleAccess('journals'); }
             ],
             [
@@ -359,6 +352,11 @@ $menuConfig = [
                 'pages' => ['listing_lead_quotations.php', 'lead_quotations.php', 'lead_quotation.php'],
                 'condition' => function() { return has_full_access() || hasModuleAccess('lead_quotations'); }
             ],
+        ]
+    ],
+    'projects_jobs' => [
+        'label' => 'Projects & Jobs',
+        'items' => [
             [
                 'href' => 'listing_projects.php',
                 'label' => 'Projects',
@@ -382,114 +380,6 @@ $menuConfig = [
             ],
         ]
     ],
-    'operational_setup' => [
-        'label' => 'Operational Setup',
-        'items' => [
-            [
-                'href' => 'listing_warehouses.php',
-                'label' => 'Warehouses',
-                'icon' => 'ph-warehouse',
-                'pages' => ['listing_warehouses.php', 'warehouses.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('warehouses'); }
-            ],
-            [
-                'href' => '#storage-submenu',
-                'label' => 'Storage',
-                'icon' => 'ph-stack',
-                'pages' => ['listing_storage_types.php', 'storage_types.php', 'listing_storage_subtypes.php', 'storage_subtypes.php'],
-                'type' => 'submenu',
-                'condition' => function() { return has_full_access() || hasModuleAccess('storage_types'); },
-                'children' => [
-                    ['href' => 'listing_storage_types.php',    'label' => 'Storage Types'],
-                    ['href' => 'listing_storage_subtypes.php', 'label' => 'Storage Subtypes'],
-                ]
-            ],
-            [
-                'href' => 'listing_incoterms.php',
-                'label' => 'Incoterms',
-                'icon' => 'ph-globe-hemisphere-west',
-                'pages' => ['listing_incoterms.php', 'incoterms.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('incoterms'); }
-            ],
-            [
-                'href' => 'listing_container_types.php',
-                'label' => 'Container Types',
-                'icon' => 'ph-cube',
-                'pages' => ['listing_container_types.php', 'container_types.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('container_types'); }
-            ],
-            [
-                'href' => 'listing_commodity_types.php',
-                'label' => 'Commodity Types',
-                'icon' => 'ph-box',
-                'pages' => ['listing_commodity_types.php', 'commodity_types.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('commodity_types'); }
-            ],
-            [
-                'href' => 'listing_exit_points.php',
-                'label' => 'Exit Points',
-                'icon' => 'ph-door-open',
-                'pages' => ['listing_exit_points.php', 'exit_points.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('exit_points'); }
-            ],
-            [
-                'href' => 'listing_units.php',
-                'label' => 'Units of Measure',
-                'icon' => 'ph-ruler',
-                'pages' => ['listing_units.php', 'units.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('units'); }
-            ],
-            [
-                'href' => 'listing_services.php',
-                'label' => 'Services',
-                'icon' => 'ph-lightning',
-                'pages' => ['listing_services.php', 'services.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('services'); }
-            ],
-            [
-                'href' => 'listing_document_categories.php',
-                'label' => 'Document Categories',
-                'icon' => 'ph-folders',
-                'pages' => ['listing_document_categories.php', 'document_categories.php', 'listing_documents.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('document_categories'); }
-            ],
-            [
-                'href' => 'listing_setup_groups.php',
-                'label' => 'Setup Groups',
-                'icon' => 'ph-sliders',
-                'pages' => ['listing_setup_groups.php', 'setup_groups.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('setup_groups'); }
-            ],
-        ]
-    ],
-    'catalog' => [
-        'label' => 'Catalog & Trade Codes',
-        'items' => [
-            [
-                'href' => 'listing_categories.php',
-                'label' => 'Categories',
-                'icon' => 'ph-folder-open',
-                'pages' => ['listing_categories.php', 'categories.php'],
-                'condition' => function() { return has_full_access() && hasModuleAccess('categories'); }
-            ],
-            [
-                'href' => 'listing_subcategories.php',
-                'label' => 'Subcategories',
-                'icon' => 'ph-folders',
-                'pages' => ['listing_subcategories.php', 'subcategories.php', 'subcategory_detail.php'],
-                'condition' => function() { return has_full_access() && hasModuleAccess('subcategories'); }
-            ],
-            // Category Items link moved to setup.php
-            [
-                'href' => '#hs-codes-submenu',
-                'label' => 'HS Codes',
-                'icon' => 'ph-barcode',
-                'pages' => ['listing_hscodes.php', 'hscodes.php', 'hscode_detail.php', 'listing_hscodesmappings.php', 'listing_category_hs_codes.php'],
-                'type' => 'submenu',
-                'condition' => function() { return has_full_access() && hasModuleAccess('hscodes'); }
-            ]
-        ]
-    ],
     'content' => [
         'label' => 'Content',
         'items' => [
@@ -506,8 +396,6 @@ $menuConfig = [
             // User Favorites link moved to setup.php
         ]
      ],
-    // 'data' section moved to setup.php
-    // 'admin' section moved to setup.php
 ];
 
 // ============================================================================
@@ -520,7 +408,7 @@ $hiddenItemsJson = getSystemSetting('sidebar_hidden_items', json_encode($default
 $storedHiddenItems = json_decode($hiddenItemsJson, true);
 $userHiddenItems = array_values(array_unique(array_merge($defaultHiddenItems, is_array($storedHiddenItems) ? $storedHiddenItems : [])));
 $userHiddenItemsMap = array_flip($userHiddenItems);
-$sectionOrder = ['dashboard', 'shipping', 'accounting', 'crm', 'hr', 'operations', 'catalog', 'operational_setup', 'content'];
+$sectionOrder = ['dashboard', 'projects_jobs', 'shipping', 'accounting', 'crm', 'hr', 'content'];
 $sectionSystemMap = [
     'shipping' => 'shipping',
     'accounting' => 'accounting',
@@ -567,14 +455,6 @@ $sectionSystemMap = [
                             echo '<span>' . $item['label'] . '</span>';
                             echo '</a>';
                             echo '<ul class="nav-group-sub collapse ' . ($isOpen ? 'show' : '') . '">';
-                            // Submenu items for HS Codes
-                            if ($sectionKey === 'catalog' && $item['label'] === 'HS Codes'):
-                                $hsPgs = ['listing_hscodes.php','hscodes.php','hscode_detail.php'];
-                                echo '<li class="nav-item"><a href="listing_hscodes.php" class="nav-link ' . (isMenuActive($hsPgs) ? 'active' : '') . '"><i class="ph-barcode"></i><span>HS Codes</span></a></li>';
-                                echo '<li class="nav-item"><a href="listing_hscodesmappings.php" class="nav-link ' . ($current_page === 'listing_hscodesmappings.php' ? 'active' : '') . '"><i class="ph-link"></i><span>Mappings</span></a></li>';
-                                // Decommissioned: HS Code Sets & HS Code Texts
-                                echo '<li class="nav-item"><a href="listing_category_hs_codes.php" class="nav-link ' . ($current_page === 'listing_category_hs_codes.php' ? 'active' : '') . '"><i class="ph-tag"></i><span>Category HS Codes</span></a></li>';
-                            endif;
                             if ($sectionKey === 'shipping' && $item['label'] === 'Shipping Master Data'):
                                 echo '<li class="nav-item"><a href="listing_ports.php" class="nav-link ' . (isMenuActive(['listing_ports.php','ports.php']) ? 'active' : '') . '"><i class="ph-map-pin-line"></i><span>Ports</span></a></li>';
                                 echo '<li class="nav-item"><a href="listing_carriers.php" class="nav-link ' . (isMenuActive(['listing_carriers.php','carriers.php']) ? 'active' : '') . '"><i class="ph-truck"></i><span>Carriers</span></a></li>';

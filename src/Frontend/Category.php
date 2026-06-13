@@ -70,7 +70,7 @@ class Category
     public function getCategoryBySlug($slug)
     {
         $sql = "SELECT * FROM `{$this->categoriesTable}` 
-                WHERE slug = ? AND publish = 1 LIMIT 1";
+                WHERE slug = ? AND is_active = 1 LIMIT 1";
 
         try {
             return $this->conn->fetchOne($sql, [$slug]);
@@ -89,7 +89,7 @@ class Category
     public function getCategoryById($id)
     {
         $sql = "SELECT * FROM `{$this->categoriesTable}` 
-                WHERE id = ? AND publish = 1 LIMIT 1";
+                WHERE id = ? AND is_active = 1 LIMIT 1";
 
         try {
             return $this->conn->fetchOne($sql, [$id]);
@@ -113,7 +113,7 @@ class Category
         $offset = ($page - 1) * $perPage;
 
         // Build WHERE conditions
-        $conditions = ["c.primary_category_id = ?", "c.publish = 1"];
+        $conditions = ["c.primary_category_id = ?", "c.is_active = 1"];
         $params = [$categoryId];
 
         // Apply filters
@@ -182,7 +182,7 @@ class Category
                     SUM(CASE WHEN c.verified = 1 THEN 1 ELSE 0 END) as verified_count,
                     0 as avg_rating
                 FROM `{$this->companiesTable}` c
-                WHERE c.primary_category_id = ? AND c.publish = 1";
+                WHERE c.primary_category_id = ? AND c.is_active = 1";
 
         try {
             $stats = $this->conn->fetchOne($sql, [$categoryId]);
@@ -204,7 +204,7 @@ class Category
     public function getTotalPages($categoryId, $perPage = 18, $filters = [])
     {
         // Build WHERE conditions
-        $conditions = ["primary_category_id = ?", "publish = 1"];
+        $conditions = ["primary_category_id = ?", "is_active = 1"];
         $params = [$categoryId];
 
         // Apply filters

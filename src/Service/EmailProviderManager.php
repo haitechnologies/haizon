@@ -229,19 +229,19 @@ class EmailProviderManager
         $purpose = strtolower($purpose);
 
         $purpose_map = [
-            'system' => 'noreply@haipulse.com',
-            'support' => 'support@haipulse.com',
-            'sales' => 'sales@haipulse.com',
-            'notifications' => 'noreply@haipulse.com',
-            'register' => 'noreply@haipulse.com',
-            'verify' => 'noreply@haipulse.com',
-            'reset' => 'noreply@haipulse.com',
-            'contact' => 'support@haipulse.com',
-            'ticket' => 'support@haipulse.com',
-            'inquiry' => 'sales@haipulse.com'
+            'system' => defined('NOREPLY_EMAIL') ? NOREPLY_EMAIL : 'noreply@haizon.com',
+            'support' => defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'support@haizon.com',
+            'sales' => defined('SALES_EMAIL') ? SALES_EMAIL : 'sales@haizon.com',
+            'notifications' => defined('NOREPLY_EMAIL') ? NOREPLY_EMAIL : 'noreply@haizon.com',
+            'register' => defined('NOREPLY_EMAIL') ? NOREPLY_EMAIL : 'noreply@haizon.com',
+            'verify' => defined('NOREPLY_EMAIL') ? NOREPLY_EMAIL : 'noreply@haizon.com',
+            'reset' => defined('NOREPLY_EMAIL') ? NOREPLY_EMAIL : 'noreply@haizon.com',
+            'contact' => defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'support@haizon.com',
+            'ticket' => defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'support@haizon.com',
+            'inquiry' => defined('SALES_EMAIL') ? SALES_EMAIL : 'sales@haizon.com'
         ];
 
-        $email = $purpose_map[$purpose] ?? 'noreply@haipulse.com';
+        $email = $purpose_map[$purpose] ?? (defined('NOREPLY_EMAIL') ? NOREPLY_EMAIL : 'noreply@haizon.com');
         return $this->getByEmail($email);
     }
 

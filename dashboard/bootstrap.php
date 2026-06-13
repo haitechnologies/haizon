@@ -106,6 +106,22 @@ $container->register(\App\Core\Database::class, function () {
     return new \App\Core\Database();
 });
 
+$container->register(\App\Core\Logger::class, function () {
+    $isProduction = isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'production';
+    return new \App\Core\Logger(null, $isProduction ? 'production' : 'development');
+});
+
+$container->register(\App\Core\ServerRequest::class, function () use ($project_pre) {
+    return new \App\Core\ServerRequest(
+        server: $_SERVER,
+        query: $_GET,
+        post: $_POST,
+        files: $_FILES,
+        cookies: $_COOKIE,
+        sessionPrefix: $project_pre
+    );
+});
+
 $container->register(\App\Repository\UserRepository::class, function (\App\Core\Container $c) {
     return new \App\Repository\UserRepository($c->get(\App\Core\Database::class));
 });
@@ -149,6 +165,18 @@ $container->register(\App\Service\LeaveTypeService::class, function (\App\Core\C
     );
 });
 
+$container->register(\App\Repository\InvoiceRepository::class, function (\App\Core\Container $c) {
+    return new \App\Repository\InvoiceRepository($c->get(\App\Core\Database::class));
+});
+
+$container->register(\App\Service\InvoiceService::class, function (\App\Core\Container $c) {
+    return new \App\Service\InvoiceService(
+        $c->get(\App\Repository\InvoiceRepository::class),
+        $c->get(\App\Repository\CustomerRepository::class),
+        $c->get(\App\Core\Database::class)
+    );
+});
+
 $container->register(\App\Service\LeaveRequestService::class, function (\App\Core\Container $c) {
     return new \App\Service\LeaveRequestService(
         $c->get(\App\Repository\LeaveRequestRepository::class),
@@ -178,6 +206,40 @@ $container->register(\App\Service\InvoiceService::class, function (\App\Core\Con
         $c->get(\App\Repository\InvoiceRepository::class),
         $c->get(\App\Repository\CustomerRepository::class),
         $c->get(\App\Core\Database::class)
+    );
+});
+
+$container->register(\App\Controller\SimpleCrudHandler::class, function (\App\Core\Container $c) {
+    return new \App\Controller\SimpleCrudHandler(
+        $c->get(\App\Core\Database::class),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0) ?: null
+    );
+});
+
+$container->register(\App\Controller\CurrenciesController::class, function (\App\Core\Container $c) {
+    return new \App\Controller\CurrenciesController(
+        $c->get(\App\Core\Database::class),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? 0),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0)
+    );
+});
+
+$container->register(\App\Controller\BanksController::class, function (\App\Core\Container $c) {
+    return new \App\Controller\BanksController(
+        $c->get(\App\Core\Database::class),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? 0),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0)
+    );
+});
+
+$container->register(\App\Controller\PaymentMethodsController::class, function (\App\Core\Container $c) {
+    return new \App\Controller\PaymentMethodsController(
+        $c->get(\App\Core\Database::class),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? 0),
+        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0)
     );
 });
 
@@ -563,7 +625,7 @@ if (!function_exists('dashboardResendOrganizationInvite')) {
             $inviteId,
             (int)$session_user_id,
             $roleId,
-            7,
+            ORGANIZATION_INVITE_EXPIRY_DAYS,
             Roles::currentUserHasFullAccess()
         );
 
@@ -704,9 +766,9 @@ if (!function_exists('dashboardSendOrganizationInviteEmailNow')) {
             }
 
             $retries = (int)($queueRow['retries'] ?? 0) + 1;
-            $maxRetries = (int)($queueRow['max_retries'] ?? 3);
+            $maxRetries = (int)($queueRow['max_retries'] ?? EMAIL_QUEUE_DEFAULT_MAX_RETRIES);
             if ($maxRetries <= 0) {
-                $maxRetries = 3;
+                $maxRetries = EMAIL_QUEUE_DEFAULT_MAX_RETRIES;
             }
             $nextStatus = $retries >= $maxRetries ? 'failed' : 'retry';
             $lastError = method_exists($mailer, 'getLastError') ? (string)$mailer->getLastError() : 'Manual send failed';
@@ -725,9 +787,9 @@ if (!function_exists('dashboardSendOrganizationInviteEmailNow')) {
             return ['success' => false, 'message' => 'Invite email send failed.'];
         } catch (Throwable $e) {
             $retries = (int)($queueRow['retries'] ?? 0) + 1;
-            $maxRetries = (int)($queueRow['max_retries'] ?? 3);
+            $maxRetries = (int)($queueRow['max_retries'] ?? EMAIL_QUEUE_DEFAULT_MAX_RETRIES);
             if ($maxRetries <= 0) {
-                $maxRetries = 3;
+                $maxRetries = EMAIL_QUEUE_DEFAULT_MAX_RETRIES;
             }
             $nextStatus = $retries >= $maxRetries ? 'failed' : 'retry';
             $lastError = substr((string)$e->getMessage(), 0, 1000);
@@ -795,11 +857,11 @@ if (!function_exists('dashboardQueueOrganizationInviteEmail')) {
 
         $body = '<p>Hello,</p>'
             . '<p><strong>' . htmlspecialchars($inviterName, ENT_QUOTES, 'UTF-8') . '</strong> has invited you to join <strong>'
-            . htmlspecialchars($organizationName, ENT_QUOTES, 'UTF-8') . '</strong> on HAIPULSE.</p>'
+            . htmlspecialchars($organizationName, ENT_QUOTES, 'UTF-8') . '</strong> on HAIZON.</p>'
             . '<p><a href="' . htmlspecialchars($acceptUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:10px 16px;background:#0d6efd;color:#fff;text-decoration:none;border-radius:4px;">Accept Organization Invite</a></p>'
             . '<p>If the button does not work, copy this link into your browser:<br>'
             . htmlspecialchars($acceptUrl, ENT_QUOTES, 'UTF-8') . '</p>'
-            . '<p>This invite link will expire in 7 days.</p>';
+            . '<p>This invite link will expire in ' . ORGANIZATION_INVITE_EXPIRY_DAYS . ' days.</p>';
 
         $headers = [
             'X-Invite-Type' => 'organization',
@@ -820,7 +882,7 @@ if (!function_exists('dashboardQueueOrganizationInviteEmail')) {
     }
 }
 
-$entitlementCacheTtl = 300;
+$entitlementCacheTtl = ENTITLEMENT_CACHE_TTL;
 $entitlementsCachedAt = (int)($_SESSION[$project_pre]['DASHBOARD']['system_entitlements_cached_at'] ?? 0);
 $entitlementExpired = ($entitlementsCachedAt <= 0) || ((time() - $entitlementsCachedAt) >= $entitlementCacheTtl);
 

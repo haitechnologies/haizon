@@ -1,0 +1,493 @@
+<?php
+// Force opcache clear for this file
+if (function_exists('opcache_invalidate')) {
+    opcache_invalidate(__FILE__, true);
+}
+
+include('admin_elements/admin_header.php');
+require '../vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+$module = 'invoices';
+$module_caption = 'Invoice Details';
+$tbl_name = $tbl_prefix . $module;
+$error_message = '';
+$success_message = '';
+
+/*
+|--------------------------------------------------------------------------
+| PERMISSIONS
+|--------------------------------------------------------------------------
+|
+*/
+include('admin_elements/permissions.php');
+
+
+$limit              = 10;
+$stages             = 2;
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+
+if (isset($_REQUEST['export']) && !empty($_REQUEST['export']))    $export     = e_s__($_REQUEST['export']);
+else $export = '';
+
+
+/*
+|--------------------------------------------------------------------------
+| 	GET ALL VARIABLES ADD/UPDATE
+|--------------------------------------------------------------------------
+|
+*/
+
+
+$filter_by              = ((isset($_REQUEST['filter_by']) && !empty($_REQUEST['filter_by'])) ? e_s__($_REQUEST['filter_by']) : '');
+$date_from              = ((isset($_REQUEST['date_from']) && !empty($_REQUEST['date_from'])) ? e_s__($_REQUEST['date_from']) : date('01-m-Y', time()));
+$date_to                = ((isset($_REQUEST['date_to']) && !empty($_REQUEST['date_to'])) ? e_s__($_REQUEST['date_to']) : date('t-m-Y', time()));
+
+
+/*
+|--------------------------------------------------------------------------
+| 	PAGINATION
+|--------------------------------------------------------------------------
+|
+*/
+
+if (isset($_GET['page_no']) && !empty($_GET['page_no'])) {
+    $page_no            = e_s__($_GET['page_no']);
+} else {
+    $page_no            = 1;
+}
+
+
+$targetpage            = 'report_invoice_details.php?action=run_report&date_from=' . $date_from . '&date_to=' . $date_to;
+
+
+
+if ($page_no) {
+    $start   = ($page_no - 1) * $limit;
+} else {
+    $start   = 0;
+}
+
+/*
+|--------------------------------------------------------------------------
+| SEARCH QUERY
+|--------------------------------------------------------------------------
+|
+*/
+
+
+
+// -------------------
+$search_query = '';
+// -------------------
+
+
+// $date_from              = processDateDtoY($date_from);
+// $date_to                = processDateDtoY($date_to);
+
+
+if (!empty($date_from)) {
+    $search_query .= " AND invoice_date >= '" . processDateDtoY($date_from) . "'";
+}
+
+if (!empty($date_to)) {
+    $search_query .= " AND invoice_date <= '" . processDateDtoY($date_to) . "'";
+    $max_date = $date_to;
+}
+
+
+// ----------------------------------------------------------------------------------------------------
+
+
+
+// if ($action == "run_report") {
+
+//COUNT QUERY
+$result         = $mysqli->query("SELECT id FROM `" . tbl_invoices . "` WHERE id>0 " . $search_query);
+$total_rows     = $result->num_rows;
+
+//NORMAL QUERY
+$result_invoices  = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id>0 " . $search_query . " ORDER BY id ASC LIMIT $start, $limit");
+
+//EXPORT EXCEL
+// $result_invoices_ = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` WHERE id>0 " . $search_query . " ORDER BY id ASC"); // Remove Limit
+// }
+
+
+// UPDATES LAST VISITED
+$accounts_report_subcategory_id = getTableAttrv("id", tbl_accounts_report_subcategories, " slug = 'invoice_details'");
+$mysqli->query("UPDATE `" . tbl_accounts_report_subcategories . "` SET last_visited = NOW() WHERE id = $accounts_report_subcategory_id");
+
+$accounts_report_category_id    = getTableAttr('category_id', tbl_accounts_report_subcategories, $accounts_report_subcategory_id);
+$accounts_report_category_name  = getTableAttr('category_name', tbl_accounts_report_categories, $accounts_report_category_id);
+
+/*
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+*/
+
+?>
+
+<script src="<?php echo $base_url; ?>/dashboard/js/reports_filterby.js"></script>
+
+<div class="content-wrapper">
+
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+            <div class="page-header-content">
+
+                <div class="row mt-2">
+                    <div class="col-lg-6">
+                        <div class="text-muted"><?php echo $accounts_report_category_name; ?></div>
+                        <div class="mb-0">
+                            <span class="fw-semibold">Invoice Details</span> - <span class="small">From <?php echo dd_($date_from); ?> To <?php echo dd_($date_to); ?></span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="col-lg-12 text-end">
+                            <button type="button" onclick="resetForm();" class="btn btn-light my-1 me-2"><i class="ph-arrows-clockwise"></i></button>
+                            <!-- <a href="<?php //echo $targetpage; 
+                                            ?>&export=excel">
+                                <button type="button" class="btn btn-light btn-labeled btn-labeled-start">
+                                    <span class="btn-labeled-icon bg-light bg-opacity-20"><i class="ph-file-csv"></i></span>Export Excel
+                                </button>
+                            </a> -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <script>
+                function resetForm() {
+                    document.getElementById('filter_by').value = '0';
+                    document.getElementById('date_from').value = '';
+                    document.getElementById('date_to').value = '';
+                }
+            </script>
+
+            <div class="page-header-content border-top carriers-page-header-content">
+
+                <div class="row">
+                    <div class="col-lg-12">
+
+                        <form class="steps-basic clearfix" method="get" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" autocomplete="off" action="report_invoice_details.php">
+                            <input type="hidden" name="action" id="action" value="run_report" />
+
+                            <div class="card-body">
+
+                                <div class="row">
+
+                                    <div class="col-lg-2">
+                                        <div class="mb-0">
+                                            <!-- <label class="form-label fw-semibold">&nbsp; </label> -->
+
+                                            <div class="form-control-feedback form-control-feedback-start">
+                                                <select name="filter_by" id="filter_by" class="form-select">
+                                                    <option value='0'>Filter By</option>
+                                                    <option value='today' <?php echo (($filter_by == 'today') ? 'selected' : '') ?>>Today</option>
+                                                    <option value='this_week' <?php echo (($filter_by == 'this_week') ? 'selected' : '') ?>>This Week</option>
+                                                    <option value='this_month' <?php echo (($filter_by == 'this_month') ? 'selected' : '') ?>>This Month</option>
+                                                    <option value='this_quarter' <?php echo (($filter_by == 'this_quarter') ? 'selected' : '') ?>>This Quarter</option>
+                                                    <option value='this_year' <?php echo (($filter_by == 'this_year') ? 'selected' : '') ?>>This Year</option>
+                                                    <option value='yesterday' <?php echo (($filter_by == 'yesterday') ? 'selected' : '') ?>>Yesterday</option>
+                                                    <option value='previous_week' <?php echo (($filter_by == 'previous_week') ? 'selected' : '') ?>>Previous Week</option>
+                                                    <option value='previous_month' <?php echo (($filter_by == 'previous_month') ? 'selected' : '') ?>>Previous Month</option>
+                                                    <option value='previous_quarter' <?php echo (($filter_by == 'previous_quarter') ? 'selected' : '') ?>>Previous Quarter</option>
+                                                    <option value='previous_year' <?php echo (($filter_by == 'previous_year') ? 'selected' : '') ?>>Previous Year</option>
+                                                    <option value='custom' <?php echo (($filter_by == 'custom') ? 'selected' : '') ?>>Custom</option>
+                                                </select>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-2">
+                                        <div class="mb-3">
+                                            <!-- <label class="form-label fw-semibold">Date From: </label> -->
+
+                                            <div class="form-control-feedback form-control-feedback-start">
+                                                <input type="text" class="form-control" name="date_from" id="date_from" value="<?php echo $date_from; ?>">
+                                                <div class="form-control-feedback-icon">
+                                                    <i class="ph-calendar"></i>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-2">
+                                        <div class="mb-3">
+                                            <!-- <label class="form-label fw-semibold">Date To: </label> -->
+
+                                            <div class="form-control-feedback form-control-feedback-start">
+                                                <input type="text" class="form-control" name="date_to" id="date_to" value="<?php echo $date_to; ?>">
+                                                <div class="form-control-feedback-icon">
+                                                    <i class="ph-calendar"></i>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <div class="">
+                                            <button type="submit" class="btn btn-light">Run Report</button>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+</div>
+    <!-- /page header -->
+
+
+    <div class="content">
+
+        <div class="card">
+            <div class="card-header text-center">
+                <p>Flash Logistics FZC</p>
+                <h5 class="mb-0">Invoice Details</h5>
+                <p><span class="text-muted">From</span> <?php echo dd_($date_from); ?> <span class="text-muted">To</span> <?php echo dd_($date_to); ?></p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th class="table-light">STATUS</th>
+                            <th class="table-light">INVOICE DATE</th>
+                            <th class="table-light">DUE DATE</th>
+                            <th class="table-light">INVOICE#</th>
+                            <th class="table-light">ORDER NUMBER</th>
+                            <th class="table-light">CUSTOMER NAME</th>
+                            <th class="table-light text-end">TOTAL</th>
+                            <th class="table-light text-end">BALANCE</th>
+                        </tr>
+
+                        <?php
+                        // -----------------------------------------------------------------------------------
+                        // $result_invoices     = $mysqli->query("SELECT * FROM `" . tbl_invoices . "` ");
+
+                        // Initialize totals
+                        $grand_total_sum = 0;
+                        $balance_due_sum = 0;
+
+                        while ($row = $result_invoices->fetch_array()) {
+
+                            // -----------------------------------------------------------------------------------
+                            $invoice_id         = $row["id"];
+                            $sale_order_id      = $row["sale_order_id"];
+
+                            $invoice_date       = $row["invoice_date"];
+                            $invoice_date       = dd_($invoice_date);
+
+                            $invoice_status     = $row["invoice_status"];
+
+                            $customer_id        = (int)($row["customer_id"] ?? 0);
+                            // ------------------------------------------------------------------------------------------------
+                            if ($customer_id > 0) {
+                                $result_customer    = $mysqli->query("SELECT * FROM `" . tbl_customers . "` WHERE id=$customer_id");
+                                $row_customer       = $result_customer ? $result_customer->fetch_array() : null;
+                                $display_name       = ($row_customer && isset($row_customer["display_name"])) ? $row_customer["display_name"] : 'N/A';
+                            } else {
+                                $display_name       = 'N/A';
+                            }
+
+                            $payment_term           = getTableAttr('payment_term', tbl_customers, $customer_id);
+                            $payment_term_duration  = getTableAttr('payment_term', tbl_payment_terms, $payment_term);
+                            $display_due_date       = calculateInvoiceDueDate($invoice_status, $invoice_date, $payment_term_duration);
+                            $display_due_date       = (!empty($display_due_date) ? dd_($display_due_date) : '');
+
+                            $invoice_no         = $row["invoice_no"];
+                            $reference_no       = $row["reference_no"];
+
+                            $grand_tax          = $row["grand_tax"];
+                            $grand_total        = $row["grand_total"];
+
+                            // Calculate balance due (total - payments received)
+                            $payments_result = $mysqli->query("
+                                SELECT COALESCE(SUM(pri.amount_received), 0) as total_paid
+                                FROM `" . tbl_payment_received_items . "` pri
+                                INNER JOIN `" . tbl_payments_received . "` pr ON pr.id = pri.payment_id
+                                WHERE pri.invoice_id = $invoice_id
+                                AND pr.payment_status = 'paid'
+                            ");
+                            $payments_row = $payments_result->fetch_array();
+                            $total_paid = (float)($payments_row['total_paid'] ?? 0);
+                            $balance_due = $grand_total - $total_paid;
+
+                            // Ensure balance is not negative
+                            if ($balance_due < 0) {
+                                $balance_due = 0;
+                            }
+
+                            // Add to running totals
+                            $grand_total_sum += $grand_total;
+                            $balance_due_sum += $balance_due;
+
+                            // -----------------------------------------------------------------------------------
+                            $invoice_status     = ((!empty($invoice_status)) ? ucwords($invoice_status) : '');
+                        ?>
+                            <tr>
+                                <td><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><span class="small text-muted"><?php echo $invoice_status; ?></span></a></td>
+                                <td><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><?php echo $invoice_date; ?></a></td>
+                                <td><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><?php echo $display_due_date; ?></a></td>
+                                <td><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><?php echo $invoice_no; ?></a></td>
+                                <td><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><?php echo $sale_order_id; ?></a></td>
+                                <td><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><?php echo $display_name; ?></a></td>
+                                <td class="text-end"><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($grand_total, 2); ?></a></td>
+                                <td class="text-end"><a href="invoice_overview.php?invoice_id=<?php echo $invoice_id; ?>"><span class="<?php echo ($balance_due > 0) ? 'text-danger fw-semibold' : 'text-success'; ?>"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($balance_due, 2); ?></span></a></td>
+                            </tr>
+                        <?php } //while
+                        ?>
+
+                        <!-- Totals Row -->
+                        <?php if ($grand_total_sum > 0) { ?>
+                        <tr class="table-light fw-bold">
+                            <td colspan="6" class="text-end">TOTAL</td>
+                            <td class="text-end"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($grand_total_sum, 2); ?></td>
+                            <td class="text-end"><span class="<?php echo ($balance_due_sum > 0) ? 'text-danger' : 'text-success'; ?>"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($balance_due_sum, 2); ?></span></td>
+                        </tr>
+                        <?php } ?>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!--Pagination -->
+        <?php
+        // @@@ PAGINATION ALGO @@@ //
+
+        if ($page_no == 0) {
+            $page_no = 1;
+        }
+
+        // echo $page_no;
+
+        $prev = $page_no - 1;
+        $next = $page_no + 1;
+
+        $lastpage     = ceil($total_rows / $limit);
+        $LastPagem1 = $lastpage - 1;
+
+        $pagination = '';
+
+        if ($lastpage > 1) {
+            $pagination .= '<div class="center-block text-center">';
+            $pagination .= '<ul class="pagination mb-5 mb-lg-0">';
+
+            // PREVIOUS
+            if ($page_no > 1) {
+                $pagination    .= '<li class="page-item page-prev"><a class="page-link" href="' . $targetpage . '&page_no=' . $prev . '" tabindex="-1">Prev</a></li>';
+            } else {
+                $pagination    .= '<li class="page-item page-prev disabled"><a class="page-link" href="#" tabindex="-1">Prev</a></li>';
+            }
+
+            // Pages
+            if ($lastpage < 7 + ($stages * 2))    // Not enough pages to breaking it up
+            {
+                for ($counter = 1; $counter <= $lastpage; $counter++) {
+                    if ($counter == $page_no) {
+                        $pagination .= '<li class="page-item active"><a class="page-link" href="#">' . $counter . '</a></li>';
+                    } else {
+                        $pagination    .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $counter . "'>" . $counter . "</a></li>";
+                    }
+                }
+            } else if ($lastpage > 5 + ($stages * 2))    // Enough pages to hide a few?
+            {
+                // Beginning only hide later pages
+                if ($page_no < 1 + ($stages * 2)) {
+
+                    for ($counter = 1; $counter < 4 + ($stages * 2); $counter++) {
+                        if ($counter == $page_no) {
+                            $pagination .= '<li class="page-item active"><a class="page-link" href="#">' . $counter . '</a></li>';
+                        } else {
+                            $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "'>" . $counter . "</a></li>";
+                        }
+                    }
+
+                    $pagination .= '<li class="page-item"><a class="page-link" href="#">...</a></li>';
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $LastPagem1 . "'>$LastPagem1</a></li>";
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $lastpage . "'>$lastpage</a></li>";
+                }
+                // Middle hide some front and some back
+                elseif ($lastpage - ($stages * 2) > $page_no && $page_no > ($stages * 2)) {
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=1'>1</a></li>";
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=2'>2</a></li>";
+                    $pagination .= '<li class="page-item"><a class="page-link" href="#">...</a></li>';
+
+                    for ($counter = $page_no - $stages; $counter <= $page_no + $stages; $counter++) {
+                        if ($counter == $page_no) {
+                            $pagination .= '<li class="page-item active"><a class="page-link" href="#">' . $counter . '</a></li>';
+                        } else {
+                            $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $counter . "'>" . $counter . "</a></li>";
+                        }
+                    }
+
+                    $pagination .= '<li class="page-item"><a class="page-link" href="#">...</a></li>';
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $LastPagem1 . "'>$LastPagem1</a></li>";
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $lastpage . "'>$lastpage</a></li>";
+                }
+                // End only hide early pages
+                else {
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='." . $targetpage . "&page_no=1'>1</a></li>";
+                    $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=2'>2</a></li>";
+                    $pagination .= '<li class="page-item"><a class="page-link" href="#">...</a></li>';
+
+                    for ($counter = $lastpage - (2 + ($stages * 2)); $counter <= $lastpage; $counter++) {
+                        if ($counter == $page_no) {
+                            $pagination .= '<li class="page-item active"><a class="page-link" href="#">1' . $counter . '</a></li>';
+                        } else {
+                            $pagination .= "<li class=\"page-item\"><a class=\"page-link\" href='" . $targetpage . "&page_no=" . $counter . "'>" . $counter . "</a></li>";
+                        }
+                    }
+                }
+            }
+            // Next
+            if ($page_no < $counter - 1) {
+                $pagination .= '<li class="page-item page-next"><a class="page-link" href="' . $targetpage . '&page_no=' . $next . '">Next</a></li>';
+            } else {
+                $pagination .= '<li class="page-item page-next"><a class="page-link" href="#">Next</a></li>';
+            }
+
+            $pagination .= "</ul>";
+            $pagination .= "</div>";
+        } //endif
+
+        echo $pagination;
+        ?>
+        <!--/Pagination -->
+
+        <?php
+        // } // endif
+        ?></div>
+
+
+    <?php include('admin_elements/copyright.php'); ?>
+</div>
+</div>
+
+<?php include('admin_elements/admin_footer.php'); ?>

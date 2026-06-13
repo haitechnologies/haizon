@@ -3,12 +3,12 @@
 // Load environment variables from .env file
 // Check multiple locations for .env file (in order of priority):
 // 1. Parent directory: G:\xampp\.env (recommended for security)
-// 2. Project root: G:\xampp\htdocs\haipulse\.env (current location, less secure)
+// 2. Project root: G:\xampp\htdocs\haizon\.env (current location, less secure)
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $envCandidates = [
-	dirname(__DIR__, 1), // e.g., G:\xampp\htdocs\haipulse (project root â€” checked first)
+	dirname(__DIR__, 1), // e.g., G:\xampp\htdocs\haizon (project root – checked first)
 	dirname(__DIR__, 2), // e.g., G:\xampp\htdocs
 	dirname(__DIR__, 3), // e.g., G:\xampp (last resort)
 ];
@@ -29,12 +29,14 @@ if (!$envLoaded) {
 	$dotenv->safeLoad();
 }
 
+require_once __DIR__ . '/constants.php';
+
 // ============================================
 // DATABASE CONFIGURATION
 // ============================================
 if (!function_exists('isRemote')) {
     function isRemote() {
-		if (preg_match('/haipulse.local/', $_SERVER['HTTP_HOST'] ?? '') || 
+		if (preg_match('/haizon.local/', $_SERVER['HTTP_HOST'] ?? '') || 
             preg_match('/localhost/', $_SERVER['HTTP_HOST'] ?? '') || 
             preg_match('/127.0.0.1/', $_SERVER['HTTP_HOST'] ?? '')) {
             return false;
@@ -91,7 +93,7 @@ $lastConnectErrno = 0;
 
 for ($attempt = 1; $attempt <= $maxConnectRetries; $attempt++) {
 	try {
-		$mysqli = new mysqli(
+		$mysqli = new \App\Core\DynamicPrefixMysqli(
 			$dbConfig['hostname'],
 			$dbConfig['username'],
 			$dbConfig['password'],
@@ -140,9 +142,9 @@ $mysqli->set_charset("utf8mb4");
 
 
 $GLOBALS['DB']['MSQLI']      = $mysqli;
-$tbl_prefix                  = 'erp_';
+$tbl_prefix                  = $_ENV['DB_PREFIX'] ?? $getEnv('DB_PREFIX', 'erp_');
 $GLOBALS['TBL']['PREFIX']    = $tbl_prefix;
-$project_pre                 = 'haipulse'; 			// Unique Session_id Name
+$project_pre = PROJECT_PREFIX; 			// Unique Session_id Name
 $GLOBALS['project_pre']      = $project_pre;    	// fp__($tbl_name, $id) globals.php
 
 // Create $conn alias for backward compatibility with frontend pages
@@ -195,7 +197,7 @@ ini_set('display_errors', $app_env === 'development' ? '1' : '0');
 */
 
 $appTimezone = (string)$getEnv('APP_TIMEZONE', 'Asia/Dubai');
-if (!@date_default_timezone_set($appTimezone)) {
+if (!date_default_timezone_set($appTimezone)) {
     date_default_timezone_set('Asia/Dubai');
 }
 
@@ -277,14 +279,121 @@ require_once __DIR__ . '/uae_geo_constants.php';
 |--------------------------------------------------------------------------
 | 	BACKWARD COMPATIBILITY CONSTANTS
 |--------------------------------------------------------------------------
-| Define old tbl_ constants for backward compatibility with existing code
-| These will be gradually phased out in favor of DB:: class constants
-| 
-| Migration: Replace tbl_users with DB::USERS throughout the codebase
+| Define old tbl_ constants for backward compatibility with existing code.
+| These are mapped to the modern DB class constants.
 */
-
-// Note: Legacy tbl_ constants have been deprecated and completely removed.
-// All code has been migrated to DB:: class constants.
+define('tbl_users', \App\Core\DB::USERS);
+define('tbl_roles', \App\Core\DB::ROLES);
+define('tbl_departments', \App\Core\DB::DEPARTMENTS);
+define('tbl_designations', \App\Core\DB::DESIGNATIONS);
+define('tbl_attachments', \App\Core\DB::ATTACHMENTS);
+define('tbl_attendance', \App\Core\DB::ATTENDANCE);
+define('tbl_leave_requests', \App\Core\DB::LEAVE_REQUESTS);
+define('tbl_leave_types', \App\Core\DB::LEAVE_TYPES);
+define('tbl_payroll_components', \App\Core\DB::PAYROLL_COMPONENTS);
+define('tbl_salary_structures', \App\Core\DB::SALARY_STRUCTURES);
+define('tbl_employee_salaries', \App\Core\DB::EMPLOYEE_SALARIES);
+define('tbl_payroll_runs', \App\Core\DB::PAYROLL_RUNS);
+define('tbl_payslips', \App\Core\DB::PAYSLIPS);
+define('tbl_system_settings', \App\Core\DB::SYSTEM_SETTINGS);
+define('tbl_modules', \App\Core\DB::MODULES);
+define('tbl_backend_error_logs', \App\Core\DB::BACKEND_ERROR_LOGS);
+define('tbl_backend_log_coverage', \App\Core\DB::BACKEND_LOG_COVERAGE);
+define('tbl_email_providers', \App\Core\DB::EMAIL_PROVIDERS);
+define('tbl_email_history', \App\Core\DB::EMAIL_HISTORY);
+define('tbl_email_queue', \App\Core\DB::EMAIL_QUEUE);
+define('tbl_customers', \App\Core\DB::CUSTOMERS);
+define('tbl_contacts', \App\Core\DB::CUSTOMER_CONTACTS);
+define('tbl_addresses', \App\Core\DB::CUSTOMER_ADDRESSES);
+define('tbl_entity_logs', \App\Core\DB::ENTITY_LOGS);
+define('tbl_entity_notes', \App\Core\DB::ENTITY_NOTES);
+define('tbl_invoices', \App\Core\DB::INVOICES);
+define('tbl_invoice_items', \App\Core\DB::INVOICE_ITEMS);
+define('tbl_payment_methods', \App\Core\DB::PAYMENT_METHODS);
+define('tbl_audit_log', \App\Core\DB::AUDIT_LOG);
+define('tbl_subscription_logs', \App\Core\DB::SUBSCRIPTION_LOGS);
+define('tbl_subscription_plans', \App\Core\DB::SUBSCRIPTION_PLANS);
+define('tbl_subscriptions', \App\Core\DB::SUBSCRIPTIONS);
+define('tbl_subscription_plan_features', \App\Core\DB::SUBSCRIPTION_PLAN_FEATURES);
+define('tbl_subscription_overrides', \App\Core\DB::SUBSCRIPTION_OVERRIDES);
+define('tbl_api_keys', \App\Core\DB::API_KEYS);
+define('tbl_geo_countries', \App\Core\DB::GEO_COUNTRIES);
+define('tbl_geo_states', \App\Core\DB::GEO_STATES);
+define('tbl_geo_cities', \App\Core\DB::GEO_CITIES);
+define('tbl_items', \App\Core\DB::ITEMS);
+define('tbl_organizations', \App\Core\DB::ORGANIZATIONS);
+define('tbl_organization_memberships', \App\Core\DB::ORGANIZATION_MEMBERSHIPS);
+define('tbl_organization_roles', \App\Core\DB::ORGANIZATION_ROLES);
+define('tbl_organization_member_roles', \App\Core\DB::ORGANIZATION_MEMBER_ROLES);
+define('tbl_organization_invites', \App\Core\DB::ORGANIZATION_INVITES);
+define('tbl_organization_system_entitlements', \App\Core\DB::ORGANIZATION_SYSTEM_ENTITLEMENTS);
+define('tbl_shipping_advices', \App\Core\DB::SHIPPING_ADVICES);
+define('tbl_shipping_advice_items', \App\Core\DB::SHIPPING_ADVICE_ITEMS);
+define('tbl_shipping_invoices', \App\Core\DB::SHIPPING_INVOICES);
+define('tbl_shipping_invoice_items', \App\Core\DB::SHIPPING_INVOICE_ITEMS);
+define('tbl_shipping_stocks', \App\Core\DB::SHIPPING_STOCKS);
+define('tbl_shipping_stock_items', \App\Core\DB::SHIPPING_STOCK_ITEMS);
+define('tbl_ports', \App\Core\DB::PORTS);
+define('tbl_carriers', \App\Core\DB::CARRIERS);
+define('tbl_consignees', \App\Core\DB::CONSIGNEES);
+define('tbl_shippers', \App\Core\DB::SHIPPERS);
+define('tbl_taxonomies', \App\Core\DB::TAXONOMIES);
+define('tbl_banned_words', \App\Core\DB::BANNED_WORDS);
+define('tbl_pages', \App\Core\DB::PAGES);
+define('tbl_hscodes_texts', \App\Core\DB::HS_CODE_TEXTS);
+define('tbl_hscodes', \App\Core\DB::HS_CODES);
+define('tbl_hs_code_mappings', \App\Core\DB::CATEGORY_HS_CODES);
+define('tbl_companies', \App\Core\DB::COMPANIES);
+define('tbl_referral_codes', \App\Core\DB::REFERRAL_CODES);
+define('tbl_categories', \App\Core\DB::CATEGORIES);
+define('tbl_subcategories', \App\Core\DB::SUBCATEGORIES);
+define('tbl_category_items', \App\Core\DB::CATEGORY_ITEMS);
+define('tbl_alerts', \App\Core\DB::ALERTS);
+define('tbl_inquiries', \App\Core\DB::INQUIRIES);
+define('tbl_inquiry_replies', \App\Core\DB::INQUIRY_REPLIES);
+define('tbl_disposable_email_domains', \App\Core\DB::DISPOSABLE_EMAIL_DOMAINS);
+define('tbl_accounts', \App\Core\DB::ACCOUNTS);
+define('tbl_accounts_report_categories', \App\Core\DB::ACCOUNTS_REPORT_CATEGORIES);
+define('tbl_accounts_report_subcategories', \App\Core\DB::ACCOUNTS_REPORT_SUBCATEGORIES);
+define('tbl_journals', \App\Core\DB::JOURNALS);
+define('tbl_journal_items', \App\Core\DB::JOURNAL_ITEMS);
+define('tbl_quotations', \App\Core\DB::QUOTATIONS);
+define('tbl_quotation_items', \App\Core\DB::QUOTATION_ITEMS);
+define('tbl_sale_orders', \App\Core\DB::SALE_ORDERS);
+define('tbl_sale_order_items', \App\Core\DB::SALE_ORDER_ITEMS);
+define('tbl_document_types', \App\Core\DB::DOCUMENT_TYPES);
+define('tbl_payments_received', \App\Core\DB::PAYMENTS_RECEIVED);
+define('tbl_payment_received_items', \App\Core\DB::getPrefix() . 'payment_received_items');
+define('tbl_credit_notes', \App\Core\DB::CREDIT_NOTES);
+define('tbl_credit_note_items', \App\Core\DB::CREDIT_NOTE_ITEMS);
+define('tbl_vendors', \App\Core\DB::VENDORS);
+define('tbl_purchases', \App\Core\DB::PURCHASES);
+define('tbl_purchase_items', \App\Core\DB::PURCHASE_ITEMS);
+define('tbl_purchase_orders', \App\Core\DB::PURCHASE_ORDERS);
+define('tbl_purchase_order_items', \App\Core\DB::PURCHASE_ORDER_ITEMS);
+define('tbl_payments_made', \App\Core\DB::PAYMENTS_MADE);
+define('tbl_payment_made_items', \App\Core\DB::getPrefix() . 'payment_made_items');
+define('tbl_debit_notes', \App\Core\DB::DEBIT_NOTES);
+define('tbl_debit_note_items', \App\Core\DB::DEBIT_NOTE_ITEMS);
+define('tbl_expenses', \App\Core\DB::EXPENSES);
+define('tbl_banks', \App\Core\DB::BANKS);
+define('tbl_tax_treatments', \App\Core\DB::TAX_TREATMENTS);
+define('tbl_payment_terms', \App\Core\DB::PAYMENT_TERMS);
+define('tbl_currencies', \App\Core\DB::CURRENCIES);
+define('tbl_leads', \App\Core\DB::LEADS);
+define('tbl_projects', \App\Core\DB::PROJECTS);
+define('tbl_jobs', \App\Core\DB::JOBS);
+define('tbl_job_items', \App\Core\DB::JOB_ITEMS);
+define('tbl_job_statuses', \App\Core\DB::JOB_STATUSES);
+define('tbl_incoterms', \App\Core\DB::INCOTERMS);
+define('tbl_exit_points', \App\Core\DB::EXIT_POINTS);
+define('tbl_container_types', \App\Core\DB::CONTAINER_TYPES);
+define('tbl_commodity_types', \App\Core\DB::COMMODITY_TYPES);
+define('tbl_warehouses', \App\Core\DB::WAREHOUSES);
+define('tbl_storage_types', \App\Core\DB::STORAGE_TYPES);
+define('tbl_services', \App\Core\DB::SERVICES);
+define('tbl_units', \App\Core\DB::UNITS);
+define('tbl_document_categories', \App\Core\DB::DOCUMENT_CATEGORIES);
 
 
 // config.php

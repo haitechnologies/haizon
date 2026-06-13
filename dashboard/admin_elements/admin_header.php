@@ -7,6 +7,8 @@ require_once __DIR__ . '/../bootstrap.php';
 // Initialize CSRF token for all forms
 csrf_token();
 
+global $session_role_id, $session_user_id, $session_full_name, $session_email, $admin_base_url, $mysqli, $base_url, $current_page, $project_pre, $headerAlertsCount, $headerOrganizationCount, $activeOrganizationName;
+
 /*
 |--------------------------------------------------------------------------
 |     HELPER FUNCTIONS
@@ -271,13 +273,10 @@ $page_url = $_SERVER['REQUEST_URI'] ?? '';
 $current_page = basename(parse_url($page_url, PHP_URL_PATH) ?? '');
 $base_url = $base_url ?? ($admin_base_url ?? '');
 
+$pageHelpConfig = @include(__DIR__ . '/../../config/page_help_config.php');
+$pageHelpData = is_array($pageHelpConfig) ? ($pageHelpConfig[$current_page] ?? null) : null;
+
 $emailModuleLinks = [
-	[
-		'module' => 'email_providers',
-		'href' => 'listing_email_providers.php',
-		'label' => 'Providers',
-		'icon' => 'ph-envelope-simple',
-	],
 	[
 		'module' => 'email_queue',
 		'href' => 'listing_email_queue.php',
@@ -564,7 +563,7 @@ if (!function_exists('renderEmailQuickbar')) {
 	<link href="<?php echo $admin_base_url; ?>/assets/fonts/inter/inter.css" rel="stylesheet" type="text/css">
 	<link href="<?php echo $admin_base_url; ?>/assets/icons/phosphor/styles.min.css" rel="stylesheet" type="text/css">
 	<link href="<?php echo $admin_base_url; ?>/assets/assets_custom/css/all.min.css" id="stylesheet" rel="stylesheet" type="text/css">
-	<link href="<?php echo $admin_base_url; ?>/assets/assets_custom/css/haipulse-dashboard-compat.css" rel="stylesheet" type="text/css">
+	<link href="<?php echo $admin_base_url; ?>/assets/assets_custom/css/haipulse-dashboard-compat.css?v=<?php echo @filemtime(__DIR__ . '/../assets/assets_custom/css/haipulse-dashboard-compat.css'); ?>" rel="stylesheet" type="text/css">
 	<!-- /global stylesheets -->
 
 	<!-- Core JS files -->
@@ -633,6 +632,7 @@ if (!function_exists('renderEmailQuickbar')) {
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/action-buttons.css">
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/datatable-error-handler.css?v=<?php echo @filemtime(__DIR__ . '/../../assets/css/datatable-error-handler.css'); ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/responsive-bootstrap-redesign.css?v=<?php echo @filemtime(__DIR__ . '/../../assets/css/responsive-bootstrap-redesign.css'); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/page-help.css?v=<?php echo @filemtime(__DIR__ . '/../../assets/css/page-help.css'); ?>">
 	<script src="<?php echo $base_url; ?>/assets/js/dashboard-datatable-standard.js?v=<?php echo @filemtime(__DIR__ . '/../../assets/js/dashboard-datatable-standard.js'); ?>"></script>
 	<script src="<?php echo $base_url; ?>/assets/js/datatable-error-handler.js?v=<?php echo @filemtime(__DIR__ . '/../../assets/js/datatable-error-handler.js'); ?>"></script>
 	<script src="<?php echo $base_url; ?>/assets/js/dashboard-datatable-initializer.js?v=<?php echo @filemtime(__DIR__ . '/../../assets/js/dashboard-datatable-initializer.js'); ?>"></script>
@@ -742,6 +742,14 @@ if (!function_exists('renderEmailQuickbar')) {
 		.dropdown-menu>.dropdown-submenu>.dropdown-item:after {
 			content: none;
 		}
+
+		.nav .dropdown-toggle::after,
+		.navbar-nav .dropdown-toggle::after,
+		.dropdown-toggle::after {
+			display: none !important;
+			content: none !important;
+			border: 0 !important;
+		}
 	</style>
 
 
@@ -838,7 +846,6 @@ if (!function_exists('renderEmailQuickbar')) {
 
 	<script src="<?php echo $admin_base_url; ?>/assets/custom_js/ajax.js"></script>
 	<script src="<?php echo $admin_base_url; ?>/assets/custom_js/site.js"></script>
-	<?php include('internal_request.php'); ?>
 
 	<style>
 		.navbar {
@@ -1146,6 +1153,23 @@ if (!function_exists('renderEmailQuickbar')) {
 	<?php } ?>
 
 
+	<style>
+		/* Fix Caret Dropdown spacing/white box issues on Navbar dropdowns */
+		.navbar .dropdown-toggle::after,
+		.navbar-nav .dropdown-toggle::after,
+		.main-header .dropdown-toggle::after {
+			background: transparent !important;
+			background-color: transparent !important;
+			width: 0 !important;
+			height: 0 !important;
+			display: inline-block !important;
+			line-height: 0 !important;
+			border-top: 0.3em solid !important;
+			border-right: 0.3em solid transparent !important;
+			border-left: 0.3em solid transparent !important;
+			border-bottom: 0 !important;
+		}
+	</style>
 </head>
 
 <!-- <body style="background-color: #E8EAED;"> -->
@@ -1171,30 +1195,8 @@ if (!function_exists('renderEmailQuickbar')) {
 					<!-- <img src="assets/images/logo_text_light.svg" class="d-none d-sm-inline-block h-16px ms-3" alt=""> -->
 
 					<?php
-					// ---------------------------------- LOGO ---------------------------------- 
-					$logo = getSystemSetting('logo', '');
-					$logo = s__((string)$logo);
-					$logoSystemPath = '../uploads/system_settings/' . $logo;
-					$logoGlobalPath = '../uploads/global_settings/' . $logo;
-
-					if (!empty($logo) && file_exists($logoSystemPath)) {
-						$display_logo = $logoSystemPath;
-					} elseif (!empty($logo) && file_exists($logoGlobalPath)) {
-						$display_logo = $logoGlobalPath;
-					} else {
-						// Use an existing bundled asset as a hard fallback.
-						$display_logo = $admin_base_url . '/assets/images/logo_icon.svg';
-					}
-					// ----------------------------------------------------------------------------- 
-					?>
-					<img src="<?php echo $display_logo; ?>" alt="" style="max-height: 40px;">
-					&nbsp;
-
-					<?php
-					//echo getTableAttr('company_name', tbl_global_settings, 1); 
 					$software_name        = getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="software_name"');
 					echo s__($software_name);
-
 					?>
 				</a>
 			</div>
@@ -1266,6 +1268,45 @@ if (!function_exists('renderEmailQuickbar')) {
 					</li>
 				<?php endif; ?>
 
+			<?php if (Roles::hasFullAccess($session_role_id)): ?>
+				<li class="nav-item dropdown ms-lg-2">
+					<a href="#" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center dropdown-toggle<?php echo in_array($current_page, ['qa_test.php', 'run_coverage_sweep.php']) ? ' active' : ''; ?>" data-bs-toggle="dropdown" aria-expanded="false" title="QA Test Menu">
+						<i class="ph-seal-check me-1" aria-hidden="true"></i>
+						<span class="d-none d-xl-inline">QA Test</span>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-end">
+						<li>
+							<a href="qa_test.php" class="dropdown-item<?php echo ($current_page === 'qa_test.php') ? ' active' : ''; ?>">
+								<i class="ph-shield-check me-2"></i> QA Test Dashboard
+							</a>
+						</li>
+						<li>
+							<a href="run_coverage_sweep.php?source=dashboard_runtime" class="dropdown-item<?php echo ($current_page === 'run_coverage_sweep.php') ? ' active' : ''; ?>">
+								<i class="ph-rocket-launch me-2"></i> Run Coverage Sweep
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item ms-lg-2">
+					<a href="dashboard_accounting.php" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center<?php echo ($current_page === 'dashboard_accounting.php') ? ' active' : ''; ?>" title="Accounting Dashboard">
+						<i class="ph-currency-circle-dollar me-1" aria-hidden="true"></i>
+						<span class="d-none d-xl-inline">Accounting</span>
+					</a>
+				</li>
+				<li class="nav-item ms-lg-2">
+					<a href="dashboard_crm.php" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center<?php echo ($current_page === 'dashboard_crm.php') ? ' active' : ''; ?>" title="CRM Dashboard">
+						<i class="ph-users-three me-1" aria-hidden="true"></i>
+						<span class="d-none d-xl-inline">CRM</span>
+					</a>
+				</li>
+				<li class="nav-item ms-lg-2">
+					<a href="dashboard_shipping.php" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center<?php echo ($current_page === 'dashboard_shipping.php') ? ' active' : ''; ?>" title="Shipping Dashboard">
+						<i class="ph-package me-1" aria-hidden="true"></i>
+						<span class="d-none d-xl-inline">Shipping</span>
+					</a>
+				</li>
+			<?php endif; ?>
+
 			</ul>
 
 			<div class="navbar-collapse justify-content-center flex-lg-1 order-2 order-lg-1 collapse" id="navbar_search">
@@ -1310,85 +1351,56 @@ if (!function_exists('renderEmailQuickbar')) {
 						</li>
 					<?php endif; ?>
 
-					<!-- Quick Access Dropdown -->
-					<li class="nav-item nav-item-dropdown-lg dropdown ms-lg-2">
-						<a href="#" class="navbar-nav-link navbar-nav-link-icon rounded-pill" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="quickAccessMenu" title="Admin Management">
-							<i class="ph-user-gear" aria-hidden="true"></i>
-						</a>
-						<div class="dropdown-menu dropdown-menu-end admin-mega-menu" id="quickAccessMenu">
-							<div class="d-flex align-items-center justify-content-between border-bottom p-3">
-								<div>
-									<h6 class="mb-0">Admin Navigation</h6>
-									<small class="text-muted">Main areas mirrored from the dashboard structure.</small>
-								</div>
-								<a href="setup.php" class="btn btn-sm btn-light">Tools</a>
-							</div>
-							<div class="systems-mega-grid">
-								<?php foreach ($adminMegaSections as $section): ?>
-									<div class="systems-col">
-										<div class="p-3 h-100">
-											<div class="d-flex align-items-center gap-2 mb-2">
-												<i class="<?php echo htmlspecialchars($section['icon'], ENT_QUOTES); ?> fs-5 text-primary"></i>
-												<div class="fw-semibold"><?php echo htmlspecialchars($section['title'], ENT_QUOTES); ?></div>
-											</div>
-											<div class="list-group list-group-flush">
-												<?php foreach ($section['links'] as $link): ?>
-													<?php $isQuickAccessActive = $current_page === basename($link['href']); ?>
-													<a href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES); ?>" class="list-group-item list-group-item-action border-0 px-0 py-1<?php echo $isQuickAccessActive ? ' active' : ''; ?>">
-														<i class="<?php echo htmlspecialchars($link['icon'], ENT_QUOTES); ?> me-2"></i>
-														<?php echo htmlspecialchars($link['label'], ENT_QUOTES); ?>
-													</a>
-												<?php endforeach; ?>
-											</div>
-										</div>
-									</div>
-								<?php endforeach; ?>
-							</div>
-						</div>
-					</li>
 
 
-					<!-- Error Logs (Non-Admin) -->
 
-					<li class="nav-item ms-lg-2 position-relative">
-						<a href="view_backend_error_logs.php" class="navbar-nav-link navbar-nav-link-icon rounded-pill position-relative" title="Error Logs">
-							<i class="ph-warning-circle"></i>
-							<?php if ($headerAlertsCount > 0): ?>
-								<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:10px;min-width:18px;line-height:1.2;">
-									<?php echo (int)$headerAlertsCount; ?>
-								</span>
-							<?php endif; ?>
-						</a>
-					</li>
+					<?php if (Roles::isSystemAdmin($session_role_id)): ?>
+						<li class="nav-item ms-lg-2 position-relative">
+							<a href="view_backend_error_logs.php" class="navbar-nav-link rounded-pill position-relative d-inline-flex align-items-center" title="Error Logs">
+								<i class="ph-warning-circle me-1"></i>Admin Logs
+								<?php if ($headerAlertsCount > 0): ?>
+									<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:10px;min-width:18px;line-height:1.2;">
+										<?php echo (int)$headerAlertsCount; ?>
+									</span>
+								<?php endif; ?>
+							</a>
+						</li>
+					<?php endif; ?>
 
-					<?php
-					// Show frontend error log count as badge (same logic as backend)
-					$frontendErrorCount = 0;
-					if (function_exists('getFrontendErrorLogsCount')) {
-						$frontendErrorCount = getFrontendErrorLogsCount();
-					}
-					?>
-					<li class="nav-item ms-lg-2 position-relative">
-						<a href="view_frontend_error_logs.php" class="navbar-nav-link rounded-pill position-relative d-inline-flex align-items-center">
-							<i class="ph-browser me-1" aria-hidden="true"></i>Logs
-							<?php if ($frontendErrorCount > 0): ?>
-								<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:10px;min-width:18px;line-height:1.2;">
-									<?php echo (int)$frontendErrorCount; ?>
-								</span>
-							<?php endif; ?>
-						</a>
-					</li>
 
-					<li class="nav-item ms-lg-2">
-						<a href="setup.php" class="navbar-nav-link navbar-nav-link-icon rounded-pill" title="System Tools">
-							<i class="ph-wrench"></i>
-						</a>
-					</li>
-
-					<li class="nav-item ms-lg-2">
-						<a href="global_settings.php" class="navbar-nav-link navbar-nav-link-icon rounded-pill" title="Admin Tools">
+					<li class="nav-item dropdown ms-lg-2">
+						<a href="#" class="navbar-nav-link navbar-nav-link-icon rounded-pill dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="System Settings">
 							<i class="ph-gear-six"></i>
 						</a>
+						<ul class="dropdown-menu dropdown-menu-end">
+							<li>
+								<a href="global_settings.php" class="dropdown-item<?php echo ($current_page === 'global_settings.php') ? ' active' : ''; ?>">
+									<i class="ph-sliders-horizontal me-2"></i> Global Settings
+								</a>
+							</li>
+							<li>
+								<a href="setup.php" class="dropdown-item<?php echo ($current_page === 'setup.php') ? ' active' : ''; ?>">
+									<i class="ph-wrench me-2"></i> System Tools
+								</a>
+							</li>
+							<li>
+								<a href="listing_email_providers.php" class="dropdown-item<?php echo ($current_page === 'listing_email_providers.php') ? ' active' : ''; ?>">
+									<i class="ph-envelope-simple me-2"></i> Email Providers
+								</a>
+							</li>
+							<?php if (hasModuleAccess('email_queue')): ?>
+							<li>
+								<a href="listing_email_queue.php" class="dropdown-item<?php echo ($current_page === 'listing_email_queue.php') ? ' active' : ''; ?>">
+									<i class="ph-envelope-simple-open me-2"></i> Email Queue
+								</a>
+							</li>
+							<?php endif; ?>
+							<li>
+								<a href="listing_cron_jobs.php" class="dropdown-item<?php echo ($current_page === 'listing_cron_jobs.php') ? ' active' : ''; ?>">
+									<i class="ph-clock-clockwise me-2"></i> Cron Jobs
+								</a>
+							</li>
+						</ul>
 					</li>
 
 				<?php } ?>
@@ -1396,19 +1408,8 @@ if (!function_exists('renderEmailQuickbar')) {
 				<!-- User Profile Divider -->
 				<div class="vr flex-shrink-0 my-1 mx-3"></div>
 
-				<?php if (!empty($visibleEmailLinks)): ?>
-					<li class="nav-item ms-lg-2">
-						<a href="<?php echo htmlspecialchars($visibleEmailLinks[0]['href'], ENT_QUOTES); ?>" class="navbar-nav-link navbar-nav-link-icon rounded-pill" title="Email Management">
-							<i class="ph-envelope" aria-hidden="true"></i>
-						</a>
-					</li>
-				<?php endif; ?>
 
-				<li class="nav-item ms-lg-2">
-					<a href="listing_cron_jobs.php" class="navbar-nav-link navbar-nav-link-icon rounded-pill" title="Cron Jobs">
-						<i class="ph-clock-clockwise"></i>
-					</a>
-				</li>
+
 
 				<li class="nav-item ms-lg-2 position-relative">
 					<a href="#" class="navbar-nav-link rounded-pill d-inline-flex align-items-center" data-bs-toggle="offcanvas" data-bs-target="#organizations" title="Organizations">
@@ -1435,8 +1436,8 @@ if (!function_exists('renderEmailQuickbar')) {
 					</li>
 				<?php endif; ?>
 
-				<li class="nav-item ms-lg-2">
-					<a href="#" class="navbar-nav-link d-flex align-items-center rounded-pill p-1" data-bs-toggle="offcanvas" data-bs-target="#accountPanel" title="Account">
+				<li class="nav-item dropdown ms-lg-2">
+					<a href="#" class="navbar-nav-link d-flex align-items-center rounded-pill p-1 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Account">
 						<?php
 						// -- Profile Photo --
 						$pp = getTableAttr('photo', DB::USERS, $session_user_id);
@@ -1453,6 +1454,53 @@ if (!function_exists('renderEmailQuickbar')) {
 							<span class="status-indicator bg-success"></span>
 						</div>
 					</a>
+					<div class="dropdown-menu dropdown-menu-end" style="min-width: 260px;">
+						<div class="px-3 py-2 border-bottom d-flex align-items-center gap-3">
+							<img src="<?php echo $pp; ?>" alt="Profile" class="rounded-pill" style="width:40px;height:40px;object-fit:cover;">
+							<div>
+								<div class="fw-semibold text-truncate" style="max-width: 170px;"><?php echo htmlspecialchars($session_full_name ?? 'User', ENT_QUOTES, 'UTF-8'); ?></div>
+								<div class="small text-muted">Admin Account</div>
+							</div>
+						</div>
+
+						<?php if (Roles::isSystemAdmin($session_role_id)): ?>
+							<div class="px-3 py-2 border-bottom">
+								<div class="text-muted text-uppercase" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px;">Admin Options</div>
+								<div class="d-grid gap-1">
+									<a href="listing_modules.php" class="dropdown-item px-2 py-1 rounded">
+										<i class="ph-list-numbers me-2"></i> Modules
+									</a>
+									<a href="global_settings.php" class="dropdown-item px-2 py-1 rounded">
+										<i class="ph-sliders-horizontal me-2"></i> Global Settings
+									</a>
+									<a href="setup.php" class="dropdown-item px-2 py-1 rounded">
+										<i class="ph-wrench me-2"></i> System Tools
+									</a>
+								</div>
+							</div>
+						<?php endif; ?>
+
+						<div class="px-3 py-2 border-bottom">
+							<div class="text-muted text-uppercase" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px;">Profile & Security</div>
+							<div class="d-grid gap-1">
+								<a href="profile.php" class="dropdown-item px-2 py-1 rounded">
+									<i class="ph-user-circle me-2"></i> My Profile
+								</a>
+								<a href="change_password.php" class="dropdown-item px-2 py-1 rounded">
+									<i class="ph-key me-2"></i> Change Password
+								</a>
+								<a href="mfa_settings.php" class="dropdown-item px-2 py-1 rounded">
+									<i class="ph-shield-check me-2"></i> Two-Factor Authentication
+								</a>
+							</div>
+						</div>
+
+						<div class="p-2">
+							<a href="logout.php" class="dropdown-item px-3 py-2 text-danger rounded d-flex align-items-center">
+								<i class="ph-sign-out me-2"></i> Logout
+							</a>
+						</div>
+					</div>
 				</li>
 
 				<li class="nav-item ms-lg-2">

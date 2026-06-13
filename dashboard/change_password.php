@@ -120,40 +120,32 @@ if ($action == 'change_password') {
 
 <div class="content-wrapper">
 
-	<form method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="change_password.php" autocomplete="off" novalidate>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1">
+                <button type="submit" form="frmusers" class="btn btn-primary btn-sm me-2">Update Password</button>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="change_password.php" autocomplete="off" novalidate>
 		<input type="hidden" name="action" id="action" value="change_password" />
 		<?php echo csrf_field(); ?>
 
 		<!-- Page header -->
-		<div class="page-header page-header-light shadow">
-			<div class="page-header-content d-lg-flex border-top">
-				<div class="d-flex">
-					<div class="breadcrumb py-2">
-						<a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-						<a href="index.php" class="breadcrumb-item">Home</a>
-						<a href="#" class="breadcrumb-item"><?php echo htmlspecialchars($session_email); ?></a>
-						<span class="breadcrumb-item active">Update Password</span>
-					</div>
 
-					<a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-						<i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-					</a>
-				</div>
-
-				<div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-					<div class="d-lg-flex mb-2 mb-lg-0">
-						<button type="submit" class="btn btn-info my-1 me-2">Update Password </button>
-					</div>
-				</div>
-
-			</div>
-		</div>
-		<!-- /page header -->
-
-		<div class="content-inner">
-			<div class="content">
-
-				<?php include('admin_elements/breadcrumb.php'); ?>
 
 				<div class="row">
 					<div class="col-lg-8">

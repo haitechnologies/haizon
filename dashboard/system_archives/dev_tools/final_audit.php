@@ -57,7 +57,7 @@ foreach ($mappings as $form_file => $table) {
         continue;
     }
     
-    if (!$mysqli->query("SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='haipulse' AND TABLE_NAME='{$table}' LIMIT 1")) {
+    if (!$mysqli->query("SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='haizon' AND TABLE_NAME='{$table}' LIMIT 1")) {
         continue;
     }
     

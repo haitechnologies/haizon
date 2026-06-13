@@ -136,6 +136,7 @@ if ($action == "update_$module" || $action == "add_$module") {
     $grand_tax                  = e_s__($_POST['grand_tax']);
     $grand_total                = e_s__($_POST['grand_total']);
 } else {
+    $purchase_order_status      = 'draft';
     $purchase_order_date        = date('d-m-Y', time());
     // $expiry_date                = '';
     $_order_status              = '';
@@ -207,7 +208,7 @@ if ($action == "update_$module" && !empty($id)) {
                                             grand_tax		            = '" . $grand_tax . "',
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -405,7 +406,7 @@ if ($action == "update_$module" && !empty($id)) {
                         // ======================================================
 
 
-                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(purchase_order_no, vendor_id, purchase_order_status, purchase_order_date, reference_no, subject, warehouse_id, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, vendor_notes, grand_tax, grand_total, publish) VALUES ('" . $purchase_order_no . "', '" . $vendor_id . "', '" . $purchase_order_status . "',  '" . $purchase_order_date . "', '" . $reference_no . "', '" . $subject . "', '" . $warehouse_id . "',  '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $vendor_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
+                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(purchase_order_no, vendor_id, purchase_order_status, purchase_order_date, reference_no, subject, warehouse_id, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, vendor_notes, grand_tax, grand_total, is_active) VALUES ('" . $purchase_order_no . "', '" . $vendor_id . "', '" . $purchase_order_status . "',  '" . $purchase_order_date . "', '" . $reference_no . "', '" . $subject . "', '" . $warehouse_id . "',  '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $vendor_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
 
                         $id = $mysqli->insert_id;
                         // if ($insert_row) {
@@ -498,7 +499,7 @@ if (
     $grand_tax                  = s__($row['grand_tax']);
     $grand_total                = s__($row['grand_total']);
 
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 
     $purchase_order_date    = processDateYtoD($purchase_order_date);
     // $expiry_date            = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
@@ -543,75 +544,46 @@ if ($total_rows == 0) $total_rows = 1;
 
 <div class="content-wrapper">
 
-
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="purchase_order_status" id="purchase_order_status" value="" />
-        <input type="hidden" name="save_and_send" id="save_and_send" value="" />
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
                 <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded mt-1">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Purchase Order #: <?php echo $purchase_order_no; ?></label>
-                        </div>
-                    </div>
+                    <span class="text-muted small fw-semibold ms-2">PO #: <?php echo $purchase_order_no; ?></span>
                 <?php } ?>
+                <span class="badge bg-light text-primary border-primary ms-2"><?php echo ((!empty($purchase_order_status)) ? ucwords($purchase_order_status) : ''); ?></span>
+            </div>
 
-                <div class="p-3 rounded mt-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ((!empty($purchase_order_status)) ? ucwords($purchase_order_status) : ''); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="button" onclick=" document.getElementById('purchase_order_status').value='draft'; this.form.submit();" class="btn btn-primary btn-sm me-2">Save as Draft</button>
-
-                                <button type="button" onclick=" document.getElementById('save_and_send').value='1'; document.getElementById('purchase_order_status').value='draft'; this.form.submit();" class="btn btn-info btn-sm me-2">Save and Send</button>
-
-                            <?php } ?>
-
-                            <?php if (!empty($id)) { ?>
-                                <a href="purchase_order_overview.php?purchase_order_id=<?php echo $id; ?>" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-                            <?php } else { ?>
-                                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="button" onclick="document.getElementById('purchase_order_status').value='draft'; document.getElementById('frm<?php echo $module; ?>').submit();" class="btn btn-primary btn-sm me-2">Save as Draft</button>
+                    <button type="button" onclick="document.getElementById('save_and_send').value='1'; document.getElementById('purchase_order_status').value='draft'; document.getElementById('frm<?php echo $module; ?>').submit();" class="btn btn-info btn-sm me-2">Save and Send</button>
+                <?php } ?>
+                <?php if (!empty($id)) { ?>
+                    <a href="purchase_order_overview.php?purchase_order_id=<?php echo $id; ?>" class="btn btn-light btn-sm">Cancel</a>
+                <?php } else { ?>
+                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                <?php } ?>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="purchase_order_status" id="purchase_order_status" value="<?php echo $purchase_order_status; ?>" />
+                <input type="hidden" name="save_and_send" id="save_and_send" value="" />
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
 
                 <div class="col-xl-12">
@@ -635,7 +607,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $vendor_details = '';
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::VENDORS  . "` WHERE publish=1 ORDER BY id DESC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::VENDORS  . "` WHERE is_active=1 ORDER BY id DESC");
                                                 // $result = $mysqli->query("SELECT * FROM `" . DB::VENDORS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $display_name           = $rows["display_name"];
@@ -687,7 +659,7 @@ if ($total_rows == 0) $total_rows = 1;
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'>Please select</option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -797,7 +769,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                             <select class="form-select" name="service[]" id="service<?php echo $purchase_order_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $purchase_order_item; ?>); ">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE is_active=1 AND item_type='services' ORDER BY item_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $service_id = $rows['id'];
                                                                 ?>
@@ -1321,15 +1293,11 @@ if ($total_rows == 0) $total_rows = 1;
 
 
                     </div>
-                </div>
-
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
-        </div>
-    </form>
+            </form>
+        </div></div>
+<?php include('admin_elements/copyright.php'); ?>
 </div>
-
+</div>
+</div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

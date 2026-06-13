@@ -23,7 +23,7 @@ class PortsDataTable extends BaseDataTable
         2 => 'port_code',
         3 => 'country_id',
         4 => 'created_at',
-        5 => 'publish',
+        5 => 'is_active',
         6 => 'id',
     ];
 
@@ -66,7 +66,7 @@ class PortsDataTable extends BaseDataTable
         $portCode = (string)($row['port_code'] ?? '');
         $countryId = (int)($row['country_id'] ?? 0);
         $createdAt = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
+        $publish = (int)($row['is_active'] ?? 0);
 
         $countryName = $this->relatedDataCache['countries'][$countryId] ?? ('Country #' . $countryId);
         $publishBadge = ($publish === 1) ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
@@ -76,12 +76,13 @@ class PortsDataTable extends BaseDataTable
             $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
         }
 
+        $portLink = '<a href="#" class="view-port-details text-primary fw-semibold" data-id="' . $id . '">' . htmlspecialchars($portName) . '</a>';
         return [
             $id,
-            htmlspecialchars($portName),
+            $portLink,
             htmlspecialchars($portCode),
             htmlspecialchars($countryName),
-            htmlspecialchars($timeAgoStr),
+            $timeAgoStr,
             $publishBadge,
             $this->getActionButtons($id, 'ports'),
         ];

@@ -206,7 +206,7 @@ if ($action == "update_$module" && !empty($id)) {
                                             grand_tax		            = '" . $grand_tax . "',
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -403,7 +403,7 @@ if ($action == "update_$module" && !empty($id)) {
                         // ======================================================
 
 
-                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(debit_note_no, vendor_id, debit_note_status, debit_note_date, reference_no, purchase_id, warehouse_id, purchase_person, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, vendor_notes, grand_tax, grand_total, publish) VALUES ('" . $debit_note_no . "', '" . $vendor_id . "', '" . $debit_note_status . "',  '" . $debit_note_date . "', '" . $reference_no . "', '" . $purchase_id . "', '" . $warehouse_id . "', '" . $purchase_person . "', '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $vendor_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
+                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(debit_note_no, vendor_id, debit_note_status, debit_note_date, reference_no, purchase_id, warehouse_id, purchase_person, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, vendor_notes, grand_tax, grand_total, is_active) VALUES ('" . $debit_note_no . "', '" . $vendor_id . "', '" . $debit_note_status . "',  '" . $debit_note_date . "', '" . $reference_no . "', '" . $purchase_id . "', '" . $warehouse_id . "', '" . $purchase_person . "', '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $vendor_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
 
                         $id = $mysqli->insert_id;
                         // if ($insert_row) {
@@ -496,7 +496,7 @@ if (
     $grand_tax                  = s__($row['grand_tax']);
     $grand_total                = s__($row['grand_total']);
 
-    $publish                    = s__($row['publish']);
+    $publish                    = s__($row['is_active']);
 
     $debit_note_date            = processDateYtoD($debit_note_date);
 
@@ -599,62 +599,42 @@ if (!empty($source_purchase_id) && $action == 'add_debit_notes') {
 
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-2">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="debit_note_status" id="debit_note_status" value="<?php echo $debit_note_status; ?>" />
-        <input type="hidden" name="save_and_send" id="save_and_send" value="" />
-        <input type="hidden" name="purchase_id" id="purchase_id" value="<?php echo $purchase_id; ?>" />
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <h5 class="ms-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if (isset($module_id) && granted('create', $module_id)) { ?>
-                                <button type="submit" class="btn btn-primary btn-sm me-2">Save</button>
-                            <?php } ?>
-
-                            <?php if (!empty($id)) { ?>
-                                <a href="debit_note_overview.php?debit_note_id=<?php echo $id; ?>" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-
-                            <?php } else { ?>
-                                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">
-                                    Cancel
-                                </a>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2">Save</button>
+                <?php } ?>
+                <?php if (!empty($id)) { ?>
+                    <a href="debit_note_overview.php?debit_note_id=<?php echo $id; ?>" class="btn btn-light btn-sm">Cancel</a>
+                <?php } else { ?>
+                    <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+                <?php } ?>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="debit_note_status" id="debit_note_status" value="<?php echo $debit_note_status; ?>" />
+                <input type="hidden" name="save_and_send" id="save_and_send" value="" />
+                <input type="hidden" name="purchase_id" id="purchase_id" value="<?php echo $purchase_id; ?>" />
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
 
                 <div class="col-xl-12">
@@ -672,7 +652,7 @@ if (!empty($source_purchase_id) && $action == 'add_debit_notes') {
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 $vendor_details = '';
-                                                // $result = $mysqli->query("SELECT * FROM `" . DB::VENDORS  . "` WHERE publish=1 ORDER BY id DESC");
+                                                // $result = $mysqli->query("SELECT * FROM `" . DB::VENDORS  . "` WHERE is_active=1 ORDER BY id DESC");
                                                 $result = $mysqli->query("SELECT * FROM `" . DB::VENDORS  . "` ORDER BY id DESC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $display_name           = $rows["display_name"];
@@ -712,7 +692,7 @@ if (!empty($source_purchase_id) && $action == 'add_debit_notes') {
                                             <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                 <!-- <option value='0'>Please select</option> -->
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -732,7 +712,7 @@ if (!empty($source_purchase_id) && $action == 'add_debit_notes') {
                                             <select name="purchase_person" id="purchase_person" class="form-select">
                                                 <option value='0'>Please select</option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                                 while ($rows = $result->fetch_array()) {
                                                     $warehouse_name = $rows["warehouse_name"];
                                                 ?>
@@ -831,7 +811,7 @@ if (!empty($source_purchase_id) && $action == 'add_debit_notes') {
                                                             <select class="form-select" name="service[]" id="service<?php echo $debit_note_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $debit_note_item; ?>); ">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE is_active=1 AND item_type='services' ORDER BY item_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $service_id = $rows['id'];
                                                                 ?>
@@ -1354,15 +1334,11 @@ if (!empty($source_purchase_id) && $action == 'add_debit_notes') {
 
 
                     </div>
-                </div>
-
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
-        </div>
-    </form>
+            </form>
+        </div></div>
+<?php include('admin_elements/copyright.php'); ?>
 </div>
-
+</div>
+</div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

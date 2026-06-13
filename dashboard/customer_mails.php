@@ -58,15 +58,14 @@ if (!empty($id)) {
     $payment_term               = s__($row['payment_term']);
 
     $customer_status            = s__($row['customer_status']);
-    $customer_status            = getTableAttr('status', DB::SETUP_STATUSES, $customer_status);
+    $customer_status            = getTableAttr('value', DB::TAXONOMIES, $customer_status);
 
     $customer_source            = s__($row['customer_source']);
-    $customer_source            = getTableAttr('source', DB::SETUP_SOURCES, $customer_source);
+    $customer_source            = getTableAttr('value', DB::TAXONOMIES, $customer_source);
 
     $assigned_to                = s__($row['assigned_to']);
     $assigned_to                = getTableAttr('full_name', DB::USERS, $assigned_to);
 
-    // $customer_type              = s__($row['customer_type']);
     $salutation                 = ((!empty($row['salutation']) ? ucwords(s__($row['salutation'])) : ''));
     $first_name                 = s__($row['first_name']);
     $last_name                  = s__($row['last_name']);
@@ -112,7 +111,7 @@ if (!empty($id)) {
         // $tags_captions = '';
 
         foreach ($tags_arr as $tag_id) {
-            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('value', DB::TAXONOMIES, $tag_id) . '</span> &nbsp;';
         }
     }
 
@@ -128,7 +127,7 @@ if (!empty($id)) {
     $approved_by            = s__($row['approved_by']);
     $approved_at            = s__($row['approved_at']);
 
-    $is_active = s__($row['publish']);
+    $is_active = s__($row['is_active']);
     $created_at             = s__($row['created_at']);
     $created_by             = s__($row['created_by']);
 }

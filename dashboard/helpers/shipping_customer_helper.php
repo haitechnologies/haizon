@@ -1,18 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
+use App\Core\DB;
+
 /**
  * Shipping Customer Helper Functions
- * Created: 2026-02-09
  *
- * Functions to manage shipping customer data extracted from Excel invoices
+ * Functions to manage shipping customer data (now stored in erp_customers with entity_type='shipping').
  */
 
 /**
  * Parse customer information from Excel address field
  * Extracts phone number, city, country from address string
- *
- * Example formats:
- * - "B/O VEN PRO LLP,ZHETYSU REGION PANFILOVSKY DISTRICT PENZHIM,041300 KZ,TL:+77077443030"
- * - "AGENCY,EMIN BALEV, BAKU, AZERBAIJAN AZ,TL:+9945800421"
  *
  * @param string $address_string Full address from Excel
  * @return array Parsed components: address, phone, city, country
@@ -29,27 +29,21 @@ function parseCustomerAddress($address_string) {
         return $result;
     }
 
-    // Extract phone number (pattern: TL:+xxxxx or Tel:+xxxx)
     if (preg_match('/TL?:?\s*(\+[\d\s\-]+)/i', $address_string, $matches)) {
         $result['phone'] = trim($matches[1]);
-        // Remove phone from address string
         $address_string = preg_replace('/,?\s*TL?:?\s*\+[\d\s\-]+/i', '', $address_string);
     }
 
-    // Split by comma
     $parts = array_map('trim', explode(',', $address_string));
 
-    // Last part often contains country code (e.g., "KZ", "AZ")
     if (count($parts) > 0) {
         $last_part = end($parts);
-        // Check if last part is just country code (2 letters)
         if (preg_match('/^[A-Z]{2}$/i', $last_part)) {
             $result['country'] = $last_part;
             array_pop($parts);
         }
     }
 
-    // Try to extract city (usually second-to-last part or contains "CITY" keyword)
     foreach ($parts as $part) {
         if (preg_match('/\b(CITY|BAKU|ALMATY|DISTRICT)\b/i', $part)) {
             $result['city'] = $part;
@@ -57,7 +51,6 @@ function parseCustomerAddress($address_string) {
         }
     }
 
-    // Remaining parts form the address
     $result['address'] = implode(', ', $parts);
 
     return $result;
@@ -65,98 +58,85 @@ function parseCustomerAddress($address_string) {
 
 /**
  * Find or create shipping customer in database
- * Checks if customer exists by name, creates if not found
+ * Stores shipping customers in erp_customers with entity_type='shipping'
  *
  * @param mysqli $mysqli Database connection
  * @param string $customer_name Customer name from Excel
  * @param string $customer_address Full address string from Excel
+ * @param int $organizationId Active organization ID
  * @return int Customer ID
  */
-function findOrCreateShippingCustomer($mysqli, $customer_name, $customer_address = '') {
-    global $tbl_prefix;
-    $tbl_name = $tbl_prefix . 'shipping_customers';
+function findOrCreateShippingCustomer($mysqli, $customer_name, $customer_address = '', $organizationId = 0) {
+    $tbl_name = DB::getPrefix() . 'customers';
 
-    // Check if table exists (for backward compatibility)
-    $table_check = $mysqli->query("SHOW TABLES LIKE '$tbl_name'");
-    if ($table_check->num_rows == 0) {
-        return 0;
-    }
-
-    // Sanitize customer name
     $customer_name = trim($customer_name);
     if (empty($customer_name)) {
         return 0;
     }
 
-    // Check if customer exists
-    $check_sql = "SELECT id FROM `$tbl_name` WHERE customer_name = '" . $mysqli->real_escape_string($customer_name) . "' LIMIT 1";
-    $result = $mysqli->query($check_sql);
+    $checkDup = $mysqli->prepare("SELECT id FROM `$tbl_name` WHERE display_name = ? AND entity_type = 'shipping' AND organization_id = ? LIMIT 1");
+    $checkDup->bind_param('si', $customer_name, $organizationId);
+    $checkDup->execute();
+    $checkDup->store_result();
 
-    if ($result && $result->num_rows > 0) {
-        // Customer exists, return ID
+    if ($checkDup->num_rows > 0) {
+        $result = $checkDup->get_result();
         $row = $result->fetch_assoc();
+        $checkDup->close();
         return (int)$row['id'];
     }
+    $checkDup->close();
 
-    // Customer doesn't exist, create new record
     $parsed = parseCustomerAddress($customer_address);
 
-    $insert_sql = "INSERT INTO `$tbl_name` (
-        customer_name,
-        customer_address,
-        customer_phone,
-        customer_city,
-        customer_country,
-        customer_type,
-        is_active,
-        created_at
-    ) VALUES (
-        '" . $mysqli->real_escape_string($customer_name) . "',
-        '" . $mysqli->real_escape_string($parsed['address']) . "',
-        '" . $mysqli->real_escape_string($parsed['phone']) . "',
-        '" . $mysqli->real_escape_string($parsed['city']) . "',
-        '" . $mysqli->real_escape_string($parsed['country']) . "',
-        'importer',
-        1,
-        NOW()
-    )";
+    $stmt = $mysqli->prepare("INSERT INTO `$tbl_name` (
+        organization_id, entity_type, display_name, company_name, email,
+        phone, mobile, address, is_active, created_at, updated_at
+    ) VALUES (?, 'shipping', ?, ?, '', ?, '', ?, 1, NOW(), NOW())");
+    $stmt->bind_param('isssss', $organizationId, $customer_name, $customer_name, $parsed['phone'], $parsed['address']);
 
-    if ($mysqli->query($insert_sql)) {
-        return $mysqli->insert_id;
+    if ($stmt->execute()) {
+        $id = $mysqli->insert_id;
+        $stmt->close();
+        return $id;
     }
+    $stmt->close();
 
     return 0;
 }
 
 /**
- * Get customer details by ID
+ * Get shipping customer details by ID
  *
  * @param mysqli $mysqli Database connection
  * @param int $customer_id Customer ID
  * @return array|null Customer data or null if not found
  */
 function getShippingCustomer($mysqli, $customer_id) {
-    global $tbl_prefix;
-    $tbl_name = $tbl_prefix . 'shipping_customers';
+    $tbl_name = DB::getPrefix() . 'customers';
 
-    $sql = "SELECT * FROM `$tbl_name` WHERE id = " . (int)$customer_id . " LIMIT 1";
-    $result = $mysqli->query($sql);
+    $stmt = $mysqli->prepare(
+        "SELECT id, display_name AS customer_name, phone AS customer_phone, address AS customer_address, customer_type, is_active
+         FROM `$tbl_name` WHERE id = ? AND entity_type = 'shipping' LIMIT 1"
+    );
+    $stmt->bind_param('i', $customer_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
 
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_assoc();
-    }
-
-    return null;
+    return $row ?: null;
 }
 
 /**
- * Get customer name by ID
+ * Get shipping customer name by ID
  *
  * @param mysqli $mysqli Database connection
  * @param int $customer_id Customer ID
  * @return string Customer name or empty string
  */
-function getShippingCustomerName($mysqli, $customer_id) {
+function getShippingCustomerName($mysqli, $customer_id)
+{
     $customer = getShippingCustomer($mysqli, $customer_id);
     return $customer ? $customer['customer_name'] : '';
 }
@@ -168,18 +148,19 @@ function getShippingCustomerName($mysqli, $customer_id) {
  * @param bool $active_only Return only active customers
  * @return array Array of customers with id and customer_name
  */
-function getAllShippingCustomers($mysqli, $active_only = true) {
-    global $tbl_prefix;
-    $tbl_name = $tbl_prefix . 'shipping_customers';
+function getAllShippingCustomers($mysqli, $active_only = true)
+{
+    $tbl_name = DB::getPrefix() . 'customers';
 
-    $sql = "SELECT id, customer_name, customer_city, customer_country
-            FROM `$tbl_name`";
+    $sql = "SELECT id, display_name AS customer_name, address AS customer_address
+            FROM `$tbl_name`
+            WHERE entity_type = 'shipping'";
 
     if ($active_only) {
-        $sql .= " WHERE is_active = 1";
+        $sql .= " AND is_active = 1";
     }
 
-    $sql .= " ORDER BY customer_name ASC";
+    $sql .= " ORDER BY display_name ASC";
 
     $result = $mysqli->query($sql);
     $customers = [];

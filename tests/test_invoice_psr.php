@@ -7,7 +7,7 @@ $_SERVER['HTTP_HOST'] = 'localhost';
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
 
-$project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+$project_pre = $GLOBALS['project_pre'] ?? 'haizon';
 $_SESSION[$project_pre] = [
     'DASHBOARD' => [
         'user_id' => 12345,
@@ -43,8 +43,8 @@ try {
 
     // Setup a dummy customer for testing invoices
     $sqlCust = "INSERT INTO `erp_customers` (id, organization_id, display_name, address, email, publish, is_active, created_by, customer_type)
-                VALUES (7777, :org, 'Test Customer for Invoices', '123 Test Rd', 'invoice.cust@test.com', 1, 1, 0, 'business')";
-    $db->execute($sqlCust, ['org' => $testOrgId]);
+                VALUES (7777, :org, 'Test Customer for Invoices', '123 Test Rd', 'invoice.cust@test.com', 1, 1, :created_by, 'business')";
+    $db->execute($sqlCust, ['org' => $testOrgId, 'created_by' => $testUserId]);
 
     // Test 1: Create Invoice
     echo "[TEST 1] Creating invoice via InvoiceService... ";
@@ -54,7 +54,8 @@ try {
         'expiry_date' => date('Y-m-d', strtotime('+30 days')),
         'grand_subtotal' => 100.00,
         'grand_total' => 105.00,
-        'grand_tax' => 5.00
+        'grand_tax' => 5.00,
+        'warehouse_id' => 1
     ];
     $itemsData = [
         [
@@ -112,7 +113,8 @@ try {
         'invoice_date' => date('Y-m-d'),
         'grand_subtotal' => 150.00,
         'grand_total' => 150.00,
-        'grand_tax' => 0.00
+        'grand_tax' => 0.00,
+        'warehouse_id' => 1
     ];
     $updatedItemsData = [
         // Keep the old one but update it

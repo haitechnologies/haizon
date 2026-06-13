@@ -179,8 +179,8 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 <div class="content-wrapper">
 
 	<!-- Page header -->
-	<div class="page-header page-header-light shadow">
-		<div class="page-header-content d-lg-flex border-top">
+	<div class="page-header page-header-light shadow carriers-page-header">
+		<div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
 			<div class="d-flex align-items-center py-3">
 				<div class="ms-3">
 					<h5 class="mb-0">
@@ -684,14 +684,12 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 			</div>
 			<!-- /content area -->
 
-
-			<?php include('admin_elements/copyright.php'); ?>
-
-
 		</div>
 	<?php } // permissions 
 	?>
 	<!-- /inner content -->
+
+	<?php include('admin_elements/copyright.php'); ?>
 
 </div>
 <!-- /main content -->

@@ -18,9 +18,10 @@ class MultiOrgIntegrationTests
     private $mysqli;
     private $results = [];
     private $orgScopedTables = [
-        'erp_customers', 'erp_customer_contacts', 'erp_customer_addresses',
+        'erp_customers', 'erp_contacts', 'erp_addresses',
+        'erp_entity_logs', 'erp_entity_notes', 'erp_attachments',
         'erp_invoices', 'erp_invoice_items',
-        'erp_department', 'erp_designations', 'erp_attendance',
+        'erp_departments', 'erp_designations', 'erp_attendance',
         'erp_leave_requests', 'erp_leave_types', 'erp_payroll_components',
         'erp_salary_structures', 'erp_employee_salaries', 'erp_payroll_runs',
         'erp_payslips',
@@ -28,8 +29,11 @@ class MultiOrgIntegrationTests
         'erp_shipping_advice_items', 'erp_shipping_invoices',
         'erp_shipping_invoice_items', 'erp_shipping_stocks',
         'erp_carriers', 'erp_consignees', 'erp_shippers',
-        'erp_setup_sources', 'erp_setup_statuses', 'erp_setup_tags',
-        'erp_items', 'erp_ports'
+        'erp_taxonomies', 'erp_items', 'erp_ports',
+        'erp_jobs', 'erp_projects', 'erp_tasks', 'erp_vendors', 'erp_warehouses',
+        'erp_storage_types', 'erp_storage_subtypes', 'erp_incoterms', 'erp_exit_points',
+        'erp_leads', 'erp_inquiries', 'erp_inquiry_replies',
+        'erp_journals', 'erp_payments_made', 'erp_payments_received', 'erp_payment_methods', 'erp_payment_terms', 'erp_tax_treatments', 'erp_currencies'
     ];
     
     public function __construct($mysqli)
@@ -38,7 +42,7 @@ class MultiOrgIntegrationTests
     }
     
     /**
-     * Test 1: Verify all 31 org-scoped tables have organization_id column
+     * Test 1: Verify all org-scoped tables have organization_id column
      */
     public function testOrgIdColumnsExist(): void
     {
@@ -46,6 +50,7 @@ class MultiOrgIntegrationTests
         
         $found = [];
         $missing = [];
+        $totalTables = count($this->orgScopedTables);
         
         foreach ($this->orgScopedTables as $table) {
             $result = $this->mysqli->query(
@@ -66,7 +71,7 @@ class MultiOrgIntegrationTests
         $this->recordResult(
             "All org-scoped tables have organization_id",
             $pass,
-            "Found: " . count($found) . "/31" . (count($missing) > 0 ? ", Missing: " . implode(', ', $missing) : "")
+            "Found: " . count($found) . "/$totalTables" . (count($missing) > 0 ? ", Missing: " . implode(', ', $missing) : "")
         );
     }
     
@@ -242,12 +247,13 @@ class MultiOrgIntegrationTests
         
         $row = $result->fetch_assoc();
         $count = $row['org_table_count'];
-        $pass = ($count >= 30);
+        $totalTables = count($this->orgScopedTables);
+        $pass = ($count >= $totalTables);
         
         $this->recordResult(
             "Org-scoped tables exist",
             $pass,
-            "$count tables with organization_id (target: 31)"
+            "$count tables with organization_id (target: $totalTables)"
         );
     }
     

@@ -170,7 +170,7 @@ if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'account
     if ($tags != NULL) {
         $tags_arr               = explode(',', $tags);
         foreach ($tags_arr as $tag_id) {
-            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('tag', DB::SETUP_TAGS, $tag_id) . '</span> &nbsp;';
+            $tags_captions .= '<span class="badge bg-light text-dark">' . getTableAttr('value', DB::TAXONOMIES, $tag_id) . '</span> &nbsp;';
         }
     }
 
@@ -268,7 +268,7 @@ if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'account
     $project_id                 = s__($row['project_id']);
     $approved_time_resubmission = s__($row['approved_time_resubmission']);
 
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 
     // $expiry_date        = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
 
@@ -328,8 +328,33 @@ if ($total_rows == 0) $total_rows = 1;
 
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="publish" id="publish" <?php if ($publish == '1') { ?>checked="checked" <?php } ?> form="frmjobs">
+                    <label class="form-check-label" for="publish">Publish</label>
+                </div>
+            </div>
+            <div class="my-1">
+                
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
         <input type="hidden" name="job_status" id="job_status" value="" />
         <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
@@ -339,68 +364,7 @@ if ($total_rows == 0) $total_rows = 1;
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="row mt-2">
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="mt-3">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Job #: <?php echo $id; ?></label>
-                        </div>
-                    </div>
-                <?php } ?>
-
-                <div class="mt-3">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php if (!empty($job_status)) echo getTableAttr("job_status", DB::JOB_STATUSES, $job_status); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <div class="mt-2 mb-2">
-
-                            <?php if ($project_created == 0) { ?>
-
-                                <?php
-                                $draft_job_status_id = getTableAttrV('id', DB::JOB_STATUSES, " job_status = 'draft' ");
-                                if ($job_status == $draft_job_status_id) { // job_status = draft 
-                                ?>
-                                    <button type="button" onclick="window.location.href='<?php echo $module; ?>.php?action=edit_<?php echo $module; ?>&id=<?php echo $id; ?>'; " class="btn btn-primary btn-sm me-2">Edit</button>
-                                <?php } ?>
-
-                                <?php
-                                $approved_job_status_id = getTableAttrV('id', DB::JOB_STATUSES, " job_status = 'approved' ");
-                                if ($job_status == $approved_job_status_id) { // job_status = draft 
-                                ?>
-                                    <button type="button" onclick="window.location.href='view_job.php?action=create_project&id=<?php echo $id; ?>';" class="btn btn-primary btn-sm me-2">Create Project</button>
-                                <?php } ?>
-
-                            <?php } else { ?>
-                                <button type="button" class=" btn btn-light my-1 me-2" disabled>Project Created</button>
-                            <?php } ?>
-
-
-                            <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
 
                 <div class="col-xl-12">
@@ -1025,7 +989,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Landing Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $landing_country); ?>
+                                                <?php echo getTableAttr('country', DB::GEO_COUNTRIES, $landing_country); ?>
                                             </div>
                                         </div>
 
@@ -1067,7 +1031,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Billing Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $billing_country); ?>
+                                                <?php echo getTableAttr('country', DB::GEO_COUNTRIES, $billing_country); ?>
                                             </div>
                                         </div>
 
@@ -1090,7 +1054,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Destination Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $destination_country); ?>
+                                                <?php echo getTableAttr('country', DB::GEO_COUNTRIES, $destination_country); ?>
                                             </div>
                                         </div>
 
@@ -1133,7 +1097,7 @@ if ($total_rows == 0) $total_rows = 1;
                                         <div class="row">
                                             <label class="col-lg-3 col-form-label">Shipping Country: </label>
                                             <div class="col-lg-9 mt-2">
-                                                <?php echo getTableAttr('country_name', DB::GEO_COUNTRIES, $shipping_country); ?>
+                                                <?php echo getTableAttr('country', DB::GEO_COUNTRIES, $shipping_country); ?>
                                             </div>
                                         </div>
 

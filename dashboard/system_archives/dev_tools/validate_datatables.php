@@ -13,7 +13,7 @@
  * - Columns array exists and matches handler output
  * - Error handler integration
  * 
- * Run from: http://localhost/haipulse/dashboard/validate_datatables.php
+ * Run from: http://localhost/haizon/dashboard/validate_datatables.php
  * 
  * See: dashboard/VALIDATOR_README.md for unified validator documentation
  */

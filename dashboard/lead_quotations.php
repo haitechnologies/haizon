@@ -196,7 +196,7 @@ if ($action == "update_lead_$module" && !empty($id)) {
                                             grand_tax		            = '" . $grand_tax . "',
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -394,7 +394,7 @@ if ($action == "update_lead_$module" && !empty($id)) {
                         // ======================================================
 
 
-                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(quotation_no, customer_id, quotation_status, quotation_date, expiry_date, subject, warehouse_id, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total, publish) VALUES ('" . $quotation_no . "', '" . $lead_id . "', '" . $quotation_status . "',  '" . $quotation_date . "', '" . $expiry_date . "', '" . $subject . "', '" . $warehouse_id . "',  '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $customer_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
+                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(quotation_no, customer_id, quotation_status, quotation_date, expiry_date, subject, warehouse_id, terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value, grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total, is_active) VALUES ('" . $quotation_no . "', '" . $lead_id . "', '" . $quotation_status . "',  '" . $quotation_date . "', '" . $expiry_date . "', '" . $subject . "', '" . $warehouse_id . "',  '" . $terms_and_conditions . "',   '" . $grand_subtotal . "',  '" . $grand_discount_type . "',  '" . $grand_discount_type_value . "',  '" . $grand_discount_amount . "',  '" . $grand_after_discount . "',   '" . $customer_notes . "',  '" . $grand_tax . "', '" . $grand_total . "', '" . $publish . "'); ");
 
                         $id = $mysqli->insert_id;
                         // if ($insert_row) {
@@ -486,7 +486,7 @@ if (
     $grand_tax                  = s__($row['grand_tax']);
     $grand_total                = s__($row['grand_total']);
 
-    $publish                = s__($row['publish']);
+    $publish                = s__($row['is_active']);
 
     $quotation_date = processDateYtoD($quotation_date);
     $expiry_date        = ($expiry_date == '1970-01-01' ? '' : processDateDtoY($expiry_date));
@@ -531,8 +531,33 @@ if ($total_rows == 0) $total_rows = 1;
 
 <div class="content-wrapper">
 
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
 
-    <form class="steps-basic clearfix" method="post" id="frmlead_<?php echo $module; ?>" name="frmlead_<?php echo $module; ?>" action="lead_<?php echo $module; ?>.php" enctype="multipart/form-data">
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="publish" id="publish" <?php if ($publish == '1') { ?>checked="checked" <?php } ?> form="frmquotations">
+                    <label class="form-check-label" for="publish">Publish</label>
+                </div>
+            </div>
+            <div class="my-1">
+                
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form class="steps-basic clearfix" method="post" id="frmlead_<?php echo $module; ?>" name="frmlead_<?php echo $module; ?>" action="lead_<?php echo $module; ?>.php" enctype="multipart/form-data">
         <input type="hidden" name="lead_id" id="lead_id" value="<?php echo $lead_id; ?>" />
         <?php if (($action == "edit_lead_$module" || $action == "update_lead_$module") && !empty($id)) { ?>
             <input type="hidden" name="action" id="action" value="update_lead_<?php echo $module; ?>" />
@@ -542,52 +567,7 @@ if ($total_rows == 0) $total_rows = 1;
         <?php } ?>
 
         <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_lead_<?php echo $module; ?>.php" class="breadcrumb-item">Quotations</a>
-                        <span class="breadcrumb-item active"><?php if (($action == "edit_lead_$module" || $action == "update_lead_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span>
-                    </div>
 
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
-                <?php if (($action == "edit_lead_$module" || $action == "update_lead_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Quotation #: <?php echo $quotation_no; ?></label>
-                        </div>
-                    </div>
-                <?php } ?>
-
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ((empty($quotation_status) ? 'Not Confirmed' : colorfulquotationstatus($quotation_status))); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <button type="button" onclick=" this.form.submit();" class="btn btn-info my-1 me-2"><?php if (($action == "edit_lead_$module" || $action == "update_lead_$module") && !empty($id) && !empty($lead_id)) { ?>Update<?php } else { ?>Save<?php } ?> <?php echo $module_caption; ?> and Exit</button>
-                        <button type="button" onclick="window.location.href='listing_lead_<?php echo $module; ?>.php?lead_id=<?php echo $lead_id; ?>';" class=" btn btn-outline-dark my-1 me-2">Exit</button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <!-- /page header -->
-
-
-        <div class="content-inner">
-            <div class="content">
-
-                <?php include('admin_elements/breadcrumb.php'); ?>
 
 
                 <div class="col-xl-12">
@@ -632,7 +612,7 @@ if ($total_rows == 0) $total_rows = 1;
                                 <select name="warehouse_id" id="warehouse_id" class="form-select">
                                     <option value='0'>Please select</option>
                                     <?php
-                                    $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                    $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                     while ($rows = $result->fetch_array()) {
                                         $warehouse_name = $rows["warehouse_name"];
                                     ?>
@@ -735,7 +715,7 @@ if ($total_rows == 0) $total_rows = 1;
                                                             <select class="form-select" name="service[]" id="service<?php echo $quotation_item; ?>" onchange="ajax_populate_item_rate(this.value, <?php echo $quotation_item; ?>); ">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE publish=1 AND item_type='services' ORDER BY item_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::ITEMS . "` WHERE is_active=1 AND item_type='services' ORDER BY item_name");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $service_id = $rows['id'];
                                                                 ?>

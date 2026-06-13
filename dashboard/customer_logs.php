@@ -112,8 +112,8 @@ if (isset($_POST['customer_id']))           $customer_id     = e_s__($_POST['cus
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="page-header page-header-light shadow">
-        <div class="page-header-content d-lg-flex border-top">
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
             <div class="d-flex">
                 <div class="breadcrumb py-2">
                     <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>

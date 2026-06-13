@@ -22,7 +22,7 @@ $customer_type  = getTableAttr('customer_type', DB::CUSTOMERS, $customer_id);
 $display_name   = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
 $approved       = getTableAttr('approved', DB::CUSTOMERS, $customer_id);
 $approved_at    = getTableAttr('approved_at', DB::CUSTOMERS, $customer_id);
-$publish        = getTableAttr('publish', DB::CUSTOMERS, $customer_id);
+$publish        = getTableAttr('is_active', DB::CUSTOMERS, $customer_id);
 $created_at     = getTableAttr('created_at', DB::CUSTOMERS, $customer_id);
 $created_by     = getTableAttr('created_by', DB::CUSTOMERS, $customer_id);
 
@@ -32,8 +32,8 @@ $created_by     = getTableAttr('created_by', DB::CUSTOMERS, $customer_id);
     */
 ?>
 
-<div class="page-header page-header-light shadow">
-    <div class="page-header-content d-lg-flex border-top">
+<div class="page-header page-header-light shadow carriers-page-header">
+    <div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3">
         <div class="row mt-3">
             <div class="col-lg-12">
                 <h1 class="ms-2"> <a href="customer_overview.php?customer_id=<?php echo $customer_id;?>" class="text-dark"><?php echo $display_name; ?></a></h1>
@@ -93,12 +93,7 @@ $created_by     = getTableAttr('created_by', DB::CUSTOMERS, $customer_id);
 
                             <!-- <button type="button" onclick="window.location.href='<?php echo $module; ?>.php?action=edit_customers&id=<?php echo $customer_id; ?>';" class="btn btn-light btn-sm me-2"><i class="ph-paperclip"></i></button> -->
 
-                            <?php
-                            $rs_customer_attachments  = null; // erp_customer_attachments table decommissioned
-                            ?>
-                            <a class="btn btn-light btn-sm me-2" href="customer_attachments.php?customer_id=<?php echo $customer_id; ?>">
-                                <i class="ph-paperclip"></i> <?php echo ((!empty($rs_customer_attachments->num_rows)) ? $rs_customer_attachments->num_rows : ''); ?>
-                            </a>
+
 
                             <?php $transactions_disabled = ($approved != 1); ?>
                             <div class="dropdown d-inline-block">
@@ -129,7 +124,7 @@ $created_by     = getTableAttr('created_by', DB::CUSTOMERS, $customer_id);
 
 
                                     <?php
-                                    $customer_active_status = getTableAttr('publish', DB::CUSTOMERS, $customer_id);
+                                    $customer_active_status = getTableAttr('is_active', DB::CUSTOMERS, $customer_id);
                                     if ($customer_active_status == 1) {
                                     ?>
                                         <a class="dropdown-item" href="customer_overview.php?action=mark_as_inactive&customer_id=<?php echo $customer_id; ?>">

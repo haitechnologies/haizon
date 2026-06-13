@@ -21,6 +21,11 @@ class CategoryHSCodesDataTable extends BaseDataTable
 
     protected $searchFields = ['notes'];
 
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT id, mappable_id AS category_id, hs_code_id, relevance, notes FROM `" . $this->table . "` WHERE id > 0 AND mappable_type = 'Category'";
+    }
+
     protected $sortableColumns = [
         0 => 'id',
         1 => 'category_id',

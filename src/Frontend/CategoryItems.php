@@ -81,7 +81,7 @@ class CategoryItems
             $params[] = $subcategoryId;
         }
         if ($publishedOnly) {
-            $where[] = "publish = 1";
+            $where[] = "is_active = 1";
         }
 
         if (!empty($where)) {
@@ -108,7 +108,7 @@ class CategoryItems
     {
         $query = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
                   WHERE subcategory_id = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   ORDER BY sort_order ASC";
 
         try {
@@ -129,7 +129,7 @@ class CategoryItems
     {
         $query = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
                   WHERE category_id = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   ORDER BY sort_order ASC";
 
         try {
@@ -152,7 +152,7 @@ class CategoryItems
 
         $query = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
                   WHERE id = ? 
-                  AND publish = 1 
+                  AND is_active = 1 
                   LIMIT 1";
 
         try {
@@ -173,7 +173,7 @@ class CategoryItems
     {
         $query = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
                   WHERE slug = ? 
-                  AND publish = 1
+                  AND is_active = 1
                   ORDER BY total_companies DESC, id DESC
                   LIMIT 1";
 
@@ -248,7 +248,7 @@ class CategoryItems
         $params = [$itemId];
 
         if ($publishedOnly) {
-            $where[] = "comp.publish = 1";
+            $where[] = "comp.is_active = 1";
         }
         if ($verifiedOnly) {
             $where[] = "comp.verified = 1";
@@ -283,7 +283,7 @@ class CategoryItems
         $query = "SELECT COUNT(*) as total 
                   FROM " . DB::COMPANIES . " comp 
                   WHERE comp.primary_item_id = ? 
-                  AND comp.publish = 1";
+                  AND comp.is_active = 1";
 
         try {
             $row = $this->conn->fetchOne($query, [$itemId]);
@@ -305,7 +305,7 @@ class CategoryItems
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND total_companies > 0 
                   ORDER BY total_companies DESC 
                   LIMIT {$limit}";
@@ -330,7 +330,7 @@ class CategoryItems
         $limit = (int)$limit;
 
         $query = "SELECT * FROM " . DB::CATEGORY_ITEMS . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND (name LIKE ? OR name_ar LIKE ?) 
                   ORDER BY total_companies DESC 
                   LIMIT {$limit}";
@@ -357,7 +357,7 @@ class CategoryItems
 
         $query = "SELECT item_id, name, total_companies 
                   FROM " . DB::CATEGORY_ITEMS . " 
-                  WHERE publish = 1 
+                  WHERE is_active = 1 
                   AND name LIKE ? 
                   ORDER BY total_companies DESC, name ASC 
                   LIMIT {$limit}";

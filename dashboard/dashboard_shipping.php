@@ -69,8 +69,9 @@ $total_containers = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::CONTA
 
 // TOP HS CODES (most recently added)
 $top_hscodes_query = "
-	SELECT h.code, h.hscode_name 
+	SELECT h.code, te.description as hscode_name 
 	FROM `" . DB::HS_CODES . "` h
+	LEFT JOIN `" . DB::HS_CODE_TEXTS . "` te ON h.id = te.hs_code_id AND te.lang = 'en'
 	WHERE h.is_active = 1
     ORDER BY h.id DESC
     LIMIT 10
@@ -79,12 +80,12 @@ $top_hscodes = $mysqli->query($top_hscodes_query);
 
 // TOP DESTINATIONS
 $top_destinations_query = "
-    SELECT DISTINCT p.port_name, p.port_code, c.country_name,
+    SELECT DISTINCT p.port_name, p.port_code, c.country,
            (SELECT COUNT(*) FROM `" . DB::QUOTATIONS . "` q WHERE q.destination_port = p.id) +
            (SELECT COUNT(*) FROM `" . DB::SALE_ORDERS . "` s WHERE s.destination_port = p.id) as shipment_count
     FROM `" . DB::PORTS . "` p
     LEFT JOIN `" . DB::GEO_COUNTRIES . "` c ON p.country_id = c.id
-    WHERE p.publish = 1
+    WHERE p.is_active = 1
     ORDER BY shipment_count DESC
     LIMIT 5
 ";
@@ -120,8 +121,8 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 <div class="content-wrapper">
 
 	<!-- Page header -->
-	<div class="page-header page-header-light shadow">
-		<div class="page-header-content d-lg-flex border-top">
+	<div class="page-header page-header-light shadow carriers-page-header">
+		<div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
 			<div class="d-flex align-items-center py-3">
 				<div class="ms-3">
 					<h5 class="mb-0">
@@ -570,7 +571,13 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 										</div>
 										<div class="flex-fill">
 											<div class="fw-semibold"><?php echo htmlspecialchars((string)($row['code'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
-											<div class="text-muted fs-sm"><?php echo substr($row['hscode_name'], 0, 45); ?><?php echo strlen($row['hscode_name']) > 45 ? '...' : ''; ?></div>
+											<div class="text-muted fs-sm">
+												<?php 
+												$hscode_name = (string)($row['hscode_name'] ?? '');
+												echo htmlspecialchars(substr($hscode_name, 0, 45), ENT_QUOTES, 'UTF-8');
+												echo strlen($hscode_name) > 45 ? '...' : '';
+												?>
+											</div>
 										</div>
 									</div>
 								<?php 
@@ -605,7 +612,7 @@ $revenue_growth = $last_month_revenue > 0 ? round((($current_month_revenue - $la
 										</div>
 										<div class="flex-fill">
 											<div class="fw-semibold"><?php echo $row['port_code']; ?> - <?php echo $row['port_name']; ?></div>
-											<div class="text-muted fs-sm"><?php echo $row['country_name']; ?></div>
+											<div class="text-muted fs-sm"><?php echo $row['country']; ?></div>
 										</div>
 										<div class="ms-3">
 											<span class="badge bg-info rounded-pill"><?php echo $row['shipment_count']; ?></span>

@@ -32,6 +32,7 @@ class SaleOrdersDataTable extends BaseDataTable
 
     protected function formatRow($row, $requestData = [])
     {
+        $id       = (int)($row['id'] ?? 0);
         $date     = (string)($row['sale_order_date'] ?? '');
         $no       = (string)($row['sale_order_no'] ?? '');
         $ref      = (string)($row['reference_no'] ?? '');
@@ -47,6 +48,7 @@ class SaleOrdersDataTable extends BaseDataTable
             htmlspecialchars($custName),
             $badge,
             htmlspecialchars(number_format((float)$total, 2)),
+            $id,
         ];
     }
 }

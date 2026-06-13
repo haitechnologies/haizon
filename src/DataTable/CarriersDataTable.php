@@ -26,9 +26,10 @@ class CarriersDataTable extends BaseDataTable
         $id = (int)($row['id'] ?? 0);
         $carrierName = (string)($row['carrier_name'] ?? '');
 
+        $carrierLink = '<a href="#" class="view-carrier-details text-primary fw-semibold" data-id="' . $id . '">' . htmlspecialchars($carrierName) . '</a>';
         return [
             $id,
-            htmlspecialchars($carrierName),
+            $carrierLink,
             $this->getActionButtons($id, 'carriers'),
         ];
     }

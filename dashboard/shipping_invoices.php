@@ -166,13 +166,13 @@ if ($action == "update_$module" && !empty($id)) {
                                             invoice_no		            = '" . $invoice_no . "',
                                             warehouse_id		        = '" . $warehouse_id . "',
                                             
-                                            pkgs		                = '" . $pkgs . "',
-                                            weight		                = '" . $weight . "',
-                                            awb		                    = '" . $awb . "',
+                                            no_of_packs                 = '" . $pkgs . "',
+                                            gross_weight                = '" . $weight . "',
+                                            master_awb_no               = '" . $awb . "',
                                             
                                             grand_total		            = '" . $grand_total . "',
                                             
-                                            publish 					= '" . $publish . "'
+                                            is_active 					= '" . $publish . "'
                                         WHERE id=$id");
 
         if ($update_row) {
@@ -215,12 +215,12 @@ if ($action == "update_$module" && !empty($id)) {
 
                         $update_row = $mysqli->query("UPDATE `" . DB::SHIPPING_INVOICE_ITEMS . "` SET 
                                                             description     = '" . $item_description . "',
-                                                            coo             = '" . $item_coo . "',
+                                                            origin          = '" . $item_coo . "',
                                                             declaration_no  = '" . $item_declaration_no . "',
-                                                            hscode          = '" . $item_hscode . "',
+                                                            hs_code         = '" . $item_hscode . "',
                                                             qty             = '" . $item_qty . "',
-                                                            rate            = '" . $item_rate . "',
-                                                            total           = '" . $item_total . "' 
+                                                            unit_price      = '" . $item_rate . "',
+                                                            total_amount    = '" . $item_total . "' 
                                                         WHERE id=$item_id");
 
                         if ($update_row) $updated_row++;
@@ -229,7 +229,7 @@ if ($action == "update_$module" && !empty($id)) {
                         // Process New Shipping Invoice Items
                     } else if (empty($item_id) && !empty($item_description) && !empty($item_coo) && !empty($item_declaration_no) && !empty($item_hscode) && !empty($item_qty) && !empty($item_rate) && !empty($item_total)) {
 
-                        $insert_row = $mysqli->query("INSERT INTO `" . DB::SHIPPING_INVOICE_ITEMS . "`(invoice_id, description, coo, declaration_no, hscode, qty, rate, total) VALUES ('" . $invoice_id . "', '" . $item_description . "', '" . $item_coo . "', '" . $item_declaration_no . "', '" . $item_hscode . "', '" . $item_qty . "', '" . $item_rate . "', '" . $item_total . "'); ");
+$insert_row = $mysqli->query("INSERT INTO `" . DB::SHIPPING_INVOICE_ITEMS . "`(shipping_invoice_id, description, origin, declaration_no, hs_code, qty, unit_price, total_amount) VALUES ('" . $invoice_id . "', '" . $item_description . "', '" . $item_coo . "', '" . $item_declaration_no . "', '" . $item_hscode . "', '" . $item_qty . "', '" . $item_rate . "', '" . $item_total . "'); ");
 
                         if ($insert_row) $inserted_row++;
                         fp__(DB::SHIPPING_INVOICE_ITEMS, $mysqli->insert_id);
@@ -353,7 +353,7 @@ if ($action == "update_$module" && !empty($id)) {
                         // ======================================================
 
 
-                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(customer_id, invoice_status, invoice_date, invoice_no, warehouse_id, weight, awb, pkgs, grand_total, publish) VALUES ('" . $customer_id . "', '" . $invoice_status . "',  '" . $invoice_date . "', '" . $invoice_no . "', '" . $warehouse_id . "',  '" . $weight . "',  '" . $awb . "',  '" . $pkgs . "', '" . $grand_total . "', '" . $publish . "'); ");
+                        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(customer_id, invoice_status, invoice_date, invoice_no, warehouse_id, gross_weight, master_awb_no, no_of_packs, grand_total, is_active) VALUES ('" . $customer_id . "', '" . $invoice_status . "',  '" . $invoice_date . "', '" . $invoice_no . "', '" . $warehouse_id . "',  '" . $weight . "',  '" . $awb . "',  '" . $pkgs . "', '" . $grand_total . "', '" . $publish . "'); ");
 
                         $id = $mysqli->insert_id;
                         // if ($insert_row) {
@@ -375,7 +375,7 @@ if ($action == "update_$module" && !empty($id)) {
                     $item_total             = (($item_total == '') ? 0 : $item_total);
 
 
-                    $insert_row = $mysqli->query("INSERT INTO `" . DB::SHIPPING_INVOICE_ITEMS . "`(invoice_id, description, coo, declaration_no, hscode, qty, rate, total) VALUES ('" . $invoice_id . "', '" . $item_description . "', '" . $item_coo . "', '" . $item_declaration_no . "', '" . $item_hscode . "', '" . $item_qty . "', '" . $item_rate . "', '" . $item_total . "'); ");
+                    $insert_row = $mysqli->query("INSERT INTO `" . DB::SHIPPING_INVOICE_ITEMS . "`(shipping_invoice_id, description, origin, declaration_no, hs_code, qty, unit_price, total_amount) VALUES ('" . $invoice_id . "', '" . $item_description . "', '" . $item_coo . "', '" . $item_declaration_no . "', '" . $item_hscode . "', '" . $item_qty . "', '" . $item_rate . "', '" . $item_total . "'); ");
 
                     if ($insert_row) $inserted_row++;
 
@@ -433,12 +433,12 @@ if (
 
     $grand_total                = s__($row['grand_total'] ?? '');
 
-    $publish                = s__($row['publish'] ?? 0);
+    $publish                = s__($row['is_active'] ?? 0);
 
     $invoice_date = processDateYtoD($invoice_date);
 
     // ------------------ TOTAL SHIPPING INVOICE ITEMS ------------------
-    $result_shipping_invoice_items     = $mysqli->query("SELECT * FROM `" . DB::SHIPPING_INVOICE_ITEMS . "` WHERE invoice_id=$id");
+    $result_shipping_invoice_items     = $mysqli->query("SELECT * FROM `" . DB::SHIPPING_INVOICE_ITEMS . "` WHERE shipping_invoice_id=$id");
     $total_rows                 = $result_shipping_invoice_items->num_rows;
 
 
@@ -447,12 +447,12 @@ if (
 
             array_push($item_id_arr,                $row_shipping_invoice_items['id']);
             array_push($description_arr,            $row_shipping_invoice_items['description']);
-            array_push($coo_arr,                    $row_shipping_invoice_items['coo']);
+            array_push($coo_arr,                    $row_shipping_invoice_items['origin']);
             array_push($declaration_no_arr,         $row_shipping_invoice_items['declaration_no']);
-            array_push($hscode_arr,                 $row_shipping_invoice_items['hscode']);
+            array_push($hscode_arr,                 $row_shipping_invoice_items['hs_code']);
             array_push($qty_arr,                    $row_shipping_invoice_items['qty']);
-            array_push($rate_arr,                   $row_shipping_invoice_items['rate']);
-            array_push($total_arr,                  $row_shipping_invoice_items['total']);
+            array_push($rate_arr,                   $row_shipping_invoice_items['unit_price']);
+            array_push($total_arr,                  $row_shipping_invoice_items['total_amount']);
         }
     }
 }
@@ -472,62 +472,39 @@ if ($total_rows == 0) $total_rows = 1;
 
 <div class="content-wrapper">
 
-
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_<?php echo $module; ?>.php" class="breadcrumb-item">Invoices</a>
-                        <span class="breadcrumb-item active"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-3">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> <?php echo $module_caption; ?></h5>
                 <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Invoice #: <?php echo $invoice_no; ?></label>
-                        </div>
-                    </div>
+                    <span class="badge bg-light text-dark border fw-semibold">Invoice #: <?php echo $invoice_no; ?></span>
                 <?php } ?>
+                <strong><?php echo ((empty($invoice_status) ? 'Not Confirmed' : colorfulInvoiceStatus($invoice_status))); ?></strong>
+            </div>
 
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ((empty($invoice_status) ? 'Not Confirmed' : colorfulInvoiceStatus($invoice_status))); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-                        <button type="button" onclick=" this.form.submit();" class="btn btn-info my-1 me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save<?php } ?> <?php echo $module_caption; ?> and Exit</button>
-                        <button type="button" onclick="window.location.href='listing_<?php echo $module; ?>.php';"" class=" btn btn-outline-dark my-1 me-2">Exit</button>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save<?php } ?> <?php echo $module_caption; ?></button>
+                <?php } ?>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Exit</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
 
                 <div class="col-xl-12">
@@ -542,7 +519,7 @@ if ($total_rows == 0) $total_rows = 1;
                                     <?php
                                     // -------------------------------------------------------------------------------------------------
                                     $customer_details = '';
-                                    // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE publish=1 ORDER BY id DESC");
+                                    // $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE is_active=1 ORDER BY id DESC");
                                     $result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` ORDER BY id DESC");
                                     while ($rows = $result->fetch_array()) {
                                         $display_name           = $rows["display_name"];
@@ -574,7 +551,7 @@ if ($total_rows == 0) $total_rows = 1;
                                 <select name="warehouse_id" id="warehouse_id" class="form-select">
                                     <option value='0'>Please select</option>
                                     <?php
-                                    $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE publish=1");
+                                    $result = $mysqli->query("SELECT * FROM `" . DB::WAREHOUSES  . "` WHERE is_active=1");
                                     while ($rows = $result->fetch_array()) {
                                         $warehouse_name = $rows["warehouse_name"];
                                     ?>
@@ -681,12 +658,12 @@ if ($total_rows == 0) $total_rows = 1;
                                                             <select class="form-select" name="coo[]" id="coo<?php echo $shipping_invoice_item; ?>">
                                                                 <option value="0">Please select</option>
                                                                 <?php
-                                                                $result = $mysqli->query("SELECT * FROM `" . DB::GEO_COUNTRIES . "` WHERE publish=1 ORDER BY country_name");
+                                                                $result = $mysqli->query("SELECT * FROM `" . DB::GEO_COUNTRIES . "` WHERE is_active=1 ORDER BY country");
                                                                 while ($rows = $result->fetch_array()) {
                                                                     $country_id = $rows['id'];
                                                                 ?>
                                                                     <option value="<?php echo $country_id; ?>" <?php echo ((!empty($coo_arr[$index]) && $coo_arr[$index] == $country_id) ? 'selected="selected"' : ''); ?>>
-                                                                        <?php echo $rows['alpha2_code']; ?> - <?php echo $rows['country_name']; ?>
+                                                                        <?php echo $rows['abbr']; ?> - <?php echo $rows['country']; ?>
                                                                     </option>
                                                                 <?php } ?>
                                                             </select>
@@ -752,6 +729,28 @@ if ($total_rows == 0) $total_rows = 1;
 
 
                                 <script>
+                                    const countriesList = [
+                                        <?php
+                                        $countriesRes = $mysqli->query("SELECT id, country, abbr FROM `" . DB::GEO_COUNTRIES . "` WHERE is_active=1 ORDER BY country");
+                                        while ($countriesRow = $countriesRes->fetch_assoc()) {
+                                            echo "{id: " . $countriesRow['id'] . ", name: '" . addslashes($countriesRow['country']) . "', abbr: '" . addslashes($countriesRow['abbr']) . "'},";
+                                        }
+                                        ?>
+                                    ];
+
+                                    function ajax_populate_coo() {
+                                        var total_rows = document.getElementById('total_rows').value;
+                                        var selectEl = document.getElementById('coo' + total_rows);
+                                        if (!selectEl) return;
+                                        selectEl.innerHTML = '<option value="0">Please select</option>';
+                                        countriesList.forEach(function(country) {
+                                            var opt = document.createElement('option');
+                                            opt.value = country.id;
+                                            opt.textContent = country.abbr + ' - ' + country.name;
+                                            selectEl.appendChild(opt);
+                                        });
+                                    }
+
                                     function add_item_row() {
                                         var div_add_here = document.getElementById('div_add_here');
                                         var total_rows = document.getElementById('total_rows').value;
@@ -956,15 +955,14 @@ if ($total_rows == 0) $total_rows = 1;
 
 
 
-                    </div>
-                </div>
-
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
+                    </form>
         </div>
-    </form>
+
+
+    </div>
+</div>
+<?php include('admin_elements/copyright.php'); ?>
+</div>
 </div>
 
 

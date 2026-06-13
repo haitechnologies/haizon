@@ -162,50 +162,39 @@ $photo = getTableAttr('photo', $tbl_name, $id);
 
 <div class="content-wrapper">
 
-	<form method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="profile.php" autocomplete="off" enctype="multipart/form-data" novalidate>
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
+            </div>
+
+            <div class="my-1 d-inline-flex align-items-center me-2">
+                <div class="form-check form-check-inline form-switch mb-0">
+                    <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?> form="frmusers">
+                    <label class="form-check-label" for="is_active">Active</label>
+                </div>
+            </div>
+            <div class="my-1">
+                <button type="submit" form="frmusers" class="btn btn-primary btn-sm me-2">Save</button>
+                <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
+
+    <div class="content-inner">
+        <div class="content">
+
+            <?php include('admin_elements/breadcrumb.php'); ?>
+
+            <form method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="profile.php" autocomplete="off" enctype="multipart/form-data" novalidate>
 		<input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
 		<input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
 		<?php echo csrf_field(); ?>
 
 		<!-- Page header -->
-		<div class="page-header page-header-light shadow">
-			<div class="page-header-content d-lg-flex border-top">
-				<div class="d-flex">
-					<div class="breadcrumb py-2">
-						<a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-						<a href="index.php" class="breadcrumb-item">Home</a>
-						<a class="breadcrumb-item">Profile</a>
-						<span class="breadcrumb-item active">Update </span>
-					</div>
 
-					<a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-						<i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-					</a>
-				</div>
-
-				<!-- <div class="p-3 rounded">
-					<div class="form-check form-check-inline form-switch">
-						<input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?>>
-						<label class="form-check-label" for="sc_r_success">Is Active?</label>
-					</div>
-				</div> -->
-
-				<div class="collapse d-lg-block ms-lg-auto" id="breadcrumb_elements">
-					<div class="d-lg-flex mb-2 mb-lg-0">
-						<a href="mfa_settings.php" class="btn btn-outline-primary my-1 me-2">2FA Security</a>
-						<button type="submit" class="btn btn-info my-1 me-2">Update <?php echo $module_caption; ?> </button>
-						<!-- <button type="button" onclick="window.location.href='listing_<?php echo $module; ?>.php';"" class=" btn btn-outline-primary my-1 me-2">Exit</button> -->
-					</div>
-				</div>
-
-			</div>
-		</div>
-		<!-- /page header -->
-
-		<div class="content-inner">
-			<div class="content">
-
-				<?php include('admin_elements/breadcrumb.php'); ?>
 
 				<div class="row">
 					<div class="col-lg-8">

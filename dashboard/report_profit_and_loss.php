@@ -6,7 +6,7 @@ include('admin_elements/admin_header.php');
 
 $module = 'profit_and_loss';
 $module_caption = 'Profit & Loss';
-$tbl_name = DB::PROFIT_AND_LOSS;
+$tbl_name = DB::JOURNALS; // Reports use journal data, no dedicated table needed
 $error_message = '';
 $success_message = '';
 
@@ -184,9 +184,7 @@ if (!empty($accounts_report_subcategory_id)) {
 <div class="content-wrapper">
 
     <!-- Page header -->
-    <div class="card">
-
-        <div class="page-header">
+    <div class="page-header page-header-light shadow carriers-page-header">
             <div class="page-header-content">
 
                 <div class="row mt-2">
@@ -221,7 +219,7 @@ if (!empty($accounts_report_subcategory_id)) {
                 }
             </script>
 
-            <div class="page-header-content border-top">
+            <div class="page-header-content border-top carriers-page-header-content">
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -302,8 +300,7 @@ if (!empty($accounts_report_subcategory_id)) {
                 </div>
 
             </div>
-        </div>
-    </div>
+</div>
     <!-- /page header -->
 
 

@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             if ($settingExists) {
                 $saveResult = $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='" . $escapedFilename . "', updated_at=NOW(), updated_by='" . (int)$session_user_id . "' WHERE setting_slug='" . $escapedSlug . "'");
             } else {
-                $saveResult = $mysqli->query("INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, publish, created_by, updated_by, created_at, updated_at) VALUES ('" . $escapedSlug . "', 'Master Sitemap Filename', '" . $escapedFilename . "', 'Custom filename used for the primary sitemap endpoint', 1, '" . (int)$session_user_id . "', '" . (int)$session_user_id . "', NOW(), NOW())");
+                $saveResult = $mysqli->query("INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) VALUES ('" . $escapedSlug . "', 'Master Sitemap Filename', '" . $escapedFilename . "', 'Custom filename used for the primary sitemap endpoint', 1, '" . (int)$session_user_id . "', '" . (int)$session_user_id . "', NOW(), NOW())");
             }
 
             if ($saveResult) {
@@ -142,7 +142,30 @@ unset($file);
 ?>
 
 <div class="content-wrapper">
-    <?php include('admin_elements/page_header.php'); ?>
+        <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1">
+                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
+                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo ucwords(str_ireplace('_', " ", $module)); ?></a>
+                    <?php if (!empty($pageHelpData)): ?>
+                        <button type="button" class="page-help-trigger-btn" data-bs-toggle="offcanvas" data-bs-target="#pageHelpPanel" title="How to use this page" aria-label="Page help">
+                            <i class="ph-question"></i>
+                        </button>
+                    <?php endif; ?>
+                </h1>
+            </div>
+
+            <div class="my-1">
+                <?php if (empty($hide_add_button) && isset($module_id) && isset($module) && granted('create', $module_id)) { ?>
+                    <a href="<?php echo $module; ?>.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
+                        <i class="ph-plus ph-sm me-2 opacity-75"></i>New
+                    </a>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+    <!-- /page header -->
 
     <div class="content">
         <?php include('admin_elements/breadcrumb.php'); ?>

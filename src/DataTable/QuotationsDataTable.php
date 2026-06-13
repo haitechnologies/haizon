@@ -32,6 +32,7 @@ class QuotationsDataTable extends BaseDataTable
 
     protected function formatRow($row, $requestData = [])
     {
+        $id         = (int)($row['id'] ?? 0);
         $date       = (string)($row['quotation_date'] ?? '');
         $no         = (string)($row['quotation_no'] ?? '');
         $jobRef     = (string)($row['job_reference_no'] ?? '');
@@ -47,6 +48,7 @@ class QuotationsDataTable extends BaseDataTable
             htmlspecialchars($custName),
             $statusBadge,
             htmlspecialchars(number_format((float)$total, 2)),
+            $id,
         ];
     }
 }

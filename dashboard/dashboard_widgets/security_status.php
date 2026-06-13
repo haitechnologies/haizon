@@ -9,6 +9,8 @@
  * @date February 27, 2026
  */
 
+use App\Security\RateLimiter;
+
 // Ensure dependencies are loaded
 if (!function_exists('granted_')) {
     return; // Skip if admin context not loaded

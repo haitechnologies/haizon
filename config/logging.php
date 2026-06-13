@@ -14,7 +14,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 // Create logger instance (global)
 if (!isset($GLOBALS['frontendLogger'])) {
-    $GLOBALS['frontendLogger'] = new FrontendErrorLogger(
+    $GLOBALS['frontendLogger'] = new \App\Frontend\FrontendErrorLogger(
         __DIR__ . '/../logs/FRONTEND_ERROR_LOG.txt',
         $isProduction ? 'production' : 'development'
     );

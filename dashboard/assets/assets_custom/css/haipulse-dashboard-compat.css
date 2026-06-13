@@ -140,3 +140,31 @@ textarea:focus {
         width: 100%;
     }
 }
+
+/* Custom classes for Carriers page headers */
+.carriers-page-header {
+    width: 100% !important;
+    display: block !important;
+}
+
+.carriers-page-header-content {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+}
+
+.carriers-page-header-content .btn {
+    width: auto !important;
+    white-space: nowrap !important;
+}
+
+.carriers-page-header-content h5.mb-0 {
+    margin: 0 !important;
+}
+
+.carriers-page-header-content a.text-dark {
+    text-decoration: none !important;
+}

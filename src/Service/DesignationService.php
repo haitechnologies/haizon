@@ -66,6 +66,7 @@ class DesignationService
             organizationId: $organizationId,
             designation: $name,
             publish: true,
+            isActive: true,
             createdBy: $createdBy
         );
 
@@ -100,6 +101,7 @@ class DesignationService
             organizationId: $designation->organizationId,
             designation: $name,
             publish: $publish,
+            isActive: $publish,
             createdAt: $designation->createdAt,
             updatedAt: null,
             createdBy: $designation->createdBy

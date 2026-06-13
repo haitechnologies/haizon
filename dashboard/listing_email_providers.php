@@ -77,7 +77,7 @@ $ep_remaining_today = max(0, $ep_total_daily_limit - $ep_sent_today);
 
     <!-- Page header -->
     <div class="page-header page-header-light shadow-sm mb-2">
-        <div class="page-header-content d-flex py-2">
+        <div class="page-header-content d-flex py-2 carriers-page-header-content">
             <div class="page-title">
                 <h4><i class="ph-envelope-simple me-2"></i><span class="fw-semibold"><?php echo $module_caption; ?></span></h4>
             </div>

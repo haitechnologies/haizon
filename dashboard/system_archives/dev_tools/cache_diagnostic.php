@@ -128,7 +128,7 @@
             <h4>âœ… Method 3: Incognito/Private Mode (NUCLEAR OPTION)</h4>
             <ol>
                 <li>Press <code>Ctrl + Shift + N</code> (Chrome) or <code>Ctrl + Shift + P</code> (Firefox)</li>
-                <li>Visit: <code>https://127.0.0.1/haipulse/dashboard/listing_searches.php</code></li>
+                <li>Visit: <code>https://127.0.0.1/haizon/dashboard/listing_searches.php</code></li>
                 <li>If it works, your normal browser cache is the problem</li>
             </ol>
         </div>

@@ -15,13 +15,13 @@ use App\Helper\ActionButtonHelper;
 class HSCodesDataTable extends BaseDataTable
 {
     protected $table = DB::HS_CODES;
-    protected $searchFields = ['h.code', 'h.old_code', 'te.long_desc', 'te.short_desc', 'ta.long_desc', 'ta.short_desc'];
+    protected $searchFields = ['h.code', 'h.old_code', 'te.description', 'ta.description'];
     protected $sortableColumns = [
         0 => 'h.id',            // ID
         1 => 'h.code',          // HS CODE
         2 => 'h.old_code',      // OLD CODE
-        3 => 'te.long_desc',    // DESCRIPTION (EN)
-        4 => 'ta.long_desc',    // DESCRIPTION (AR)
+        3 => 'te.description',  // DESCRIPTION (EN)
+        4 => 'ta.description',  // DESCRIPTION (AR)
         5 => 'h.level',         // LEVEL
         6 => 'h.views',         // VIEWS
         7 => 'h.duty_rate'      // DUTY %
@@ -34,8 +34,8 @@ class HSCodesDataTable extends BaseDataTable
 
         if ($this->hasTextTable()) {
             return "SELECT h.id, h.code, h.old_code, 
-                      IFNULL(te.long_desc, '') as desc_en, IFNULL(te.short_desc, '') as short_en,
-                      IFNULL(ta.long_desc, '') as desc_ar, IFNULL(ta.short_desc, '') as short_ar,
+                      IFNULL(te.description, '') as desc_en, '' as short_en,
+                      IFNULL(ta.description, '') as desc_ar, '' as short_ar,
                       h.level, h.views, h.duty_rate, h.is_active
                   FROM `" . $this->table . "` h
                   LEFT JOIN " . DB::HS_CODE_TEXTS . " te ON h.id = te.hs_code_id AND te.lang = 'en'
@@ -61,8 +61,8 @@ class HSCodesDataTable extends BaseDataTable
         $this->params['search_val'] = '%' . $searchValue . '%';
         if ($this->hasTextTable()) {
             return "AND (h.code LIKE :search_val OR h.old_code LIKE :search_val 
-                    OR te.long_desc LIKE :search_val OR te.short_desc LIKE :search_val
-                    OR ta.long_desc LIKE :search_val OR ta.short_desc LIKE :search_val)";
+                    OR te.description LIKE :search_val
+                    OR ta.description LIKE :search_val)";
         }
 
         return "AND (h.code LIKE :search_val OR h.old_code LIKE :search_val)";

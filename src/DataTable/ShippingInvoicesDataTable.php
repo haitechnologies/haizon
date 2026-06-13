@@ -54,11 +54,11 @@ class ShippingInvoicesDataTable extends BaseDataTable
         $placeholdersStr = implode(',', $placeholders);
 
         $this->relatedDataCache['customers'] = [];
-        $query = "SELECT id, customer_name FROM `" . DB::SHIPPING_CUSTOMERS . "` WHERE id IN ({$placeholdersStr})";
+        $query = "SELECT id, display_name FROM `" . DB::CUSTOMERS . "` WHERE entity_type = 'shipping' AND id IN ({$placeholdersStr})";
         try {
             $custRows = $this->db->fetchAll($query, $params);
             foreach ($custRows as $cRow) {
-                $this->relatedDataCache['customers'][(int)$cRow['id']] = (string)($cRow['customer_name'] ?? '');
+                $this->relatedDataCache['customers'][(int)$cRow['id']] = (string)($cRow['display_name'] ?? '');
             }
         } catch (\Throwable $e) {
             error_log("ShippingInvoicesDataTable::prepareRelatedData error: " . $e->getMessage());
@@ -98,7 +98,7 @@ class ShippingInvoicesDataTable extends BaseDataTable
             htmlspecialchars($packs),
             htmlspecialchars($weight),
             htmlspecialchars($awb),
-            htmlspecialchars($timeAgoStr),
+            $timeAgoStr,
             $statusBadge,
             '-',
             $this->getActionButtons($id, 'shipping_invoices'),
@@ -121,9 +121,6 @@ class ShippingInvoicesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (function_exists('granted_') && granted_('edit', $module)) {
-            $actions .= '<a href="view_shipping_invoice.php?id=' . (int)$id . '" title="View"><span class="text-dark opacity-75"><i class="ph-eye"></i></span></a> ';
-        }
         if (function_exists('granted_') && granted_('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton((int)$id, $module);
         }

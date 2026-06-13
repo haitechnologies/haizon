@@ -113,7 +113,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                     $item_out_qty       = (($item_out_qty == '') ? 0 : $item_out_qty);
 
                     /* ---------------------- QUERY ---------------------- */
-                    $mysqli->query("UPDATE `" . tbl_shipping_stock_items . "` SET out_qty = '" . $item_out_qty . "' WHERE stock_id=$stock_id AND shipping_advice_item_id=$item_id");
+                    $mysqli->query("UPDATE `" . DB::SHIPPING_STOCK_ITEMS . "` SET out_qty = '" . $item_out_qty . "' WHERE stock_id=$stock_id AND shipping_advice_item_id=$item_id");
                     // ---------------------------------------------
                 }
             } //for 
@@ -172,7 +172,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                     // -- SAVE STOCK
                     $item_out_qty       = (($item_out_qty == '') ? 0 : $item_out_qty);
 
-                    $insert_row = $mysqli->query("INSERT INTO `" . tbl_shipping_stock_items . "`(stock_id, shipping_advice_item_id, out_qty) VALUES ('" . $stock_id . "', '" . $item_id . "', '" . $item_out_qty . "'); ");
+                    $insert_row = $mysqli->query("INSERT INTO `" . DB::SHIPPING_STOCK_ITEMS . "`(stock_id, shipping_advice_item_id, out_qty) VALUES ('" . $stock_id . "', '" . $item_id . "', '" . $item_out_qty . "'); ");
                     // ---------------------------------------------
                 }
             } //for 
@@ -213,7 +213,7 @@ if (
     $incoterm                   = s__($row['incoterm']);
 
     // id_list from DB
-    $result = $mysqli->query("SELECT shipping_advice_item_id FROM `" . tbl_shipping_stock_items . "` WHERE stock_id=$id");
+    $result = $mysqli->query("SELECT shipping_advice_item_id FROM `" . DB::SHIPPING_STOCK_ITEMS . "` WHERE stock_id=$id");
     while ($row    = $result->fetch_array()) {
         $id_list    .= $row['shipping_advice_item_id'] . ',';
     }
@@ -231,67 +231,42 @@ if (
 
 <div class="content-wrapper">
 
-    <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <input type="hidden" name="id_list" id="id_list" value="<?php echo $id_list; ?>" />
-
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_shipping_stocks" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_shipping_stocks" />
-        <?php } ?>
-
-        <!-- Page header -->
-        <div class="page-header page-header-light shadow">
-            <div class="page-header-content d-lg-flex border-top">
-                <div class="d-flex">
-                    <div class="breadcrumb py-2">
-                        <a href="index.php" class="breadcrumb-item"><i class="ph-house"></i></a>
-                        <a href="index.php" class="breadcrumb-item">Home</a>
-                        <a href="listing_<?php echo $module; ?>.php" class="breadcrumb-item">Shipping Stock</a>
-                        <span class="breadcrumb-item active"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> </span>
-                    </div>
-
-                    <a href="#breadcrumb_elements" class="btn btn-light align-self-center collapsed d-lg-none border-transparent rounded-pill p-0 ms-auto" data-bs-toggle="collapse">
-                        <i class="ph-caret-down collapsible-indicator ph-sm m-1"></i>
-                    </a>
-                </div>
-
-
+    <!-- Page header -->
+    <div class="page-header page-header-light shadow carriers-page-header">
+        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
+            <div class="my-1 d-flex align-items-center gap-3">
+                <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Create<?php } ?> <?php echo $module_caption; ?></h5>
                 <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-                    <div class="p-3 rounded">
-                        <div class="form-check form-check-inline form-switch">
-                            <label class="form-check-label fw-semibold" for="sc_r_success">Stock Invoice # <?php echo $id; ?></label>
-                        </div>
-                    </div>
+                    <span class="badge bg-light text-dark border fw-semibold">Stock Invoice #: <?php echo $id; ?></span>
                 <?php } ?>
+                <?php if (!empty($quotation_status)) { ?>
+                    <span class="badge bg-secondary-subtle text-secondary fw-semibold"><strong><?php echo ucwords($quotation_status); ?></strong></span>
+                <?php } ?>
+            </div>
 
-                <div class="p-3 rounded">
-                    <div class="form-check form-check-inline form-switch">
-                        <label class="form-check-label" for="sc_r_success"> <strong><?php echo ((!empty($quotation_status)) ? ucwords($quotation_status) : ''); ?></strong></label>
-                    </div>
-                </div>
-
-                <div class="collapse d-lg-block ms-lg-auto mt-1" id="breadcrumb_elements">
-                    <div class="d-lg-flex mb-2 mb-lg-0">
-
-                        <button type="button" onclick=" this.form.submit();" class="btn btn-primary my-1 me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save<?php } ?> </button>
-
-                        <a href="listing_shipping_advice_items.php" class="btn btn-light btn-outline-light my-1 me-2">
-                            Cancel
-                        </a>
-                    </div>
-                </div>
-
+            <div class="my-1">
+                <?php if (isset($module_id) && granted('create', $module_id)) { ?>
+                    <button type="submit" form="frm<?php echo $module; ?>" class="btn btn-primary btn-sm me-2"><?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>Update<?php } else { ?>Save<?php } ?></button>
+                <?php } ?>
+                <a href="listing_shipping_advice_items.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
-        <!-- /page header -->
+    </div>
+    <!-- /page header -->
 
+    <div class="content-inner">
+        <div class="content">
 
-        <div class="content-inner">
-            <div class="content">
+            <?php include('admin_elements/breadcrumb.php'); ?>
 
-                <?php include('admin_elements/breadcrumb.php'); ?>
+            <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
+                <input type="hidden" name="id_list" id="id_list" value="<?php echo $id_list; ?>" />
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_shipping_stocks" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_shipping_stocks" />
+                <?php } ?>
 
                 <div class="col-xl-12">
                     <div class="row">
@@ -332,7 +307,7 @@ if (
                                             <select name="consignee_id" id="consignee_id" class="form-select">
                                                 <option value='0'></option>
                                                 <?php
-                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE publish=1 ORDER BY consignee_name ASC");
+                                                $result = $mysqli->query("SELECT * FROM `" . DB::CONSIGNEES  . "` WHERE is_active=1 ORDER BY consignee_name ASC");
                                                 while ($rows = $result->fetch_array()) {
                                                     $consignee_name = $rows["consignee_name"];
                                                 ?>
@@ -415,12 +390,12 @@ if (
                                                                     <option value="0"></option>
                                                                     <?php
                                                                     // -------------------------------------------------------------------------------------------------
-                                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                                     while ($rows = $result->fetch_array()) {
                                                                         // -------------------------------------------------------------------------------------------------
                                                                     ?>
                                                                         <option value="<?php echo $rows['id']; ?>">
-                                                                            <?php echo $rows['country_name']; ?>
+                                                                            <?php echo $rows['country']; ?>
                                                                         </option>
                                                                     <?php } ?>
                                                                 </select>
@@ -519,9 +494,9 @@ if (
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
                                                 if (!empty($destination_country)) {
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE publish=1 AND country_id=$destination_country ORDER BY port_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE is_active=1 AND country_id=$destination_country ORDER BY port_name");
                                                 } else {
-                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE publish=1 ORDER BY port_name");
+                                                    $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "ports` WHERE is_active=1 ORDER BY port_name");
                                                 }
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
@@ -539,12 +514,12 @@ if (
                                                 <option value="0"></option>
                                                 <?php
                                                 // -------------------------------------------------------------------------------------------------
-                                                $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE publish=1 ORDER BY country_name");
+                                                $result = $mysqli->query("SELECT * FROM `" . $tbl_prefix . "geo_countries` WHERE is_active=1 ORDER BY country");
                                                 while ($rows = $result->fetch_array()) {
                                                     // -------------------------------------------------------------------------------------------------
                                                 ?>
                                                     <option value="<?php echo $rows['id']; ?>" <?php if ($action == "edit_$module" && $rows['id'] == $destination_country) { ?>selected <?php } else if ($rows['id'] == $destination_country) { ?>selected <?php } ?>>
-                                                        <?php echo $rows['country_name']; ?>
+                                                        <?php echo $rows['country']; ?>
                                                     </option>
                                                 <?php } ?>
                                             </select>
@@ -635,7 +610,7 @@ if (
                                                 $out_qty = '0';
 
                                                 if ($action == "edit_$module") {
-                                                    $rs         = $mysqli->query("SELECT out_qty FROM `" . tbl_shipping_stock_items . "` WHERE stock_id=$id AND shipping_advice_item_id=$shipping_advice_item_id");
+                                                    $rs         = $mysqli->query("SELECT out_qty FROM `" . DB::SHIPPING_STOCK_ITEMS . "` WHERE stock_id=$id AND shipping_advice_item_id=$shipping_advice_item_id");
                                                     $rw         = $rs->fetch_array();
                                                     $out_qty  = $rw['out_qty'];
                                                 }
@@ -653,7 +628,7 @@ if (
                                                         <?php
                                                         // Calculate Remaining QTY
                                                         $remaining_qty = 0;
-                                                        $rs         = $mysqli->query("SELECT sum(out_qty) FROM `" . tbl_shipping_stock_items . "` WHERE shipping_advice_item_id=$shipping_advice_item_id");
+                                                        $rs         = $mysqli->query("SELECT sum(out_qty) FROM `" . DB::SHIPPING_STOCK_ITEMS . "` WHERE shipping_advice_item_id=$shipping_advice_item_id");
                                                         $rw         = $rs->fetch_array();
                                                         // $out_qty    = $rw[0];
                                                         $remaining_qty = (($rw[0] > 0) ? $rw[0] : 0);
@@ -747,9 +722,12 @@ if (
         });
         </script>
 
+        </form>
+        </div>
+
+
         <?php include('admin_elements/copyright.php'); ?>
-</div>
-</form>
+    </div>
 </div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

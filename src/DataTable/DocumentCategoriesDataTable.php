@@ -12,7 +12,7 @@ class DocumentCategoriesDataTable extends BaseDataTable
 {
     protected $table = DB::DOCUMENT_CATEGORIES;
     protected $searchFields = ['document_category'];
-    protected $sortableColumns = [0 => 'id', 1 => 'document_category', 2 => 'document_category_type', 3 => 'created_at', 4 => 'publish', 5 => 'id'];
+    protected $sortableColumns = [0 => 'id', 1 => 'document_category', 2 => 'document_category_type', 3 => 'created_at', 4 => 'is_active', 5 => 'id'];
 
     protected function formatRow($row, $requestData = [])
     {
@@ -20,13 +20,13 @@ class DocumentCategoriesDataTable extends BaseDataTable
         $name    = (string)($row['document_category'] ?? '');
         $type    = (string)($row['document_category_type'] ?? '');
         $created = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
+        $publish = (int)($row['is_active'] ?? 0);
         $badge   = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
             $id,
             htmlspecialchars($name),
             htmlspecialchars($type),
-            htmlspecialchars(timeAgo($created)),
+            timeAgo($created),
             $badge,
             $this->getActionButtons($id, 'document_categories'),
         ];

@@ -27,7 +27,7 @@ class ShippingAdvicesDataTable extends BaseDataTable
         4 => 'awb_no',
         5 => 'license_no',
         6 => 'mirsal_II_code',
-        7 => 'publish',
+        7 => 'is_active',
         8 => 'id',
     ];
 
@@ -52,11 +52,11 @@ class ShippingAdvicesDataTable extends BaseDataTable
         $placeholdersStr = implode(',', $placeholders);
 
         $this->relatedDataCache['customers'] = [];
-        $query = "SELECT id, customer_name FROM `" . DB::SHIPPING_CUSTOMERS . "` WHERE id IN ({$placeholdersStr})";
+        $query = "SELECT id, display_name FROM `" . DB::CUSTOMERS . "` WHERE entity_type = 'shipping' AND id IN ({$placeholdersStr})";
         try {
             $custRows = $this->db->fetchAll($query, $params);
             foreach ($custRows as $cRow) {
-                $this->relatedDataCache['customers'][(int)$cRow['id']] = (string)($cRow['customer_name'] ?? '');
+                $this->relatedDataCache['customers'][(int)$cRow['id']] = (string)($cRow['display_name'] ?? '');
             }
         } catch (\Throwable $e) {
             error_log("ShippingAdvicesDataTable::prepareRelatedData error: " . $e->getMessage());
@@ -72,7 +72,7 @@ class ShippingAdvicesDataTable extends BaseDataTable
         $awbNo = (string)($row['awb_no'] ?? '');
         $licenseNo = (string)($row['license_no'] ?? '');
         $mirsalCode = (string)($row['mirsal_II_code'] ?? '');
-        $publish = (int)($row['publish'] ?? 0);
+        $publish = (int)($row['is_active'] ?? 0);
 
         $customerName = $this->relatedDataCache['customers'][$customerId] ?? ('Customer #' . $customerId);
         $statusBadge = ($publish === 1) ? BadgeHelper::success('Published') : BadgeHelper::warning('Draft');
@@ -106,9 +106,6 @@ class ShippingAdvicesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (function_exists('granted_') && granted_('edit', $module)) {
-            $actions .= '<a href="view_shipping_advice.php?id=' . (int)$id . '" title="View"><span class="text-dark opacity-75"><i class="ph-eye"></i></span></a> ';
-        }
         if (function_exists('granted_') && granted_('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton((int)$id, $module);
         }
