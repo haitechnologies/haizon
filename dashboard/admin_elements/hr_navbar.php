@@ -13,7 +13,7 @@ $hrGroups = [
         'files' => ['dashboard_hr.php'],
     ],
     'users' => [
-        'label' => 'Users / Employees',
+        'label' => 'Employees',
         'icon' => 'ph-user',
         'link' => 'listing_users.php',
         'files' => ['listing_users.php', 'users.php'],
