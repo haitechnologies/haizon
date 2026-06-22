@@ -18,15 +18,17 @@ $hrGroups = [
         'link' => 'listing_users.php',
         'files' => ['listing_users.php', 'users.php'],
     ],
-    'organization' => [
-        'label' => 'Organization',
-        'icon' => 'ph-users-three',
+    'departments' => [
+        'label' => 'Departments',
+        'icon' => 'ph-buildings',
         'link' => 'listing_departments.php',
-        'files' => ['listing_departments.php', 'departments.php', 'listing_designations.php', 'designations.php'],
-        'children' => [
-            'listing_departments.php' => 'Departments',
-            'listing_designations.php' => 'Designations',
-        ],
+        'files' => ['listing_departments.php', 'departments.php'],
+    ],
+    'designations' => [
+        'label' => 'Designations',
+        'icon' => 'ph-briefcase',
+        'link' => 'listing_designations.php',
+        'files' => ['listing_designations.php', 'designations.php'],
     ],
     'attendance_leave' => [
         'label' => 'Attendance & Leave',
