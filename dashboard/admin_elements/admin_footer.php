@@ -523,6 +523,7 @@ foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
 </div>
 <!-- /alerts -->
 
+<?php if (Roles::currentUserHasFullAccess()): ?>
 <!-- Organizations -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="organizations" aria-labelledby="organizationsLabel">
   <div class="d-flex align-items-center p-3 border-bottom">
@@ -569,6 +570,7 @@ foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
   </div>
 </div>
 <!-- /organizations -->
+<?php endif; ?>
 
 
 <!-- Systems Panel -->

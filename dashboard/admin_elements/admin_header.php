@@ -1391,12 +1391,14 @@ if (!function_exists('renderEmailQuickbar')) {
 
 
 
+				<?php if (Roles::currentUserHasFullAccess()): ?>
 				<li class="nav-item ms-lg-2 position-relative">
 					<a href="#" class="navbar-nav-link rounded-pill d-inline-flex align-items-center" data-bs-toggle="offcanvas" data-bs-target="#organizations" title="Organizations">
 						<i class="ph-buildings me-1" aria-hidden="true"></i>
 						<span class="d-none d-xl-inline"><?php echo htmlspecialchars($activeOrganizationName !== '' ? $activeOrganizationName : 'Organizations', ENT_QUOTES, 'UTF-8'); ?></span>
 					</a>
 				</li>
+				<?php endif; ?>
 
 				<?php if (Roles::isSuperAdmin($session_role_id)): ?>
 					<li class="nav-item ms-lg-2 position-relative">
