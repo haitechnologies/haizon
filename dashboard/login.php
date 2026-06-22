@@ -55,10 +55,7 @@ if (isset($_GET['redirect_to']) && !empty($_GET['redirect_to'])) {
 }
 $storedRedirect = $_SESSION[$project_pre]['DASHBOARD']['redirect_to'] ?? '';
 
-// Generate CSRF token if not exists (use scoped session key matching globals.php)
-if (!isset($_SESSION[$project_pre]['DASHBOARD']['csrf_token'])) {
-    $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
-}
+csrf_token();
 
 // Get client IP address
 function get_client_ip()
@@ -155,10 +152,9 @@ if ($action == 'login' && empty($email)) {
     $email = ''; // Clear email on error
 } else if ($action == 'login' && empty($password)) {
     $message = 'Please enter your Password.';
-} else if ($action == 'login' && !empty($csrf_token) && $csrf_token !== $_SESSION[$project_pre]['DASHBOARD']['csrf_token']) {
+} else if ($action == 'login' && !validate_csrf_token($csrf_token)) {
     $message = 'Invalid security token. Please refresh the page and try again.';
     log_error('CSRF token mismatch on login attempt', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
-    $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
     $email = '';
 } else if ($action == 'login' && !empty($email) && !empty($password)) {
     $rateLimitEnabled = $isLiveServer;
@@ -346,7 +342,7 @@ $loginColors = getLoginPageColors();
                     <!-- Login form -->
                     <form class="login-form" id="form_login" action="login.php" method="post" autocomplete="off" style="width: 100%; max-width: 400px;">
                         <input type="hidden" name="action" id="action" value="login" />
-                        <input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo $_SESSION[$project_pre]['DASHBOARD']['csrf_token']; ?>" />
+                        <input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo csrf_token(); ?>" />
 
 
                         <?php

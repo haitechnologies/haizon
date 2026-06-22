@@ -75,6 +75,7 @@ class DatabaseSchemaInitializer
         self::createBackendLogCoverageTable($conn);
         self::createInquiryRepliesTable($conn);
         self::ensureUsersMfaColumns($conn);
+        self::ensureLeaveTypesPaidDaysColumn($conn);
     }
 
     /**
@@ -349,6 +350,59 @@ class DatabaseSchemaInitializer
                 } catch (PDOException $e) {
                     error_log("ERROR adding email_queue_id to inquiry replies: " . $e->getMessage());
                 }
+            }
+        }
+    }
+
+    /**
+     * Ensure leave_types table has paid_days column.
+     */
+    private static function ensureLeaveTypesPaidDaysColumn(mixed $conn): void
+    {
+        $tableName = self::tableName('LEAVE_TYPES', 'erp_leave_types');
+        $columnName = 'paid_days';
+        $alterSql = "ALTER TABLE `{$tableName}` ADD COLUMN `{$columnName}` INT DEFAULT 3 AFTER `paid`";
+
+        $colQuery = "SELECT 1 FROM information_schema.COLUMNS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                       AND TABLE_NAME = ?
+                       AND COLUMN_NAME = ?
+                     LIMIT 1";
+
+        $hasColumn = false;
+        if ($conn instanceof mysqli) {
+            $existsStmt = $conn->prepare($colQuery);
+            if ($existsStmt) {
+                $existsStmt->bind_param('ss', $tableName, $columnName);
+                if ($existsStmt->execute()) {
+                    $existsStmt->store_result();
+                    $hasColumn = $existsStmt->num_rows > 0;
+                }
+                $existsStmt->close();
+            }
+        } elseif ($conn instanceof PDO) {
+            try {
+                $existsStmt = $conn->prepare($colQuery);
+                $existsStmt->execute([$tableName, $columnName]);
+                $hasColumn = (bool) $existsStmt->fetch();
+            } catch (PDOException $e) {
+                error_log("ERROR checking {$columnName} on {$tableName}: " . $e->getMessage());
+            }
+        }
+
+        if ($hasColumn) {
+            return;
+        }
+
+        if ($conn instanceof mysqli) {
+            if (!$conn->query($alterSql)) {
+                error_log("ERROR adding {$columnName} to {$tableName}: " . $conn->error);
+            }
+        } elseif ($conn instanceof PDO) {
+            try {
+                $conn->exec($alterSql);
+            } catch (PDOException $e) {
+                error_log("ERROR adding {$columnName} to {$tableName}: " . $e->getMessage());
             }
         }
     }
