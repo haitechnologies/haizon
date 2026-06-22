@@ -36,6 +36,22 @@ require_once __DIR__ . '/constants.php';
 // ============================================
 if (!function_exists('isRemote')) {
     function isRemote() {
+        if (PHP_SAPI === 'cli') {
+            $env = strtolower((string)($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: ''));
+            if ($env === 'production' || $env === 'live') {
+                return true;
+            }
+            if ($env === 'development' || $env === 'local') {
+                return false;
+            }
+            $hostname = (string)gethostname();
+            foreach (['local', 'desktop', 'laptop'] as $keyword) {
+                if (str_contains($hostname, $keyword)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 		if (preg_match('/haizon.local/', $_SERVER['HTTP_HOST'] ?? '') || 
             preg_match('/localhost/', $_SERVER['HTTP_HOST'] ?? '') || 
             preg_match('/127.0.0.1/', $_SERVER['HTTP_HOST'] ?? '')) {

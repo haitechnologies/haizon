@@ -16,10 +16,6 @@ use App\Core\DB;
  * LOCK THE FILE after running (rename or delete).
  */
 
-// Force local DB detection when running from CLI
-if (PHP_SAPI === 'cli' && empty($_SERVER['HTTP_HOST'])) {
-    $_SERVER['HTTP_HOST'] = 'localhost';
-}
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/admin_elements/error_logger.php';
 
