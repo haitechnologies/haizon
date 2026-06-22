@@ -143,8 +143,8 @@ dashboard/audit_cleanup.php
 # ============================================================
 # USER-GENERATED CONTENT (not tracked in git)
 # ============================================================
-uploads/
-pdfs_invoices/
+# uploads/ and pdfs_invoices/ handled via local .gitignore files inside those directories
+# (track .htaccess/index.html/.gitignore for structure, ignore runtime content)
 
 # ============================================================
 # OS & EDITOR

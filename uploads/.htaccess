@@ -1,0 +1,23 @@
+# Security: Prevent PHP execution in uploads directory
+# This prevents attackers from uploading and executing malicious scripts
+
+# Block all PHP files
+<FilesMatch "\.(php|phtml|php3|php4|php5|php6|php7|php8|phps|pht|phar|shtml)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Allow safe file types
+<FilesMatch "\.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx|txt|zip|rar|pptx|mp3|mp4|mov|avi)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# Prevent .htaccess access
+<Files ".htaccess">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Default deny everything PHP-like
+AddType text/plain .php .phtml .php3 .php4 .php5 .php6 .php7 .phps .pht .phar
