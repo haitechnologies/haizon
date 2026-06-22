@@ -3,6 +3,7 @@
 
 use App\Core\DB;
 use App\Core\Session;
+use App\Security\TOTPAuthenticator;
 include('admin_elements/admin_header.php');
 // Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/TOTPAuthenticator.php';
 use Endroid\QrCode\QrCode;

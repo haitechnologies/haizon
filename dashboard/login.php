@@ -7,6 +7,7 @@ require_once __DIR__ . '/admin_elements/error_handler_init.php';
 use App\Core\DB;
 use App\Core\Session;
 use App\Security\RateLimiter;
+use App\Security\TOTPAuthenticator;
 
 require_once __DIR__ . '/../config/session.php';
 
