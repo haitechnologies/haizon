@@ -14,17 +14,7 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS: Only System Admin, Super Admin, and HR can view salary structures
-|--------------------------------------------------------------------------
-*/
-if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
-
-if (($action == "delete_$module" && !empty($id)) && (has_full_access() || is_accounts() || is_role() == 'hr')) {
+if (($action == "delete_$module" && !empty($id)) && has_full_access() || $module_id && granted('delete', $module_id)) {
     $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
     if ($mysqli->affected_rows > 0) {
         $success_message = "Item deleted successfully.";

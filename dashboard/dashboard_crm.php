@@ -4,22 +4,11 @@ use App\Core\DB;
 use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
-$module = 'statistics';
-$module_caption = 'Statistics';
+$module = 'leads';
+$module_caption = 'CRM Dashboard';
 $tbl_name = $tbl_prefix . $module;
 $error_message = '';
 $success_message = '';
-
-/*
-|--------------------------------------------------------------------------
-| PERMISSIONS
-|--------------------------------------------------------------------------
-|
-*/
-if (!has_full_access() && !has_any_role([Roles::SALES, Roles::OPERATIONS])) {
-	echo 'Permission Denied.';
-	exit();
-}
 
 include('admin_elements/permissions.php');
 

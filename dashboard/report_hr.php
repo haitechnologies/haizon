@@ -1,7 +1,7 @@
 <?php
 
 use App\Core\DB;
-$module = 'hr_reports';
+$module = 'report_hr';
 $module_caption = 'HR Reports';
 $error_message = '';
 $success_message = '';
@@ -10,16 +10,6 @@ include('admin_elements/admin_header.php');
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
-
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS: Only System Admin, Super Admin, and HR
-|--------------------------------------------------------------------------
-*/
-if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
 
 // Get headcount by department
 $dept_query = $mysqli->query("

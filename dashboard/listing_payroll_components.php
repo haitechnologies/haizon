@@ -13,17 +13,7 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS: Only System Admin, Super Admin, and HR can view payroll components
-|--------------------------------------------------------------------------
-*/
-if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
-
-if (($action == "delete_$module" && !empty($id)) && (has_full_access() || is_accounts() || is_role() == 'hr')) {
+if (($action == "delete_$module" && !empty($id)) && has_full_access() || $module_id && granted('delete', $module_id)) {
 
     // Check if component is being used in salary structures
     $usage_check = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALARY_STRUCTURES . "` WHERE component_id=$id");

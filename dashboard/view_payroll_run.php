@@ -9,16 +9,6 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS
-|--------------------------------------------------------------------------
-*/
-if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
-
 $payroll_run_id = intval($_GET['id'] ?? 0);
 
 if (empty($payroll_run_id)) {

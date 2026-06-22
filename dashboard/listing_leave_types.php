@@ -19,21 +19,11 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS: Only System Admin, Super Admin, and HR can view leave types
-|--------------------------------------------------------------------------
-*/
-if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
-
 $container = Container::getInstance();
 /** @var LeaveTypeService $leaveTypeService */
 $leaveTypeService = $container->get(LeaveTypeService::class);
 
-if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
+if (($action == "delete_$module" && !empty($id)) && is_SystemAdmin() || is_SuperAdmin() || $module_id && granted('delete', $module_id)) {
     try {
         $leaveTypeService->delete((int)$id, $activeOrganizationId);
         $success_message = "Leave type deleted successfully.";

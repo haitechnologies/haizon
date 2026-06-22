@@ -17,16 +17,6 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS: Only System Admin, Super Admin, and HR can view gratuity settlements
-|--------------------------------------------------------------------------
-*/
-if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
-
 $container = Container::getInstance();
 /** @var GratuitySettlementService $gratuityService */
 $gratuityService = $container->get(GratuitySettlementService::class);

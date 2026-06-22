@@ -20,11 +20,6 @@ $tbl_name = DB::USERS;
 $error_message = '';
 $success_message = '';
 
-if (!has_full_access()) {
-    echo 'Permission Denied.';
-    exit();
-}
-
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();

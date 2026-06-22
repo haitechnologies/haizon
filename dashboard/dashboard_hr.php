@@ -5,17 +5,11 @@ use App\Security\Roles;
 
 include('admin_elements/admin_header.php');
 
-$module = 'statistics';
+$module = 'report_hr';
 $module_caption = 'HR Dashboard';
 $tbl_name = $tbl_prefix . $module;
 $error_message = '';
 $success_message = '';
-
-$currentRoleName = strtolower(trim((string) Roles::getName(Roles::getCurrentRoleId())));
-if (!Roles::currentUserHasFullAccess() && $currentRoleName !== 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
 
 include('admin_elements/permissions.php');
 

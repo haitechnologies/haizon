@@ -4,23 +4,11 @@ use App\Core\DB;
 use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
-$module = 'statistics';
-$module_caption = 'Statistics';
+$module = 'accounts';
+$module_caption = 'Accounting Dashboard';
 $tbl_name = $tbl_prefix . $module;
 $error_message = '';
 $success_message = '';
-
-/*
-|--------------------------------------------------------------------------
-| PERMISSIONS
-|--------------------------------------------------------------------------
-|
-*/
-if (!Roles::currentUserHasFullAccess() && !Roles::currentUserHasRole(Roles::ACCOUNTS)) {
-	echo 'Permission Denied.';
-	exit();
-}
-
 
 include('admin_elements/permissions.php');
 

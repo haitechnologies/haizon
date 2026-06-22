@@ -13,17 +13,7 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
-/*
-|--------------------------------------------------------------------------
-| RESTRICT ACCESS: Only System Admin, Super Admin, and HR can view payroll runs
-|--------------------------------------------------------------------------
-*/
-if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
-    echo 'Permission Denied.';
-    exit();
-}
-
-if (($action == "delete_$module" && !empty($id)) && (has_full_access() || is_accounts() || is_role() == 'hr')) {
+if (($action == "delete_$module" && !empty($id)) && has_full_access() || $module_id && granted('delete', $module_id)) {
     // Delete associated payslips and payroll run items first
     $mysqli->query("DELETE FROM `" . DB::PAYSLIPS . "` WHERE payroll_run_id=$id");
     $mysqli->query("DELETE FROM `" . DB::table('payroll_run_items') . "` WHERE payroll_run_id=$id");
