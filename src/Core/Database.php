@@ -34,10 +34,10 @@ class Database
         ?string $password = null,
         string $charset = 'utf8mb4'
     ) {
-        $this->host = $host ?? $_ENV['DB_HOSTNAME'] ?? $GLOBALS['DB']['HOSTNAME'] ?? 'localhost';
-        $this->db = $db ?? $_ENV['DB_DATABASE'] ?? $GLOBALS['DB']['DATABASE'] ?? '';
-        $this->user = $user ?? $_ENV['DB_USERNAME'] ?? $GLOBALS['DB']['USERNAME'] ?? '';
-        $this->password = $password ?? $_ENV['DB_PASSWORD'] ?? $GLOBALS['DB']['PASSWORD'] ?? '';
+        $this->host = $host ?? $GLOBALS['DB']['HOSTNAME'] ?? $_ENV['DB_HOSTNAME'] ?? 'localhost';
+        $this->db = $db ?? $GLOBALS['DB']['DATABASE'] ?? $_ENV['DB_DATABASE'] ?? '';
+        $this->user = $user ?? $GLOBALS['DB']['USERNAME'] ?? $_ENV['DB_USERNAME'] ?? '';
+        $this->password = $password ?? $GLOBALS['DB']['PASSWORD'] ?? $_ENV['DB_PASSWORD'] ?? '';
         $this->charset = $charset;
     }
 
