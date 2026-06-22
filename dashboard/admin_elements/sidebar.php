@@ -82,6 +82,16 @@ if (!function_exists('hasModuleAccess')) {
 	}
 }
 
+if (!function_exists('hasAnyModuleAccess')) {
+    function hasAnyModuleAccess(array $modules): bool {
+        if (function_exists('has_full_access') && has_full_access()) return true;
+        foreach ($modules as $module) {
+            if (function_exists('hasModuleAccess') && hasModuleAccess($module)) return true;
+        }
+        return false;
+    }
+}
+
 /**
  * Render menu item
  */
@@ -415,10 +425,19 @@ $menuConfig = [
 // ============================================================================
 $sectionOrder = ['dashboard', 'projects_jobs', 'shipping', 'accounting', 'crm', 'hr', 'content'];
 $sectionSystemMap = [
+    'projects_jobs' => 'projects',
     'shipping' => 'shipping',
     'accounting' => 'accounting',
     'crm' => 'crm',
     'hr' => 'hr',
+];
+
+$sectionModuleMap = [
+    'projects_jobs' => ['projects', 'jobs', 'job_statuses'],
+    'shipping' => ['shipping_advices', 'shipping_invoices', 'shipping_stocks', 'shipping_customers', 'hscodes', 'ports', 'carriers', 'consignees', 'shippers'],
+    'accounting' => ['banks', 'customers', 'quotations', 'sale_orders', 'invoices', 'payments_received', 'credit_notes', 'vendors', 'expenses', 'purchase_orders', 'purchases', 'payments_made', 'debit_notes', 'journals', 'accounts'],
+    'crm' => ['leads', 'lead_quotations'],
+    'hr' => ['departments', 'designations', 'attendance', 'leave_requests', 'leave_types', 'annual_leave_entitlements', 'payroll_components', 'salary_structures', 'employee_salaries', 'payroll_runs', 'payslips', 'user_documents', 'air_tickets', 'gratuity_settlements', 'report_hr'],
 ];
 
 ?>
@@ -438,6 +457,10 @@ $sectionSystemMap = [
                         continue;
                     }
                     $section = $menuConfig[$sectionKey];
+                    $sectionModules = $sectionModuleMap[$sectionKey] ?? null;
+                    if ($sectionModules !== null && !hasAnyModuleAccess($sectionModules)) {
+                        continue;
+                    }
                     $visibleItems = array_filter($section['items'], function($item) {
                         return call_user_func($item['condition']);
                     });
