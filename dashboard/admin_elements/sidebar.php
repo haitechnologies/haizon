@@ -211,6 +211,13 @@ $menuConfig = [
                 'condition' => function() { return has_full_access() || hasModuleAccess('designations'); }
             ],
             [
+                'href' => 'listing_users.php',
+                'label' => 'Employees',
+                'icon' => 'ph-users',
+                'pages' => ['listing_users.php', 'users.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('users'); }
+            ],
+            [
                 'href' => '#hr-attendance-leave-submenu',
                 'label' => 'Attendance & Leave',
                 'icon' => 'ph-calendar-check',

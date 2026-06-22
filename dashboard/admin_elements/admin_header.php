@@ -511,7 +511,21 @@ $adminHeaderQuickAccessSections = array_values(array_filter($adminHeaderQuickAcc
 		return true;
 	}
 
-	return dashboardHasSystemAccess($mapped);
+	// Check subscription-level access
+	if (!dashboardHasSystemAccess($mapped)) {
+		return false;
+	}
+
+	// Check user has view permission for at least one module in this section
+	$links = $section['links'] ?? [];
+	foreach ($links as $link) {
+		$perm = $link['perm'] ?? null;
+		if ($perm && function_exists('granted_') && granted_('view', $perm)) {
+			return true;
+		}
+	}
+
+	return false;
 }));
 
 $systemsMegaSections = array_values(array_filter($adminHeaderQuickAccessSections, function ($section) {
