@@ -138,6 +138,7 @@ $password     = '';
 $otp_code    = '';
 $recovery_code = '';
 $csrf_token = '';
+$mfaChallengeTriggered = false; // tracks whether server actually challenged user for MFA
 
 if (isset($_POST['action'])     && !empty($_POST['action']))
     $action     =  e_s__($_POST['action']);
@@ -240,8 +241,9 @@ if ($action == 'login' && empty($email)) {
                 $mfaEnabled = !empty($row['mfa_totp_enabled']) && !empty($row['mfa_totp_secret']);
                 $mfaPassed = true;
 
-                // Enforce MFA only on live server. Local can still display MFA fields/details.
+                // Enforce MFA only on live server.
                 if ($isLiveServer && $mfaEnabled) {
+                    $mfaChallengeTriggered = true;
                     $mfaPassed = false;
                     $storedSecret = (string)$row['mfa_totp_secret'];
                     $totpSecret = TOTPAuthenticator::decryptSecret($storedSecret);
@@ -349,8 +351,8 @@ if ($action == 'login' && empty($email)) {
 |--------------------------------------------------------------------------|
 */
 
-// MFA challenge flag - hides MFA fields on initial load, shows them only when challenged
-$showMfaFields = in_array($message, [
+// MFA challenge flag - only shows MFA fields when server actually challenged user for MFA
+$showMfaFields = $mfaChallengeTriggered && in_array($message, [
     'Enter your authenticator code or a recovery code to continue.',
     'Invalid authenticator code.',
     'Invalid recovery code.',
