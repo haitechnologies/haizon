@@ -152,6 +152,12 @@ RedirectMatch 410 ^/(haipulse/)?pages/register_example\.php/?$
     RewriteCond %{REQUEST_URI} ^/(haipulse/)?(config|classes|vendor|migrations|cron|database)(/|$) [NC]
     RewriteRule ^ - [F,L]
 
+    # Block hidden dot-directories (.git, .vscode, .github, .context, .continue, etc.)
+    RewriteCond %{REQUEST_URI} ^/(haipulse/)?\.git(/|$) [NC]
+    RewriteRule ^ - [F,L]
+    RewriteCond %{REQUEST_URI} ^/(haipulse/)?\.(vscode|github|context|continue|opencode|private)(/|$) [NC]
+    RewriteRule ^ - [F,L]
+
     # Canonicalize index.php to root
     RewriteCond %{THE_REQUEST} \s/+([^\s?]*?)index\.php[\s?] [NC]
     RewriteRule ^index\.php$ /%1 [R=301,L]
