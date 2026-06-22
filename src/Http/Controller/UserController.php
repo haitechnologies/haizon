@@ -93,7 +93,7 @@ class UserController extends BaseController
             flash_error($e->getMessage());
             return Response::redirect("users.php?id=$id&action=edit_users");
         } catch (\Throwable $e) {
-            flash_error('Unable to update employee profile.');
+            flash_error('Unable to update employee profile: ' . get_class($e) . ': ' . $e->getMessage());
             return Response::redirect("users.php?id=$id&action=edit_users");
         }
     }
