@@ -430,6 +430,21 @@ if (!empty($session_user_id) && function_exists('getTableAttr')) {
   }
 }
 
+$footerSystemModuleMap = [
+  'crm' => ['leads', 'lead_quotations'],
+  'shipping' => ['shipping_advices', 'shipping_invoices', 'shipping_stocks', 'shipping_customers', 'hscodes', 'ports', 'carriers', 'consignees', 'shippers'],
+  'hr' => ['departments', 'designations', 'attendance', 'leave_requests', 'leave_types', 'payroll_components', 'salary_structures', 'employee_salaries', 'payroll_runs', 'payslips', 'user_documents', 'users', 'report_hr'],
+  'accounting' => ['banks', 'customers', 'quotations', 'sale_orders', 'invoices', 'payments_received', 'credit_notes', 'vendors', 'expenses', 'purchase_orders', 'purchases', 'payments_made', 'debit_notes', 'journals', 'accounts'],
+];
+
+$footerHasSystemAccess = function ($modules) {
+  if (function_exists('has_full_access') && has_full_access()) return true;
+  foreach ($modules as $module) {
+    if (function_exists('granted_') && granted_('view', $module)) return true;
+  }
+  return false;
+};
+
 $footerAvailableSystems = [];
 $footerSystemCandidates = [
   'crm' => [
@@ -461,7 +476,8 @@ $footerSystemCandidates = [
 foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
   $enabled = function_exists('dashboardIsSystemEnabled') ? dashboardIsSystemEnabled($systemKey) : true;
   $hasAccess = function_exists('dashboardHasSystemAccess') ? dashboardHasSystemAccess($systemKey) : true;
-  if ($enabled && $hasAccess) {
+  $hasModulePerm = isset($footerSystemModuleMap[$systemKey]) ? $footerHasSystemAccess($footerSystemModuleMap[$systemKey]) : true;
+  if ($enabled && $hasAccess && $hasModulePerm) {
     $footerAvailableSystems[] = $systemMeta;
   }
 }

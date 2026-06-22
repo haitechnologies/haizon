@@ -442,10 +442,10 @@ $adminHeaderQuickAccessSections = [
 		'icon' => 'ph-users-three',
 		'dashboard' => 'dashboard_crm.php',
 		'links' => [
-			['href' => 'listing_leads.php', 'label' => 'Leads', 'icon' => 'ph-target'],
-			['href' => 'listing_customers.php', 'label' => 'Customers', 'icon' => 'ph-user-circle'],
-			['href' => 'listing_projects.php', 'label' => 'Projects', 'icon' => 'ph-briefcase'],
-			['href' => 'listing_jobs.php', 'label' => 'Jobs', 'icon' => 'ph-suitcase-simple'],
+			['href' => 'listing_leads.php', 'label' => 'Leads', 'icon' => 'ph-target', 'perm' => 'leads'],
+			['href' => 'listing_customers.php', 'label' => 'Customers', 'icon' => 'ph-user-circle', 'perm' => 'customers'],
+			['href' => 'listing_projects.php', 'label' => 'Projects', 'icon' => 'ph-briefcase', 'perm' => 'projects'],
+			['href' => 'listing_jobs.php', 'label' => 'Jobs', 'icon' => 'ph-suitcase-simple', 'perm' => 'jobs'],
 		],
 	],
 	[
@@ -453,11 +453,11 @@ $adminHeaderQuickAccessSections = [
 		'icon' => 'ph-currency-circle-dollar',
 		'dashboard' => 'dashboard_accounting.php',
 		'links' => [
-			['href' => 'listing_quotations.php', 'label' => 'Quotations', 'icon' => 'ph-file-text'],
-			['href' => 'listing_invoices.php', 'label' => 'Invoices', 'icon' => 'ph-receipt'],
-			['href' => 'listing_payments_received.php', 'label' => 'Payments Received', 'icon' => 'ph-arrow-circle-down'],
-			['href' => 'listing_expenses.php', 'label' => 'Expenses', 'icon' => 'ph-wallet'],
-			['href' => 'listing_payments_made.php', 'label' => 'Payments Made', 'icon' => 'ph-arrow-circle-up'],
+			['href' => 'listing_quotations.php', 'label' => 'Quotations', 'icon' => 'ph-file-text', 'perm' => 'quotations'],
+			['href' => 'listing_invoices.php', 'label' => 'Invoices', 'icon' => 'ph-receipt', 'perm' => 'invoices'],
+			['href' => 'listing_payments_received.php', 'label' => 'Payments Received', 'icon' => 'ph-arrow-circle-down', 'perm' => 'payments_received'],
+			['href' => 'listing_expenses.php', 'label' => 'Expenses', 'icon' => 'ph-wallet', 'perm' => 'expenses'],
+			['href' => 'listing_payments_made.php', 'label' => 'Payments Made', 'icon' => 'ph-arrow-circle-up', 'perm' => 'payments_made'],
 		],
 	],
 	[
@@ -466,21 +466,21 @@ $adminHeaderQuickAccessSections = [
 		'dashboard' => 'dashboard_hr.php',
 		'links' => [
 			['group' => 'ORGANIZATION'],
-			['href' => 'listing_departments.php', 'label' => 'Departments', 'icon' => 'ph-building'],
-			['href' => 'listing_designations.php', 'label' => 'Designations', 'icon' => 'ph-identification-badge'],
+			['href' => 'listing_departments.php', 'label' => 'Departments', 'icon' => 'ph-building', 'perm' => 'departments'],
+			['href' => 'listing_designations.php', 'label' => 'Designations', 'icon' => 'ph-identification-badge', 'perm' => 'designations'],
 			['group' => 'TIME & ATTENDANCE'],
-			['href' => 'listing_attendance.php', 'label' => 'Attendance', 'icon' => 'ph-clock'],
-			['href' => 'listing_leave_requests.php', 'label' => 'Leave Requests', 'icon' => 'ph-calendar-check'],
-			['href' => 'listing_leave_types.php', 'label' => 'Leave Types', 'icon' => 'ph-calendar-blank'],
+			['href' => 'listing_attendance.php', 'label' => 'Attendance', 'icon' => 'ph-clock', 'perm' => 'attendance'],
+			['href' => 'listing_leave_requests.php', 'label' => 'Leave Requests', 'icon' => 'ph-calendar-check', 'perm' => 'leave_requests'],
+			['href' => 'listing_leave_types.php', 'label' => 'Leave Types', 'icon' => 'ph-calendar-blank', 'perm' => 'leave_types'],
 			['group' => 'PAYROLL'],
-			['href' => 'listing_payroll_components.php', 'label' => 'Payroll Components', 'icon' => 'ph-puzzle-piece'],
-			['href' => 'listing_salary_structures.php', 'label' => 'Salary Structures', 'icon' => 'ph-currency-circle-dollar'],
-			['href' => 'listing_employee_salaries.php', 'label' => 'Employee Salaries', 'icon' => 'ph-wallet'],
-			['href' => 'listing_payroll_runs.php', 'label' => 'Payroll Runs', 'icon' => 'ph-money'],
-			['href' => 'listing_payslips.php', 'label' => 'Payslips', 'icon' => 'ph-receipt'],
+			['href' => 'listing_payroll_components.php', 'label' => 'Payroll Components', 'icon' => 'ph-puzzle-piece', 'perm' => 'payroll_components'],
+			['href' => 'listing_salary_structures.php', 'label' => 'Salary Structures', 'icon' => 'ph-currency-circle-dollar', 'perm' => 'salary_structures'],
+			['href' => 'listing_employee_salaries.php', 'label' => 'Employee Salaries', 'icon' => 'ph-wallet', 'perm' => 'employee_salaries'],
+			['href' => 'listing_payroll_runs.php', 'label' => 'Payroll Runs', 'icon' => 'ph-money', 'perm' => 'payroll_runs'],
+			['href' => 'listing_payslips.php', 'label' => 'Payslips', 'icon' => 'ph-receipt', 'perm' => 'payslips'],
 			['group' => 'DOCUMENTS & REPORTS'],
-			['href' => 'listing_user_documents.php', 'label' => 'User Documents', 'icon' => 'ph-folder-open'],
-			['href' => 'report_hr.php', 'label' => 'HR Report', 'icon' => 'ph-chart-line-up'],
+			['href' => 'listing_user_documents.php', 'label' => 'User Documents', 'icon' => 'ph-folder-open', 'perm' => 'user_documents'],
+			['href' => 'report_hr.php', 'label' => 'HR Report', 'icon' => 'ph-chart-line-up', 'perm' => 'report_hr'],
 		],
 	],
 	[
@@ -488,11 +488,11 @@ $adminHeaderQuickAccessSections = [
 		'icon' => 'ph-package',
 		'dashboard' => 'dashboard_shipping.php',
 		'links' => [
-			['href' => 'listing_shipping_advices.php', 'label' => 'Shipping Advices', 'icon' => 'ph-note-pencil'],
-			['href' => 'listing_shipping_invoices.php', 'label' => 'Shipping Invoices', 'icon' => 'ph-files'],
-			['href' => 'listing_shipping_stocks.php', 'label' => 'Shipping Stocks', 'icon' => 'ph-stack'],
-			['href' => 'listing_ports.php', 'label' => 'Ports', 'icon' => 'ph-map-pin-line'],
-			['href' => 'listing_carriers.php', 'label' => 'Carriers', 'icon' => 'ph-truck'],
+			['href' => 'listing_shipping_advices.php', 'label' => 'Shipping Advices', 'icon' => 'ph-note-pencil', 'perm' => 'shipping_advices'],
+			['href' => 'listing_shipping_invoices.php', 'label' => 'Shipping Invoices', 'icon' => 'ph-files', 'perm' => 'shipping_invoices'],
+			['href' => 'listing_shipping_stocks.php', 'label' => 'Shipping Stocks', 'icon' => 'ph-stack', 'perm' => 'shipping_stocks'],
+			['href' => 'listing_ports.php', 'label' => 'Ports', 'icon' => 'ph-map-pin-line', 'perm' => 'ports'],
+			['href' => 'listing_carriers.php', 'label' => 'Carriers', 'icon' => 'ph-truck', 'perm' => 'carriers'],
 		],
 	],
 ];
@@ -1265,7 +1265,7 @@ if (!function_exists('renderEmailQuickbar')) {
 												<?php foreach ($section['links'] as $link): ?>
 													<?php if (isset($link['group'])): ?>
 														<div class="list-group-item border-0 px-0 pt-2 pb-0 fw-semibold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($link['group'], ENT_QUOTES); ?></div>
-													<?php else: ?>
+													<?php elseif (empty($link['perm']) || function_exists('granted_') && granted_('view', $link['perm'])): ?>
 														<?php $isSystemMenuActive = $current_page === basename($link['href']); ?>
 														<a href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES); ?>" class="list-group-item list-group-item-action border-0 px-0 py-1<?php echo $isSystemMenuActive ? ' active' : ''; ?>">
 															<i class="<?php echo htmlspecialchars($link['icon'], ENT_QUOTES); ?> me-2"></i>
