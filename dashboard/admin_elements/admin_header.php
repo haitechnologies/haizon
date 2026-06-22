@@ -1253,7 +1253,7 @@ if (!function_exists('renderEmailQuickbar')) {
 				</li> -->
 
 
-				<?php if (Roles::hasFullAccess($session_role_id)): ?>
+				<?php if (!empty($systemsMegaSections)): ?>
 					<li class="nav-item nav-item-dropdown-lg dropdown ms-lg-2">
 						<a href="#" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="importantSystemsMenuLeft" title="Systems">
 							<i class="ph-diamonds-four me-1" aria-hidden="true"></i>
