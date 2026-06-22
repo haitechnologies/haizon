@@ -74,7 +74,7 @@ abstract class BaseAPI {
      * Validate CSRF token
      */
     protected function validateCSRF() {
-        $project_pre = $GLOBALS['project_pre'] ?? 'haipulse';
+        $project_pre = $GLOBALS['project_pre'] ?? 'flashlogistics';
         $storedToken = $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] ?? '';
         if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $storedToken) {
             http_response_code(403);
