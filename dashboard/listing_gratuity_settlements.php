@@ -16,12 +16,14 @@ $success_message = '';
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
+$action = $_GET['action'] ?? '';
+$id = (int)($_GET['id'] ?? 0);
 
 $container = Container::getInstance();
 /** @var GratuitySettlementService $gratuityService */
 $gratuityService = $container->get(GratuitySettlementService::class);
 
-if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
+if ($action == "delete_$module" && !empty($id) && (is_SystemAdmin() || is_SuperAdmin() || (isset($module_id) && granted('delete', $module_id)))) {
     try {
         $gratuityService->delete((int)$id);
         flash_success("Gratuity settlement deleted successfully.");

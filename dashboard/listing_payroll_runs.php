@@ -12,8 +12,10 @@ $success_message = '';
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
+$action = $_GET['action'] ?? '';
+$id = (int)($_GET['id'] ?? 0);
 
-if (($action == "delete_$module" && !empty($id)) && has_full_access() || $module_id && granted('delete', $module_id)) {
+if ($action == "delete_$module" && !empty($id) && (has_full_access() || (isset($module_id) && granted('delete', $module_id)))) {
     // Delete associated payslips and payroll run items first
     $mysqli->query("DELETE FROM `" . DB::PAYSLIPS . "` WHERE payroll_run_id=$id");
     $mysqli->query("DELETE FROM `" . DB::table('payroll_run_items') . "` WHERE payroll_run_id=$id");

@@ -18,12 +18,14 @@ $success_message = '';
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
+$action = $_GET['action'] ?? '';
+$id = (int)($_GET['id'] ?? 0);
 
 $container = Container::getInstance();
 /** @var LeaveTypeService $leaveTypeService */
 $leaveTypeService = $container->get(LeaveTypeService::class);
 
-if (($action == "delete_$module" && !empty($id)) && is_SystemAdmin() || is_SuperAdmin() || $module_id && granted('delete', $module_id)) {
+if ($action == "delete_$module" && !empty($id) && (is_SystemAdmin() || is_SuperAdmin() || (isset($module_id) && granted('delete', $module_id)))) {
     try {
         $leaveTypeService->delete((int)$id, $activeOrganizationId);
         $success_message = "Leave type deleted successfully.";

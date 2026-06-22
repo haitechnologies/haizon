@@ -13,8 +13,10 @@ $tbl_name = DB::SALARY_STRUCTURES;
 include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
+$action = $_GET['action'] ?? '';
+$id = (int)($_GET['id'] ?? 0);
 
-if (($action == "delete_$module" && !empty($id)) && has_full_access() || $module_id && granted('delete', $module_id)) {
+if ($action == "delete_$module" && !empty($id) && (has_full_access() || (isset($module_id) && granted('delete', $module_id)))) {
     $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
     if ($mysqli->affected_rows > 0) {
         $success_message = "Item deleted successfully.";

@@ -6,8 +6,13 @@ $module_caption = 'HR Reports';
 $error_message = '';
 $success_message = '';
 
-include('admin_elements/admin_header.php');
+// Load bootstrap first so permissions.php can check auth before layout renders
+require_once __DIR__ . '/bootstrap.php';
+csrf_token();
+
 include('admin_elements/permissions.php');
+
+include('admin_elements/admin_header.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
