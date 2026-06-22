@@ -364,6 +364,7 @@ class DatabaseSchemaInitializer
             ['constant' => 'LEAVE_REQUESTS', 'fallback' => 'erp_leave_requests', 'after' => 'total_days'],
         ];
 
+        $columnName = 'paid_days';
         $colQuery = "SELECT 1 FROM information_schema.COLUMNS
                      WHERE TABLE_SCHEMA = DATABASE()
                        AND TABLE_NAME = ?
@@ -372,13 +373,13 @@ class DatabaseSchemaInitializer
 
         foreach ($tables as $t) {
             $tableName = self::tableName($t['constant'], $t['fallback']);
-            $alterSql = "ALTER TABLE `{$tableName}` ADD COLUMN `paid_days` INT DEFAULT 0 AFTER `{$t['after']}`";
+            $alterSql = "ALTER TABLE `{$tableName}` ADD COLUMN `{$columnName}` INT DEFAULT 0 AFTER `{$t['after']}`";
 
             $hasColumn = false;
             if ($conn instanceof mysqli) {
                 $existsStmt = $conn->prepare($colQuery);
                 if ($existsStmt) {
-                    $existsStmt->bind_param('ss', $tableName, $paidDays = 'paid_days');
+                    $existsStmt->bind_param('ss', $tableName, $columnName);
                     if ($existsStmt->execute()) {
                         $existsStmt->store_result();
                         $hasColumn = $existsStmt->num_rows > 0;
@@ -388,10 +389,10 @@ class DatabaseSchemaInitializer
             } elseif ($conn instanceof PDO) {
                 try {
                     $existsStmt = $conn->prepare($colQuery);
-                    $existsStmt->execute([$tableName, 'paid_days']);
+                    $existsStmt->execute([$tableName, $columnName]);
                     $hasColumn = (bool) $existsStmt->fetch();
                 } catch (PDOException $e) {
-                    error_log("ERROR checking paid_days on {$tableName}: " . $e->getMessage());
+                    error_log("ERROR checking {$columnName} on {$tableName}: " . $e->getMessage());
                     continue;
                 }
             }
@@ -402,13 +403,13 @@ class DatabaseSchemaInitializer
 
             if ($conn instanceof mysqli) {
                 if (!$conn->query($alterSql)) {
-                    error_log("ERROR adding paid_days to {$tableName}: " . $conn->error);
+                    error_log("ERROR adding {$columnName} to {$tableName}: " . $conn->error);
                 }
             } elseif ($conn instanceof PDO) {
                 try {
                     $conn->exec($alterSql);
                 } catch (PDOException $e) {
-                    error_log("ERROR adding paid_days to {$tableName}: " . $e->getMessage());
+                    error_log("ERROR adding {$columnName} to {$tableName}: " . $e->getMessage());
                 }
             }
         }
