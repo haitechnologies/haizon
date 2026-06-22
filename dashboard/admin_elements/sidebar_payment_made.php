@@ -32,12 +32,12 @@ foreach ($statusLabels as $val => $lbl) {
             <table class="table table-hover"><tbody>
 <?php
 $where = $payment_mades_ordering !== "all" ? " AND t.payment_status = '" . $payment_mades_ordering . "'" : "";
-$r = $mysqli->query("SELECT t.id, t.payment_status, t.payment_made_date, t.amount_paid, t.customer_id FROM `" . DB::PAYMENTS_MADE . "` t WHERE t.id > 0 AND t.customer_id != '' $where ORDER BY t.id DESC LIMIT 25");
-$c = $mysqli->query("SELECT COUNT(*) FROM `" . DB::PAYMENTS_MADE . "` t WHERE t.id > 0 AND t.customer_id != '' $where")->fetch_row();
+$r = $mysqli->query("SELECT t.id, t.payment_status, t.payment_made_date, t.amount_paid, t.vendor_id FROM `" . DB::PAYMENTS_MADE . "` t WHERE t.id > 0 AND t.vendor_id != '' $where ORDER BY t.id DESC LIMIT 25");
+$c = $mysqli->query("SELECT COUNT(*) FROM `" . DB::PAYMENTS_MADE . "` t WHERE t.id > 0 AND t.vendor_id != '' $where")->fetch_row();
 $total = $c[0] ?? 0;
 while ($row = $r->fetch_array()) {
     $sel = $row["id"] == $current_id ? "table-primary shadow-sm" : "";
-    $name = getTableAttr("display_name", DB::CUSTOMERS, $row["customer_id"]);
+    $name = getTableAttr("display_name", DB::VENDORS, $row["vendor_id"]);
     $date = dd_($row["payment_made_date"]);
     $amt = number_format($row["amount_paid"], 2);
     $st = strtoupper($row["payment_status"]);

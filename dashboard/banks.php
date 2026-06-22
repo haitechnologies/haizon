@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Controller\BanksController;
+use App\Http\Controller\BankController;
+use App\Http\Request;
 
 require_once __DIR__ . '/bootstrap.php';
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
-$controller = $container->get(BanksController::class);
-$controller->handle();
+$controller = $container->get(BankController::class);
+$response = $controller(Request::fromGlobals());
+$response->send();

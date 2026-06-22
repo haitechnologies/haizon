@@ -28,7 +28,7 @@ include('admin_elements/permissions.php');
 $quotation_id = '';
 if (isset($_REQUEST['quotation_id']))        $quotation_id     = e_s__($_REQUEST['quotation_id']);
 if (isset($_POST['quotation_id']))           $quotation_id     = e_s__($_POST['quotation_id']);
-
+if (empty($quotation_id) && isset($_REQUEST['id'])) $quotation_id = e_s__($_REQUEST['id']);
 
 
 
@@ -36,7 +36,9 @@ if (isset($_POST['quotation_id']))           $quotation_id     = e_s__($_POST['q
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_quotations . "` WHERE id='". $quotation_id."'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_quotations.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_quotations.php");
+    exit;
 }
 
 
@@ -103,7 +105,7 @@ if (($action == "convert_$module" && !empty($quotation_id))) {
 
     // -- Invoice Items
     $result = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "` ( invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_quotation_items . "` WHERE quotation_id = $quotation_id");
+    SELECT $new_invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_quotation_items . "` WHERE quotation_id = $quotation_id");
 
     fp__(tbl_invoice_items, $mysqli->insert_id);
 
@@ -157,13 +159,13 @@ if (($action == "convert_$module" && !empty($quotation_id))) {
 
     // -- Quotation Items
     $result = $mysqli->query("INSERT INTO `" . tbl_quotation_items . "` ( quotation_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_quotation_items . "` WHERE quotation_id = $quotation_id");
+    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_quotation_items . "` WHERE quotation_id = $quotation_id");
 
     fp__(tbl_quotation_items, $mysqli->insert_id);
 
     // -- Dimension Items
     $mysqli->query("INSERT INTO `" . DB::DIMENSION_ITEMS . "` (module_type, record_id, pcs, unit, length, width, height, formula, cbm, volume, created_at, updated_at, created_by)
-    SELECT 'quotations', $new_cloned_id, pcs, unit, length, width, height, formula, cbm, volume, NOW(), NOW(), '" . $session_user_id . "'
+    SELECT 'quotations', $new_cloned_id, pcs, unit, length, width, height, formula, cbm, volume, NOW(), NOW(), '" . Session::userId() . "'
     FROM `" . DB::DIMENSION_ITEMS . "` WHERE module_type='quotations' AND record_id = $quotation_id");
 
 
@@ -187,7 +189,9 @@ if (($action == "convert_$module" && !empty($quotation_id))) {
     if ($result) {
         $success_message = "The $module_caption status has been updated successfully.";
         // --------------------------------------------------------------------------------
-        header("Location:quotation_overview.php?quotation_id=$quotation_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:quotation_overview.php?quotation_id=$quotation_id");
+        exit;
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";
@@ -208,7 +212,9 @@ if (($action == "convert_$module" && !empty($quotation_id))) {
 
     if ($mysqli->affected_rows > 0) {
         $success_message = "Item deleted successfully.";
-        header("Location:listing_$module.php?success_message=$success_message");
+        flash_success($success_message);
+        header("Location:listing_$module.php");
+        exit;
     } else {
         $error_message = "Action denied. You are not authorized to delete this record.";
     }

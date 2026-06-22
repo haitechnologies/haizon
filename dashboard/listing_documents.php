@@ -2,7 +2,13 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
+
 include('admin_elements/admin_header.php');
+
+if (!defined('tbl_trips'))           { define('tbl_trips',           DB::getPrefix() . 'trips'); }
+if (!defined('tbl_vehicles'))       { define('tbl_vehicles',       DB::getPrefix() . 'vehicles'); }
+if (!defined('tbl_vehicle_types'))  { define('tbl_vehicle_types',  DB::getPrefix() . 'vehicle_types'); }
 
 $module = 'documents';
 $module_caption = 'Documents';
@@ -101,7 +107,8 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
     if ($result) {
         $success_message = "Vehicle is Un-Assigned to the Driver Successfully.";
-        header("Location:listing_$module.php?page=$page&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:listing_$module.php?page=$page");
     } else {
         $error_message = "Sorry! Vehicle Could Not Be Un-Assigned to the Driver.";
     }
@@ -141,7 +148,8 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
     if ($result) {
         $success_message = "$module_caption Deleted Successfully.";
-        header("Location:listing_$module.php?page=$page&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:listing_$module.php?page=$page");
     } else {
         $error_message = "Sorry! $module Could Not Be Deleted.";
     }
@@ -266,9 +274,9 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
                 $photo                         = $row['photo'];
                 $driver_name                   = $row['full_name'];
                 $vehicle_id                   = $row['vehicle_id'];
-                $driver_vehicle_type        = $row['vehicle_type'];
-                $contact1                   = $row['contact1'];
-                $is_fulltime                   = $row['is_fulltime'];
+                $driver_vehicle_type        = $row['vehicle_type'] ?? '';
+                $contact1                   = $row['contact1'] ?? '';
+                $is_fulltime                = $row['is_fulltime'] ?? 0;
 
                 //////////////////////////////////////////////////
             ?>
@@ -288,7 +296,7 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
                             <?php } ?>
                         </div>
 
-                        <?php //$vehicle_id = getTableAttrv('id', tbl_vehicles, "driver_id = $id"); 
+                        <?php //$vehicle_id = getTableAttrv('id', tbl_vehicles, "driver_id = $id");
                         ?>
 
                         <div class="card-body">
@@ -347,8 +355,8 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
                                 <?php
 
-                                $driver_vehicle_type_id         = getTableAttr('vehicle_type', DB::USERS, $id);
-                                $driver_vehicle_type_caption     = getTableAttr('vehicle_type', tbl_vehicle_types, $driver_vehicle_type_id);
+                                $driver_vehicle_type_id         = (int)($driver_vehicle_type ?: 0);
+                                $driver_vehicle_type_caption     = ($driver_vehicle_type_id > 0) ? getTableAttr('vehicle_type', tbl_vehicle_types, $driver_vehicle_type_id) : '';
 
                                 if (empty($vehicle_id)) {
                                 ?>
@@ -378,7 +386,7 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
                     </div>
                 </div>
 
-            <?php } //while 
+            <?php } //while
             ?>
         </div>
 
@@ -490,7 +498,8 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 
         <!-- <div class="card">
 			<div class="content clearfix">
-				<table id="grid-<?php echo $module; ?>" class="custom_datatables display responsive no-wrap table-hover" width="100%">
+				<div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="custom_datatables display responsive no-wrap table-hover" width="100%">
 					<thead>
 						<tr>
 							<th width="40">SR.</th>
@@ -505,12 +514,13 @@ if ($action == "assign_vehicle" && !empty($vehicle_id) && !empty($driver_id)) {
 						</tr>
 					</thead>
 				</table>
+</div>
 			</div>
 		</div> -->
 
-        </div>
+    </div>
 
-        <?php include('admin_elements/copyright.php'); ?>
+    <?php include('admin_elements/copyright.php'); ?>
 </div>
 
 <?php include('admin_elements/admin_footer.php'); ?>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Service\JournalService;
 include('admin_elements/admin_header.php');
 
 $module = 'debit_notes';
@@ -26,6 +27,7 @@ include('admin_elements/permissions.php');
 $debit_note_id = '';
 if (isset($_REQUEST['debit_note_id']))        $debit_note_id     = e_s__($_REQUEST['debit_note_id']);
 if (isset($_POST['debit_note_id']))           $debit_note_id     = e_s__($_POST['debit_note_id']);
+if (empty($debit_note_id) && isset($_REQUEST['id'])) $debit_note_id = e_s__($_REQUEST['id']);
 
 
 
@@ -33,7 +35,9 @@ if (isset($_POST['debit_note_id']))           $debit_note_id     = e_s__($_POST[
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_debit_notes . "` WHERE id='" . $debit_note_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_debit_notes.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_debit_notes.php");
+    exit;
 }
 
 
@@ -93,14 +97,15 @@ if (($action == "clone_$module" && !empty($debit_note_id))) {
 
     // -- Debit Note Items
     $result = $mysqli->query("INSERT INTO `" . tbl_debit_note_items . "` (debit_note_id, service, description, qty, rate, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, service, description, qty, rate, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_debit_note_items . "` WHERE debit_note_id = $debit_note_id");
+    SELECT $new_cloned_id, service, description, qty, rate, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_debit_note_items . "` WHERE debit_note_id = $debit_note_id");
 
     fp__(tbl_debit_note_items, $mysqli->insert_id);
 
 
     $success_message = 'Debit Note has been cloned successfully. Please click here to view. <a href="debit_note_overview.php?debit_note_id=' . $new_cloned_id . '"> ' . $debit_note_no . '</a>';
 
-    header("Location:debit_note_overview.php?debit_note_id=$new_cloned_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:debit_note_overview.php?debit_note_id=$new_cloned_id");
     exit;
 
 
@@ -136,8 +141,7 @@ if (($action == "clone_$module" && !empty($debit_note_id))) {
                     $success_message .= " Note: Void journal entry already exists.";
                 } else {
                     // Initialize Journal Manager
-                    require_once('../classes/AccountingJournalManager.php');
-                    $journal = new AccountingJournalManager($mysqli);
+                    $journal = new JournalService();
                     
                     // Get debit note data
                     $debit_note_no = getTableAttr('debit_note_no', tbl_debit_notes, $debit_note_id);
@@ -228,8 +232,7 @@ if (($action == "clone_$module" && !empty($debit_note_id))) {
                     $success_message .= " Note: Journal entry already exists.";
                 } else {
                     // Initialize Journal Manager
-                    require_once('../classes/AccountingJournalManager.php');
-                    $journal = new AccountingJournalManager($mysqli);
+                    $journal = new JournalService();
                     
                     // Get debit note data
                     $debit_note_no = getTableAttr('debit_note_no', tbl_debit_notes, $debit_note_id);
@@ -239,7 +242,6 @@ if (($action == "clone_$module" && !empty($debit_note_id))) {
                     $grand_total = getTableAttr('grand_total', tbl_debit_notes, $debit_note_id);
                     
                     // Get account mappings from config
-                    require_once('../config/accounting.php');
                     
                     // Accounts for Debit Note
                     // DR: Accounts Payable (decrease what we owe vendor)
@@ -339,7 +341,9 @@ if (($action == "clone_$module" && !empty($debit_note_id))) {
 
 
         // --------------------------------------------------------------------------------
-        header("Location:debit_note_overview.php?debit_note_id=$debit_note_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:debit_note_overview.php?debit_note_id=$debit_note_id");
+        exit;
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";
@@ -365,6 +369,18 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
 } else {
     $total_rows            = 1;
 }
+
+$vendor_id = $display_name = $company_name = '';
+$billing_attention = $billing_country = $billing_address_line1 = '';
+$billing_address_line2 = $billing_city = $billing_state = '';
+$billing_zipcode = $billing_phone = $billing_fax = '';
+$debit_note_no = $debit_note_status = $debit_note_date = $reference_no = '';
+$vendor_notes = $final_terms_and_conditions = '';
+$grand_subtotal = $grand_discount_type = $grand_discount_type_value = '';
+$grand_discount_amount = $grand_after_discount = $grand_tax = $grand_total = '';
+$salutation = $first_name = $last_name = $email = $phone = $mobile = $trn = '';
+$debit_note_item_id_arr = $service_arr = $description_arr = [];
+$qty_arr = $rate_arr = $sub_total_arr = $tax_arr = $tax_amount_arr = $total_arr = [];
 
 
 

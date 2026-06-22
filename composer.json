@@ -16,11 +16,17 @@
             "App\\": "src/"
         }
     },
-    "scripts": {
-        "check-links": "php scripts/check_broken_links.php"
-    },
     "require-dev": {
         "phpstan/phpstan": "^2.2",
-        "squizlabs/php_codesniffer": "^4.0"
+        "squizlabs/php_codesniffer": "^4.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "scripts": {
+        "check-links": "php scripts/check_broken_links.php",
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage/",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "phpcs": "vendor/bin/phpcs --standard=.phpcs.xml",
+        "phpcbf": "vendor/bin/phpcbf --standard=.phpcs.xml"
     }
 }

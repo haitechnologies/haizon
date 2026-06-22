@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__) . '/admin_elements/error_handler_init.php';
+
 /**
  * APIDispatcher.php - Central Router for All API Requests
  * 

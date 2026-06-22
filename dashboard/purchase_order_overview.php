@@ -26,14 +26,16 @@ include('admin_elements/permissions.php');
 $purchase_order_id = '';
 if (isset($_REQUEST['purchase_order_id']))        $purchase_order_id     = e_s__($_REQUEST['purchase_order_id']);
 if (isset($_POST['purchase_order_id']))           $purchase_order_id     = e_s__($_POST['purchase_order_id']);
-
+if (empty($purchase_order_id) && isset($_REQUEST['id'])) $purchase_order_id = e_s__($_REQUEST['id']);
 
 
 // ------------------ CHECK IF EXISTS ----------------
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_purchase_orders . "` WHERE id='" . $purchase_order_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_purchase_orders.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_purchase_orders.php");
+    exit;
 }
 
 
@@ -114,7 +116,7 @@ if (($action == "convert_$module" && !empty($purchase_order_id))) {
 
     // -- purchase Items
     $result = $mysqli->query("INSERT INTO `" . tbl_purchase_items . "` ( purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_purchase_order_items . "` WHERE purchase_order_id = $purchase_order_id");
+    SELECT $new_purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_purchase_order_items . "` WHERE purchase_order_id = $purchase_order_id");
 
     fp__(tbl_purchase_items, $mysqli->insert_id);
 
@@ -167,7 +169,7 @@ if (($action == "convert_$module" && !empty($purchase_order_id))) {
 
     // -- Purchase order Items
     $result = $mysqli->query("INSERT INTO `" . tbl_purchase_order_items . "` ( purchase_order_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_purchase_order_items . "` WHERE purchase_order_id = $purchase_order_id");
+    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_purchase_order_items . "` WHERE purchase_order_id = $purchase_order_id");
 
     fp__(tbl_purchase_order_items, $mysqli->insert_id);
 
@@ -233,7 +235,9 @@ if (($action == "convert_$module" && !empty($purchase_order_id))) {
 
 
         // --------------------------------------------------------------------------------
-        header("Location:purchase_order_overview.php?purchase_order_id=$purchase_order_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:purchase_order_overview.php?purchase_order_id=$purchase_order_id");
+        exit;
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";
@@ -423,6 +427,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
 
 
             <?php
+            if (!empty($purchase_order_id)):
             //COUNT QUERY
             $result         = $mysqli->query("SELECT id FROM `" . tbl_purchases . "` WHERE purchase_order_id=$purchase_order_id ORDER BY id DESC LIMIT 5 ");
             $total_pages    = $result->num_rows;
@@ -502,6 +507,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                     </div>
                 </div>
             <?php } // Purchases
+            endif; // !empty($purchase_order_id)
             ?>
 
 

@@ -32,7 +32,8 @@ try {
         'email' => 'integration.user@test.com',
         'password' => 'secure123',
         'role_id' => 3,
-        'full_name' => 'Integration Test Employee',
+        'first_name' => 'Integration',
+        'last_name' => 'Test Employee',
         'contact1' => '+971501234567',
         'dob' => '15-08-1990',
         'can_access_system' => true,
@@ -52,14 +53,14 @@ try {
             'email' => '',
             'password' => '',
             'role_id' => 0,
-            'full_name' => '',
+            'first_name' => '',
             'contact1' => ''
         ], $testCreatedBy);
         echo "✗ FAIL (Allowed empty mandatory fields)\n";
         exit(1);
     } catch (ValidationException $e) {
         $errors = $e->getErrors();
-        if (isset($errors['role_id']) && isset($errors['full_name']) && isset($errors['email']) && isset($errors['password']) && isset($errors['contact1'])) {
+        if (isset($errors['role_id']) && isset($errors['first_name']) && isset($errors['email']) && isset($errors['password']) && isset($errors['contact1'])) {
             echo "✓ PASS\n";
         } else {
             echo "✗ FAIL (Unexpected validation errors: " . json_encode($errors) . ")\n";
@@ -97,7 +98,8 @@ try {
     $updateData = [
         'email' => 'integration.user.updated@test.com',
         'role_id' => 3,
-        'full_name' => 'Integration Test Employee (Updated)',
+        'first_name' => 'Integration',
+        'last_name' => 'Test Employee (Updated)',
         'contact1' => '+971507654321',
         'dob' => '20-10-1992',
         'can_access_system' => false,

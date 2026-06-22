@@ -48,8 +48,8 @@ class EmailHistoryDataTable extends BaseDataTable
 
         $id = (int)$row['id'];
         $campaignId = (int)$row['campaign_id'];
-        $recipientEmail = s__($row['recipient_email'] ?? '');
-        $status = s__($row['status'] ?? '');
+        $recipientEmail = $this->sanitize($row['recipient_email'] ?? '');
+        $status = $this->sanitize($row['status'] ?? '');
         $sourceLabel = (string)($row['source_label'] ?? 'Website');
         $sentAt = $row['sent_at'] ?? '';
         $openedAt = $row['opened_at'] ?? '';
@@ -80,10 +80,10 @@ class EmailHistoryDataTable extends BaseDataTable
             $sourceBadge,
             '<a href="mailto:' . htmlspecialchars($recipientEmail) . '">' . htmlspecialchars($recipientEmail) . '</a>',
             $statusBadge,
-            !empty($sentAt) ? timeAgo($sentAt) : '-',
+            !empty($sentAt) ? $this->formatTimeAgo($sentAt) : '-',
             $openedIcon,
             $clickedIcon,
-            timeAgo($createdAt)
+            $this->formatTimeAgo($createdAt)
         ];
     }
 

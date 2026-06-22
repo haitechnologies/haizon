@@ -21,6 +21,9 @@ include('admin_elements/permissions.php');
 if (isset($_REQUEST['vendor_credit_id']) && !empty($_REQUEST['vendor_credit_id'])) {
     $vendor_credit_id = e_s__($_REQUEST['vendor_credit_id']);
     $vendor_credit_id = intval($vendor_credit_id);
+} else if (isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
+    $vendor_credit_id = e_s__($_REQUEST['id']);
+    $vendor_credit_id = intval($vendor_credit_id);
 } else {
     $vendor_credit_id = 0;
 }
@@ -217,7 +220,8 @@ $items_result = $mysqli->query($items_query);
                     <!-- Totals -->
                     <div class="row justify-content-end mb-4">
                         <div class="col-md-4">
-                            <table class="table table-bordered">
+                            <div class="table-responsive">
+<table class="table table-bordered">
                                 <tr>
                                     <td><strong>Subtotal:</strong></td>
                                     <td class="text-end"><strong><?php echo number_format($vendor_credit_data['grand_subtotal'], 2); ?></strong></td>
@@ -235,6 +239,7 @@ $items_result = $mysqli->query($items_query);
                                     <td class="text-end"><strong><?php echo number_format($vendor_credit_data['grand_total'], 2); ?></strong></td>
                                 </tr>
                             </table>
+</div>
                         </div>
                     </div>
 

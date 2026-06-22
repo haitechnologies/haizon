@@ -1,5 +1,6 @@
 <?php
 
+use App\Service\JournalService;
 include('admin_elements/admin_header.php');
 
 $module = 'payments_received';
@@ -27,13 +28,16 @@ include('admin_elements/permissions.php');
 $payment_id = '';
 if (isset($_REQUEST['payment_id']))        $payment_id     = e_s__($_REQUEST['payment_id']);
 if (isset($_POST['payment_id']))           $payment_id     = e_s__($_POST['payment_id']);
+if (empty($payment_id) && isset($_REQUEST['id'])) $payment_id = e_s__($_REQUEST['id']);
 
 
 // ------------------ CHECK IF EXISTS ----------------
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_payments_received . "` WHERE id='" . $payment_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_payments_received.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_payments_received.php");
+    exit;
 }
 
 
@@ -112,8 +116,7 @@ if (($action == "update_$module" && !empty($payment_id))) {
         $mysqli->query("UPDATE `$tbl_name` SET payment_status='paid' WHERE id=$payment_id");
         
         // Create journal entry for the payment
-        require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
-        $journalManager = new AccountingJournalManager($mysqli);
+        $journalManager = new JournalService();
         
         // Get payment details
         $result_payment = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$payment_id");
@@ -147,7 +150,7 @@ if (($action == "update_$module" && !empty($payment_id))) {
             'journal_date' => $payment_date,
             'reference_type' => 'payment_received',
             'reference_id' => $payment_id,
-            'created_by' => $session_user_id,
+            'created_by' => Session::userId(),
             'grand_subtotal' => $total_amount_received,
             'grand_total' => $total_amount_received,
             'reporting_method' => 'cash'
@@ -160,7 +163,8 @@ if (($action == "update_$module" && !empty($payment_id))) {
             $error_message = "Payment marked as paid but journal entry failed: " . $e->getMessage();
         }
         
-        header("Location:payment_received_overview.php?payment_id=$payment_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:payment_received_overview.php?payment_id=$payment_id");
         exit;
     }
 }
@@ -235,12 +239,13 @@ if (($action == "convert_$module" && !empty($payment_id))) {
     $result = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "` 
         (invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by)
         VALUES 
-        ('$new_invoice_id', '1', 'Payment Receipt #$payment_id', '1', '$payment_amount', 'percentage', '0', '0', '0', '0', '$payment_amount', '$payment_amount', NOW(), NOW(), '" . $session_user_id . "')");
+        ('$new_invoice_id', '1', 'Payment Receipt #$payment_id', '1', '$payment_amount', 'percentage', '0', '0', '0', '0', '$payment_amount', '$payment_amount', NOW(), NOW(), '" . Session::userId() . "')");
     
     fp__(tbl_invoice_items, $mysqli->insert_id);
     
     $success_message = 'Payment has been converted to Invoice successfully. <a href="invoice_overview.php?invoice_id=' . $new_invoice_id . '"> ' . $invoice_no . '</a>';
-    header("Location:payment_received_overview.php?payment_id=$payment_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:payment_received_overview.php?payment_id=$payment_id");
     exit;
 }
 
@@ -267,8 +272,7 @@ if (($action == "void_$module" && !empty($payment_id))) {
     
     if (!empty($journal_id)) {
         // Payment was paid, create reversing journal entry
-        require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
-        $journalManager = new AccountingJournalManager($mysqli);
+        $journalManager = new JournalService();
         
         // Create reversing journal entries (opposite of original)
         $journal_entries = array();
@@ -293,7 +297,7 @@ if (($action == "void_$module" && !empty($payment_id))) {
             'journal_date' => date('Y-m-d'),
             'reference_type' => 'payment_received_void',
             'reference_id' => $payment_id,
-            'created_by' => $session_user_id,
+            'created_by' => Session::userId(),
             'grand_subtotal' => $total_amount_received,
             'grand_total' => $total_amount_received,
             'reporting_method' => 'cash'
@@ -303,7 +307,8 @@ if (($action == "void_$module" && !empty($payment_id))) {
             $journalManager->createJournalEntry($journal_data, $journal_entries);
         } catch (Exception $e) {
             $error_message = "Void failed during journal reversal: " . $e->getMessage();
-            header("Location:payment_received_overview.php?payment_id=$payment_id&error_message=$error_message");
+            flash_error($error_message);
+            header("Location:payment_received_overview.php?payment_id=$payment_id");
             exit;
         }
     }
@@ -312,7 +317,8 @@ if (($action == "void_$module" && !empty($payment_id))) {
     $mysqli->query("UPDATE `$tbl_name` SET payment_status='void' WHERE id=$payment_id");
     
     $success_message = "Payment has been voided successfully.";
-    header("Location:payment_received_overview.php?payment_id=$payment_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:payment_received_overview.php?payment_id=$payment_id");
     exit;
 }
 
@@ -513,7 +519,8 @@ if ($total_rows == 0)           $total_rows = 1;
                         $invoice_no = $inv_no;
                         ?>
                         <div class="table-responsive">
-                            <table class="table">
+                            <div class="table-responsive">
+<table class="table">
                                 <tbody>
                                     <tr>
                                         <td>
@@ -531,6 +538,7 @@ if ($total_rows == 0)           $total_rows = 1;
                                                     <td class="fw-semibold"><?php echo $payment_method; ?></td>
                                                 </tr>
                                             </table>
+</div>
                                         </td>
                                         <td class="<?php echo $is_void ? 'bg-danger' : ($is_refund ? 'bg-warning' : 'bg-success'); ?>">
                                             <p class="text-white text-center">
@@ -557,7 +565,8 @@ if ($total_rows == 0)           $total_rows = 1;
 
 
                         <div class="table-responsive">
-                            <table class="table">
+                            <div class="table-responsive">
+<table class="table">
                                 <thead>
                                     <tr>
                                         <th>Invoice Number</th>
@@ -604,6 +613,7 @@ if ($total_rows == 0)           $total_rows = 1;
 
                                 </tbody>
                             </table>
+</div>
                         </div>
 
                         <div class="row p-lg-4">
@@ -664,7 +674,8 @@ if ($total_rows == 0)           $total_rows = 1;
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table">
+                            <div class="table-responsive">
+<table class="table">
                                 <thead>
                                     <tr>
                                         <th class="opacity-50">ACCOUNT</th>
@@ -705,6 +716,7 @@ if ($total_rows == 0)           $total_rows = 1;
                                     </tr>
                                 </tbody>
                             </table>
+</div>
                         </div>
                     </div>
                     

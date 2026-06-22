@@ -25,7 +25,7 @@ class AccountsReportCategoriesDataTable extends BaseDataTable
             $id,
             htmlspecialchars($name),
             0,
-            timeAgo($created),
+            $this->formatTimeAgo($created),
             $badge,
             $this->getActionButtons($id, 'accounts_report_categories'),
         ];
@@ -34,10 +34,10 @@ class AccountsReportCategoriesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'accounts_report_categories.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

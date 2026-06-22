@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__) . '/admin_elements/error_handler_init.php';
+
 /**
  * Centralized Cron Job Scheduler
  * 
@@ -41,6 +43,14 @@ class CronJobScheduler {
             'description' => 'Clean up old email queue items'
         ],
         
+        // Document jobs
+        'documents:expiry' => [
+            'class' => 'DocumentExpiryCron',
+            'path' => 'documents/DocumentExpiryCron.php',
+            'schedule' => '0 7 * * *',
+            'description' => 'Check expiring employee documents and send notifications'
+        ],
+
         // Database jobs
         'db:backup' => [
             'class' => 'DatabaseBackup',

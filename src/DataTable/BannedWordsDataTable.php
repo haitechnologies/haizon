@@ -23,7 +23,7 @@ class BannedWordsDataTable extends BaseDataTable
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
-        $bannedWord = s__($row['banned_word'] ?? '');
+        $bannedWord = $this->sanitize($row['banned_word'] ?? '');
         $publish = (int)$row['is_active'];
         $createdAt = $row['created_at'] ?? '';
 
@@ -32,7 +32,7 @@ class BannedWordsDataTable extends BaseDataTable
         return [
             $id,
             '<code>' . htmlspecialchars($bannedWord) . '</code>',
-            !empty($createdAt) ? timeAgo($createdAt) : '',
+            !empty($createdAt) ? $this->formatTimeAgo($createdAt) : '',
             $publishBadge,
             $this->getActionButtons($id, 'banned_words', $publish)
         ];
@@ -41,10 +41,10 @@ class BannedWordsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module, $publish)
     {
         $buttons = [];
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'banned_words.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

@@ -73,7 +73,8 @@ include('admin_elements/breadcrumb.php');
         </div>
     </div>
 
-    <table id="grid-<?php echo e($module); ?>" class="custom_datatables">
+    <div class="table-responsive">
+<table id="grid-<?php echo e($module); ?>" class="custom_datatables">
         <thead>
             <tr>
                 <th>Period</th>
@@ -84,6 +85,7 @@ include('admin_elements/breadcrumb.php');
             </tr>
         </thead>
     </table>
+</div>
     <?php include('admin_elements/copyright.php'); ?>
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

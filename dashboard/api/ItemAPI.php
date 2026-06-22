@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/admin_elements/error_handler_init.php';
 
 use App\Core\DB;
 /**

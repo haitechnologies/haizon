@@ -339,7 +339,7 @@ define('tbl_consignees', \App\Core\DB::CONSIGNEES);
 define('tbl_shippers', \App\Core\DB::SHIPPERS);
 define('tbl_taxonomies', \App\Core\DB::TAXONOMIES);
 define('tbl_banned_words', \App\Core\DB::BANNED_WORDS);
-define('tbl_pages', \App\Core\DB::PAGES);
+// define('tbl_pages', \App\Core\DB::PAGES); // decommissioned
 define('tbl_hscodes_texts', \App\Core\DB::HS_CODE_TEXTS);
 define('tbl_hscodes', \App\Core\DB::HS_CODES);
 define('tbl_hs_code_mappings', \App\Core\DB::CATEGORY_HS_CODES);

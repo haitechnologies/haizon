@@ -32,12 +32,12 @@ foreach ($statusLabels as $val => $lbl) {
             <table class="table table-hover"><tbody>
 <?php
 $where = $debit_notes_ordering !== "all" ? " AND t.debit_note_status = '" . $debit_notes_ordering . "'" : "";
-$r = $mysqli->query("SELECT t.id, t.debit_note_status, t.debit_note_date, t.grand_total, t.customer_id FROM `" . DB::DEBIT_NOTES . "` t WHERE t.id > 0 AND t.customer_id != '' $where ORDER BY t.id DESC LIMIT 25");
-$c = $mysqli->query("SELECT COUNT(*) FROM `" . DB::DEBIT_NOTES . "` t WHERE t.id > 0 AND t.customer_id != '' $where")->fetch_row();
+$r = $mysqli->query("SELECT t.id, t.debit_note_status, t.debit_note_date, t.grand_total, t.vendor_id FROM `" . DB::DEBIT_NOTES . "` t WHERE t.id > 0 AND t.vendor_id != '' $where ORDER BY t.id DESC LIMIT 25");
+$c = $mysqli->query("SELECT COUNT(*) FROM `" . DB::DEBIT_NOTES . "` t WHERE t.id > 0 AND t.vendor_id != '' $where")->fetch_row();
 $total = $c[0] ?? 0;
 while ($row = $r->fetch_array()) {
     $sel = $row["id"] == $current_id ? "table-primary shadow-sm" : "";
-    $name = getTableAttr("display_name", DB::CUSTOMERS, $row["customer_id"]);
+    $name = getTableAttr("display_name", DB::VENDORS, $row["vendor_id"]);
     $date = dd_($row["debit_note_date"]);
     $amt = number_format($row["grand_total"], 2);
     $st = strtoupper($row["debit_note_status"]);

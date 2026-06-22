@@ -46,7 +46,6 @@ class ImageUploadHandler
     protected int $thumbWidth;
     protected int $thumbHeight;
     protected int $thumbQuality;
-    protected mixed $mysqli;
     protected array $errors = [];
     protected ?string $lastUploadedFile = null;
 
@@ -57,14 +56,12 @@ class ImageUploadHandler
      * @param int $maxSizeMB Maximum file size in MB (default: 5)
      * @param array|null $allowedMimes MIME types whitelist (default: MIME_IMAGES_COMMON)
      * @param bool $createThumbnails Generate thumbnails (default: true)
-     * @param mixed $mysqli Database connection for logging (optional, unused)
      */
     public function __construct(
         string $uploadPath,
         int $maxSizeMB = 5,
         ?array $allowedMimes = null,
-        bool $createThumbnails = true,
-        mixed $mysqli = null
+        bool $createThumbnails = true
     ) {
         $this->uploadPath = rtrim($uploadPath, '/\\') . '/';
         $this->maxSize = $maxSizeMB * 1024 * 1024; // Convert to bytes
@@ -73,7 +70,6 @@ class ImageUploadHandler
         $this->thumbWidth = 150;
         $this->thumbHeight = 150;
         $this->thumbQuality = 85;
-        $this->mysqli = $mysqli;
 
         // Derive allowed extensions from MIME types
         $this->allowedExtensions = $this->getExtensionsFromMimes($this->allowedMimes);

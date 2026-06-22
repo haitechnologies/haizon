@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 include('admin_elements/admin_header.php');
 
 $module             = 'shipping_advices';
@@ -138,7 +139,7 @@ if ($action == "add_$module") {
                 $created_by = getTableAttr('created_by', DB::SHIPPING_ADVICES, $id);
 
                 if (
-                    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
+                    (!empty($id) && Session::roleId() == '1')
                     ||
                     (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['admin_id'] == $created_by)
                 ) {
@@ -670,7 +671,7 @@ if ($action == "add_$module") {
                 $created_by = getTableAttr('created_by', DB::SHIPPING_ADVICES, $id);
 
                 if (
-                    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
+                    (!empty($id) && Session::roleId() == '1')
                     ||
                     (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['admin_id'] == $created_by)
                 ) {

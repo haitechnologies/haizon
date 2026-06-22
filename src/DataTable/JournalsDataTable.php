@@ -25,12 +25,9 @@ class JournalsDataTable extends BaseDataTable
             return;
         }
 
-        $result = $this->mysqli->query("SELECT id, full_name FROM `" . DB::USERS . "` WHERE id IN (" . implode(',', $userIds) . ")");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $this->relatedDataCache['users'][(int)$row['id']] = (string)($row['full_name'] ?? '');
-            }
-            $result->free();
+        $users = $this->db->fetchAll("SELECT id, full_name FROM `" . DB::USERS . "` WHERE id IN (" . implode(',', $userIds) . ")", []);
+        foreach ($users as $row) {
+            $this->relatedDataCache['users'][(int)$row['id']] = (string)($row['full_name'] ?? '');
         }
     }
 
@@ -57,10 +54,10 @@ class JournalsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton((int)$id, 'journals.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return trim($actions);

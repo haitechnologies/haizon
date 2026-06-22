@@ -40,14 +40,11 @@ class ExpensesDataTable extends BaseDataTable
         }
 
         $sql = "SELECT expense_id, expense_account FROM `" . $expenseItemsTable . "` WHERE expense_id IN (" . implode(',', $expenseIds) . ") ORDER BY id ASC";
-        $result = $this->mysqli->query($sql);
-        if (!$result) {
-            return;
-        }
+        $items = $this->db->fetchAll($sql, []);
 
         $expenseAccountIds = [];
         $expenseAccountsByExpense = [];
-        while ($item = $result->fetch_assoc()) {
+        foreach ($items as $item) {
             $expenseId = (int)($item['expense_id'] ?? 0);
             $accountId = (int)($item['expense_account'] ?? 0);
             if ($expenseId <= 0 || $accountId <= 0) {
@@ -63,7 +60,6 @@ class ExpensesDataTable extends BaseDataTable
                 $expenseAccountIds[] = $accountId;
             }
         }
-        $result->free();
 
         $expenseAccountNames = $this->fetchLookupMap(DB::ACCOUNTS, $expenseAccountIds, 'account_name');
         foreach ($expenseAccountsByExpense as $expenseId => $ids) {
@@ -98,23 +94,4 @@ class ExpensesDataTable extends BaseDataTable
         ];
     }
 
-    private function fetchLookupMap(string $table, array $ids, string $valueField): array
-    {
-        $ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
-        if (!$ids) {
-            return [];
-        }
-
-        $map = [];
-        $sql = "SELECT id, {$valueField} AS value_label FROM `" . $table . "` WHERE id IN (" . implode(',', $ids) . ")";
-        $result = $this->mysqli->query($sql);
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $map[(int)$row['id']] = (string)($row['value_label'] ?? '');
-            }
-            $result->free();
-        }
-
-        return $map;
-    }
 }

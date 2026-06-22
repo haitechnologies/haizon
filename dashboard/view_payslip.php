@@ -14,7 +14,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 | RESTRICT ACCESS
 |--------------------------------------------------------------------------
 */
-if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
+if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
     echo 'Permission Denied.';
     exit();
 }
@@ -59,9 +59,8 @@ $breakdown_query = $mysqli->query("
     FROM `" . DB::SALARY_STRUCTURES . "` ss
     INNER JOIN `" . DB::PAYROLL_COMPONENTS . "` pc ON ss.component_id = pc.id
     WHERE ss.employee_id = " . $payslip['employee_id'] . "
-    AND pc.is_active = 1
-    AND (ss.effective_from IS NULL OR ss.effective_from <= '" . $payslip['period_end'] . "')
-    AND (ss.effective_to IS NULL OR ss.effective_to >= '" . $payslip['period_start'] . "')
+    AND (ss.effective_from IS NULL OR YEAR(ss.effective_from) = 0 OR ss.effective_from <= '" . $payslip['period_end'] . "')
+    AND (ss.effective_to IS NULL OR YEAR(ss.effective_to) = 0 OR ss.effective_to >= '" . $payslip['period_start'] . "')
     ORDER BY pc.component_type DESC, pc.component_name ASC
 ");
 
@@ -78,6 +77,8 @@ while ($item = $breakdown_query->fetch_assoc()) {
 ?>
 
 <div class="content-wrapper">
+    <?php include('admin_elements/hr_navbar.php'); ?>
+
         <!-- Page header -->
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
@@ -117,20 +118,6 @@ while ($item = $breakdown_query->fetch_assoc()) {
     <div class="content-inner">
         <div class="content">
             <?php include('admin_elements/breadcrumb.php'); ?>
-
-            <?php if (!empty($_SESSION['success_message'])) { ?>
-                <div class="alert alert-success alert-dismissible fade show">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <strong>Success:</strong> <?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?>
-                </div>
-            <?php } ?>
-
-            <?php if (!empty($_SESSION['error_message'])) { ?>
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <strong>Error:</strong> <?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?>
-                </div>
-            <?php } ?>
 
             <!-- Payslip Header -->
             <div class="card mb-3">
@@ -197,7 +184,8 @@ while ($item = $breakdown_query->fetch_assoc()) {
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h6 class="text-muted mb-3">Employee Information</h6>
-                            <table class="table table-sm table-borderless">
+                            <div class="table-responsive">
+<table class="table table-sm table-borderless">
                                 <tr>
                                     <td width="40%" class="text-muted">Employee Name:</td>
                                     <td><strong><?php echo s__($payslip['full_name']); ?></strong></td>
@@ -211,10 +199,12 @@ while ($item = $breakdown_query->fetch_assoc()) {
                                     <td><?php echo s__($payslip['department']) ?: '-'; ?></td>
                                 </tr>
                             </table>
+</div>
                         </div>
                         <div class="col-md-6">
                             <h6 class="text-muted mb-3">Payment Information</h6>
-                            <table class="table table-sm table-borderless">
+                            <div class="table-responsive">
+<table class="table table-sm table-borderless">
                                 <tr>
                                     <td width="40%" class="text-muted">Pay Period:</td>
                                     <td>
@@ -240,6 +230,7 @@ while ($item = $breakdown_query->fetch_assoc()) {
                                     </td>
                                 </tr>
                             </table>
+</div>
                         </div>
                     </div>
 
@@ -252,7 +243,8 @@ while ($item = $breakdown_query->fetch_assoc()) {
                             <h6 class="text-success mb-3">
                                 <i class="ph-plus-circle me-1"></i>Earnings
                             </h6>
-                            <table class="table table-sm">
+                            <div class="table-responsive">
+<table class="table table-sm">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Component</th>
@@ -284,6 +276,7 @@ while ($item = $breakdown_query->fetch_assoc()) {
                                     </tr>
                                 </tfoot>
                             </table>
+</div>
                         </div>
 
                         <!-- Deductions -->
@@ -291,7 +284,8 @@ while ($item = $breakdown_query->fetch_assoc()) {
                             <h6 class="text-danger mb-3">
                                 <i class="ph-minus-circle me-1"></i>Deductions
                             </h6>
-                            <table class="table table-sm">
+                            <div class="table-responsive">
+<table class="table table-sm">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Component</th>
@@ -323,6 +317,7 @@ while ($item = $breakdown_query->fetch_assoc()) {
                                     </tr>
                                 </tfoot>
                             </table>
+</div>
                         </div>
                     </div>
 

@@ -23,13 +23,19 @@ class LeaveTypesDataTable extends BaseDataTable
     {
         $id      = (int)($row['id'] ?? 0);
         $type    = (string)($row['leave_type'] ?? '');
-        $max     = (string)($row['max_per_year'] ?? '0');
-        $paid    = (int)($row['paid'] ?? 0) ? 'Yes' : 'No';
+        $max     = (int)($row['max_per_year'] ?? 0);
+        $paid    = (int)($row['paid'] ?? 0);
+
+        $maxText = $max == 0 ? 'Unlimited' : (string)$max;
+        $paidHtml = $paid == 1 
+            ? '<span class="badge bg-success">Yes</span>' 
+            : '<span class="badge bg-secondary">No</span>';
+
         return [
-            $id,
+            $this->rowNumber,
             htmlspecialchars($type),
-            htmlspecialchars($max),
-            $paid,
+            htmlspecialchars($maxText),
+            $paidHtml,
             $this->getActionButtons($id, 'leave_types'),
         ];
     }
@@ -37,10 +43,10 @@ class LeaveTypesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'leave_types.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

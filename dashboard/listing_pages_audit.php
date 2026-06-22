@@ -61,7 +61,7 @@ $pages_audit = [
     // ====== CONTENT MANAGEMENT ======
     'Content Management' => [
         ['name' => 'listing_blogs.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Verified working - used as reference for icon styling'],
-        ['name' => 'listing_pages.php', 'status' => 'untested', 'issues' => [], 'fixed' => 'Needs verification'],
+        // ['name' => 'listing_pages.php', ...] // decommissioned
         ['name' => 'listing_banned_words.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Backticks fixed'],
         ['name' => 'listing_public_ads.php', 'status' => 'working', 'issues' => [], 'fixed' => 'Added master toggle, AJAX edit popup'],
     ],

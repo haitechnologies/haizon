@@ -1,10 +1,12 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 use App\Security\Roles;
 use App\Core\DeletionManager;
 use App\Security\SystemEntitlements;
 use App\Service\SMTPMailer;
+
 require_once __DIR__ . '/../config/session.php';
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +96,9 @@ header("Content-Type: text/html; charset=utf-8");
 require_once('../config/globals.php');
 require_once('../config/database.php');
 
+// Register error/exception/fatal handlers early (before any bootstrap code runs)
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 // Ensure shared mail/database services can resolve the active DB handle in dashboard context.
 if (!isset($GLOBALS['conn']) && isset($mysqli) && $mysqli instanceof mysqli) {
     $GLOBALS['conn'] = $mysqli;
@@ -122,145 +127,853 @@ $container->register(\App\Core\ServerRequest::class, function () use ($project_p
     );
 });
 
-$container->register(\App\Repository\UserRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\UserRepository($c->get(\App\Core\Database::class));
-});
+// --- Auto-wired Repositories ---
+$container->autowire(\App\Repository\UserRepository::class);
+$container->autowire(\App\Repository\DepartmentRepository::class);
+$container->autowire(\App\Repository\DesignationRepository::class);
+$container->autowire(\App\Repository\LeaveTypeRepository::class);
+$container->autowire(\App\Repository\LeaveRequestRepository::class);
+$container->autowire(\App\Repository\CustomerRepository::class);
+$container->autowire(\App\Repository\BankRepository::class);
+$container->autowire(\App\Repository\CurrencyRepository::class);
+$container->autowire(\App\Repository\PaymentMethodRepository::class);
+$container->autowire(\App\Repository\InvoiceRepository::class);
+$container->autowire(\App\Repository\SetupGroupRepository::class);
+$container->autowire(\App\Repository\SetupSourceRepository::class);
+$container->autowire(\App\Repository\SetupStatusRepository::class);
+$container->autowire(\App\Repository\SetupTagRepository::class);
+$container->autowire(\App\Repository\UnitRepository::class);
+$container->autowire(\App\Repository\CategoryRepository::class);
+$container->autowire(\App\Repository\SubcategoryRepository::class);
+$container->autowire(\App\Repository\CommodityTypeRepository::class);
+$container->autowire(\App\Repository\ContainerTypeRepository::class);
+$container->autowire(\App\Repository\DocumentCategoryRepository::class);
+$container->autowire(\App\Repository\ExitPointRepository::class);
+$container->autowire(\App\Repository\IncotermRepository::class);
+$container->autowire(\App\Repository\BannedWordRepository::class);
+$container->autowire(\App\Repository\PortRepository::class);
+$container->autowire(\App\Repository\CarrierRepository::class);
+$container->autowire(\App\Repository\ConsigneeRepository::class);
+$container->autowire(\App\Repository\ShipperRepository::class);
+$container->autowire(\App\Repository\HscodeRepository::class);
+$container->autowire(\App\Repository\ItemRepository::class);
+$container->autowire(\App\Repository\AccountRepository::class);
+$container->autowire(\App\Repository\EmailProviderRepository::class);
+$container->autowire(\App\Repository\AttendanceRepository::class);
+$container->autowire(\App\Repository\AttendanceDeviceRepository::class);
+$container->autowire(\App\Repository\PaymentTermRepository::class);
+$container->autowire(\App\Repository\PurchaseTypeRepository::class);
+$container->autowire(\App\Repository\SaleTypeRepository::class);
+$container->autowire(\App\Repository\StorageTypeRepository::class);
+$container->autowire(\App\Repository\TaxTreatmentRepository::class);
+$container->autowire(\App\Repository\AlertRepository::class);
+$container->autowire(\App\Repository\StorageSubtypeRepository::class);
+$container->autowire(\App\Repository\ModuleRepository::class);
+$container->autowire(\App\Repository\ServiceRepository::class);
+$container->autowire(\App\Repository\VendorRepository::class);
+$container->autowire(\App\Repository\PayrollComponentRepository::class);
+$container->autowire(\App\Repository\AccountReportCategoryRepository::class);
+$container->autowire(\App\Repository\PayrollRunRepository::class);
+$container->autowire(\App\Repository\SalaryStructureRepository::class);
+$container->autowire(\App\Repository\ModulePermissionRepository::class);
+$container->autowire(\App\Repository\RoleRepository::class);
+$container->autowire(\App\Repository\AccountReportSubcategoryRepository::class);
+$container->autowire(\App\Repository\CategoryHsCodeRepository::class);
+$container->autowire(\App\Repository\ExpenseRepository::class);
+$container->autowire(\App\Repository\CreditNoteRepository::class);
+$container->autowire(\App\Repository\DebitNoteRepository::class);
+$container->autowire(\App\Repository\PurchaseRepository::class);
+$container->autowire(\App\Repository\PurchaseOrderRepository::class);
+$container->autowire(\App\Repository\SaleOrderRepository::class);
+$container->autowire(\App\Repository\QuotationRepository::class);
+$container->autowire(\App\Repository\LeadQuotationRepository::class);
+$container->autowire(\App\Repository\JobRepository::class);
+$container->autowire(\App\Repository\ShippingAdviceRepository::class);
+$container->autowire(\App\Repository\ShippingInvoiceRepository::class);
+$container->autowire(\App\Repository\JournalRepository::class);
+$container->autowire(\App\Repository\RecurringInvoiceRepository::class);
+$container->autowire(\App\Repository\CustomerContactRepository::class);
+$container->autowire(\App\Repository\EntityNoteRepository::class);
+$container->autowire(\App\Repository\UserDocumentRepository::class);
+$container->autowire(\App\Repository\LeadAttachmentRepository::class);
+$container->autowire(\App\Repository\CustomerAddressRepository::class);
+$container->autowire(\App\Repository\GratuitySettlementRepository::class);
+$container->autowire(\App\Repository\AirTicketRepository::class);
+$container->autowire(\App\Repository\AnnualLeaveEntitlementRepository::class);
+$container->autowire(\App\Repository\HrTodoTaskRepository::class);
 
-$container->register(\App\Repository\DepartmentRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\DepartmentRepository($c->get(\App\Core\Database::class));
-});
+// --- Auto-wired Utility Classes ---
+$container->autowire(\App\Core\AuditLogger::class);
+$container->autowire(\App\Helper\DateHelper::class);
 
-$container->register(\App\Service\DepartmentService::class, function (\App\Core\Container $c) {
-    return new \App\Service\DepartmentService(
-        $c->get(\App\Repository\DepartmentRepository::class),
-        $c->get(\App\Repository\UserRepository::class)
-    );
-});
+// --- Auto-wired Services (dependencies resolved via constructor inspection) ---
+$container->autowire(\App\Service\DepartmentService::class);
+$container->autowire(\App\Service\DesignationService::class);
+$container->autowire(\App\Service\UserService::class);
+$container->autowire(\App\Service\LeaveTypeService::class);
+$container->autowire(\App\Service\LeaveRequestService::class);
+$container->autowire(\App\Service\InvoiceService::class);
+$container->autowire(\App\Service\CustomerService::class);
+$container->autowire(\App\Service\CustomerContactService::class);
+$container->autowire(\App\Service\DashboardService::class);
+$container->autowire(\App\Service\BankService::class);
+$container->autowire(\App\Service\CurrencyService::class);
+$container->autowire(\App\Service\PaymentMethodService::class);
+$container->autowire(\App\Service\JournalService::class);
+$container->autowire(\App\Service\MembershipService::class);
+$container->autowire(\App\Service\EmailProviderService::class);
+$container->autowire(\App\Service\AttendanceService::class);
+$container->autowire(\App\Service\AttendanceDeviceService::class);
+$container->autowire(\App\Service\PaymentTermService::class);
+$container->autowire(\App\Service\PurchaseTypeService::class);
+$container->autowire(\App\Service\SaleTypeService::class);
+$container->autowire(\App\Service\StorageTypeService::class);
+$container->autowire(\App\Service\TaxTreatmentService::class);
+$container->autowire(\App\Service\AlertService::class);
+$container->autowire(\App\Service\StorageSubtypeService::class);
+$container->autowire(\App\Service\ModuleService::class);
+$container->autowire(\App\Service\ServiceService::class);
+$container->autowire(\App\Service\VendorService::class);
+$container->autowire(\App\Service\PayrollComponentService::class);
+$container->autowire(\App\Service\AccountReportCategoryService::class);
+$container->autowire(\App\Service\PayrollRunService::class);
+$container->autowire(\App\Service\SalaryStructureService::class);
+$container->autowire(\App\Service\ModulePermissionService::class);
+$container->autowire(\App\Service\RoleService::class);
+$container->autowire(\App\Service\AccountReportSubcategoryService::class);
+$container->autowire(\App\Service\CategoryHsCodeService::class);
+$container->autowire(\App\Service\ExpenseService::class);
+$container->autowire(\App\Service\RecurringInvoiceService::class);
+$container->autowire(\App\Service\CreditNoteService::class);
+$container->autowire(\App\Service\DebitNoteService::class);
+$container->autowire(\App\Service\PurchaseService::class);
+$container->autowire(\App\Service\PurchaseOrderService::class);
+$container->autowire(\App\Service\SaleOrderService::class);
+$container->autowire(\App\Service\QuotationService::class);
+$container->autowire(\App\Service\LeadQuotationService::class);
+$container->autowire(\App\Service\JobService::class);
+$container->autowire(\App\Service\ShippingAdviceService::class);
+$container->autowire(\App\Service\ShippingInvoiceService::class);
+$container->autowire(\App\Service\SetupGroupService::class);
+$container->autowire(\App\Service\SetupSourceService::class);
+$container->autowire(\App\Service\SetupStatusService::class);
+$container->autowire(\App\Service\SetupTagService::class);
+$container->autowire(\App\Service\UnitService::class);
+$container->autowire(\App\Service\CategoryService::class);
+$container->autowire(\App\Service\SubcategoryService::class);
+$container->autowire(\App\Service\CommodityTypeService::class);
+$container->autowire(\App\Service\ContainerTypeService::class);
+$container->autowire(\App\Service\DocumentCategoryService::class);
+$container->autowire(\App\Service\ExitPointService::class);
+$container->autowire(\App\Service\IncotermService::class);
+$container->autowire(\App\Service\BannedWordService::class);
+$container->autowire(\App\Service\PortService::class);
+$container->autowire(\App\Service\CarrierService::class);
+$container->autowire(\App\Service\ConsigneeService::class);
+$container->autowire(\App\Service\ShipperService::class);
+$container->autowire(\App\Service\HscodeService::class);
+$container->autowire(\App\Service\ItemService::class);
+$container->autowire(\App\Service\AccountService::class);
+$container->autowire(\App\Service\EmailProviderService::class);
+$container->autowire(\App\Service\AttendanceService::class);
+$container->autowire(\App\Service\PaymentTermService::class);
+$container->autowire(\App\Service\PurchaseTypeService::class);
+$container->autowire(\App\Service\SaleTypeService::class);
+$container->autowire(\App\Service\StorageTypeService::class);
+$container->autowire(\App\Service\TaxTreatmentService::class);
+$container->autowire(\App\Service\AlertService::class);
+$container->autowire(\App\Service\StorageSubtypeService::class);
+$container->autowire(\App\Service\ModuleService::class);
+$container->autowire(\App\Service\ServiceService::class);
+$container->autowire(\App\Service\VendorService::class);
+$container->autowire(\App\Service\PayrollComponentService::class);
+$container->autowire(\App\Service\AccountReportCategoryService::class);
+$container->autowire(\App\Service\PayrollRunService::class);
+$container->autowire(\App\Service\SalaryStructureService::class);
+$container->autowire(\App\Service\ModulePermissionService::class);
+$container->autowire(\App\Service\RoleService::class);
+$container->autowire(\App\Service\AccountReportSubcategoryService::class);
+$container->autowire(\App\Service\CategoryHsCodeService::class);
+$container->autowire(\App\Service\EntityNoteService::class);
+$container->autowire(\App\Service\UserDocumentService::class);
+$container->autowire(\App\Service\OrganizationDocumentService::class);
+$container->autowire(\App\Service\LeadAttachmentService::class);
+$container->autowire(\App\Service\CustomerAddressService::class);
+$container->autowire(\App\Service\GratuitySettlementService::class);
+$container->autowire(\App\Service\AirTicketService::class);
+$container->autowire(\App\Service\AnnualLeaveEntitlementService::class);
+$container->autowire(\App\Service\HrTodoTaskService::class);
 
-$container->register(\App\Repository\DesignationRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\DesignationRepository($c->get(\App\Core\Database::class));
-});
+// ---------------------------------------------------------------------------
+// NEW HTTP CONTROLLER REGISTRATIONS (Modern Pattern)
+// ---------------------------------------------------------------------------
 
-$container->register(\App\Service\DesignationService::class, function (\App\Core\Container $c) {
-    return new \App\Service\DesignationService($c->get(\App\Repository\DesignationRepository::class));
-});
-
-
-$container->register(\App\Service\UserService::class, function (\App\Core\Container $c) {
-    return new \App\Service\UserService($c->get(\App\Repository\UserRepository::class));
-});
-
-$container->register(\App\Repository\LeaveTypeRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\LeaveTypeRepository($c->get(\App\Core\Database::class));
-});
-
-$container->register(\App\Repository\LeaveRequestRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\LeaveRequestRepository($c->get(\App\Core\Database::class));
-});
-
-$container->register(\App\Service\LeaveTypeService::class, function (\App\Core\Container $c) {
-    return new \App\Service\LeaveTypeService(
-        $c->get(\App\Repository\LeaveTypeRepository::class),
-        $c->get(\App\Repository\LeaveRequestRepository::class)
-    );
-});
-
-$container->register(\App\Repository\InvoiceRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\InvoiceRepository($c->get(\App\Core\Database::class));
-});
-
-$container->register(\App\Service\InvoiceService::class, function (\App\Core\Container $c) {
-    return new \App\Service\InvoiceService(
-        $c->get(\App\Repository\InvoiceRepository::class),
-        $c->get(\App\Repository\CustomerRepository::class),
-        $c->get(\App\Core\Database::class)
-    );
-});
-
-$container->register(\App\Service\LeaveRequestService::class, function (\App\Core\Container $c) {
-    return new \App\Service\LeaveRequestService(
-        $c->get(\App\Repository\LeaveRequestRepository::class),
-        $c->get(\App\Repository\LeaveTypeRepository::class),
-        $c->get(\App\Repository\UserRepository::class)
-    );
-});
-
-$container->register(\App\Repository\CustomerRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\CustomerRepository($c->get(\App\Core\Database::class));
-});
-
-$container->register(\App\Service\CustomerService::class, function (\App\Core\Container $c) {
-    return new \App\Service\CustomerService($c->get(\App\Repository\CustomerRepository::class));
-});
-
-$container->register(\App\Service\DashboardService::class, function () {
-    return new \App\Service\DashboardService();
-});
-
-$container->register(\App\Repository\InvoiceRepository::class, function (\App\Core\Container $c) {
-    return new \App\Repository\InvoiceRepository($c->get(\App\Core\Database::class));
-});
-
-$container->register(\App\Service\InvoiceService::class, function (\App\Core\Container $c) {
-    return new \App\Service\InvoiceService(
-        $c->get(\App\Repository\InvoiceRepository::class),
-        $c->get(\App\Repository\CustomerRepository::class),
-        $c->get(\App\Core\Database::class)
-    );
-});
-
-$container->register(\App\Controller\SimpleCrudHandler::class, function (\App\Core\Container $c) {
-    return new \App\Controller\SimpleCrudHandler(
+$container->register(\App\Http\Controller\DepartmentController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\DepartmentController(
         $c->get(\App\Core\Database::class),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0) ?: null
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\DepartmentService::class)
     );
 });
 
-$container->register(\App\Controller\CurrenciesController::class, function (\App\Core\Container $c) {
-    return new \App\Controller\CurrenciesController(
+$container->register(\App\Http\Controller\DesignationController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\DesignationController(
         $c->get(\App\Core\Database::class),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? 0),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0)
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\DesignationService::class)
     );
 });
 
-$container->register(\App\Controller\BanksController::class, function (\App\Core\Container $c) {
-    return new \App\Controller\BanksController(
+$container->register(\App\Http\Controller\LeaveTypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\LeaveTypeController(
         $c->get(\App\Core\Database::class),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? 0),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0)
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\LeaveTypeService::class)
     );
 });
 
-$container->register(\App\Controller\PaymentMethodsController::class, function (\App\Core\Container $c) {
-    return new \App\Controller\PaymentMethodsController(
+$container->register(\App\Http\Controller\LeaveRequestController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\LeaveRequestController(
         $c->get(\App\Core\Database::class),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? 0),
-        (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['organization_id'] ?? 0)
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\LeaveRequestService::class)
     );
 });
 
-// Initialize dashboard error logging (only for dashboard pages)
-require_once(__DIR__ . '/admin_elements/error_logger.php');
+$container->register(\App\Http\Controller\BankController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\BankController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\BankService::class),
+        $c->get(\App\Service\CurrencyService::class)
+    );
+});
 
-// Mark this request in backend coverage manifest even if no error occurs.
-if (function_exists('backend_log_coverage_heartbeat')) {
-    backend_log_coverage_heartbeat(['entrypoint' => 'page']);
-}
+$container->register(\App\Http\Controller\CurrencyController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CurrencyController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\CurrencyService::class)
+    );
+});
 
-// Register custom error handlers for dashboard
-if (function_exists('custom_error_handler')) {
-	set_error_handler('custom_error_handler');
-}
-if (function_exists('custom_exception_handler')) {
-	set_exception_handler('custom_exception_handler');
-}
-if (function_exists('handle_fatal_error')) {
-	register_shutdown_function('handle_fatal_error');
-}
+$container->register(\App\Http\Controller\PaymentMethodController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PaymentMethodController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\PaymentMethodService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\UserController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\UserController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\UserService::class),
+        $c->get(\App\Service\UserDocumentService::class),
+        $GLOBALS['project_pre'],
+    );
+});
+
+$container->register(\App\Http\Controller\CustomerController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CustomerController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\CustomerService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\CustomerContactController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CustomerContactController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\CustomerContactService::class),
+        $c->get(\App\Service\CustomerService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\InvoiceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\InvoiceController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\InvoiceService::class)
+    );
+});
+
+// Setup Entity Controllers (Dashboard Page Migration)
+$container->register(\App\Http\Controller\SetupGroupController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SetupGroupController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\SetupGroupService::class)
+    );
+});
+$container->register(\App\Http\Controller\SetupStatusController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SetupStatusController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\SetupStatusService::class)
+    );
+});
+$container->register(\App\Http\Controller\SetupSourceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SetupSourceController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\SetupSourceService::class)
+    );
+});
+$container->register(\App\Http\Controller\SetupTagController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SetupTagController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\SetupTagService::class)
+    );
+});
+$container->register(\App\Http\Controller\UnitController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\UnitController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\UnitService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\CategoryController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CategoryController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\CategoryService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\SubcategoryController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SubcategoryController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\SubcategoryService::class),
+        $c->get(\App\Service\CategoryService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\CommodityTypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CommodityTypeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\CommodityTypeService::class)
+    );
+});
+
+
+$container->register(\App\Http\Controller\ContainerTypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ContainerTypeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\ContainerTypeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\DocumentCategoryController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\DocumentCategoryController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\DocumentCategoryService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\ExitPointController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ExitPointController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\ExitPointService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\IncotermController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\IncotermController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\IncotermService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\BannedWordController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\BannedWordController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\BannedWordService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\PortController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PortController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\PortService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\CarrierController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CarrierController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\CarrierService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\ConsigneeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ConsigneeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\ConsigneeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\ShipperController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ShipperController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\ShipperService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\HscodeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\HscodeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\HscodeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\ItemController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ItemController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\ItemService::class));
+});
+
+$container->register(\App\Http\Controller\AccountController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AccountController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\AccountService::class));
+});
+
+$container->register(\App\Http\Controller\EmailProviderController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\EmailProviderController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\EmailProviderService::class));
+});
+
+$container->register(\App\Http\Controller\AttendanceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AttendanceController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\AttendanceService::class));
+});
+
+$container->register(\App\Http\Controller\AttendanceDeviceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AttendanceDeviceController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\AttendanceDeviceService::class));
+});
+
+$container->register(\App\Http\Controller\PaymentTermController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PaymentTermController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\PaymentTermService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\PurchaseTypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PurchaseTypeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\PurchaseTypeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\SaleTypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SaleTypeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\SaleTypeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\StorageTypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\StorageTypeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\StorageTypeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\TaxTreatmentController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\TaxTreatmentController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\TaxTreatmentService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\AlertController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AlertController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\AlertService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\StorageSubtypeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\StorageSubtypeController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\StorageSubtypeService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\ModuleController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ModuleController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\ModuleService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\ServiceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ServiceController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\ServiceService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\VendorController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\VendorController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\VendorService::class)
+    );
+});
+
+$container->register(\App\Http\Controller\PayrollComponentController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PayrollComponentController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId(),
+        $c->get(\App\Service\PayrollComponentService::class)
+    );
+});
+# --- Batch 5 controllers ---
+
+$container->register(\App\Http\Controller\AccountReportCategoryController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AccountReportCategoryController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\AccountReportCategoryService::class));
+});
+
+$container->register(\App\Http\Controller\PayrollRunController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PayrollRunController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\PayrollRunService::class));
+});
+
+$container->register(\App\Http\Controller\SalaryStructureController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SalaryStructureController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\SalaryStructureService::class));
+});
+
+$container->register(\App\Http\Controller\ModulePermissionController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ModulePermissionController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\ModulePermissionService::class));
+});
+# --- Batch 6 controllers ---
+
+$container->register(\App\Http\Controller\RoleController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\RoleController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\RoleService::class));
+});
+
+$container->register(\App\Http\Controller\AccountReportSubcategoryController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AccountReportSubcategoryController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\AccountReportSubcategoryService::class));
+});
+
+$container->register(\App\Http\Controller\CategoryHsCodeController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CategoryHsCodeController($c->get(\App\Core\Database::class), \App\Core\Session::userId(), \App\Core\Session::roleId(), \App\Core\Session::orgId(), $c->get(\App\Service\CategoryHsCodeService::class));
+});
+# --- P14e Phase 1 controllers ---
+$container->register(\App\Http\Controller\ExpenseController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ExpenseController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\ExpenseService::class)
+    );
+});
+# --- Journals & Recurring Invoices controllers ---
+$container->register(\App\Http\Controller\JournalController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\JournalController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\JournalService::class)
+    );
+});
+$container->register(\App\Http\Controller\RecurringInvoiceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\RecurringInvoiceController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\RecurringInvoiceService::class)
+    );
+});
+# --- P14e Phase 1 controllers: Credit Notes & Debit Notes ---
+$container->register(\App\Http\Controller\CreditNoteController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CreditNoteController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\CreditNoteService::class)
+    );
+});
+$container->register(\App\Http\Controller\DebitNoteController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\DebitNoteController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\DebitNoteService::class)
+    );
+});
+# --- P14e Phase 2 controllers: Purchases & Purchase Orders ---
+$container->register(\App\Http\Controller\PurchaseController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PurchaseController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\PurchaseService::class)
+    );
+});
+$container->register(\App\Http\Controller\PurchaseOrderController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\PurchaseOrderController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\PurchaseOrderService::class)
+    );
+});
+# --- P14e Phase 3 controllers: Sale Orders & Quotations ---
+$container->register(\App\Http\Controller\SaleOrderController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\SaleOrderController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\SaleOrderService::class)
+    );
+});
+$container->register(\App\Http\Controller\QuotationController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\QuotationController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\QuotationService::class)
+    );
+});
+# --- P14e Phase 4 controller: Lead Quotations ---
+$container->register(\App\Http\Controller\LeadQuotationController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\LeadQuotationController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\LeadQuotationService::class)
+    );
+});
+# --- P14e Phase 5 controller: Jobs ---
+$container->register(\App\Http\Controller\JobController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\JobController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\JobService::class)
+    );
+});
+# --- Shipping modules ---
+$container->register(\App\Http\Controller\ShippingAdviceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ShippingAdviceController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\ShippingAdviceService::class)
+    );
+});
+$container->register(\App\Http\Controller\ShippingInvoiceController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\ShippingInvoiceController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\ShippingInvoiceService::class)
+    );
+});
+# --- Entity Notes controllers (Customer Comments & Lead Notes) ---
+$container->register(\App\Http\Controller\CustomerCommentController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CustomerCommentController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\EntityNoteService::class)
+    );
+});
+$container->register(\App\Http\Controller\LeadNoteController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\LeadNoteController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\EntityNoteService::class)
+    );
+});
+# --- User Documents & Lead Attachments controllers ---
+$container->register(\App\Http\Controller\UserDocumentController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\UserDocumentController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\UserDocumentService::class)
+    );
+});
+$container->register(\App\Http\Controller\LeadAttachmentController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\LeadAttachmentController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\LeadAttachmentService::class)
+    );
+});
+# --- Customer Address module ---
+$container->register(\App\Http\Controller\CustomerAddressController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\CustomerAddressController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\CustomerAddressService::class)
+    );
+});
+# --- Gratuity Settlement module ---
+$container->register(\App\Http\Controller\GratuitySettlementController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\GratuitySettlementController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\GratuitySettlementService::class)
+    );
+});
+# --- Air Tickets module ---
+$container->register(\App\Http\Controller\AirTicketController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AirTicketController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\AirTicketService::class)
+    );
+});
+# --- Annual Leave Entitlements module ---
+$container->register(\App\Http\Controller\AnnualLeaveEntitlementController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\AnnualLeaveEntitlementController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\AnnualLeaveEntitlementService::class)
+    );
+});
+
+# --- HR To-Do Tasks module ---
+$container->register(\App\Http\Controller\HrTodoTaskController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\HrTodoTaskController(
+        $c->get(\App\Core\Database::class),
+        \App\Core\Session::userId(),
+        \App\Core\Session::roleId(),
+        \App\Core\Session::orgId(),
+        $c->get(\App\Service\HrTodoTaskService::class)
+    );
+});
 
 // Initialize Deletion Manager (centralized deletion handling)
 \App\Core\DeletionManager::init($mysqli, $project_pre);
@@ -365,31 +1078,27 @@ if (!function_exists('dashboardMaxTeamMembers')) {
 if (!function_exists('dashboardOrganizationActiveMemberCount')) {
     function dashboardOrganizationActiveMemberCount(int $organizationId): int
     {
-        global $mysqli;
-
-        if ($organizationId <= 0 || !$mysqli instanceof mysqli) {
+        if ($organizationId <= 0) {
             return 0;
         }
 
-        return OrganizationMembershipManager::countActiveMembers($mysqli, $organizationId);
+        $ms = new \App\Service\MembershipService();
+        return $ms->countActiveMembers($organizationId);
     }
 }
 
 if (!function_exists('dashboardUserBelongsToOrganization')) {
     function dashboardUserBelongsToOrganization(int $organizationId, ?int $userId = null): bool
     {
-        global $mysqli, $session_user_id;
-
-        if (!($mysqli instanceof mysqli)) {
-            return false;
-        }
+        global $session_user_id;
 
         $resolvedUserId = $userId !== null ? (int)$userId : (int)$session_user_id;
         if ($organizationId <= 0 || $resolvedUserId <= 0) {
             return false;
         }
 
-        return OrganizationMembershipManager::hasActiveMembership($mysqli, $organizationId, $resolvedUserId);
+        $ms = new \App\Service\MembershipService();
+        return $ms->hasActiveMembership($organizationId, $resolvedUserId);
     }
 }
 
@@ -561,8 +1270,8 @@ if (!function_exists('dashboardRequireActiveOrganization')) {
             return $activeOrganizationId;
         }
 
-        $separator = (strpos($redirectTo, '?') === false) ? '?' : '&';
-        header('Location:' . $redirectTo . $separator . 'error_message=' . urlencode($message));
+        flash_error($message);
+        header('Location:' . $redirectTo);
         exit;
     }
 }
@@ -582,7 +1291,8 @@ if (!function_exists('dashboardCreateOrganizationInvite')) {
             return ['success' => false, 'message' => 'Your subscription team-member limit has been reached.'];
         }
 
-        $result = OrganizationMembershipManager::createInvite($mysqli, $organizationId, (int)$session_user_id, $email, $roleId);
+        $ms = new \App\Service\MembershipService();
+        $result = $ms->createInvite($organizationId, (int)$session_user_id, $email, $roleId);
         if (!empty($result['success'])) {
             $queueResult = dashboardQueueOrganizationInviteEmail(
                 $organizationId,
@@ -604,23 +1314,24 @@ if (!function_exists('dashboardCreateOrganizationInvite')) {
 if (!function_exists('dashboardAcceptOrganizationInvite')) {
     function dashboardAcceptOrganizationInvite(string $token): array
     {
-        global $mysqli, $session_user_id;
+        global $session_user_id;
 
-        return OrganizationMembershipManager::acceptInviteByToken($mysqli, $token, (int)$session_user_id);
+        $ms = new \App\Service\MembershipService();
+        return $ms->acceptInviteByToken($token, (int)$session_user_id);
     }
 }
 
 if (!function_exists('dashboardResendOrganizationInvite')) {
     function dashboardResendOrganizationInvite(int $organizationId, int $inviteId, ?int $roleId = null): array
     {
-        global $mysqli, $session_user_id;
+        global $session_user_id;
 
         if (!dashboardCanInviteMembers()) {
             return ['success' => false, 'message' => 'Your subscription does not allow inviting members.'];
         }
 
-        $result = OrganizationMembershipManager::resendInvite(
-            $mysqli,
+        $ms = new \App\Service\MembershipService();
+        $result = $ms->resendInvite(
             $organizationId,
             $inviteId,
             (int)$session_user_id,
@@ -650,14 +1361,14 @@ if (!function_exists('dashboardResendOrganizationInvite')) {
 if (!function_exists('dashboardRevokeOrganizationInvite')) {
     function dashboardRevokeOrganizationInvite(int $organizationId, int $inviteId): array
     {
-        global $mysqli, $session_user_id;
+        global $session_user_id;
 
         if (!dashboardCanInviteMembers()) {
             return ['success' => false, 'message' => 'Your subscription does not allow inviting members.'];
         }
 
-        return OrganizationMembershipManager::revokeInvite(
-            $mysqli,
+        $ms = new \App\Service\MembershipService();
+        return $ms->revokeInvite(
             $organizationId,
             $inviteId,
             (int)$session_user_id,
@@ -871,7 +1582,7 @@ if (!function_exists('dashboardQueueOrganizationInviteEmail')) {
             'X-Invite-Token' => $inviteToken,
         ];
 
-        $queue = new EmailQueue($mysqli);
+        $queue = new EmailQueue();
         $queueId = $queue->enqueue($recipientEmail, $subject, $body, $headers, 1);
 
         if (!$queueId) {
@@ -894,3 +1605,33 @@ if ($entitlementExpired) {
     $_SESSION[$project_pre]['DASHBOARD']['system_entitlements'] = $resolvedEntitlements;
     $_SESSION[$project_pre]['DASHBOARD']['system_entitlements_cached_at'] = time();
 }
+
+/*
+|--------------------------------------------------------------------------
+| Http Layer — Request, Kernel, Middleware (Phase 1 Migration)
+|--------------------------------------------------------------------------
+| Register the new Http namespace classes. Page files can optionally use
+| $kernel->handle(Request::fromGlobals()) once controllers are created.
+*/
+
+$container->register(\App\Http\Controller\HrGuideController::class, function (\App\Core\Container $c) {
+    return new \App\Http\Controller\HrGuideController(
+        $c->get(\App\Core\Database::class),
+        Session::userId(),
+        Session::roleId(),
+        Session::orgId()
+    );
+});
+
+$container->register(\App\Http\Request::class, function () {
+    return \App\Http\Request::fromGlobals();
+});
+
+$container->register(\App\Http\Kernel::class, function (\App\Core\Container $c) {
+    $kernel = new \App\Http\Kernel();
+
+    $kernel->addMiddleware(new \App\Http\Middleware\CsrfMiddleware());
+    $kernel->addMiddleware(new \App\Http\Middleware\AuthMiddleware($project_pre));
+
+    return $kernel;
+});

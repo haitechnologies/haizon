@@ -2,13 +2,9 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
+use App\Service\JournalService;
 include('admin_elements/admin_header.php');
-
-// =========================================================================
-// ACCOUNTING JOURNAL MANAGER INTEGRATION
-// =========================================================================
-// Removed legacy require for autoloader compatibility: require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
-require_once(__DIR__ . '/../config/accounting.php');
 
 $module             = 'payments_made';
 $module_caption     = 'Payment Made';
@@ -230,7 +226,7 @@ if ($action == "update_$module" && !empty($id)) {
                     $ap_account = $mysqli->query("SELECT id FROM `{$accounts_table}` WHERE account_code IN ('2100', '2110', '2000') OR account_name LIKE '%Payable%' LIMIT 1")->fetch_assoc();
 
                     if (!empty($paid_from) && !empty($ap_account['id'])) {
-                        $journal = new AccountingJournalManager($mysqli);
+                        $journal = new JournalService();
                         $vendor_name = getTableAttr('display_name', DB::VENDORS, $vendor_id);
 
                         $journal_entries = array(
@@ -266,7 +262,8 @@ if ($action == "update_$module" && !empty($id)) {
                     $mysqli->query("DELETE FROM `{$journal_table}` WHERE id={$existing_journal_id}");
                 }
 
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
             }
         } else {
             $error_message = "The $module_caption could not be updated. Please try again.";
@@ -349,7 +346,7 @@ if ($action == "update_$module" && !empty($id)) {
                     $ap_account = $mysqli->query("SELECT id FROM `{$accounts_table}` WHERE account_code IN ('2100', '2110', '2000') OR account_name LIKE '%Payable%' LIMIT 1")->fetch_assoc();
 
                     if (!empty($paid_from) && !empty($ap_account['id'])) {
-                        $journal = new AccountingJournalManager($mysqli);
+                        $journal = new JournalService();
                         $vendor_name = getTableAttr('display_name', DB::VENDORS, $vendor_id);
 
                         $journal_entries = array(
@@ -382,7 +379,8 @@ if ($action == "update_$module" && !empty($id)) {
                     }
                 }
 
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
             }
         }
     }
@@ -399,9 +397,9 @@ $tbl_payment_made = defined('DB::PAYMENTS_MADE') ? DB::PAYMENTS_MADE : $tbl_name
 $created_by = getTableAttr('created_by', $tbl_payment_made, $id);
 
 if (
-    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
+    (!empty($id) && Session::roleId() == '1')
     ||
-    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['user_id'] == $created_by)
+    (!empty($id) && Session::userId() == $created_by)
 ) {
 
     $result = $mysqli->query("SELECT * FROM `$tbl_payment_made` WHERE id=$id");

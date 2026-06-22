@@ -1,17 +1,16 @@
 <?php
 
-include('admin_elements/admin_header.php');
+use App\Service\JournalService;
 
-// ACCOUNTING JOURNAL MANAGER INTEGRATION
-require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
+include('admin_elements/admin_header.php');
 
 $module = 'expenses';
 $module_caption = 'Expense';
 $tbl_name = $tbl_prefix . $module;
 
 $file_upload_path           = '../uploads/expense_attachments/';
-$allowed_file_size          = $GLOBALS['DOCUMENT']['MAX_UPLOAD_SIZE']; //MB Bytes
-$allowed_file_formats       = $GLOBALS['DOCUMENT']['FORMATS']; //MB Bytes
+$allowed_file_size          = $GLOBALS['DOCUMENT']['MAX_UPLOAD_SIZE'] ?? '5MB';
+$allowed_file_formats       = $GLOBALS['DOCUMENT']['FORMATS'] ?? '.doc, .docx, .pdf, .txt, .rtf, .xls, .xlsx, .ppt, .pptx, .jpeg, .jpg, .png';
 
 $error_message = '';
 $success_message = '';
@@ -36,13 +35,16 @@ include('admin_elements/permissions.php');
 $expense_id = '';
 if (isset($_REQUEST['expense_id']))        $expense_id     = e_s__($_REQUEST['expense_id']);
 if (isset($_POST['expense_id']))           $expense_id     = e_s__($_POST['expense_id']);
+if (empty($expense_id) && isset($_REQUEST['id'])) $expense_id = e_s__($_REQUEST['id']);
 
 
 // ------------------ CHECK IF EXISTS ----------------
-//VERIFY IF IS VALID 
+//VERIFY IF IS VALID
 $rs_expense_valid  = $mysqli->query("SELECT id FROM `" . tbl_expenses . "` WHERE id='" . $expense_id . "'");
 if ($rs_expense_valid->num_rows == 0) {
-    header("Location:listing_expenses.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_expenses.php");
+    exit;
 }
 
 
@@ -133,7 +135,7 @@ if (($action == "delete_$module" && !empty($expense_id)) && granted('delete', $m
 
     } else {
         $filename = getTableAttr('filename', tbl_expense_attachments, $attachment_id);
-        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$attachment_id AND created_by='" . $_SESSION[$project_pre]['DASHBOARD']['user_id'] . "'");
+        $result = $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$attachment_id AND created_by='" . Session::userId() . "'");
         unlink($file_upload_path  . $filename);
 
         // expense Logs
@@ -171,7 +173,7 @@ if ($action == "add_$module" && granted('create', $module_id)) {
     if (empty($_FILES['document']['tmp_name'])) {
         $error_message = "Attachment is mandatory.";
 
-        // To check extensions are correct or not 
+        // To check extensions are correct or not
     } else if (!in_array($imageFileType, $extensions) === true) {
         $error_message = "No file selected or Invalid file extension...";
     } else if ($_FILES["document"]["size"] > 5242880) {
@@ -212,19 +214,19 @@ if (($action == "clone_$module" && !empty($expense_id))) {
 
     // 1. Clone the Parent Expense
     $result = $mysqli->query("INSERT INTO `fls_expenses` (expense_date, paid_through, vendor_id, reference_no, customer_id, grand_total, expense_status, is_active, created_at, updated_at, created_by)
-    SELECT expense_date, paid_through, vendor_id, reference_no, customer_id, grand_total, 'draft', is_active, NOW(), NOW(), '" . $session_user_id . "' 
-    FROM `fls_expenses` 
+    SELECT expense_date, paid_through, vendor_id, reference_no, customer_id, grand_total, 'draft', is_active, NOW(), NOW(), '" . Session::userId() . "'
+    FROM `fls_expenses`
     WHERE id = $expense_id;");
 
     $new_cloned_id = $mysqli->insert_id;
     // If you have a fingerprint function like in your example:
-    // fp__('fls_expenses', $new_cloned_id); 
+    // fp__('fls_expenses', $new_cloned_id);
 
 
     // 2. Clone the Expense Items
-    $result = $mysqli->query("INSERT INTO `fls_expense_items` (expense_id, expense_account, description, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, expense_account, description, total, NOW(), NOW(), '" . $session_user_id . "' 
-    FROM `fls_expense_items` 
+    $result = $mysqli->query("INSERT INTO `fls_expense_items` (expense_id, expense_account, description, total, created_at, updated_at, created_by)
+    SELECT $new_cloned_id, expense_account, description, total, NOW(), NOW(), '" . Session::userId() . "'
+    FROM `fls_expense_items`
     WHERE expense_id = $expense_id");
 
     // If you have a fingerprint function:
@@ -280,7 +282,7 @@ if (($action == "convert_to_invoice" && !empty($expense_id))) {
             // Create Invoice
             $insert_invoice = $mysqli->query("INSERT INTO `" . tbl_invoices . "`
                 (invoice_no, customer_id, invoice_status, invoice_date, reference_no, warehouse_id, grand_total, is_active)
-                VALUES 
+                VALUES
                 ('$invoice_no', '$customer_id', 'draft', '$expense_date', '$reference_no', 0, '$grand_total', 1)");
 
             if (!$insert_invoice) {
@@ -303,7 +305,7 @@ if (($action == "convert_to_invoice" && !empty($expense_id))) {
 
                         $insert_item = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "`
                             (invoice_id, service, description, qty, rate, sub_total, tax, tax_amount, total)
-                            VALUES 
+                            VALUES
                             ('$new_invoice_id', '', '$description', 1, '$total', '$total', 0, 0, '$total')");
 
                         if ($insert_item) {
@@ -319,7 +321,7 @@ if (($action == "convert_to_invoice" && !empty($expense_id))) {
                         $customer_display_name = getTableAttr('display_name', tbl_customers, $customer_id);
 
                         // Initialize Journal Manager
-                        $journal = new AccountingJournalManager($mysqli);
+                        $journal = new JournalService();
 
                         // Prepare journal entries for INVOICE
                         $journal_entries = array();
@@ -372,12 +374,10 @@ if (($action == "convert_to_invoice" && !empty($expense_id))) {
                         } else {
                             $error_message = "Required accounts not found. Cannot create journal entry.";
                         }
-
                     } catch (Exception $e) {
                         error_log("Exception converting expense to invoice: " . $e->getMessage());
                         $error_message = "Error creating journal entry: " . $e->getMessage();
                     }
-
                 } else {
                     $error_message = "Expense has no items to convert.";
                 }
@@ -711,7 +711,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                                     $total_credit = 0;
 
                                     //-------------------------------------------------------------------
-                                    // -------- JOURNAL ENTRIES 
+                                    // -------- JOURNAL ENTRIES
                                     //-------------------------------------------------------------------
 
                                     $result_journal_items     = $mysqli->query("SELECT * FROM `" . tbl_journal_items . "` WHERE journal_id=$journal_id");
@@ -740,7 +740,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                             </table>
                         </div>
                     </div>
-                <?php } // JOURNAL 
+                <?php } // JOURNAL
                 ?>
 
 

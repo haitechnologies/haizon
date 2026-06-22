@@ -27,14 +27,16 @@ include('admin_elements/permissions.php');
 $sale_order_id = '';
 if (isset($_REQUEST['sale_order_id']))        $sale_order_id     = e_s__($_REQUEST['sale_order_id']);
 if (isset($_POST['sale_order_id']))           $sale_order_id     = e_s__($_POST['sale_order_id']);
-
+if (empty($sale_order_id) && isset($_REQUEST['id'])) $sale_order_id = e_s__($_REQUEST['id']);
 
 
 // ------------------ CHECK IF EXISTS ----------------
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_sale_orders . "` WHERE id=$sale_order_id");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_sale_orders.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_sale_orders.php");
+    exit;
 }
 
 
@@ -115,7 +117,7 @@ if (($action == "convert_$module" && !empty($sale_order_id))) {
 
     // -- Invoice Items
     $result = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "` ( invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_sale_order_items . "` WHERE sale_order_id = $sale_order_id");
+    SELECT $new_invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_sale_order_items . "` WHERE sale_order_id = $sale_order_id");
 
     fp__(tbl_invoice_items, $mysqli->insert_id);
 
@@ -168,7 +170,7 @@ if (($action == "convert_$module" && !empty($sale_order_id))) {
 
     // -- Sale order Items
     $result = $mysqli->query("INSERT INTO `" . tbl_sale_order_items . "` ( sale_order_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_sale_order_items . "` WHERE sale_order_id = $sale_order_id");
+    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_sale_order_items . "` WHERE sale_order_id = $sale_order_id");
 
     fp__(tbl_sale_order_items, $mysqli->insert_id);
 
@@ -204,7 +206,9 @@ if (($action == "convert_$module" && !empty($sale_order_id))) {
         /* ---------------------- NOTIFICATIONS QUERY ---------------------- */
 
         // --------------------------------------------------------------------------------
-        header("Location:sale_order_overview.php?sale_order_id=$sale_order_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:sale_order_overview.php?sale_order_id=$sale_order_id");
+        exit;
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";

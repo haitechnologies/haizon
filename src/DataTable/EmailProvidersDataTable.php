@@ -159,7 +159,7 @@ class EmailProvidersDataTable extends BaseDataTable
             'smtp_details' => $smtpDetails,
             'daily_usage' => $usageDetails,
             'daily_usage_graph' => $usageGraph,
-            'created_at' => timeAgo($createdAt),
+            'created_at' => $this->formatTimeAgo($createdAt),
             'status' => $statusBadge,
             'actions' => $this->getActionButtons($id, 'email_providers', $isPrimary, $canDelete)
         ];
@@ -169,7 +169,7 @@ class EmailProvidersDataTable extends BaseDataTable
     {
         $actions = '';
         // Only show the edit (pencil) icon
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= '<a href="email_providers.php?action=edit_email_providers&id=' . $id . '" title="Edit" class="action-btn action-edit"><i class="ph-pencil"></i></a>';
         }
         return $actions;

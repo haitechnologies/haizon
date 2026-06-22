@@ -31,7 +31,7 @@ class DepartmentRepository
      */
     public function find(int $id): ?Department
     {
-        $sql = "SELECT id, organization_id, department, is_active, created_at, updated_at, created_by 
+        $sql = "SELECT id, organization_id, department, publish, created_at, updated_at, created_by 
                 FROM DB::DEPARTMENTS 
                 WHERE id = :id";
 
@@ -51,7 +51,7 @@ class DepartmentRepository
      */
     public function findAll(int $organizationId): array
     {
-        $sql = "SELECT id, organization_id, department, is_active, created_at, updated_at, created_by 
+        $sql = "SELECT id, organization_id, department, publish, created_at, updated_at, created_by 
                 FROM DB::DEPARTMENTS 
                 WHERE organization_id = :organization_id 
                 ORDER BY department ASC";
@@ -105,13 +105,13 @@ class DepartmentRepository
      */
     private function insert(Department $dept): Department
     {
-        $sql = "INSERT INTO DB::DEPARTMENTS (organization_id, department, is_active, created_by) 
-                VALUES (:organization_id, :department, :is_active, :created_by)";
+        $sql = "INSERT INTO DB::DEPARTMENTS (organization_id, department, publish, created_by) 
+                VALUES (:organization_id, :department, :publish, :created_by)";
 
         $params = [
             'organization_id' => $dept->organizationId,
             'department' => $dept->department,
-            'is_active' => $dept->publish ? 1 : 0,
+            'publish' => $dept->publish ? 1 : 0,
             'created_by' => $dept->createdBy,
         ];
 
@@ -127,14 +127,14 @@ class DepartmentRepository
         $sql = "UPDATE DB::DEPARTMENTS 
                 SET organization_id = :organization_id, 
                     department = :department, 
-                    is_active = :is_active, 
+                    publish = :publish, 
                     created_by = :created_by 
                 WHERE id = :id";
 
         $params = [
             'organization_id' => $dept->organizationId,
             'department' => $dept->department,
-            'is_active' => $dept->publish ? 1 : 0,
+            'publish' => $dept->publish ? 1 : 0,
             'created_by' => $dept->createdBy,
             'id' => $dept->id,
         ];
@@ -165,8 +165,7 @@ class DepartmentRepository
             id: (int)$row['id'],
             organizationId: $row['organization_id'] !== null ? (int)$row['organization_id'] : null,
             department: (string)$row['department'],
-            publish: (bool)$row['publish'],
-            isActive: (bool)($row['is_active'] ?? $row['publish'] ?? true),
+            publish: (bool)($row['publish'] ?? false),
             createdAt: (string)($row['created_at'] ?? ''),
             updatedAt: (string)($row['updated_at'] ?? ''),
             createdBy: (int)($row['created_by'] ?? 0)

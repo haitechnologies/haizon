@@ -1,13 +1,8 @@
 <?php
 
 use App\Core\DB;
+use App\Service\JournalService;
 include('admin_elements/admin_header.php');
-
-// =========================================================================
-// ACCOUNTING JOURNAL MANAGER INTEGRATION
-// =========================================================================
-require_once(__DIR__ . '/../classes/AccountingJournalManager.php');
-require_once(__DIR__ . '/../config/accounting.php');
 
 $module = 'invoices';
 $module_caption = 'Recurring Invoice';
@@ -33,11 +28,14 @@ include('admin_elements/permissions.php');
 $invoice_id = '';
 if (isset($_REQUEST['invoice_id']))        $invoice_id     = e_s__($_REQUEST['invoice_id']);
 if (isset($_POST['invoice_id']))           $invoice_id     = e_s__($_POST['invoice_id']);
+if (empty($invoice_id) && isset($_REQUEST['id'])) $invoice_id = e_s__($_REQUEST['id']);
 
 // CHECK IF EXISTS
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_invoices . "` WHERE id='" . $invoice_id . "' AND recurring=1");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_recurring_invoices.php?error_message=Invalid Recurring Invoice in the database.");
+    flash_error('Invalid Recurring Invoice in the database.');
+    header("Location:listing_recurring_invoices.php");
+    exit;
 }
 
 /*
@@ -57,7 +55,9 @@ if (($action == "update_$module" && !empty($invoice_id) && isset($recurring_stat
     
     if ($result) {
         $success_message = "The recurring $module_caption status has been updated successfully.";
-        header("Location:recurring_invoice_overview.php?invoice_id=$invoice_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:recurring_invoice_overview.php?invoice_id=$invoice_id");
+        exit;
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";
     }

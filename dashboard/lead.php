@@ -2,6 +2,7 @@
 
 
 use App\Core\DB;
+
 include('admin_elements/admin_header.php');
 
 $module = 'leads';
@@ -24,9 +25,10 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 // CHECK IF NOT SUPER ADMIN
 // FOR - LEAD OWNER - ASSGINED TO - CREATED BY
 if ($session_role_id > 2 && !empty($id)) {
-    $rs_verify = $mysqli->query("SELECT id FROM `" . DB::LEADS  . "` WHERE id=$id AND (lead_owner = $session_user_id OR assigned_to = $session_user_id OR created_by = $session_user_id)");
+    $rs_verify = $mysqli->query("SELECT id FROM `" . DB::LEADS  . "` WHERE id=$id AND (lead_owner = Session::userId() OR assigned_to = Session::userId() OR created_by = Session::userId())");
     if ($rs_verify->num_rows == 0) {
-        header("Location:listing_leads.php?error_message=Leads Permissions not Valid.");
+        flash_error('Leads Permissions not Valid.');
+        header("Location:listing_leads.php");
     }
 }
 
@@ -127,7 +129,7 @@ if ($action == "convert" && !empty($id)) {
                 is_active,
                 now(),
                 now(),
-                $session_user_id
+                Session::userId()
             FROM `" . DB::LEADS . "`
             WHERE id =  $id");
 
@@ -223,7 +225,38 @@ if (!empty($id)) {
     $publish                = s__($row['is_active']);
 }
 
-// $photo = getTableAttr('photo', $tbl_name, $id);
+if (!isset($is_converted)) $is_converted = 0;
+if (!isset($lead_type)) $lead_type = '';
+if (!isset($salutation)) $salutation = '';
+if (!isset($first_name)) $first_name = '';
+if (!isset($last_name)) $last_name = '';
+if (!isset($display_name)) $display_name = '';
+if (!isset($address)) $address = '';
+if (!isset($email)) $email = '';
+if (!isset($phone)) $phone = '';
+if (!isset($mobile)) $mobile = '';
+if (!isset($contacted_date)) $contacted_date = '';
+if (!isset($description)) $description = '';
+if (!isset($tags_captions)) $tags_captions = '';
+if (!isset($lead_status)) $lead_status = '';
+if (!isset($lead_source)) $lead_source = '';
+if (!isset($assigned_to)) $assigned_to = '';
+if (!isset($lead_owner)) $lead_owner = '';
+if (!isset($country)) $country = '';
+if (!isset($street1)) $street1 = '';
+if (!isset($street2)) $street2 = '';
+if (!isset($city)) $city = '';
+if (!isset($state)) $state = '';
+if (!isset($pobox)) $pobox = '';
+if (!isset($service_name)) $service_name = '';
+if (!isset($website)) $website = '';
+if (!isset($department)) $department = '';
+if (!isset($designation)) $designation = '';
+if (!isset($x)) $x = '';
+if (!isset($facebook)) $facebook = '';
+if (!isset($instagram)) $instagram = '';
+if (!isset($trn)) $trn = '';
+
 /*
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------

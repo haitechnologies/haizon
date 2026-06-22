@@ -19,6 +19,14 @@ class UserService
 {
     private UserRepository $userRepo;
 
+    /** Allowed personal email domains for employee accounts */
+    private const ALLOWED_EMAIL_DOMAINS = [
+        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com',
+        'live.com', 'icloud.com', 'mail.com', 'protonmail.com',
+        'proton.me', 'aol.com', 'ymail.com', 'zoho.com',
+        'rediffmail.com', 'tutanota.com',
+    ];
+
     public function __construct(UserRepository $userRepo)
     {
         $this->userRepo = $userRepo;
@@ -64,6 +72,9 @@ class UserService
             $dob = $this->convertDateToDb($data['dob']);
         }
 
+        $firstName = trim($data['first_name'] ?? '');
+        $lastName = trim($data['last_name'] ?? '');
+
         $user = new User(
             id: null,
             canAccessSystem: (bool)($data['can_access_system'] ?? true),
@@ -71,7 +82,9 @@ class UserService
             roleId: (int)$data['role_id'],
             email: $email,
             password: $hashedPassword,
-            fullName: trim($data['full_name']),
+            fullName: trim($firstName . ' ' . $lastName),
+            firstName: $firstName,
+            lastName: $lastName,
             mobile: !empty($data['mobile']) ? trim($data['mobile']) : null,
             contact1: trim($data['contact1']),
             contact2: !empty($data['contact2']) ? trim($data['contact2']) : null,
@@ -123,6 +136,9 @@ class UserService
             $dob = $this->convertDateToDb($data['dob']);
         }
 
+        $firstName = trim($data['first_name'] ?? $user->firstName ?? '');
+        $lastName = trim($data['last_name'] ?? $user->lastName ?? '');
+
         $updatedUser = new User(
             id: $user->id,
             canAccessSystem: (bool)($data['can_access_system'] ?? $user->canAccessSystem),
@@ -130,7 +146,9 @@ class UserService
             roleId: (int)$data['role_id'],
             email: $email,
             password: $hashedPassword,
-            fullName: trim($data['full_name']),
+            fullName: trim($firstName . ' ' . $lastName),
+            firstName: $firstName,
+            lastName: $lastName,
             mobile: !empty($data['mobile']) ? trim($data['mobile']) : $user->mobile,
             contact1: trim($data['contact1']),
             contact2: !empty($data['contact2']) ? trim($data['contact2']) : null,
@@ -145,6 +163,14 @@ class UserService
         );
 
         return $this->userRepo->save($updatedUser);
+    }
+
+    /**
+     * List all users
+     */
+    public function list(): array
+    {
+        return $this->userRepo->findAll();
     }
 
     /**
@@ -179,9 +205,9 @@ class UserService
             $errors['role_id'] = 'Please select role.';
         }
 
-        $fullName = trim($data['full_name'] ?? '');
-        if ($fullName === '') {
-            $errors['full_name'] = 'Full name is mandatory.';
+        $firstName = trim($data['first_name'] ?? '');
+        if ($firstName === '') {
+            $errors['first_name'] = 'First name is mandatory.';
         }
 
         $email = trim($data['email'] ?? '');
@@ -189,6 +215,20 @@ class UserService
             $errors['email'] = 'Email is mandatory.';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Please provide a valid email address.';
+        } elseif (!preg_match('/@[^@]+$/', $email, $matches)) {
+            $errors['email'] = 'Invalid email format.';
+        } else {
+            $domain = strtolower($matches[0]);
+            $isAllowed = false;
+            foreach (self::ALLOWED_EMAIL_DOMAINS as $allowed) {
+                if ($domain === '@' . $allowed) {
+                    $isAllowed = true;
+                    break;
+                }
+            }
+            if (!$isAllowed) {
+                $errors['email'] = 'Only personal email addresses (e.g. Gmail, Yahoo, Outlook) are allowed.';
+            }
         }
 
         $password = $data['password'] ?? '';

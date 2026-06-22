@@ -47,11 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $invoice_id = '';
 if (isset($_REQUEST['invoice_id']))        $invoice_id     = $_REQUEST['invoice_id'];
 if (isset($_POST['invoice_id']))           $invoice_id     = $_POST['invoice_id'];
+if (empty($invoice_id) && isset($_REQUEST['id'])) $invoice_id = e_s__($_REQUEST['id']);
 
 // INPUT VALIDATION: Validate invoice_id
 $invoiceIdResult = InputValidator::integer($invoice_id, 1);
 if (!$invoiceIdResult['valid']) {
-    header("Location:listing_invoices.php?error_message=Invalid invoice ID: " . urlencode($invoiceIdResult['error']));
+    flash_error('Invalid invoice ID: ' . $invoiceIdResult['error']);
+    header("Location:listing_invoices.php");
     exit;
 }
 $invoice_id = $invoiceIdResult['value'];
@@ -66,14 +68,16 @@ try {
     $module_id = getModuleIdBySlug('invoices', $mysqli);
     if (!granted('view', $module_id)) {
         if ($_SESSION['h_role_id'] != Roles::SYSTEM_ADMIN) {
-            if ($invoice->createdBy !== (int)$session_user_id) {
-                header("Location:listing_invoices.php?error_message=Access denied");
+            if ($invoice->createdBy !== (int)Session::userId()) {
+                flash_error('Access denied');
+                header("Location:listing_invoices.php");
                 exit;
             }
         }
     }
 } catch (\Throwable $e) {
-    header("Location:listing_invoices.php?error_message=" . urlencode($e->getMessage()));
+    flash_error($e->getMessage());
+    header("Location:listing_invoices.php");
     exit;
 }
 
@@ -89,7 +93,7 @@ if (isset($_REQUEST['invoice_status']) && !empty($_REQUEST['invoice_status'])) {
 
 if ($action == "convert_$module" && !empty($invoice_id)) {
     try {
-        $newInvoice = $invoiceService->convertToInvoice((int)$invoice_id, $activeOrganizationId, (int)$session_user_id);
+        $newInvoice = $invoiceService->convertToInvoice((int)$invoice_id, $activeOrganizationId, (int)Session::userId());
         $success_message = 'This Invoice has been Converted to Invoice Successfully. Please click here to view. <a href="invoice_overview.php?invoice_id=' . $newInvoice->id . '"> ' . htmlspecialchars($newInvoice->invoiceNo) . '</a>';
         // Refresh the loaded invoice
         $invoice = $invoiceService->getInvoice((int)$invoice_id, $activeOrganizationId);
@@ -98,7 +102,7 @@ if ($action == "convert_$module" && !empty($invoice_id)) {
     }
 } else if ($action == "clone_$module" && !empty($invoice_id)) {
     try {
-        $newInvoice = $invoiceService->cloneInvoice((int)$invoice_id, $activeOrganizationId, (int)$session_user_id);
+        $newInvoice = $invoiceService->cloneInvoice((int)$invoice_id, $activeOrganizationId, (int)Session::userId());
         $success_message = 'Invoice has been cloned Successfully. Please click here to view. <a href="invoice_overview.php?invoice_id=' . $newInvoice->id . '"> ' . htmlspecialchars($newInvoice->invoiceNo) . '</a>';
         // Refresh the loaded invoice
         $invoice = $invoiceService->getInvoice((int)$invoice_id, $activeOrganizationId);
@@ -258,7 +262,8 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
                 $customerRepo = \App\Core\Container::getInstance()->get(\App\Repository\CustomerRepository::class);
                 $customer = $customerRepo->find($customer_id, $activeOrganizationId);
                 if ($customer === null) {
-                    header("Location:listing_invoices.php?error_message=Customer not found");
+                    flash_error('Customer not found');
+                    header("Location:listing_invoices.php");
                     exit;
                 }
                 $salutation             = s__($customer->salutation);

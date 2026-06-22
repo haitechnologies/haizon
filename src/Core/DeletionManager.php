@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Security\Roles;
-use Exception;
-use mysqli;
 use Throwable;
 
 /**
@@ -39,7 +37,7 @@ class DeletionManager
     public static function init(mixed $db, ?string $project_pre = null): void
     {
         self::$db = $db;
-        self::$project_pre = $project_pre ?? $GLOBALS['project_pre'] ?? 'haizon';
+        self::$project_pre = $project_pre ?? (defined('PROJECT_PREFIX') ? PROJECT_PREFIX : 'haizon');
     }
 
     /**
@@ -182,7 +180,7 @@ class DeletionManager
         } catch (Throwable $e) {
             error_log(
                 "DELETION_EXCEPTION: " . $e->getMessage() .
-                " | Table: {$table_name} | Record ID: {$record_id} | User ID: {$user_id}"
+                    " | Table: {$table_name} | Record ID: {$record_id} | User ID: {$user_id}"
             );
 
             return self::error($e->getMessage(), 'EXCEPTION');

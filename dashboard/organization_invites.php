@@ -2,6 +2,7 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
 use App\Security\Roles;
 include('admin_elements/admin_header.php');
 
@@ -17,12 +18,14 @@ $inviteEmail = '';
 $inviteRoleId = 0;
 
 if ($organizationId <= 0) {
-    header('Location:listing_organizations.php?error_message=' . urlencode('Please select an organization first.'));
+    flash_error('Please select an organization first.');
+    header('Location:listing_organizations.php');
     exit;
 }
 
-if (!dashboardUserBelongsToOrganization($organizationId, (int)$session_user_id) && !Roles::currentUserHasFullAccess()) {
-    header('Location:index.php?error_message=' . urlencode('You do not have access to that organization.'));
+if (!dashboardUserBelongsToOrganization($organizationId, (int)Session::userId()) && !Roles::currentUserHasFullAccess()) {
+    flash_error('You do not have access to that organization.');
+    header('Location:index.php');
     exit;
 }
 

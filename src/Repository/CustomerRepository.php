@@ -70,6 +70,20 @@ class CustomerRepository
     }
 
     /**
+     * Find all customers in an organization
+     */
+    public function findAll(int $orgId): array
+    {
+        $sql = "SELECT * FROM `{DB::CUSTOMERS}` WHERE organization_id = :org_id ORDER BY display_name ASC";
+        $rows = $this->db->fetchAll($sql, ['org_id' => $orgId]);
+        $customers = [];
+        foreach ($rows as $row) {
+            $customers[] = $this->mapRowToCustomer($row);
+        }
+        return $customers;
+    }
+
+    /**
      * Save customer (Insert or Update)
      */
     public function save(Customer $customer): Customer
@@ -90,7 +104,7 @@ class CustomerRepository
                     sales_person, lead_category, cs_agent, rating, currency,
                     opening_balance, exchange_rate, website, department, designation,
                     x, facebook, instagram, photo, description, tags, contacted_date,
-                    approved, approved_by, approved_at, is_active,
+                    approved, approved_by, approved_at, publish, is_active,
                     created_at, updated_at, updated_by, created_by, credit_limit,
                     discount_type, discount_type_value, subscription_tier, subscription_expires_at
                 ) VALUES (
@@ -101,7 +115,7 @@ class CustomerRepository
                     :sales_person, :lead_category, :cs_agent, :rating, :currency,
                     :opening_balance, :exchange_rate, :website, :department, :designation,
                     :x, :facebook, :instagram, :photo, :description, :tags, :contacted_date,
-                    :approved, :approved_by, :approved_at, :is_active,
+                    :approved, :approved_by, :approved_at, :publish, :is_active,
                     NOW(), NOW(), :updated_by, :created_by, :credit_limit,
                     :discount_type, :discount_type_value, :subscription_tier, :subscription_expires_at
                 )";
@@ -162,6 +176,7 @@ class CustomerRepository
                     approved = :approved,
                     approved_by = :approved_by,
                     approved_at = :approved_at,
+                    publish = :publish,
                     is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by,
@@ -271,10 +286,10 @@ class CustomerRepository
         if ($contact->id === null) {
             $sql = "INSERT INTO `{DB::CUSTOMER_CONTACTS}` (
                         organization_id, contactable_type, contactable_id, is_primary, first_name, last_name,
-                        position, email, phone, notes, is_active, created_by, created_at, updated_at
+                        position, email, phone, notes, publish, is_active, created_by, created_at, updated_at
                     ) VALUES (
                         :organization_id, 'Customer', :customer_id, :is_primary, :first_name, :last_name,
-                        :position, :email, :phone, :notes, :is_active, :created_by, NOW(), NOW()
+                        :position, :email, :phone, :notes, :publish, :is_active, :created_by, NOW(), NOW()
                     )";
             $params = $contact->toArray();
             unset($params['id'], $params['created_at'], $params['updated_at'], $params['updated_by']);
@@ -350,11 +365,11 @@ class CustomerRepository
             $sql = "INSERT INTO `{DB::CUSTOMER_ADDRESSES}` (
                         organization_id, addressable_type, addressable_id, type, attention, country,
                         address_line1, address_line2, city, state, zipcode, phone, fax,
-                        is_active, created_by, created_at, updated_at
+                        publish, is_active, created_by, created_at, updated_at
                     ) VALUES (
                         :organization_id, 'Customer', :customer_id, :type, :attention, :country,
                         :address_line1, :address_line2, :city, :state, :zipcode, :phone, :fax,
-                        :is_active, :created_by, NOW(), NOW()
+                        :publish, :is_active, :created_by, NOW(), NOW()
                     )";
             $params = $address->toArray();
             unset($params['id'], $params['created_at'], $params['updated_at'], $params['updated_by']);
@@ -376,6 +391,7 @@ class CustomerRepository
                     zipcode = :zipcode,
                     phone = :phone,
                     fax = :fax,
+                    publish = :publish,
                     is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by

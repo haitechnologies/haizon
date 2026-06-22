@@ -2,7 +2,7 @@
 
 
 use App\Core\DB;
-use App\Core\DeletionManager;
+use App\Core\Session;
 /*
 |--------------------------------------------------------------------------
 | BOOTSTRAP CORE DEPENDENCIES (before any output)
@@ -209,7 +209,7 @@ if (($_POST['action'] ?? null) == 'update_inquiries' && !empty($_POST['id'])) {
 	$replyBody    = trim($_POST['reply_body'] ?? '');
 	$replySubject = trim($_POST['reply_subject'] ?? '');
 	$direction    = ($_POST['direction'] ?? 'outbound') === 'note' ? 'note' : 'outbound';
-	$adminUserId  = (int)($session_user_id ?? 0);
+	$adminUserId  = (int)(Session::userId() ?? 0);
 	$adminName    = $session_full_name ?? 'Admin';
 
 	if ($replyBody === '') {
@@ -248,19 +248,19 @@ if (($_POST['action'] ?? null) == 'update_inquiries' && !empty($_POST['id'])) {
 	// Send email if direction is outbound
 	if ($direction === 'outbound' && filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
 		// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/EmailQueue.php';
-		$emailQueue = new EmailQueue($mysqli);
+		$emailQueue = new EmailQueue();
 
 		$emailBody = '<div style="font-family:Arial,sans-serif;font-size:15px;color:#333;line-height:1.6;">'
 			. '<p>Dear ' . htmlspecialchars($recipientName) . ',</p>'
 			. '<div style="background:#f9f9f9;border-left:4px solid #0d6efd;padding:12px 16px;margin:16px 0;">'
 			. nl2br(htmlspecialchars($replyBody))
 			. '</div>'
-			. '<p style="color:#888;font-size:13px;margin-top:24px;">This is a reply to your inquiry submitted on HAIZON.</p>'
+			. '<p style="color:#888;font-size:13px;margin-top:24px;">This is a reply to your inquiry submitted on Flash Logistics.</p>'
 			. '</div>';
 
-		$supportEmail  = $_ENV['MAIL_FROM_ADDRESS'] ?? 'support@haizon.com';
-		$originalMsgId = '<inquiry-' . $inquiryId . '@haizon.com>';
-		$replyMsgId    = '<inquiry-' . $inquiryId . '-r-' . time() . '@haizon.com>';
+		$supportEmail  = $_ENV['MAIL_FROM_ADDRESS'] ?? 'support@flashlogisticsserver.com';
+		$originalMsgId = '<inquiry-' . $inquiryId . '@flashlogisticsserver.com>';
+		$replyMsgId    = '<inquiry-' . $inquiryId . '-r-' . time() . '@flashlogisticsserver.com>';
 
 		$headers = [
 			'Reply-To' => $supportEmail,
@@ -340,50 +340,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| PUBLISH
-|--------------------------------------------------------------------------
-*/
-if (($action == "publish_$module" && !empty($id)) && $error_message === '') {
-
-	if (publish($module_caption, $tbl_name, $id))
-		$success_message = "$module_caption Published Successfully.";
-	else
-		$error_message = "Sorry! $module Could Not Be Published.";
-
-/*
-|--------------------------------------------------------------------------
-| UN-PUBLISH
-|--------------------------------------------------------------------------
-*/
-} else if (($action == "unpublish_$module" && !empty($id)) && $error_message === '') {
-
-	if (unpublish($module_caption, $tbl_name, $id))
-		$success_message = "$module_caption Un-Published Successfully.";
-	else
-		$error_message = "Sorry! $module Could Not Be Un-Published.";
-
-
-/*
-|--------------------------------------------------------------------------
-| DELETE
-|--------------------------------------------------------------------------
-*/
-} else if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id) && $error_message === '') {
-	// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DeletionManager.php';
-	$result = DeletionManager::delete(
-		$tbl_name,
-		$id,
-		$session_user_id,
-		['verify_field' => 'subject', 'item_label' => 'Inquiry', 'module_slug' => 'inquiries']
-	);
-	if ($result['success']) {
-		$success_message = $result['message'] ?? "Item deleted successfully.";
-	} else {
-		$error_message = $result['message'] ?? "Sorry! Item could not be deleted.";
-	}
-}
+$module_id = getModuleIdBySlug($module, $mysqli);
+include('admin_elements/listing_handler.php');
 ?>
 
 <div class="content-wrapper">
@@ -525,7 +483,8 @@ if (($action == "publish_$module" && !empty($id)) && $error_message === '') {
 					</div>
 					<small class="text-muted">Switch tabs to view inbox, spam, or archived records.</small>
 				</div>
-			<table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive table-hover" width="100%">
+			<div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive table-hover" width="100%">
 				<colgroup>
 					<col style="width:40px;">
 					<col style="width:110px;">
@@ -545,6 +504,7 @@ if (($action == "publish_$module" && !empty($id)) && $error_message === '') {
 						</tr>
 					</thead>
 				</table>
+</div>
 			</div>
 		</div>
 
@@ -665,8 +625,8 @@ $(document).ready(function() {
 				d.filter_archive = window.inquiryArchiveFilter;
 				d.edit_permission = <?php echo granted_('edit', 'inquiries') ? 1 : 0; ?>;
 				d.delete_permission = <?php echo granted_('delete', 'inquiries') ? 1 : 0; ?>;
-				d.session_user_id = '<?php echo $_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? ''; ?>';
-				d.dt_session_role_id = '<?php echo $_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? ''; ?>';
+				d.session_user_id = '<?php echo Session::userId() ?? ''; ?>';
+				d.dt_session_role_id = '<?php echo Session::roleId() ?? ''; ?>';
 				return d;
 			},
 			error: function(xhr, status, error) {

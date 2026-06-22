@@ -47,7 +47,7 @@ if (isset($_REQUEST['type']) && !empty($_REQUEST['type'])) {
 // 		$mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
 // 	} else {
 
-// 		$mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND created_by ='" . $session_user_id . "'");
+// 		$mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id AND created_by ='" . Session::userId() . "'");
 // 	}
 
 
@@ -150,7 +150,8 @@ if (isset($_REQUEST['type']) && !empty($_REQUEST['type'])) {
 								<!-- <p class="mb-3">Example of a table placed inside <code>card body</code>. Such tables always have additional whitespace taken from <code>.card-body</code> element padding.</p> -->
 
 								<div class="table-responsive">
-									<table class="table">
+									<div class="table-responsive">
+<table class="table">
 										<!-- <thead>
 											<tr>
 												<th>Last Name</th>
@@ -266,7 +267,8 @@ if (isset($_REQUEST['type']) && !empty($_REQUEST['type'])) {
 											?>
 
 											<!-- Usage -->
-											<table class="table">
+											<div class="table-responsive">
+<table class="table">
 												<thead>
 													<tr>
 														<th>Account Name</th>
@@ -278,6 +280,8 @@ if (isset($_REQUEST['type']) && !empty($_REQUEST['type'])) {
 													<?php renderAccounts($mysqli, null, 0, $type); ?>
 												</tbody>
 											</table>
+</div>
+</div>
 
 
 										</tbody>

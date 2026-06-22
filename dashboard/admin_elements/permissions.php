@@ -47,6 +47,7 @@ use App\Security\Roles;
                 'designations' => 'hr',
                 'user_documents' => 'hr',
                 'attendance' => 'hr',
+                'attendance_devices' => 'hr',
                 'leave_requests' => 'hr',
                 'leave_types' => 'hr',
                 'payroll_components' => 'hr',
@@ -55,6 +56,9 @@ use App\Security\Roles;
                 'payroll_runs' => 'hr',
                 'payslips' => 'hr',
                 'report_hr' => 'hr',
+                'hr_guide' => 'hr',
+                'air_tickets' => 'hr',
+                'gratuity_settlements' => 'hr',
 
                 // Shipping
                 'shipping_advices' => 'shipping',

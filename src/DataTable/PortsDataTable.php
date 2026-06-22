@@ -73,7 +73,7 @@ class PortsDataTable extends BaseDataTable
 
         $timeAgoStr = '';
         if (!empty($createdAt)) {
-            $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
+            $timeAgoStr = $this->formatTimeAgo($createdAt);
         }
 
         $portLink = '<a href="#" class="view-port-details text-primary fw-semibold" data-id="' . $id . '">' . htmlspecialchars($portName) . '</a>';
@@ -104,10 +104,10 @@ class PortsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton((int)$id, 'ports.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $actions;

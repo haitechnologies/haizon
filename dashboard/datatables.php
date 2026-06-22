@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 // Route all DataTable requests through the new modular dispatcher.
 require_once __DIR__ . '/datatables_dispatcher.php';
 exit;

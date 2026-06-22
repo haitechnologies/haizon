@@ -40,7 +40,7 @@ class SetupSourcesDataTable extends BaseDataTable
             $id,
             htmlspecialchars($source),
             ucwords($sourceType),
-            timeAgo($createdAt),
+            $this->formatTimeAgo($createdAt),
             $publishBadge,
             $this->getActionButtons($id, 'setup_sources', $publish)
         ];
@@ -49,10 +49,10 @@ class SetupSourcesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module, $publish)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton($id, 'setup_sources.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton($id, $module);
         }
         return $actions;

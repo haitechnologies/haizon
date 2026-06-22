@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 require_once __DIR__ . '/../config/session.php';
 startDashboardSession();
 include('../config/globals.php');

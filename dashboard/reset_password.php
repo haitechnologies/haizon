@@ -1,7 +1,9 @@
 <?php
 
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
 
 use App\Core\DB;
+use App\Core\Session;
 require_once __DIR__ . '/../config/session.php';
 
 header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
@@ -48,7 +50,7 @@ $message = '';
 
 
 // -- If already logged in 
-if (isset($_SESSION[$project_pre]['email']) && !empty($_SESSION[$project_pre]['DASHBOARD']['email'])) {
+if (isset($_SESSION[$project_pre]['email']) && !empty(Session::email())) {
     header('location:index.php');
 }
 

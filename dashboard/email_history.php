@@ -80,7 +80,8 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 			</div>
 
 			<div class="card-body">
-				<table id="grid-<?php echo $module; ?>" class="custom_datatables display responsive no-wrap table-hover" width="100%">
+				<div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="custom_datatables display responsive no-wrap table-hover" width="100%">
 					<thead>
 						<tr>
 							<th width="60">ID</th>
@@ -94,6 +95,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 						</tr>
 					</thead>
 				</table>
+</div>
 			</div>
 		</div>
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 use App\Security\Roles;
 /**
  * Organization Roles Listing
@@ -30,7 +31,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 | AUTHORIZATION CHECK
 |--------------------------------------------------------------------------
 */
-$canManageRoles = dashboardUserIsOrganizationOwner($activeOrganizationId, (int)$session_user_id) || 
+$canManageRoles = dashboardUserIsOrganizationOwner($activeOrganizationId, (int)Session::userId()) || 
                   Roles::currentUserHasFullAccess();
 
 if (!$canManageRoles) {
@@ -102,7 +103,8 @@ if ($action == "delete_$module" && !empty($id) && !$error_message) {
                             $deleteStmt->bind_param('ii', $id, $activeOrganizationId);
                             if ($deleteStmt->execute()) {
                                 $success_message = "Role deleted successfully.";
-                                header("Location:listing_$module.php?success_message=" . urlencode($success_message));
+                                flash_success($success_message);
+                                header("Location:listing_$module.php");
                                 exit;
                             } else {
                                 $error_message = "Failed to delete role. Please try again.";
@@ -179,7 +181,8 @@ if ($action == "delete_$module" && !empty($id) && !$error_message) {
                 </div>
 
                 <div class="card-body">
-                    <table class="table table-striped table-hover">
+                    <div class="table-responsive">
+<table class="table table-striped table-hover">
                         <thead class="table-light">
                             <tr>
                                 <th width="50">ID</th>
@@ -275,6 +278,7 @@ if ($action == "delete_$module" && !empty($id) && !$error_message) {
                             ?>
                         </tbody>
                     </table>
+</div>
                 </div>
             </div>
 

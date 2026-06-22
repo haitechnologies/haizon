@@ -28,7 +28,7 @@ if ($action == "delete_$module" && !empty($id)) {
     $result = DeletionManager::delete(
         $tbl_name,
         $id,
-        $session_user_id,
+        Session::userId(),
         [
             'verify_field' => 'transaction_id',
             'item_label' => 'Transaction',
@@ -65,7 +65,8 @@ include('admin_elements/breadcrumb.php');
         <h1><?php echo e($module_caption); ?></h1>
     </div>
 
-    <table id="grid-<?php echo e($module); ?>" class="custom_datatables">
+    <div class="table-responsive">
+<table id="grid-<?php echo e($module); ?>" class="custom_datatables">
         <thead>
             <tr>
                 <th>ID</th>
@@ -76,6 +77,7 @@ include('admin_elements/breadcrumb.php');
             </tr>
         </thead>
     </table>
+</div>
     <?php include('admin_elements/copyright.php'); ?>
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

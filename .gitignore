@@ -30,9 +30,13 @@ scripts/.env
 # AI / COPILOT DEV ARTIFACTS (local development only)
 # ============================================================
 ai/
+.opencode/
 .github/copilot-memory-index.md
 .github/pulse-mini.md
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
 claude-archive.md
 claude-mini.md
 claude-quick.md

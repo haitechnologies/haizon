@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 /**
  * UI Design Settings Management Page
  * 

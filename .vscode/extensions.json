@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug",
+        "neilbrayfield.php-docblocker",
+        "mehedidracula.php-namespace-resolver",
+        "editorconfig.editorconfig",
+        "DEVSENSE.phptools-vscode",
+        "syler.gitignore",
+        "eamodio.gitlens",
+        "mikestead.dotenv"
+    ]
+}

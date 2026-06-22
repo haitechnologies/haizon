@@ -5,7 +5,8 @@ include('admin_elements/admin_header.php');
 $token = trim((string)($_GET['token'] ?? ''));
 
 if ($token === '') {
-    header('Location:index.php?error_message=' . urlencode('Invite token is required.'));
+    flash_error('Invite token is required.');
+    header('Location:index.php');
     exit;
 }
 
@@ -17,10 +18,12 @@ if (!empty($result['success'])) {
         dashboardSetActiveOrganization($acceptedOrganizationId);
     }
 
-    header('Location:index.php?success_message=' . urlencode((string)($result['message'] ?? 'Organization invite accepted successfully.')));
+    flash_success((string)($result['message'] ?? 'Organization invite accepted successfully.'));
+    header('Location:index.php');
     exit;
 }
 
 $errorMessage = (string)($result['message'] ?? 'Unable to accept organization invite.');
-header('Location:index.php?error_message=' . urlencode($errorMessage));
+flash_error($errorMessage);
+header('Location:index.php');
 exit;

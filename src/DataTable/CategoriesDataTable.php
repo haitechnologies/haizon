@@ -146,10 +146,10 @@ class CategoriesDataTable extends BaseDataTable
         if (!empty($slug)) {
             $buttons[] = ActionButtonHelper::publicLinkButton('/category/' . rawurlencode($slug), 'Open Public Category Page');
         }
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'categories.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

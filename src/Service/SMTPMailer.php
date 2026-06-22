@@ -4,31 +4,23 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use mysqli;
-use PDO;
-use PDOException;
 use App\Core\Container;
 use App\Core\Database;
 use App\Core\DB;
-use Exception;
 use Throwable;
 
-/**
- * SMTP Mailer Class
- * Supports multiple email providers: Custom SMTP, Gmail, SendGrid, Mailgun
- */
 class SMTPMailer
 {
     private string $provider;
     private string $from_address;
     private string $from_name;
-    // SMTP Configuration
     private string $smtp_host;
     private int $smtp_port;
     private string $smtp_encryption;
     private string $smtp_username;
     private string $smtp_password;
-    private ?EmailProviderManager $providerManager = null;
+    private ?EmailProviderService $providerManager = null;
+    private ?Database $db = null;
     private ?array $activeProvider = null;
     private string $lastError = '';
     private string $lastSMTPCode = '';
@@ -37,14 +29,10 @@ class SMTPMailer
 
     private static function _log(string $message): void
     {
-        if (function_exists('_log_error')) {
-            _log_error($message, 'ERROR', ['module' => 'smtp_mailer']);
-            return;
-        }
-        error_log($message);
+        error_log("[SMTPMailer] " . $message);
     }
 
-    public function __construct()
+    public function __construct(?Database $db = null)
     {
         $this->provider = 'database';
         $this->from_address = '';
@@ -55,18 +43,23 @@ class SMTPMailer
         $this->smtp_username = '';
         $this->smtp_password = '';
 
-        $dbConn = $this->resolveDbConnection();
-        $this->providerManager = new EmailProviderManager($dbConn);
+        if ($db !== null) {
+            $this->db = $db;
+        } else {
+            try {
+                $container = Container::getInstance();
+                if ($container->has(Database::class)) {
+                    $this->db = $container->get(Database::class);
+                }
+            } catch (Throwable $e) {
+            }
+        }
+
+        $this->providerManager = new EmailProviderService($this->db);
     }
 
     /**
      * Send email via configured provider
-     *
-     * @param string $to Recipient email
-     * @param string $subject Email subject
-     * @param string $body Email body (HTML or plain text)
-     * @param array $headers Additional headers (Reply-To, CC, BCC, etc.)
-     * @return bool Success status
      */
     public function send(string $to, string $subject, string $body, array $headers = []): bool
     {
@@ -76,7 +69,6 @@ class SMTPMailer
             $this->lastSMTPResponse = '';
             $this->skipHistoryLog = !empty($headers['skip_history_log']);
 
-            // Validate email address
             if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
                 $this->lastError = "Invalid recipient email: $to";
                 self::_log("[SMTPMailer] " . $this->lastError);
@@ -87,7 +79,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Log sending attempt
             $providerRef = !empty($this->activeProvider['id']) ? ('#' . $this->activeProvider['id']) : $this->from_address;
             self::_log("[SMTPMailer] Sending email to $to via database provider {$providerRef}");
 
@@ -99,16 +90,10 @@ class SMTPMailer
         }
     }
 
-    /**
-     * Resolve email provider configuration.
-     *
-     * @param array $headers
-     * @return bool
-     */
     private function resolveProviderConfig(array $headers = []): bool
     {
         if (!$this->providerManager) {
-            $this->lastError = 'EmailProviderManager is unavailable. DB provider resolution failed.';
+            $this->lastError = 'EmailProviderService is unavailable. DB provider resolution failed.';
             self::_log('[SMTPMailer] ' . $this->lastError);
             return false;
         }
@@ -130,7 +115,6 @@ class SMTPMailer
         }
 
         if (!$provider) {
-            // No provider found via hint; try any available provider with quota
             $provider = $this->providerManager->getAvailableWithQuota();
         }
 
@@ -140,40 +124,21 @@ class SMTPMailer
             return false;
         }
 
-        // Check daily quota for the selected provider; failover if exhausted.
         $providerId = (int)($provider['id'] ?? 0);
-        if ($providerId > 0) {
+        if ($providerId > 0 && $this->db !== null) {
             $dailyLimit = (int)($provider['daily_limit'] ?? 0);
             if ($dailyLimit <= 0) {
-                $dailyLimit = 100; // default
+                $dailyLimit = 100;
             }
-            $conn = $this->resolveDbConnection();
-            if ($conn !== null) {
-                $sentToday = 0;
+
+            try {
                 $emailHistoryTable = class_exists('DB') && defined('DB::EMAIL_HISTORY') ? (string)constant('DB::EMAIL_HISTORY') : 'erp_email_history';
-                if ($conn instanceof mysqli) {
-                    $sentRow = $conn->query(
-                        "SELECT COUNT(*) AS cnt FROM `" . $emailHistoryTable . "`
-                         WHERE provider_id = $providerId
-                           AND status = 'sent'
-                           AND DATE(COALESCE(sent_at, created_at)) = CURDATE()"
-                    );
-                    $sentToday = $sentRow ? (int)($sentRow->fetch_assoc()['cnt'] ?? 0) : 0;
-                } elseif ($conn instanceof PDO) {
-                    try {
-                        $stmt = $conn->prepare(
-                            "SELECT COUNT(*) AS cnt FROM `" . $emailHistoryTable . "`
-                             WHERE provider_id = ?
-                               AND status = 'sent'
-                               AND DATE(COALESCE(sent_at, created_at)) = CURDATE()"
-                        );
-                        $stmt->execute([$providerId]);
-                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                        $sentToday = $row ? (int)($row['cnt'] ?? 0) : 0;
-                    } catch (PDOException $e) {
-                        $sentToday = 0;
-                    }
-                }
+                $row = $this->db->fetchOne(
+                    "SELECT COUNT(*) AS cnt FROM `" . $emailHistoryTable . "`
+                     WHERE provider_id = ? AND status = 'sent' AND DATE(COALESCE(sent_at, created_at)) = CURDATE()",
+                    [$providerId]
+                );
+                $sentToday = (int)($row['cnt'] ?? 0);
 
                 if ($sentToday >= $dailyLimit) {
                     self::_log("[SMTPMailer] Provider #$providerId has reached daily limit ($sentToday/$dailyLimit). Switching to next available provider.");
@@ -186,6 +151,8 @@ class SMTPMailer
                     $provider = $fallback;
                     self::_log('[SMTPMailer] Switched to provider #' . (int)$provider['id'] . ' (' . ($provider['email'] ?? '') . ').');
                 }
+            } catch (Throwable $e) {
+                self::_log('[SMTPMailer] Quota check failed: ' . $e->getMessage());
             }
         }
 
@@ -218,18 +185,8 @@ class SMTPMailer
         return true;
     }
 
-    /**
-     * Send via custom SMTP server
-     *
-     * @param string $to
-     * @param string $subject
-     * @param string $body
-     * @param array $headers
-     * @return bool
-     */
     private function sendViaSMTP(string $to, string $subject, string $body, array $headers = []): bool
     {
-        // Prepare headers
         $mail_headers = "Date: " . date('r') . "\r\n";
         $mail_headers .= "MIME-Version: 1.0\r\n";
         $app_name_slug = defined('APP_NAME') ? str_replace(' ', '-', APP_NAME) : 'HAIZON';
@@ -240,13 +197,12 @@ class SMTPMailer
         } else {
             $domain = preg_replace('/^.*@/', '', (string)$this->from_address);
             if ($domain === '' || strpos($domain, '.') === false) {
-                $domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
+                $domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'flashlogisticsserver.com';
             }
             $mail_headers .= "Message-ID: <" . uniqid('hai-', true) . "@{$domain}>\r\n";
         }
 
-        // Add custom headers
-        $replyTo = !empty($headers['Reply-To']) ? $headers['Reply-To'] : (defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'support@haizon.com');
+        $replyTo = !empty($headers['Reply-To']) ? $headers['Reply-To'] : (defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'support@flashlogisticsserver.com');
         $mail_headers .= "Reply-To: {$replyTo}\r\n";
         if (!empty($headers['CC'])) {
             $mail_headers .= "CC: {$headers['CC']}\r\n";
@@ -254,14 +210,12 @@ class SMTPMailer
         if (!empty($headers['BCC'])) {
             $mail_headers .= "BCC: {$headers['BCC']}\r\n";
         }
-        // Email threading headers (RFC 2822)
         foreach (['Message-ID', 'In-Reply-To', 'References'] as $_hdr) {
             if (!empty($headers[$_hdr])) {
                 $mail_headers .= "$_hdr: {$headers[$_hdr]}\r\n";
             }
         }
 
-        // Try SMTP connection if credentials provided
         if ($this->smtp_username !== '' && $this->smtp_password !== '') {
             return $this->sendViaSMTPConnection($to, $subject, $body, $mail_headers);
         }
@@ -271,12 +225,6 @@ class SMTPMailer
         return false;
     }
 
-    /**
-     * Read a complete SMTP response (handles multi-line responses)
-     *
-     * @param resource $socket
-     * @return string The response code (3 digits)
-     */
     private function readSMTPResponse($socket): string
     {
         $response = '';
@@ -290,13 +238,11 @@ class SMTPMailer
 
             $response .= $line;
 
-            // Extract code from first line
             if ($responseCode === '') {
                 preg_match('/^(\d{3})/', $line, $matches);
                 $responseCode = $matches[1] ?? '';
             }
 
-            // Check if this is the last line (ends with space, not dash)
             if (preg_match('/^\d{3} /', $line)) {
                 break;
             }
@@ -309,24 +255,13 @@ class SMTPMailer
         return $responseCode !== '' ? substr($response, 0, 3) : $response;
     }
 
-    /**
-     * Send via SMTP connection (TCP socket)
-     *
-     * @param string $to
-     * @param string $subject
-     * @param string $body
-     * @param string $headers
-     * @return bool
-     */
     private function sendViaSMTPConnection(string $to, string $subject, string $body, string $headers): bool
     {
         try {
-            // Build connection URL with scheme
             $hostname = ($this->smtp_encryption === 'ssl')
                 ? "ssl://{$this->smtp_host}"
                 : "tcp://{$this->smtp_host}";
 
-            // Connect to SMTP server
             $socket = @fsockopen(
                 $hostname,
                 (int)$this->smtp_port,
@@ -343,7 +278,6 @@ class SMTPMailer
 
             stream_set_timeout($socket, 10);
 
-            // Read SMTP greeting (220)
             $code = $this->readSMTPResponse($socket);
             if ($code !== '220') {
                 fclose($socket);
@@ -352,7 +286,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Send EHLO
             $ehlo_domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
             fwrite($socket, "EHLO {$ehlo_domain}\r\n");
             $code = $this->readSMTPResponse($socket);
@@ -363,7 +296,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Upgrade to TLS if required
             if ($this->smtp_encryption === 'tls') {
                 fwrite($socket, "STARTTLS\r\n");
                 $code = $this->readSMTPResponse($socket);
@@ -375,7 +307,6 @@ class SMTPMailer
                     return false;
                 }
 
-                // Enable encryption
                 stream_context_set_option($socket, 'ssl', 'verify_peer', false);
                 stream_context_set_option($socket, 'ssl', 'verify_peer_name', false);
                 $tlsEnabled = stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
@@ -386,7 +317,6 @@ class SMTPMailer
                     return false;
                 }
 
-                // Send EHLO again after TLS
                 $ehlo_domain = defined('APP_DOMAIN') ? APP_DOMAIN : 'haizon.local';
                 fwrite($socket, "EHLO {$ehlo_domain}\r\n");
                 $code = $this->readSMTPResponse($socket);
@@ -398,7 +328,6 @@ class SMTPMailer
                 }
             }
 
-            // Authenticate
             fwrite($socket, "AUTH LOGIN\r\n");
             $code = $this->readSMTPResponse($socket);
 
@@ -409,7 +338,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Send username (base64 encoded)
             fwrite($socket, base64_encode($this->smtp_username) . "\r\n");
             $code = $this->readSMTPResponse($socket);
 
@@ -420,7 +348,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Send password (base64 encoded)
             fwrite($socket, base64_encode($this->smtp_password) . "\r\n");
             $code = $this->readSMTPResponse($socket);
 
@@ -431,7 +358,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Send MAIL FROM
             fwrite($socket, "MAIL FROM: <{$this->from_address}>\r\n");
             $code = $this->readSMTPResponse($socket);
             if (strpos($code, '2') === false) {
@@ -441,7 +367,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Send RCPT TO
             fwrite($socket, "RCPT TO: <$to>\r\n");
             $code = $this->readSMTPResponse($socket);
             if (strpos($code, '2') === false) {
@@ -451,7 +376,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Send DATA
             fwrite($socket, "DATA\r\n");
             $code = $this->readSMTPResponse($socket);
             if ($code !== '354') {
@@ -461,7 +385,6 @@ class SMTPMailer
                 return false;
             }
 
-            // Prepare message
             $message = "To: $to\r\n";
             $message .= "From: {$this->from_name} <{$this->from_address}>\r\n";
             $message .= "Subject: " . $this->encodeSubject($subject) . "\r\n";
@@ -469,7 +392,6 @@ class SMTPMailer
             $message .= "\r\n" . $body;
             $message .= "\r\n.\r\n";
 
-            // Send message
             fwrite($socket, $message);
             $code = $this->readSMTPResponse($socket);
             if (strpos($code, '2') === false) {
@@ -479,13 +401,11 @@ class SMTPMailer
                 return false;
             }
 
-            // Close connection
             fwrite($socket, "QUIT\r\n");
             fclose($socket);
 
             $success = strpos($code, '250') !== false;
 
-            // Log successful send to email history
             if ($success && !$this->skipHistoryLog) {
                 $this->logToHistory($to, $subject);
             }
@@ -498,12 +418,6 @@ class SMTPMailer
         }
     }
 
-    /**
-     * Encode subject for non-ASCII characters
-     *
-     * @param string $subject
-     * @return string
-     */
     private function encodeSubject(string $subject): string
     {
         if (preg_match('/[\x80-\xFF]/', $subject)) {
@@ -512,89 +426,31 @@ class SMTPMailer
         return $subject;
     }
 
-    /**
-     * Insert a sent-email record into the email history table.
-     */
     private function logToHistory(string $to, string $subject): void
     {
-        $conn = $this->resolveDbConnection();
-        if ($conn === null) {
+        if ($this->db === null) {
             return;
         }
         $providerId = isset($this->activeProvider['id']) ? (int)$this->activeProvider['id'] : null;
-        $fromName   = $this->from_name;
-        $fromEmail  = $this->from_address;
+        $fromName = $this->from_name;
+        $fromEmail = $this->from_address;
         $subjectEsc = substr($subject, 0, 500);
         $emailHistoryTable = class_exists('DB') && defined('DB::EMAIL_HISTORY') ? (string)constant('DB::EMAIL_HISTORY') : 'erp_email_history';
 
-        if ($conn instanceof mysqli) {
-            $stmt = $conn->prepare(
+        try {
+            $this->db->execute(
                 "INSERT INTO `" . $emailHistoryTable . "`
                  (recipient_email, subject, provider_id, status, sent_at, from_name, from_email)
-                 VALUES (?, ?, ?, 'sent', NOW(), ?, ?)"
+                 VALUES (?, ?, ?, 'sent', NOW(), ?, ?)",
+                [$to, $subjectEsc, $providerId, $fromName, $fromEmail]
             );
-            if (!$stmt) {
-                self::_log('[SMTPMailer] logToHistory prepare failed: ' . $conn->error);
-                return;
-            }
-            $stmt->bind_param('ssiss', $to, $subjectEsc, $providerId, $fromName, $fromEmail);
-            $stmt->execute();
-            $stmt->close();
-        } elseif ($conn instanceof PDO) {
-            try {
-                $stmt = $conn->prepare(
-                    "INSERT INTO `" . $emailHistoryTable . "`
-                     (recipient_email, subject, provider_id, status, sent_at, from_name, from_email)
-                     VALUES (?, ?, ?, 'sent', NOW(), ?, ?)"
-                );
-                $stmt->execute([$to, $subjectEsc, $providerId, $fromName, $fromEmail]);
-            } catch (PDOException $e) {
-                self::_log('[SMTPMailer] logToHistory execute failed: ' . $e->getMessage());
-            }
-        }
-    }
-
-    /**
-     * Resolve active DB connection from commonly used handles or DI container.
-     */
-    private function resolveDbConnection(): mixed
-    {
-        if (isset($GLOBALS['conn']) && $GLOBALS['conn'] instanceof mysqli) {
-            return $GLOBALS['conn'];
-        }
-
-        if (isset($GLOBALS['DB']['MSQLI']) && $GLOBALS['DB']['MSQLI'] instanceof mysqli) {
-            return $GLOBALS['DB']['MSQLI'];
-        }
-
-        if (isset($GLOBALS['mysqli']) && $GLOBALS['mysqli'] instanceof mysqli) {
-            return $GLOBALS['mysqli'];
-        }
-
-        try {
-            $container = Container::getInstance();
-            if ($container->has(Database::class)) {
-                $resolved = $container->get(Database::class);
-                if ($resolved instanceof Database) {
-                    return $resolved->getConnection(); // returns raw PDO object
-                }
-            }
         } catch (Throwable $e) {
-            // Ignore container errors
+            self::_log('[SMTPMailer] logToHistory failed: ' . $e->getMessage());
         }
-
-        return null;
     }
 
     /**
      * Test SMTP connectivity/auth for a provider configuration.
-     *
-     * @param string $host
-     * @param int $port
-     * @param string $username
-     * @param string $password
-     * @param string $encryption tls|ssl
-     * @return array{success:bool,message:string}
      */
     public function testConnection(string $host, int $port, string $username, string $password, string $encryption = 'tls'): array
     {
@@ -681,21 +537,11 @@ class SMTPMailer
         }
     }
 
-    /**
-     * Get current provider
-     *
-     * @return string
-     */
     public function getProvider(): string
     {
         return $this->provider;
     }
 
-    /**
-     * Get configuration summary
-     *
-     * @return array
-     */
     public function getConfig(): array
     {
         return [

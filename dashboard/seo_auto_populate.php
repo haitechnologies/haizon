@@ -1,4 +1,6 @@
 <?php
+
+use App\Core\DB;
 /**
  * SEO Metadata Auto-Population Script
  * 
@@ -9,6 +11,8 @@
  * @author SEO Team
  * @version 1.0
  */
+
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/globals.php';
@@ -92,7 +96,7 @@ class SEOAutoPopulator {
     /**
      * Generate canonical URL
      */
-    private function generateCanonicalUrl($slug, $baseUrl = 'https://haizon.com') {
+    private function generateCanonicalUrl($slug, $baseUrl = 'https://flashlogisticsserver.com') {
         return rtrim($baseUrl, '/') . '/' . ltrim($slug, '/');
     }
     

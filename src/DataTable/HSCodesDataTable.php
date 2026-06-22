@@ -237,7 +237,7 @@ class HSCodesDataTable extends BaseDataTable
             . 'title="View"><i class="ph-eye"></i></a> ';
 
         // Note: Edit functionality not yet implemented for HS codes
-        // if (granted_('edit', $module)) {
+        // if ($this->isGranted('edit', $module)) {
         //     $actions .= '<a href="hscodes.php?action=edit_hscodes&id=' . $id . '"><i class="ph-pencil"></i></a> ';
         // }
 

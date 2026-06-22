@@ -103,12 +103,12 @@ class InvoiceService
             // Date parsing
             $invoiceDate = (string)($data['invoice_date'] ?? date('Y-m-d'));
             if (strpos($invoiceDate, '-') === false) {
-                $invoiceDate = function_exists('processDateDtoY') ? processDateDtoY($invoiceDate) : $invoiceDate;
+                $invoiceDate = \App\Helper\DateHelper::toDisplayDate($invoiceDate) ?: $invoiceDate;
             }
             $expiryDate = (string)($data['expiry_date'] ?? '');
             if (!empty($expiryDate)) {
                 if (strpos($expiryDate, '-') === false) {
-                    $expiryDate = function_exists('processDateDtoY') ? processDateDtoY($expiryDate) : $expiryDate;
+                    $expiryDate = \App\Helper\DateHelper::toDisplayDate($expiryDate) ?: $expiryDate;
                 }
             } else {
                 $expiryDate = '1970-01-01';
@@ -117,7 +117,7 @@ class InvoiceService
             $expectedShipmentDate = (string)($data['expected_shipment_date'] ?? '');
             if (!empty($expectedShipmentDate)) {
                 if (strpos($expectedShipmentDate, '-') === false) {
-                    $expectedShipmentDate = function_exists('processDateDtoY') ? processDateDtoY($expectedShipmentDate) : $expectedShipmentDate;
+                    $expectedShipmentDate = \App\Helper\DateHelper::toDisplayDate($expectedShipmentDate) ?: $expectedShipmentDate;
                 }
             } else {
                 $expectedShipmentDate = '1970-01-01';
@@ -201,11 +201,6 @@ class InvoiceService
 
             $this->db->commit();
 
-            // Call logging if available (after transaction commit to prevent lock conflicts)
-            if (function_exists('fp__') && PHP_SAPI !== 'cli') {
-                fp__('erp_invoices', $invoiceId);
-            }
-
             return $savedInvoice;
         } catch (\Throwable $e) {
             $this->db->rollBack();
@@ -229,12 +224,12 @@ class InvoiceService
             // Date parsing
             $invoiceDate = isset($data['invoice_date']) ? (string)$data['invoice_date'] : $invoice->invoiceDate;
             if (strpos($invoiceDate, '-') === false) {
-                $invoiceDate = function_exists('processDateDtoY') ? processDateDtoY($invoiceDate) : $invoiceDate;
+                $invoiceDate = \App\Helper\DateHelper::toDisplayDate($invoiceDate) ?: $invoiceDate;
             }
             $expiryDate = isset($data['expiry_date']) ? (string)$data['expiry_date'] : $invoice->expiryDate;
             if (!empty($expiryDate)) {
                 if (strpos($expiryDate, '-') === false) {
-                    $expiryDate = function_exists('processDateDtoY') ? processDateDtoY($expiryDate) : $expiryDate;
+                    $expiryDate = \App\Helper\DateHelper::toDisplayDate($expiryDate) ?: $expiryDate;
                 }
             } else {
                 $expiryDate = '1970-01-01';
@@ -243,7 +238,7 @@ class InvoiceService
             $expectedShipmentDate = isset($data['expected_shipment_date']) ? (string)$data['expected_shipment_date'] : $invoice->expectedShipmentDate;
             if (!empty($expectedShipmentDate)) {
                 if (strpos($expectedShipmentDate, '-') === false) {
-                    $expectedShipmentDate = function_exists('processDateDtoY') ? processDateDtoY($expectedShipmentDate) : $expectedShipmentDate;
+                    $expectedShipmentDate = \App\Helper\DateHelper::toDisplayDate($expectedShipmentDate) ?: $expectedShipmentDate;
                 }
             } else {
                 $expectedShipmentDate = '1970-01-01';
@@ -339,16 +334,19 @@ class InvoiceService
 
             $this->db->commit();
 
-            // Call logging if available (after transaction commit to prevent lock conflicts)
-            if (function_exists('fp__') && PHP_SAPI !== 'cli') {
-                fp__('erp_invoices', $id);
-            }
-
             return $savedInvoice;
         } catch (\Throwable $e) {
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * List all invoices in an organization
+     */
+    public function list(int $orgId): array
+    {
+        return $this->invoiceRepo->findAll($orgId);
     }
 
     /**
@@ -461,11 +459,6 @@ class InvoiceService
             }
 
             $this->db->commit();
-
-            // Call logging if available (after transaction commit to prevent lock conflicts)
-            if (function_exists('fp__') && PHP_SAPI !== 'cli') {
-                fp__('erp_invoices', $newInvoiceId);
-            }
 
             return $savedCloned;
         } catch (\Throwable $e) {

@@ -132,7 +132,7 @@ class CustomersDataTable extends BaseDataTable
             : BadgeHelper::success('Active');
 
         $currencyCode = defined('BASE_CURRENCY') ? BASE_CURRENCY['code'] : 'AED';
-        $formattedReceivables = function_exists('dec_') ? dec_($customerReceivables) : number_format($customerReceivables, 2);
+        $formattedReceivables = $this->formatDecimal((float)$customerReceivables);
 
         return [
             '<a href="customer_overview.php?customer_id=' . $id . '" class="text-primary"> ' . htmlspecialchars($displayName) . ' </a>',
@@ -152,11 +152,11 @@ class CustomersDataTable extends BaseDataTable
     {
         $actions = '';
 
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= '<a href="customer_overview.php?customer_id=' . $id . '" title="View"><span class="text-dark opacity-50"><i class="ph-eye"></i></span></a> ';
         }
 
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton($id, $module);
         }
 

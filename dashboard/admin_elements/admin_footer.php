@@ -533,23 +533,6 @@ foreach ($footerSystemCandidates as $systemKey => $systemMeta) {
   </div>
 
   <div class="offcanvas-body p-0">
-    <?php if ($footerCanManageOrganizations): ?>
-      <div class="p-3 border-bottom">
-        <div class="text-muted text-uppercase fs-sm fw-semibold mb-2">Organization Actions</div>
-        <div class="d-grid gap-2">
-          <a href="listing_organizations.php" class="btn btn-sm btn-light text-start">
-            <i class="ph-buildings me-2"></i> Organizations
-          </a>
-          <a href="listing_organization_roles.php" class="btn btn-sm btn-light text-start">
-            <i class="ph-user-check me-2"></i> Organization Roles
-          </a>
-          <a href="organization_invites.php" class="btn btn-sm btn-light text-start">
-            <i class="ph-envelope-open me-2"></i> Invite Members
-          </a>
-        </div>
-      </div>
-    <?php endif; ?>
-
     <div class="bg-light fw-medium py-2 px-3">My Organizations</div>
 
     <div class="p-3">

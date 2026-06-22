@@ -2,6 +2,7 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
 use App\Security\Roles;
 use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
@@ -149,18 +150,18 @@ if (($action == "delete_$module" && !empty($customer_id)) && granted('delete', $
         } else {
             // Verify ownership before deleting
             $ownershipCheck = $mysqli->prepare("SELECT id, created_by FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id=? AND contactable_type='Customer' AND created_by=?");
-            $ownershipCheck->bind_param("is", $validContactId, $_SESSION[$project_pre]['DASHBOARD']['user_id']);
+            $ownershipCheck->bind_param("is", $validContactId, Session::userId());
             $ownershipCheck->execute();
             $ownershipResult = $ownershipCheck->get_result();
             $ownershipCheck->close();
             
             if ($ownershipResult->num_rows === 0) {
                 $error_message = "You do not have permission to delete this contact";
-                log_error("IDOR attempt: User " . $_SESSION[$project_pre]['DASHBOARD']['user_id'] . " tried to delete contact $validContactId", 'WARNING', __FILE__, __LINE__);
+                log_error("IDOR attempt: User " . Session::userId() . " tried to delete contact $validContactId", 'WARNING', __FILE__, __LINE__);
             } else {
                 // Perform delete with prepared statement
                 $stmt = $mysqli->prepare("DELETE FROM `" . DB::CUSTOMER_CONTACTS . "` WHERE id=? AND contactable_type='Customer' AND created_by=?");
-                $stmt->bind_param("is", $validContactId, $_SESSION[$project_pre]['DASHBOARD']['user_id']);
+                $stmt->bind_param("is", $validContactId, Session::userId());
                 
                 if ($stmt->execute()) {
                     // Customer Logs

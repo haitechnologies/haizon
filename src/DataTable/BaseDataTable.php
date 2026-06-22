@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\DataTable;
 
-use mysqli;
 use App\Core\Database;
 use App\Core\DB;
 
@@ -20,9 +19,6 @@ use App\Core\DB;
  */
 abstract class BaseDataTable
 {
-    /** @var mysqli|null */
-    protected ?mysqli $mysqli = null;
-
     /** @var int|null */
     protected ?int $userId = null;
 
@@ -50,6 +46,9 @@ abstract class BaseDataTable
     /** @var array */
     protected array $data = [];
 
+    /** @var int Current row number (1-based sequential) */
+    protected int $rowNumber = 0;
+
     /** @var array Cache for related data to prevent N+1 queries */
     protected array $relatedDataCache = [];
 
@@ -73,15 +72,10 @@ abstract class BaseDataTable
         $this->roleId = $roleId;
         $this->organizationId = $organizationId;
 
-        if ($db instanceof mysqli) {
-            $this->mysqli = $db;
-            $this->db = new Database();
-        } elseif ($db instanceof Database) {
+        if ($db instanceof Database) {
             $this->db = $db;
-            $this->mysqli = $GLOBALS['conn'] ?? $GLOBALS['DB']['MSQLI'] ?? null;
         } else {
             $this->db = new Database();
-            $this->mysqli = $GLOBALS['conn'] ?? $GLOBALS['DB']['MSQLI'] ?? null;
         }
     }
 
@@ -128,7 +122,9 @@ abstract class BaseDataTable
 
             // Format rows using pre-fetched data
             $this->data = [];
+            $this->rowNumber = $start;
             foreach ($rows as $row) {
+                $this->rowNumber++;
                 $this->data[] = $this->formatRow($row, $requestData);
             }
 
@@ -179,10 +175,10 @@ abstract class BaseDataTable
         // Check if table has organization_id column via INFORMATION_SCHEMA (using PDO)
         $hasOrgIdColumn = false;
         try {
-            $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-                    WHERE TABLE_SCHEMA = DATABASE() 
-                    AND TABLE_NAME = :table_name 
-                    AND COLUMN_NAME = 'organization_id' 
+            $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = :table_name
+                    AND COLUMN_NAME = 'organization_id'
                     LIMIT 1";
             $result = $this->db->fetchOne($sql, ['table_name' => $this->table]);
             if ($result !== null) {
@@ -281,13 +277,53 @@ abstract class BaseDataTable
 
 
 
-    /**
-     * Truncate text to a specified length with ellipsis.
-     *
-     * @param string $text   Input text
-     * @param int    $length Maximum length
-     * @return string Truncated text with HTML escaping applied
-     */
+    protected function isGranted(string $action, string $module): bool
+    {
+        return function_exists('granted_') && granted_($action, $module);
+    }
+
+    protected function formatTimeAgo(string $date): string
+    {
+        return function_exists('timeAgo') ? timeAgo($date) : $date;
+    }
+
+    protected function sanitize(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    protected function formatDecimal(float $value, int $decimals = 2): string
+    {
+        return number_format($value, $decimals);
+    }
+
+    protected function formatDate(string $date, string $format = 'd M Y'): string
+    {
+        if ($date === '' || $date === '0000-00-00' || $date === '1970-01-01') {
+            return '';
+        }
+        $ts = strtotime($date);
+        return $ts !== false ? date($format, $ts) : $date;
+    }
+
+    protected function fetchLookupMap(string $table, array $ids, string $valueField): array
+    {
+        $ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
+        if (!$ids) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "SELECT id, {$valueField} AS value_label FROM `{$table}` WHERE id IN ({$placeholders})";
+        $rows = $this->db->fetchAll($sql, $ids);
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int)$row['id']] = (string)($row['value_label'] ?? '');
+        }
+        return $map;
+    }
+
     protected function truncateText(string $text, int $length = 100): string
     {
         $text = strip_tags($text);

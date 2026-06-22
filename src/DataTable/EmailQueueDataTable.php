@@ -116,7 +116,7 @@ class EmailQueueDataTable extends BaseDataTable
         // Truncate subject if too long
         $subjectDisplay = strlen($subject) > 50 ? substr($subject, 0, 50) . '...' : $subject;
 
-        $sentAt = !empty($sentAtRaw) ? timeAgo($sentAtRaw) : '-';
+        $sentAt = !empty($sentAtRaw) ? $this->formatTimeAgo($sentAtRaw) : '-';
 
         $sendBtn = '';
         if (in_array($status, ['pending', 'retry', 'queued', 'failed'], true)) {
@@ -134,7 +134,7 @@ class EmailQueueDataTable extends BaseDataTable
             $subjectDisplay,
             $statusBadge,
             $providerName,
-            timeAgo($createdAt),
+            $this->formatTimeAgo($createdAt),
             $sentAt,
             $sendBtn . $deleteBtn
         ];

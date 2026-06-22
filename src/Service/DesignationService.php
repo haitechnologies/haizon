@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Model\Designation;
 use App\Repository\DesignationRepository;
+use App\Repository\UserRepository;
 use App\Exception\NotFoundException;
 use App\Exception\ValidationException;
 
@@ -17,10 +18,12 @@ use App\Exception\ValidationException;
 class DesignationService
 {
     private DesignationRepository $designationRepo;
+    private UserRepository $userRepo;
 
-    public function __construct(DesignationRepository $designationRepo)
+    public function __construct(DesignationRepository $designationRepo, UserRepository $userRepo)
     {
         $this->designationRepo = $designationRepo;
+        $this->userRepo = $userRepo;
     }
 
     /**
@@ -66,7 +69,6 @@ class DesignationService
             organizationId: $organizationId,
             designation: $name,
             publish: true,
-            isActive: true,
             createdBy: $createdBy
         );
 
@@ -101,7 +103,6 @@ class DesignationService
             organizationId: $designation->organizationId,
             designation: $name,
             publish: $publish,
-            isActive: $publish,
             createdAt: $designation->createdAt,
             updatedAt: null,
             createdBy: $designation->createdBy
@@ -120,6 +121,11 @@ class DesignationService
     {
         // Fetch to ensure it exists
         $this->getById($id);
+
+        if ($this->userRepo->hasUsersInDesignation($id)) {
+            throw new ValidationException(['designation' => 'Designation is associated with rows in Users Table.']);
+        }
+
         $this->designationRepo->delete($id);
     }
 

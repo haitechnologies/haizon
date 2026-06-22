@@ -32,7 +32,8 @@ $customer_id = $_REQUEST['customer_id'] ?? $_POST['customer_id'] ?? '';
 // INPUT VALIDATION: Validate customer_id
 $customerIdResult = InputValidator::integer($customer_id, 1);
 if (!$customerIdResult['valid']) {
-    header("Location:listing_customers.php?error_message=Invalid customer ID: " . urlencode($customerIdResult['error']));
+    flash_error('Invalid customer ID: ' . $customerIdResult['error']);
+    header("Location:listing_customers.php");
     exit;
 }
 $customer_id = $customerIdResult['value'];
@@ -40,7 +41,8 @@ $customer_id = $customerIdResult['value'];
 try {
     $customerObj = $customerService->getCustomer((int)$customer_id, $activeOrganizationId);
 } catch (NotFoundException $e) {
-    header("Location:listing_customers.php?error_message=" . urlencode($e->getMessage()));
+    flash_error($e->getMessage());
+    header("Location:listing_customers.php");
     exit;
 }
 
@@ -49,9 +51,10 @@ $module_id = getModuleIdBySlug('customers', $mysqli);
 if (!granted('view', $module_id)) {
     // User doesn't have view permission, check ownership
     if ($_SESSION['h_role_id'] != Roles::SYSTEM_ADMIN) {
-        $isOwner = (int)$customerObj->createdBy === (int)$session_user_id || (int)$customerObj->customerOwner === (int)$session_user_id;
+        $isOwner = (int)$customerObj->createdBy === (int)Session::userId() || (int)$customerObj->customerOwner === (int)Session::userId();
         if (!$isOwner) {
-            header("Location:listing_customers.php?error_message=Access denied");
+            flash_error('Access denied');
+            header("Location:listing_customers.php");
             exit;
         }
     }
@@ -78,18 +81,20 @@ if (!empty($contact_id)) {
 */
 if ($action == "approved" && !empty($customer_id)) {
     try {
-        $customerService->approveCustomer((int)$customer_id, $activeOrganizationId, $session_user_id);
+        $customerService->approveCustomer((int)$customer_id, $activeOrganizationId, Session::userId());
         $success_message = 'This Customer is Approved.';
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        flash_success($success_message);
+        header("Location:customer_overview.php?customer_id=$customer_id");
         exit;
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();
     }
 } else if ($action == "disapproved" && !empty($customer_id)) {
     try {
-        $customerService->disapproveCustomer((int)$customer_id, $activeOrganizationId, $session_user_id);
+        $customerService->disapproveCustomer((int)$customer_id, $activeOrganizationId, Session::userId());
         $success_message = 'This Customer is Dis-Approved.';
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        flash_success($success_message);
+        header("Location:customer_overview.php?customer_id=$customer_id");
         exit;
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();
@@ -105,9 +110,10 @@ if ($action == "approved" && !empty($customer_id)) {
             $error_message = 'Invalid opening balance: ' . $balanceResult['error'];
         } else {
             try {
-                $customerService->updateOpeningBalance((int)$customer_id, (float)$balanceResult['value'], $activeOrganizationId, $session_user_id);
+                $customerService->updateOpeningBalance((int)$customer_id, (float)$balanceResult['value'], $activeOrganizationId, Session::userId());
                 $success_message = 'Opening balance has been updated successfully.';
-                header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+                flash_success($success_message);
+                header("Location:customer_overview.php?customer_id=$customer_id");
                 exit;
             } catch (\Throwable $e) {
                 $error_message = $e->getMessage();
@@ -116,28 +122,31 @@ if ($action == "approved" && !empty($customer_id)) {
     }
 } else if ($action == "clone_customers" && !empty($customer_id)) {
     try {
-        $newCloned = $customerService->cloneCustomer((int)$customer_id, $activeOrganizationId, $session_user_id);
+        $newCloned = $customerService->cloneCustomer((int)$customer_id, $activeOrganizationId, Session::userId());
         $new_cloned_id = $newCloned->id;
         $success_message = 'Customer has been cloned Successfully. Please click here to view. <a href="customer_overview.php?customer_id=' . $new_cloned_id . '"> Customer ID: ' . $new_cloned_id . '</a>';
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        flash_success($success_message);
+        header("Location:customer_overview.php?customer_id=$customer_id");
         exit;
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();
     }
 } else if ($action == "mark_as_active" && !empty($customer_id)) {
     try {
-        $customerService->markAsActive((int)$customer_id, $activeOrganizationId, $session_user_id);
+        $customerService->markAsActive((int)$customer_id, $activeOrganizationId, Session::userId());
         $success_message = 'Customer has marked as Active';
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        flash_success($success_message);
+        header("Location:customer_overview.php?customer_id=$customer_id");
         exit;
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();
     }
 } else if ($action == "mark_as_inactive" && !empty($customer_id)) {
     try {
-        $customerService->markAsInactive((int)$customer_id, $activeOrganizationId, $session_user_id);
+        $customerService->markAsInactive((int)$customer_id, $activeOrganizationId, Session::userId());
         $success_message = 'Customer has marked as Inactive';
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        flash_success($success_message);
+        header("Location:customer_overview.php?customer_id=$customer_id");
         exit;
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();
@@ -146,7 +155,8 @@ if ($action == "approved" && !empty($customer_id)) {
     try {
         $customerService->markContactAsPrimary((int)$contact_id, (int)$customer_id, $activeOrganizationId);
         $success_message = 'Contact Person is Set as Primary';
-        header("Location:customer_overview.php?customer_id=$customer_id&success_message=" . urlencode($success_message));
+        flash_success($success_message);
+        header("Location:customer_overview.php?customer_id=$customer_id");
         exit;
     } catch (\Throwable $e) {
         $error_message = $e->getMessage();

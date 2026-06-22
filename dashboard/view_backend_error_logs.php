@@ -970,6 +970,9 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
 
                 <div class="stat-strip">
                     <div class="stat-chip"><small class="text-muted">Total</small><strong><?php echo number_format($statistics['total']); ?></strong></div>
+                    <?php if ($total_filtered != $statistics['total']): ?>
+                    <div class="stat-chip"><small class="text-muted">Filtered</small><strong class="text-primary"><?php echo number_format($total_filtered); ?></strong></div>
+                    <?php endif; ?>
                     <a href="?severity=ERROR" class="stat-chip text-decoration-none">
                         <small class="text-muted">Errors</small><strong class="text-danger"><?php echo number_format($statistics['by_severity']['ERROR'] ?? 0); ?></strong>
                     </a>
@@ -1121,11 +1124,11 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
                         <i class="ph-file-search" style="font-size: 3rem; color: #ccc;"></i>
                         <h5 class="mt-2">No log entries found</h5>
                         <p class="text-muted mb-0">
-                            <?php if (empty($all_entries)): ?>
-                                The log file is empty or missing.
-                            <?php else: ?>
-                                Adjust filters to widen results.
-                            <?php endif; ?>
+                        <?php if (empty($all_entries)): ?>
+                            The log file is empty or missing.
+                        <?php else: ?>
+                            <?php echo number_format(count($all_entries)); ?> entries hidden by filters <?php if (($filters['hide_info'] ?? '1') === '1'): ?>(INFO/DEBUG entries hidden by default — uncheck "Hide Info")<?php endif; ?>.
+                        <?php endif; ?>
                         </p>
                     </div>
                 <?php else: ?>

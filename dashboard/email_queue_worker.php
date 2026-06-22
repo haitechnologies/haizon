@@ -5,6 +5,8 @@
  * Preferred entrypoint: dashboard/cron/email/EmailQueueWorker.php
  */
 
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 // ── Error Logging Bootstrap ──────────────────────────────────────────
 require_once __DIR__ . '/admin_elements/error_logger.php';
 if (function_exists('custom_error_handler')) {

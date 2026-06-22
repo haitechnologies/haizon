@@ -1,4 +1,5 @@
 <?php
+require_once dirname(dirname(__DIR__)) . '/admin_elements/error_handler_init.php';
 
 use App\Core\DB;
 use App\Service\SMTPMailer;
@@ -223,7 +224,7 @@ class EmailQueueWorker extends CronJobBase {
      */
     private function getActiveProviders() {
         global $mysqli;
-        $manager = new EmailProviderManager($mysqli);
+        $manager = new EmailProviderService();
         
         $result = $this->safeQuery(
             "SELECT * FROM `" . DB::EMAIL_PROVIDERS . "` 

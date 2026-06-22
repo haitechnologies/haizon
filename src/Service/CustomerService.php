@@ -107,10 +107,6 @@ class CustomerService
 
         $saved = $this->customerRepo->save($customer);
 
-        if (function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($saved->id, 'customer', 'created');
-        }
-
         return $saved;
     }
 
@@ -182,11 +178,15 @@ class CustomerService
 
         $saved = $this->customerRepo->save($updatedCustomer);
 
-        if (function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($saved->id, 'customer', 'updated');
-        }
-
         return $saved;
+    }
+
+    /**
+     * List all customers in an organization
+     */
+    public function list(int $orgId): array
+    {
+        return $this->customerRepo->findAll($orgId);
     }
 
     /**
@@ -196,7 +196,6 @@ class CustomerService
      */
     public function deleteCustomer(int $id, int $orgId): bool
     {
-        // Ensure customer exists
         $this->getCustomer($id, $orgId);
         return $this->customerRepo->delete($id, $orgId);
     }
@@ -234,10 +233,6 @@ class CustomerService
         );
 
         $saved = $this->customerRepo->saveContact($contact);
-
-        if (function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($customerId, 'contact', 'added');
-        }
 
         return $saved;
     }
@@ -282,10 +277,6 @@ class CustomerService
 
         $saved = $this->customerRepo->saveContact($updatedContact);
 
-        if (function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($contact->customerId, 'contact', 'updated');
-        }
-
         return $saved;
     }
 
@@ -302,10 +293,6 @@ class CustomerService
         }
 
         $deleted = $this->customerRepo->deleteContact($id, $orgId);
-
-        if ($deleted && function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($contact->customerId, 'contact', 'deleted');
-        }
 
         return $deleted;
     }
@@ -350,10 +337,6 @@ class CustomerService
 
         $saved = $this->customerRepo->saveAddress($address);
 
-        if (function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($customerId, 'address', 'added');
-        }
-
         return $saved;
     }
 
@@ -395,10 +378,6 @@ class CustomerService
 
         $saved = $this->customerRepo->saveAddress($updatedAddress);
 
-        if (function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($address->customerId, 'address', 'updated');
-        }
-
         return $saved;
     }
 
@@ -415,10 +394,6 @@ class CustomerService
         }
 
         $deleted = $this->customerRepo->deleteAddress($id, $orgId);
-
-        if ($deleted && function_exists('updateCustomerLogs')) {
-            updateCustomerLogs($address->customerId, 'address', 'deleted');
-        }
 
         return $deleted;
     }

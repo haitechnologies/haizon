@@ -27,7 +27,8 @@ if (isset($_POST['id']))           $project_id = e_s__($_POST['id']);
 // ------------------ CHECK IF EXISTS ----------------
 $rs_valid = $mysqli->query("SELECT id FROM `" . DB::PROJECTS . "` WHERE id='" . $project_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_projects.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_projects.php");
 }
 
 // Load project data with job fields (projects table only stores job/customer links)

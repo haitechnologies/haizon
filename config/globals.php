@@ -358,8 +358,10 @@ if (!function_exists('getModuleIdBySlug')) {
   /**
    * Convert number to words (used in invoices/PDFs).
    */
-  function convert_number_to_words($num)
-  {
+/** @deprecated — dead code, zero callers */
+/*
+function convert_number_to_words($num)
+{
     $num = str_replace(array(',', ' '), '', trim((string)$num));
     if ($num === '' || !is_numeric($num)) {
       return '';
@@ -413,7 +415,8 @@ if (!function_exists('getModuleIdBySlug')) {
     }
 
     return trim(implode(' ', array_reverse($words)));
-  }
+}
+*/
 
   /**
    * Sanitize strings from DB.
@@ -1019,6 +1022,35 @@ if (!function_exists('getModuleIdBySlug')) {
 
     /*
     |--------------------------------------------------------------------------
+    | 	getVendorPayables
+    |--------------------------------------------------------------------------
+    |
+    */
+    function getVendorPayables($vendor_id, $mysqli) {
+      $vendor_id = intval($vendor_id);
+
+      $query = "SELECT COALESCE(SUM(grand_total), 0) as total_purchases
+                FROM `" . DB::PURCHASES . "`
+                WHERE vendor_id = {$vendor_id}
+                AND purchase_status NOT IN ('draft', 'declined', 'expired')";
+      $rs = $mysqli->query($query);
+      $row = $rs->fetch_assoc();
+      $total_purchases = floatval($row['total_purchases'] ?? 0);
+
+      $query = "SELECT COALESCE(SUM(total_amount_paid), 0) as total_paid
+                FROM `" . tbl_payments_made . "`
+                WHERE vendor_id = {$vendor_id}
+                AND payment_status != 'void'";
+      $rs = $mysqli->query($query);
+      $row = $rs->fetch_assoc();
+      $total_paid = floatval($row['total_paid'] ?? 0);
+
+      $payables = $total_purchases - $total_paid;
+      return $payables > 0 ? $payables : 0;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | 	getTableAttrbySlug - Upgraded with security & caching
     |--------------------------------------------------------------------------
     |
@@ -1121,9 +1153,12 @@ if (!function_exists('getModuleIdBySlug')) {
     }
 	}
 
+/** @deprecated — dead code, zero callers */
+/*
 	function log_user_block($email){
     log_auth_failed($email);
 	}
+*/
 
 	function log_account_blocked($email){
     $mysqli = $GLOBALS['DB']['MSQLI'] ?? null;
@@ -1328,7 +1363,9 @@ if (!function_exists('getModuleIdBySlug')) {
       | Legacy listing pages expect these helpers to toggle status fields.
       | Default status field is `is_active` (standard column name).
       | */
-      function publish(string $module_caption, string $tbl_name, int $id, string $status_field = 'is_active'): bool {
+  /** @deprecated — dead code, zero callers */
+/*
+    function publish(string $module_caption, string $tbl_name, int $id, string $status_field = 'is_active'): bool {
         $mysqli = $GLOBALS['DB']['MSQLI'];
         $user_id = (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0);
         $datetime = date("Y-m-d H:i:s");
@@ -1362,7 +1399,10 @@ if (!function_exists('getModuleIdBySlug')) {
         $sql = "UPDATE `" . $tbl_name . "` SET " . implode(', ', $setParts) . " WHERE id = " . $id;
         return (bool)$mysqli->query($sql);
       }
+*/
 
+/** @deprecated — dead code, zero callers */
+/*
       function unpublish(string $module_caption, string $tbl_name, int $id, string $status_field = 'is_active'): bool {
         $mysqli = $GLOBALS['DB']['MSQLI'];
         $user_id = (int)($_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['user_id'] ?? 0);
@@ -1397,6 +1437,7 @@ if (!function_exists('getModuleIdBySlug')) {
         $sql = "UPDATE `" . $tbl_name . "` SET " . implode(', ', $setParts) . " WHERE id = " . $id;
         return (bool)$mysqli->query($sql);
       }
+*/
 
       /*
       |--------------------------------------------------------------------------
@@ -1491,6 +1532,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getUserType($id){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1499,6 +1542,7 @@ if (!function_exists('getModuleIdBySlug')) {
           return $row[0];
 
     }
+*/
  
 
     /*
@@ -1507,6 +1551,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getUserAttr($field_name, $id){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1515,6 +1561,7 @@ if (!function_exists('getModuleIdBySlug')) {
           return stripslashes($row[0]);
 
     }
+*/
 
 
 
@@ -1525,6 +1572,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getCreatedBy_EmailID($id){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1532,6 +1581,7 @@ if (!function_exists('getModuleIdBySlug')) {
       $row = $result->fetch_array();
           return $row[0];
     }
+*/
  
 
     /*
@@ -1540,6 +1590,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getMyAvatar($id){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1547,6 +1599,7 @@ if (!function_exists('getModuleIdBySlug')) {
       $row = $result->fetch_array();
           return $row[0];
     }
+*/
 
     /*
     |--------------------------------------------------------------------------
@@ -1554,6 +1607,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getCount(string $table_name, string $condition = ''): int {
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1565,6 +1620,7 @@ if (!function_exists('getModuleIdBySlug')) {
             return $row[0];
 
     }
+*/
  
     /*
     |--------------------------------------------------------------------------
@@ -1572,6 +1628,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getPageNameBySlug($slug){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1580,6 +1638,7 @@ if (!function_exists('getModuleIdBySlug')) {
       $row = $result->fetch_array();
         return stripslashes($row[0]);
     }
+*/
     
 
     /*
@@ -1588,6 +1647,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getIDFromUsername($username, $table_name){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1596,6 +1657,7 @@ if (!function_exists('getModuleIdBySlug')) {
         $row = $result->fetch_array();
         if (!empty($row[0])) return $row[0];
     }
+*/
 
     /*
     |--------------------------------------------------------------------------
@@ -1603,6 +1665,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function getUsernameFromID($id, $table_name){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1610,6 +1674,7 @@ if (!function_exists('getModuleIdBySlug')) {
       $row = $result->fetch_array();
           return $row[0];
     }
+*/
 
     /*
     |--------------------------------------------------------------------------
@@ -1617,6 +1682,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function checkDuplicateUsername($username, $table_name){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1625,6 +1692,7 @@ if (!function_exists('getModuleIdBySlug')) {
           if (!empty($row['0'])) return true;
           else return false;
     }
+*/
 
 
 
@@ -1674,6 +1742,8 @@ if (!function_exists('getModuleIdBySlug')) {
     |--------------------------------------------------------------------------
     |
     */
+/** @deprecated — dead code, zero callers */
+/*
     function checkDuplicateEmail($email, $id, $table_name){
 
       $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1689,6 +1759,7 @@ if (!function_exists('getModuleIdBySlug')) {
           if (!empty($row['0'])) return true;
           else return false;
     }
+*/
 
 
 
@@ -1729,6 +1800,8 @@ function slugify($tbl_name, $title)
     |
     */
 /* backup the db OR just a table */
+/** @deprecated — dead code, zero callers */
+/*
 ///function backup_tables($host, $user, $pass, $name, $tables = '*')
 function backup_tables($mysqli, $tables = '*')
 {
@@ -1786,6 +1859,7 @@ function backup_tables($mysqli, $tables = '*')
 
   return true;
 }
+*/
 
 
 
@@ -1798,6 +1872,8 @@ function backup_tables($mysqli, $tables = '*')
 |--------------------------------------------------------------------------|
 */
 
+/** @deprecated — dead code, zero callers */
+/*
 function fetchHsCodes($parent_id = null)
 {
   $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1831,6 +1907,7 @@ function fetchHsCodes($parent_id = null)
 
   return $html;
 }
+*/
 
 
 /*
@@ -1839,6 +1916,8 @@ function fetchHsCodes($parent_id = null)
 |--------------------------------------------------------------------------|
 */
 
+/** @deprecated — dead code, zero callers */
+/*
 function fetchHsCodesDropdown($parent_id = null, $prefix = '', $selected = null)
 {
   $mysqli = $GLOBALS['DB']['MSQLI'];
@@ -1870,6 +1949,7 @@ function fetchHsCodesDropdown($parent_id = null, $prefix = '', $selected = null)
 
   return $html;
 }
+*/
 
 
     /*
@@ -1957,6 +2037,18 @@ function fetchHsCodesDropdown($parent_id = null, $prefix = '', $selected = null)
     {
         $role_id = $_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? null;
         return Roles::isAccounts($role_id);
+    }
+
+    /**
+     * Get current user's role slug
+     *
+     * @deprecated Use Roles::getName(Roles::getCurrentRoleId()) instead
+     * @return string
+     */
+    function is_role()
+    {
+        $role_id = $_SESSION[$GLOBALS['project_pre']]['DASHBOARD']['role_id'] ?? null;
+        return $role_id !== null ? strtolower(trim(Roles::getName((int)$role_id))) : '';
     }
     
     // Account/category dropdown helpers removed (missing tables).
@@ -2097,12 +2189,15 @@ function calculateInvoiceDueDate($invoice_status, $invoice_date, $payment_term_d
  * @param string|null $file File path (auto-detected if null)
  * @param int|null $line Line number (auto-detected if null)
  */
+/** @deprecated — dead code, zero callers */
+/*
 function logError($message, $context = [], $file = null, $line = null) {
     $logger = $GLOBALS['frontendLogger'] ?? null;
     if ($logger) {
         $logger->error($message, $context, $file, $line);
     }
 }
+*/
 
 /**
  * Log warning message
@@ -2112,12 +2207,15 @@ function logError($message, $context = [], $file = null, $line = null) {
  * @param string|null $file File path (auto-detected if null)
  * @param int|null $line Line number (auto-detected if null)
  */
+/** @deprecated — dead code, zero callers */
+/*
 function logWarning($message, $context = [], $file = null, $line = null) {
     $logger = $GLOBALS['frontendLogger'] ?? null;
     if ($logger) {
         $logger->warning($message, $context, $file, $line);
     }
 }
+*/
 
 /**
  * Log notice message
@@ -2127,12 +2225,15 @@ function logWarning($message, $context = [], $file = null, $line = null) {
  * @param string|null $file File path (auto-detected if null)
  * @param int|null $line Line number (auto-detected if null)
  */
+/** @deprecated — dead code, zero callers */
+/*
 function logNotice($message, $context = [], $file = null, $line = null) {
     $logger = $GLOBALS['frontendLogger'] ?? null;
     if ($logger) {
         $logger->notice($message, $context, $file, $line);
     }
 }
+*/
 
 /**
  * Log debug message (dev-only)
@@ -2142,12 +2243,15 @@ function logNotice($message, $context = [], $file = null, $line = null) {
  * @param string|null $file File path (auto-detected if null)
  * @param int|null $line Line number (auto-detected if null)
  */
+/** @deprecated — dead code, zero callers */
+/*
 function logDebug($message, $context = [], $file = null, $line = null) {
     $logger = $GLOBALS['frontendLogger'] ?? null;
     if ($logger) {
         $logger->debug($message, $context, $file, $line);
     }
 }
+*/
 
 /**
  * Log database error with query details
@@ -2157,6 +2261,8 @@ function logDebug($message, $context = [], $file = null, $line = null) {
  * @param string|null $file File path (auto-detected if null)
  * @param int|null $line Line number (auto-detected if null)
  */
+/** @deprecated — dead code, zero callers */
+/*
 function logDatabaseError($query, $error, $file = null, $line = null) {
     logError('Database Error', [
         'query' => $query,
@@ -2164,6 +2270,7 @@ function logDatabaseError($query, $error, $file = null, $line = null) {
         'timestamp' => date('Y-m-d H:i:s')
     ], $file, $line);
 }
+*/
 
 /**
  * Log database query execution (dev-only)
@@ -2173,6 +2280,8 @@ function logDatabaseError($query, $error, $file = null, $line = null) {
  * @param int $rows Number of rows affected/returned
  * @param float $time Execution time in seconds
  */
+/** @deprecated — dead code, zero callers */
+/*
 function logDatabaseQuery($query, $rows = 0, $time = 0) {
   $appEnv = strtolower((string)(getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '')));
   if ($appEnv === 'development') {
@@ -2183,6 +2292,7 @@ function logDatabaseQuery($query, $rows = 0, $time = 0) {
         ]);
     }
 }
+*/
 
 /**
  * Get system setting value by slug - Upgraded with prepared statements & caching
@@ -2250,6 +2360,8 @@ function getSystemSetting(string $slug, mixed $default = ''): string {
  * @param bool $absolute Return absolute URL (default: relative)
  * @return string Logo URL or empty string if not set
  */
+/** @deprecated — dead code, zero callers */
+/*
 function getSystemLogo($type = 'logo', $absolute = false) {
     $logo = getSystemSetting($type, '');
     
@@ -2262,6 +2374,7 @@ function getSystemLogo($type = 'logo', $absolute = false) {
     
     return $base_path . $upload_path . $logo;
 }
+*/
 
 /**
  * Get favicon URL from system settings with fallback
@@ -2393,6 +2506,8 @@ CSS;
  * @param string $element Element to style: 'admin-header', 'sidebar', 'login', etc.
  * @return string Inline CSS style
  */
+/** @deprecated — dead code, zero callers */
+/*
 function getColorStyle($element = 'admin-header') {
     $element = strtolower($element);
     
@@ -2414,6 +2529,7 @@ function getColorStyle($element = 'admin-header') {
             return "";
     }
 }
+*/
 
 /**
  * Generate a unique referral code for a company
@@ -2426,6 +2542,8 @@ function getColorStyle($element = 'admin-header') {
  * @return string 8-character referral code (e.g., "ABC12XYZ")
  * @throws Exception If unable to generate unique code after 10 attempts
  */
+/** @deprecated — dead code, zero callers */
+/*
 function generateUniqueReferralCode($company_id = null) {
     global $conn;
     
@@ -2457,6 +2575,7 @@ function generateUniqueReferralCode($company_id = null) {
     // Fallback: Very unlikely to reach here, but add company_id for uniqueness
     return strtoupper(substr(md5(uniqid($company_id, true)), 0, 8));
 }
+*/
 
 /**
  * Track a referral click
@@ -2468,6 +2587,8 @@ function generateUniqueReferralCode($company_id = null) {
  * @param string $ip_address IP address of visitor
  * @return array Result array with success status and referral ID
  */
+/** @deprecated — dead code, zero callers */
+/*
 function trackReferralClick($referral_code, $ip_address = null) {
     global $conn;
     
@@ -2489,6 +2610,7 @@ function trackReferralClick($referral_code, $ip_address = null) {
     // erp_referral_tracking table decommissioned
     return ['success' => false, 'message' => 'Referral tracking is not available'];
 }
+*/
 
 /**
  * Get referral statistics for a company
@@ -2500,6 +2622,8 @@ function trackReferralClick($referral_code, $ip_address = null) {
  * @param int $company_id Company ID to get stats for
  * @return array Referral stats with clicks, conversions, rewards
  */
+/** @deprecated — dead code, zero callers */
+/*
 function getReferralStats($company_id) {
     global $conn;
     
@@ -2515,6 +2639,7 @@ function getReferralStats($company_id) {
         'total_rewards' => 0.0
     ];
 }
+*/
 
 
 
@@ -2530,6 +2655,8 @@ function getReferralStats($company_id) {
  * @param string $from_name From name
  * @return bool Success
  */
+/** @deprecated — dead code, zero callers */
+/*
 function sendEmailDirect($to_email, $subject, $body, $from_email = 'noreply@uaebusinessdirectory.ae', $from_name = 'UAE Business Directory') {
     // Validate email
     if (!filter_var($to_email, FILTER_VALIDATE_EMAIL)) {
@@ -2546,6 +2673,7 @@ function sendEmailDirect($to_email, $subject, $body, $from_email = 'noreply@uaeb
     // return mail($to_email, $subject, $body, $headers); // DISABLED: SMTP only
     return false;
 }
+*/
 
 /**
  * Get email queue statistics
@@ -2555,6 +2683,8 @@ function sendEmailDirect($to_email, $subject, $body, $from_email = 'noreply@uaeb
  * @global mysqli $conn Database connection
  * @return array Queue statistics
  */
+/** @deprecated — dead code, zero callers */
+/*
 function getEmailQueueStats() {
     global $conn;
     
@@ -2587,6 +2717,7 @@ function getEmailQueueStats() {
         'total_queued' => (int)($pending + $sent + $failed)
     ];
 }
+*/
 
 /**
  * CSRF TOKEN MANAGEMENT
@@ -2648,12 +2779,15 @@ if (!function_exists('csrf_field')) {
      * 
      * @return string HTML hidden input with CSRF token
      */
+/** @deprecated — dead code, zero callers */
+/*
     if (!function_exists('csrf_field_frontend')) {
       function csrf_field_frontend() {
         $token = csrf_token_frontend();
         return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
       }
     }
+*/
 
 
 /**
@@ -2702,6 +2836,8 @@ if (!function_exists('validate_csrf_token')) {
      * @param string $token The CSRF token to validate
      * @return bool True if token is valid, false otherwise
      */
+/** @deprecated — dead code, zero callers */
+/*
     if (!function_exists('validate_csrf_token_frontend')) {
       function validate_csrf_token_frontend($token = '') {
         $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
@@ -2724,18 +2860,22 @@ if (!function_exists('validate_csrf_token')) {
         return true;
       }
     }
+*/
 
 
 /**
  * Regenerate CSRF token (call after using a token once)
  * Optional: Some implementations rotate tokens after each use
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('regenerate_csrf_token')) {
     function regenerate_csrf_token() {
         global $project_pre;
         $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
     }
 }
+*/
 
 /**
  * IS_ACTIVE COLUMN HELPERS
@@ -2751,12 +2891,15 @@ if (!function_exists('regenerate_csrf_token')) {
  * @param string $alias Optional table alias (e.g., 'b' for 'blogs as b')
  * @return string WHERE clause condition
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('is_active_where')) {
     function is_active_where(string $alias = ''): string {
         $field = $alias ? "$alias.is_active" : 'is_active';
         return "$field = 1";
     }
 }
+*/
 
 /**
  * Get WHERE clause for inactive records
@@ -2765,12 +2908,15 @@ if (!function_exists('is_active_where')) {
  * @param string $alias Optional table alias
  * @return string WHERE clause condition
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('is_inactive_where')) {
     function is_inactive_where(string $alias = ''): string {
         $field = $alias ? "$alias.is_active" : 'is_active';
         return "$field = 0";
     }
 }
+*/
 
 /**
  * Get WHERE clause for all records (active and inactive)
@@ -2779,11 +2925,14 @@ if (!function_exists('is_inactive_where')) {
  * @param string $alias Optional table alias
  * @return string WHERE clause condition (returns '1=1' - always true)
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('is_active_any')) {
     function is_active_any(string $alias = ''): string {
         return '1=1';
     }
 }
+*/
 
 /**
  * Set is_active status for a record
@@ -2796,6 +2945,8 @@ if (!function_exists('is_active_any')) {
  * @param bool $status True for active, false for inactive
  * @return bool True if successful, false otherwise
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('set_is_active')) {
     function set_is_active($conn, $table, $id, $status) {
         $id = intval($id);
@@ -2804,6 +2955,7 @@ if (!function_exists('set_is_active')) {
         return $conn->query($query);
     }
 }
+*/
 
 /**
  * Set a success message to be flashed on the next page load.
@@ -2826,18 +2978,24 @@ if (!function_exists('flash_error')) {
 /**
  * Set an info message to be flashed on the next page load.
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('flash_info')) {
     function flash_info(string $message): void {
         \App\Core\FlashMessage::info($message);
     }
 }
+*/
 
 /**
  * Set a warning message to be flashed on the next page load.
  */
+/** @deprecated — dead code, zero callers */
+/*
 if (!function_exists('flash_warning')) {
     function flash_warning(string $message): void {
         \App\Core\FlashMessage::warning($message);
     }
 }
+*/
 

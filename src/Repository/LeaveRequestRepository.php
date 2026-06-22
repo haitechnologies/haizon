@@ -28,7 +28,7 @@ class LeaveRequestRepository
      */
     public function find(int $id, int $organizationId): ?LeaveRequest
     {
-        $sql = "SELECT id, organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by, created_at, updated_at 
+        $sql = "SELECT id, organization_id, employee_id, leave_type_id, start_date, end_date, total_days, paid_days, reason, status, medical_report_provided, medical_report_file, approved_by, created_at, updated_at 
                 FROM DB::LEAVE_REQUESTS 
                 WHERE id = :id AND organization_id = :organization_id";
 
@@ -51,7 +51,7 @@ class LeaveRequestRepository
      */
     public function findAll(int $organizationId): array
     {
-        $sql = "SELECT id, organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by, created_at, updated_at 
+        $sql = "SELECT id, organization_id, employee_id, leave_type_id, start_date, end_date, total_days, paid_days, reason, status, medical_report_provided, medical_report_file, approved_by, created_at, updated_at 
                 FROM DB::LEAVE_REQUESTS 
                 WHERE organization_id = :organization_id 
                 ORDER BY id DESC";
@@ -78,8 +78,8 @@ class LeaveRequestRepository
 
     private function insert(LeaveRequest $req): LeaveRequest
     {
-        $sql = "INSERT INTO DB::LEAVE_REQUESTS (organization_id, employee_id, leave_type_id, start_date, end_date, total_days, reason, status, approved_by) 
-                VALUES (:organization_id, :employee_id, :leave_type_id, :start_date, :end_date, :total_days, :reason, :status, :approved_by)";
+        $sql = "INSERT INTO DB::LEAVE_REQUESTS (organization_id, employee_id, leave_type_id, start_date, end_date, total_days, paid_days, reason, status, medical_report_provided, medical_report_file, approved_by) 
+                VALUES (:organization_id, :employee_id, :leave_type_id, :start_date, :end_date, :total_days, :paid_days, :reason, :status, :medical_report_provided, :medical_report_file, :approved_by)";
 
         $params = [
             'organization_id' => $req->organizationId,
@@ -88,8 +88,11 @@ class LeaveRequestRepository
             'start_date' => $req->startDate,
             'end_date' => $req->endDate,
             'total_days' => $req->totalDays,
+            'paid_days' => $req->paidDays,
             'reason' => $req->reason,
             'status' => $req->status,
+            'medical_report_provided' => $req->medicalReportProvided ? 1 : 0,
+            'medical_report_file' => $req->medicalReportFile,
             'approved_by' => $req->approvedBy,
         ];
 
@@ -105,8 +108,11 @@ class LeaveRequestRepository
                     start_date = :start_date, 
                     end_date = :end_date, 
                     total_days = :total_days, 
+                    paid_days = :paid_days, 
                     reason = :reason, 
                     status = :status, 
+                    medical_report_provided = :medical_report_provided, 
+                    medical_report_file = :medical_report_file, 
                     approved_by = :approved_by 
                 WHERE id = :id AND organization_id = :organization_id";
 
@@ -116,8 +122,11 @@ class LeaveRequestRepository
             'start_date' => $req->startDate,
             'end_date' => $req->endDate,
             'total_days' => $req->totalDays,
+            'paid_days' => $req->paidDays,
             'reason' => $req->reason,
             'status' => $req->status,
+            'medical_report_provided' => $req->medicalReportProvided ? 1 : 0,
+            'medical_report_file' => $req->medicalReportFile,
             'approved_by' => $req->approvedBy,
             'id' => $req->id,
             'organization_id' => $req->organizationId,
@@ -168,8 +177,11 @@ class LeaveRequestRepository
             startDate: (string)$row['start_date'],
             endDate: (string)$row['end_date'],
             totalDays: (float)$row['total_days'],
+            paidDays: (float)($row['paid_days'] ?? 0),
             reason: $row['reason'] !== null ? (string)$row['reason'] : null,
             status: (string)$row['status'],
+            medicalReportProvided: !empty($row['medical_report_provided']),
+            medicalReportFile: $row['medical_report_file'] !== null ? (string)$row['medical_report_file'] : null,
             approvedBy: $row['approved_by'] !== null ? (int)$row['approved_by'] : null,
             createdAt: (string)($row['created_at'] ?? ''),
             updatedAt: (string)($row['updated_at'] ?? '')

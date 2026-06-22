@@ -180,7 +180,7 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 
 	<!-- Page header -->
 	<div class="page-header page-header-light shadow carriers-page-header">
-		<div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3 carriers-page-header-content">
+		<div class="page-header-content d-lg-flex border-top carriers-page-header-content py-2 px-3">
 			<div class="d-flex align-items-center py-3">
 				<div class="ms-3">
 					<h5 class="mb-0">
@@ -193,16 +193,14 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 
 			<div class="my-lg-auto ms-lg-auto">
 				<div class="d-sm-flex align-items-center mb-3 mb-lg-0 ms-lg-3">
-					<div class="btn-group me-2">
-						<a href="invoices.php" class="btn btn-success btn-sm">
-							<i class="ph-plus-circle me-1"></i>
-							New Invoice
-						</a> &nbsp; &nbsp;
-						<a href="expenses.php" class="btn btn-danger btn-sm">
-							<i class="ph-plus-circle me-1"></i>
-							New Expense
-						</a>
-					</div>
+					<a href="invoices.php" class="btn btn-success btn-sm me-2">
+						<i class="ph-plus-circle me-1"></i>
+						New Invoice
+					</a>
+					<a href="expenses.php" class="btn btn-danger btn-sm me-2">
+						<i class="ph-plus-circle me-1"></i>
+						New Expense
+					</a>
 					<span class="badge bg-primary bg-opacity-20 text-primary">
 						<i class="ph-calendar-blank me-1"></i>
 						<?php echo date('F Y'); ?>
@@ -217,476 +215,457 @@ $expense_growth = $last_month_expenses > 0 ? round((($current_month_expenses - $
 	</div>
 	<!-- /page header -->
 
+	<!-- Inner content -->
+	<div class="content-inner">
 
+		<!-- Content area -->
+		<div class="content">
 
-	<?php if (granted_('view', '___')) { ?>
-		<!-- Inner content -->
-		<div class="content-inner">
+			<?php include('admin_elements/breadcrumb.php'); ?>
 
-			<!-- Content area -->
-			<div class="content">
+			<!-- Dashboard content -->
 
-				<?php include('admin_elements/breadcrumb.php'); ?>
-
-				<!-- Dashboard content -->
-
-				<!-- Financial KPI Cards -->
-				<div class="row">
-					<!-- Revenue Card -->
-					<div class="col-sm-6 col-xl-3">
-						<div class="card card-body">
-							<div class="d-flex align-items-center mb-3">
-								<div class="flex-fill">
-									<h6 class="mb-0 text-muted">Revenue (This Month)</h6>
-								</div>
-								<?php if ($revenue_growth != 0): ?>
-									<span class="badge <?php echo $revenue_growth > 0 ? 'bg-success' : 'bg-danger'; ?> rounded-pill ms-2">
-										<i class="ph-trend-<?php echo $revenue_growth > 0 ? 'up' : 'down'; ?>"></i>
-										<?php echo abs($revenue_growth); ?>%
-									</span>
-								<?php endif; ?>
-							</div>
-							<div class="d-flex align-items-end">
-								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_revenue, 2); ?></h3>
-							</div>
-							<div class="progress mt-2" style="height: 4px;">
-								<div class="progress-bar bg-success" style="width: <?php echo $year_revenue > 0 ? ($current_month_revenue / $year_revenue * 100) : 0; ?>%"></div>
-							</div>
-							<small class="text-muted mt-1">YTD: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($year_revenue, 2); ?></small>
-						</div>
-					</div>
-
-					<!-- Expenses Card -->
-					<div class="col-sm-6 col-xl-3">
-						<div class="card card-body">
-							<div class="d-flex align-items-center mb-3">
-								<div class="flex-fill">
-									<h6 class="mb-0 text-muted">Expenses (This Month)</h6>
-								</div>
-								<?php if ($expense_growth != 0): ?>
-									<span class="badge <?php echo $expense_growth < 0 ? 'bg-success' : 'bg-warning'; ?> rounded-pill ms-2">
-										<i class="ph-trend-<?php echo $expense_growth > 0 ? 'up' : 'down'; ?>"></i>
-										<?php echo abs($expense_growth); ?>%
-									</span>
-								<?php endif; ?>
-							</div>
-							<div class="d-flex align-items-end">
-								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_expenses, 2); ?></h3>
-							</div>
-							<div class="progress mt-2" style="height: 4px;">
-								<div class="progress-bar bg-danger" style="width: <?php echo $year_expenses > 0 ? ($current_month_expenses / $year_expenses * 100) : 0; ?>%"></div>
-							</div>
-							<small class="text-muted mt-1">YTD: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($year_expenses, 2); ?></small>
-						</div>
-					</div>
-
-					<!-- Profit Card -->
-					<div class="col-sm-6 col-xl-3">
-						<div class="card card-body <?php echo $current_month_profit >= 0 ? 'bg-success' : 'bg-danger'; ?> text-white">
-							<div class="d-flex align-items-center mb-3">
-								<div class="flex-fill">
-									<h6 class="mb-0 opacity-75">Net Profit (Month)</h6>
-								</div>
-								<span class="badge bg-white bg-opacity-20 rounded-pill ms-2">
-									<?php echo $profit_margin; ?>%
+			<div class="row">
+				<div class="col-sm-6 col-xl-3">
+					<div class="card card-body border-start border-success border-3">
+						<div class="d-flex align-items-center mb-2">
+							<h6 class="mb-0 text-muted">Revenue (This Month)</h6>
+							<?php if ($revenue_growth != 0): ?>
+								<span class="badge <?php echo $revenue_growth > 0 ? 'bg-success' : 'bg-danger'; ?> bg-opacity-10 <?php echo $revenue_growth > 0 ? 'text-success' : 'text-danger'; ?> rounded-pill ms-auto">
+									<i class="ph-trend-<?php echo $revenue_growth > 0 ? 'up' : 'down'; ?> me-1"></i>
+									<?php echo $revenue_growth > 0 ? '+' : ''; ?><?php echo abs($revenue_growth); ?>%
 								</span>
-							</div>
-							<div class="d-flex align-items-end">
-								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_profit, 2); ?></h3>
-							</div>
-							<div class="progress mt-2 bg-white bg-opacity-20" style="height: 4px;">
-								<div class="progress-bar bg-white" style="width: <?php echo abs($profit_margin); ?>%"></div>
-							</div>
-							<small class="opacity-75 mt-1">Year: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($year_profit, 2); ?></small>
+							<?php endif; ?>
 						</div>
-					</div>
-
-					<!-- Outstanding Balance -->
-					<div class="col-sm-6 col-xl-3">
-						<div class="card card-body bg-primary text-white">
-							<div class="d-flex align-items-center mb-3">
-								<div class="flex-fill">
-									<h6 class="mb-0 opacity-75">Outstanding (AR - AP)</h6>
-								</div>
-							</div>
-							<div class="d-flex align-items-end">
-								<h3 class="mb-0 me-auto"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($total_ar - $total_ap, 2); ?></h3>
-							</div>
-							<div class="d-flex mt-2 justify-content-between">
-								<small class="opacity-75">AR: <?php echo number_format($total_ar, 0); ?></small>
-								<small class="opacity-75">AP: <?php echo number_format($total_ap, 0); ?></small>
-							</div>
-						</div>
+						<h3 class="mb-1"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_revenue, 2); ?></h3>
+						<small class="text-muted">YTD: <?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($year_revenue, 2); ?></small>
 					</div>
 				</div>
 
-				<!-- Main Content Row -->
-				<div class="row">
-					<!-- Left Column -->
-					<div class="col-xl-8">
+				<div class="col-sm-6 col-xl-3">
+					<div class="card card-body border-start border-danger border-3">
+						<div class="d-flex align-items-center mb-2">
+							<h6 class="mb-0 text-muted">Expenses (This Month)</h6>
+							<?php if ($expense_growth != 0): ?>
+								<span class="badge <?php echo $expense_growth > 0 ? 'bg-danger' : 'bg-success'; ?> bg-opacity-10 <?php echo $expense_growth > 0 ? 'text-danger' : 'text-success'; ?> rounded-pill ms-auto">
+									<i class="ph-trend-<?php echo $expense_growth > 0 ? 'up' : 'down'; ?> me-1"></i>
+									<?php echo $expense_growth > 0 ? '+' : ''; ?><?php echo abs($expense_growth); ?>%
+								</span>
+							<?php endif; ?>
+						</div>
+						<h3 class="mb-1"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_expenses, 2); ?></h3>
+						<small class="text-muted">YTD: <?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($year_expenses, 2); ?></small>
+					</div>
+				</div>
 
-						<!-- Accounts Receivable & Payable -->
-						<div class="row">
-							<div class="col-lg-6">
-								<div class="card">
-									<div class="card-header d-flex align-items-center">
-										<h6 class="mb-0">
-											<i class="ph-wallet me-2"></i>
-											Total Receivables
-											<i class="ph-info ms-2" data-bs-popup="tooltip" data-bs-placement="right" title="Outstanding amounts from customers"></i>
-										</h6>
-										<div class="ms-auto">
-											<div class="btn-group">
-												<a href="#" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">New</a>
-												<div class="dropdown-menu dropdown-menu-end">
-													<a href="invoices.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>New Invoice</a>
-													<a href="payments_received.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>Record Payment</a>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="card-body">
-										<div class="row text-center">
-											<div class="col-6">
-												<div class="mb-3">
-													<a href="<?php echo $ar_report_link; ?>" class="text-info">
-														<div class="fs-sm mb-1">CURRENT</div>
-														<h4 class="mb-0"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_ar, 0); ?></h4>
-													</a>
-												</div>
-											</div>
-											<div class="col-6">
-												<div class="mb-3">
-													<div class="fs-sm text-danger mb-1">OVERDUE</div>
-													<div class="btn-group">
-														<a href="#" class="btn btn-link p-0 text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-															<h4 class="mb-0 text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($overdue_ar, 0); ?></h4>
-														</a>
-														<div class="dropdown-menu dropdown-menu-end">
-															<a href="<?php echo $ar_report_link_1_15; ?>" class="dropdown-item">1-15 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_1_15, 0); ?></a>
-															<a href="<?php echo $ar_report_link_16_30; ?>" class="dropdown-item">16-30 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_16_30, 0); ?></a>
-															<a href="<?php echo $ar_report_link_31_45; ?>" class="dropdown-item">31-45 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_31_45, 0); ?></a>
-															<a href="<?php echo $ar_report_link_over_45; ?>" class="dropdown-item">Over 45 Days: <?php echo BASE_CURRENCY['code']; ?><?php echo number_format($ar_over_45, 0); ?></a>
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="border-top pt-3">
-											<div class="d-flex justify-content-between mb-2">
-												<span class="text-muted">Total Invoiced</span>
-												<span class="fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($total_revenue, 0); ?></span>
-											</div>
-											<div class="d-flex justify-content-between">
-												<span class="text-muted">Payments Received</span>
-												<span class="fw-semibold text-success"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($month_payments_received, 0); ?></span>
+				<div class="col-sm-6 col-xl-3">
+					<div class="card card-body border-start <?php echo $current_month_profit >= 0 ? 'border-success' : 'border-danger'; ?> border-3">
+						<div class="d-flex align-items-center mb-2">
+							<h6 class="mb-0 text-muted">Net Profit (Month)</h6>
+							<span class="badge <?php echo $current_month_profit >= 0 ? 'bg-success' : 'bg-danger'; ?> bg-opacity-10 <?php echo $current_month_profit >= 0 ? 'text-success' : 'text-danger'; ?> rounded-pill ms-auto">
+								<?php echo $current_month_profit >= 0 ? '+' : ''; ?><?php echo $profit_margin; ?>%
+							</span>
+						</div>
+						<h3 class="mb-1"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($current_month_profit, 2); ?></h3>
+						<small class="text-muted">Year: <?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($year_profit, 2); ?></small>
+					</div>
+				</div>
+
+				<div class="col-sm-6 col-xl-3">
+					<div class="card card-body border-start border-primary border-3">
+						<div class="d-flex align-items-center mb-2">
+							<h6 class="mb-0 text-muted">Outstanding (AR - AP)</h6>
+						</div>
+						<h3 class="mb-1"><?php echo BASE_CURRENCY['code']; ?> <?php echo number_format($total_ar - $total_ap, 2); ?></h3>
+						<small class="text-muted">AR: <?php echo number_format($total_ar, 0); ?> &middot; AP: <?php echo number_format($total_ap, 0); ?></small>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-xl-8">
+
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="card">
+								<div class="card-header d-flex align-items-center">
+									<h6 class="mb-0">
+										<i class="ph-wallet me-2"></i>
+										Total Receivables
+										<i class="ph-info ms-2" data-bs-popup="tooltip" data-bs-placement="right" title="Outstanding amounts from customers"></i>
+									</h6>
+									<div class="ms-auto">
+										<div class="btn-group">
+											<a href="#" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">New</a>
+											<div class="dropdown-menu dropdown-menu-end">
+												<a href="invoices.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>New Invoice</a>
+												<a href="payments_received.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>Record Payment</a>
 											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-
-							<div class="col-lg-6">
-								<div class="card">
-									<div class="card-header d-flex align-items-center">
-										<h6 class="mb-0">
-											<i class="ph-credit-card me-2"></i>
-											Total Payables
-											<i class="ph-info ms-2" data-bs-popup="tooltip" data-bs-placement="right" title="Outstanding amounts to vendors"></i>
-										</h6>
-										<div class="ms-auto">
-											<div class="btn-group">
-												<a href="#" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">New</a>
-												<div class="dropdown-menu dropdown-menu-end">
-													<a href="expenses.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>New Expense</a>
-													<a href="payments_made.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>Record Payment</a>
-												</div>
-											</div>
+								<div class="card-body">
+									<div class="row text-center mb-3">
+										<div class="col-6">
+											<a href="<?php echo $ar_report_link; ?>" class="text-decoration-none">
+												<div class="text-info fs-sm mb-1">CURRENT</div>
+												<h4 class="mb-0 text-body"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_ar, 0); ?></h4>
+											</a>
+										</div>
+										<div class="col-6">
+											<a href="<?php echo $ar_report_link_1_15; ?>" class="text-decoration-none">
+												<div class="text-danger fs-sm mb-1">OVERDUE</div>
+												<h4 class="mb-0 text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($overdue_ar, 0); ?></h4>
+											</a>
 										</div>
 									</div>
-									<div class="card-body">
-										<div class="row text-center">
-											<div class="col-6">
-												<div class="mb-3">
-													<div class="fs-sm text-info mb-1">CURRENT</div>
-													<h4 class="mb-0"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_ap, 0); ?></h4>
+									<div class="border-top pt-3 mb-3">
+										<div class="d-flex justify-content-between mb-2">
+											<span class="text-muted">Total Invoiced</span>
+											<span class="fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($total_revenue, 0); ?></span>
+										</div>
+										<div class="d-flex justify-content-between">
+											<span class="text-muted">Payments Received</span>
+											<span class="fw-semibold text-success"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($month_payments_received, 0); ?></span>
+										</div>
+									</div>
+									<div class="border-top pt-3">
+										<div class="fs-sm fw-semibold mb-2">Aging Breakdown</div>
+										<?php
+										$ar_buckets = [
+											['label' => '1-15 Days', 'value' => $ar_1_15, 'color' => 'warning', 'link' => $ar_report_link_1_15],
+											['label' => '16-30 Days', 'value' => $ar_16_30, 'color' => 'orange', 'link' => $ar_report_link_16_30],
+											['label' => '31-45 Days', 'value' => $ar_31_45, 'color' => 'danger', 'link' => $ar_report_link_31_45],
+											['label' => '>45 Days', 'value' => $ar_over_45, 'color' => 'dark', 'link' => $ar_report_link_over_45],
+										];
+										foreach ($ar_buckets as $bucket):
+										?>
+										<a href="<?php echo $bucket['link']; ?>" class="text-decoration-none">
+											<div class="mb-2">
+												<div class="d-flex justify-content-between mb-1">
+													<small class="text-muted"><?php echo $bucket['label']; ?></small>
+													<small class="fw-semibold text-body"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($bucket['value'], 0); ?></small>
+												</div>
+												<div class="progress" style="height: 6px;">
+													<div class="progress-bar bg-<?php echo $bucket['color']; ?>" style="width: <?php echo $total_ar > 0 ? ($bucket['value'] / $total_ar * 100) : 0; ?>%"></div>
 												</div>
 											</div>
-											<div class="col-6">
-												<div class="mb-3">
-													<div class="fs-sm text-danger mb-1">OVERDUE</div>
-													<h4 class="mb-0 text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($overdue_ap, 0); ?></h4>
-												</div>
-											</div>
-										</div>
-										<div class="border-top pt-3">
-											<div class="d-flex justify-content-between mb-2">
-												<span class="text-muted">Total Expenses</span>
-												<span class="fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($total_expense_amount, 0); ?></span>
-											</div>
-											<div class="d-flex justify-content-between">
-												<span class="text-muted">This Month</span>
-												<span class="fw-semibold text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_month_expenses, 0); ?></span>
-											</div>
-										</div>
+										</a>
+										<?php endforeach; ?>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<!-- Recent Invoices -->
-						<div class="card">
-							<div class="card-header d-flex align-items-center">
-								<h6 class="mb-0">
-									<i class="ph-file-text me-2"></i>
-									Recent Invoices
-								</h6>
-								<div class="ms-auto">
-									<a href="listing_invoices.php" class="text-body">View all <i class="ph-arrow-right ms-1"></i></a>
+						<div class="col-lg-6">
+							<div class="card">
+								<div class="card-header d-flex align-items-center">
+									<h6 class="mb-0">
+										<i class="ph-credit-card me-2"></i>
+										Total Payables
+										<i class="ph-info ms-2" data-bs-popup="tooltip" data-bs-placement="right" title="Outstanding amounts to vendors"></i>
+									</h6>
+									<div class="ms-auto">
+										<div class="btn-group">
+											<a href="#" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">New</a>
+											<div class="dropdown-menu dropdown-menu-end">
+												<a href="expenses.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>New Expense</a>
+												<a href="payments_made.php" class="dropdown-item"><i class="ph-plus-circle me-2"></i>Record Payment</a>
+											</div>
+										</div>
+									</div>
 								</div>
-							</div>
-							<div class="card-body p-0">
-								<div class="table-responsive">
-									<table class="table table-hover">
-										<thead class="table-light">
-											<tr>
-												<th>Invoice #</th>
-												<th>Customer</th>
-												<th>Date</th>
-												<th>Status</th>
-												<th class="text-end">Amount</th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php
-											$result = $mysqli->query("SELECT * FROM `" . DB::INVOICES . "` ORDER BY id DESC LIMIT 8");
-											if ($result->num_rows > 0) {
-												while ($row = $result->fetch_array()) {
-													$customer_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
-													$status = $row['invoice_status'];
-													$status_class = $status == 'paid' ? 'success' : ($status == 'sent' ? 'warning' : 'secondary');
-											?>
-													<tr>
-														<td class="py-2">
-															<a href="invoice_overview.php?invoice_id=<?php echo $row['id']; ?>" class="fw-semibold">
-																<?php echo $row['invoice_no']; ?>
-															</a>
-														</td>
-														<td class="py-2"><?php echo $customer_name; ?></td>
-														<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['invoice_date'])); ?></td>
-														<td class="py-2">
-															<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
-																<?php echo ucfirst($status); ?>
-															</span>
-														</td>
-														<td class="py-2 text-end fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($row['grand_total'], 2); ?></td>
-													</tr>
-											<?php
-												}
-											} else {
-												echo '<tr><td class="text-center text-muted py-3" colspan="5">No invoices found</td></tr>';
-											}
-											?>
-										</tbody>
-									</table>
+								<div class="card-body">
+									<div class="row text-center mb-3">
+										<div class="col-6">
+											<div class="text-info fs-sm mb-1">CURRENT</div>
+											<h4 class="mb-0"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_ap, 0); ?></h4>
+										</div>
+										<div class="col-6">
+											<div class="text-danger fs-sm mb-1">OVERDUE</div>
+											<h4 class="mb-0 text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($overdue_ap, 0); ?></h4>
+										</div>
+									</div>
+									<div class="border-top pt-3">
+										<div class="d-flex justify-content-between mb-2">
+											<span class="text-muted">Total Expenses</span>
+											<span class="fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($total_expense_amount, 0); ?></span>
+										</div>
+										<div class="d-flex justify-content-between">
+											<span class="text-muted">This Month</span>
+											<span class="fw-semibold text-danger"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($current_month_expenses, 0); ?></span>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
-
-						<!-- Recent Expenses -->
-						<div class="card">
-							<div class="card-header d-flex align-items-center">
-								<h6 class="mb-0">
-									<i class="ph-receipt me-2"></i>
-									Recent Expenses
-								</h6>
-								<div class="ms-auto">
-									<a href="listing_expenses.php" class="text-body">View all <i class="ph-arrow-right ms-1"></i></a>
-								</div>
-							</div>
-							<div class="card-body p-0">
-								<div class="table-responsive">
-									<table class="table table-hover">
-										<thead class="table-light">
-											<tr>
-												<th>Expense #</th>
-												<th>Vendor</th>
-												<th>Date</th>
-												<th>Status</th>
-												<th class="text-end">Amount</th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php
-											$result = $mysqli->query("SELECT * FROM `" . DB::EXPENSES . "` ORDER BY id DESC LIMIT 8");
-											if ($result->num_rows > 0) {
-												while ($row = $result->fetch_array()) {
-													$vendor_name = getTableAttr('display_name', DB::VENDORS, $row['vendor_id']);
-											$status = 'recorded';  // Default status since expenses table doesn't have status field
-											$status_class = 'info';
-													$reference = !empty($row['reference_no']) ? $row['reference_no'] : 'EXP-' . $row['id'];
-											?>
-													<tr>
-														<td class="py-2">
-															<a href="expense_overview.php?expense_id=<?php echo $row['id']; ?>" class="fw-semibold">
-																<?php echo $reference; ?>
-															</a>
-														</td>
-														<td class="py-2"><?php echo $vendor_name; ?></td>
-														<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['expense_date'])); ?></td>
-														<td class="py-2">
-															<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
-																<?php echo ucfirst($status); ?>
-															</span>
-														</td>
-														<td class="py-2 text-end fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($row['grand_total'], 2); ?></td>
-													</tr>
-											<?php
-												}
-											} else {
-												echo '<tr><td class="text-center text-muted py-3" colspan="5">No expenses found</td></tr>';
-											}
-											?>
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-
 					</div>
 
-					<!-- Right Column -->
-					<div class="col-xl-4">
+					<div class="card">
+						<div class="card-header d-flex align-items-center">
+							<h6 class="mb-0">
+								<i class="ph-file-text me-2"></i>
+								Recent Invoices
+							</h6>
+							<div class="ms-auto">
+								<a href="listing_invoices.php" class="text-body">View all <i class="ph-arrow-right ms-1"></i></a>
+							</div>
+						</div>
+						<div class="card-body p-0">
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead class="table-light">
+										<tr>
+											<th>Invoice #</th>
+											<th>Customer</th>
+											<th>Date</th>
+											<th>Status</th>
+											<th class="text-end">Amount</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php
+										$result = $mysqli->query("SELECT * FROM `" . DB::INVOICES . "` ORDER BY id DESC LIMIT 8");
+										if ($result->num_rows > 0) {
+											while ($row = $result->fetch_array()) {
+												$customer_name = getTableAttr('display_name', DB::CUSTOMERS, $row['customer_id']);
+												$status = $row['invoice_status'];
+												$status_class = $status == 'paid' ? 'success' : ($status == 'sent' ? 'warning' : 'secondary');
+										?>
+												<tr>
+													<td class="py-2">
+														<a href="invoice_overview.php?invoice_id=<?php echo $row['id']; ?>" class="fw-semibold">
+															<?php echo $row['invoice_no']; ?>
+														</a>
+													</td>
+													<td class="py-2"><?php echo $customer_name; ?></td>
+													<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['invoice_date'])); ?></td>
+													<td class="py-2">
+														<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
+															<?php echo ucfirst($status); ?>
+														</span>
+													</td>
+													<td class="py-2 text-end fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($row['grand_total'], 2); ?></td>
+												</tr>
+										<?php
+											}
+										} else {
+											echo '<tr><td class="text-center text-muted py-3" colspan="5">No invoices found</td></tr>';
+										}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 
-						<!-- Quick Stats -->
-						<div class="row">
-							<div class="col-sm-6 col-xl-12">
-								<div class="card card-body" onclick="window.location.href='listing_invoices.php?status=draft';" style="cursor: pointer;">
+					<div class="card">
+						<div class="card-header d-flex align-items-center">
+							<h6 class="mb-0">
+								<i class="ph-receipt me-2"></i>
+								Recent Expenses
+							</h6>
+							<div class="ms-auto">
+								<a href="listing_expenses.php" class="text-body">View all <i class="ph-arrow-right ms-1"></i></a>
+							</div>
+						</div>
+						<div class="card-body p-0">
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead class="table-light">
+										<tr>
+											<th>Expense #</th>
+											<th>Vendor</th>
+											<th>Date</th>
+											<th>Status</th>
+											<th class="text-end">Amount</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php
+										$result = $mysqli->query("SELECT * FROM `" . DB::EXPENSES . "` ORDER BY id DESC LIMIT 8");
+										if ($result->num_rows > 0) {
+											while ($row = $result->fetch_array()) {
+												$vendor_name = getTableAttr('display_name', DB::VENDORS, $row['vendor_id']);
+										$status = 'recorded';
+										$status_class = 'info';
+												$reference = !empty($row['reference_no']) ? $row['reference_no'] : 'EXP-' . $row['id'];
+										?>
+												<tr>
+													<td class="py-2">
+														<a href="expense_overview.php?expense_id=<?php echo $row['id']; ?>" class="fw-semibold">
+															<?php echo $reference; ?>
+														</a>
+													</td>
+													<td class="py-2"><?php echo $vendor_name; ?></td>
+													<td class="py-2 text-muted"><?php echo date("d M Y", strtotime($row['expense_date'])); ?></td>
+													<td class="py-2">
+														<span class="badge bg-<?php echo $status_class; ?> bg-opacity-20 text-<?php echo $status_class; ?>">
+															<?php echo ucfirst($status); ?>
+														</span>
+													</td>
+													<td class="py-2 text-end fw-semibold"><?php echo BASE_CURRENCY['code']; ?><?php echo number_format($row['grand_total'], 2); ?></td>
+												</tr>
+										<?php
+											}
+										} else {
+											echo '<tr><td class="text-center text-muted py-3" colspan="5">No expenses found</td></tr>';
+										}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="col-xl-4">
+
+					<div class="row">
+						<div class="col-sm-6 col-xl-12 mb-3">
+							<a href="listing_invoices.php?status=draft" class="text-decoration-none">
+								<div class="card card-body border-start border-secondary border-3">
 									<div class="d-flex align-items-center">
-										<i class="ph-files ph-3x text-secondary opacity-75 me-3"></i>
+										<i class="ph-files ph-2x text-secondary opacity-75 me-3"></i>
 										<div class="flex-fill">
-											<h3 class="mb-1"><?php echo $draft_invoices; ?></h3>
+											<h3 class="mb-1 text-body"><?php echo $draft_invoices; ?></h3>
 											<div class="text-muted">Draft Invoices</div>
 										</div>
 									</div>
 								</div>
-							</div>
+							</a>
+						</div>
 
-							<div class="col-sm-6 col-xl-12">
-								<div class="card card-body" onclick="window.location.href='listing_invoices.php?status=sent';" style="cursor: pointer;">
+						<div class="col-sm-6 col-xl-12 mb-3">
+							<a href="listing_invoices.php?status=sent" class="text-decoration-none">
+								<div class="card card-body border-start border-warning border-3">
 									<div class="d-flex align-items-center">
-										<i class="ph-paper-plane-tilt ph-3x text-warning opacity-75 me-3"></i>
+										<i class="ph-paper-plane-tilt ph-2x text-warning opacity-75 me-3"></i>
 										<div class="flex-fill">
-											<h3 class="mb-1"><?php echo $sent_invoices; ?></h3>
+											<h3 class="mb-1 text-body"><?php echo $sent_invoices; ?></h3>
 											<div class="text-muted">Sent Invoices</div>
 										</div>
 									</div>
 								</div>
-							</div>
+							</a>
+						</div>
 
-							<div class="col-sm-6 col-xl-12">
-								<div class="card card-body bg-success text-white" onclick="window.location.href='listing_customers.php';" style="cursor: pointer;">
+						<div class="col-sm-6 col-xl-12 mb-3">
+							<a href="listing_customers.php" class="text-decoration-none">
+								<div class="card card-body border-start border-success border-3">
 									<div class="d-flex align-items-center">
-										<i class="ph-users ph-3x opacity-75 me-3"></i>
+										<i class="ph-users ph-2x text-success opacity-75 me-3"></i>
 										<div class="flex-fill">
-											<h3 class="mb-1"><?php echo $total_customers; ?></h3>
-											<div class="opacity-75">Customers</div>
+											<h3 class="mb-1 text-body"><?php echo $total_customers; ?></h3>
+											<div class="text-muted">Customers</div>
 										</div>
 									</div>
 								</div>
-							</div>
+							</a>
+						</div>
 
-							<div class="col-sm-6 col-xl-12">
-								<div class="card card-body bg-primary text-white" onclick="window.location.href='listing_vendors.php';" style="cursor: pointer;">
+						<div class="col-sm-6 col-xl-12 mb-3">
+							<a href="listing_vendors.php" class="text-decoration-none">
+								<div class="card card-body border-start border-primary border-3">
 									<div class="d-flex align-items-center">
-										<i class="ph-storefront ph-3x opacity-75 me-3"></i>
+										<i class="ph-storefront ph-2x text-primary opacity-75 me-3"></i>
 										<div class="flex-fill">
-											<h3 class="mb-1"><?php echo $total_vendors; ?></h3>
-											<div class="opacity-75">Vendors</div>
+											<h3 class="mb-1 text-body"><?php echo $total_vendors; ?></h3>
+											<div class="text-muted">Vendors</div>
 										</div>
 									</div>
 								</div>
-							</div>
+							</a>
 						</div>
-
-						<!-- Chart of Accounts Summary -->
-						<div class="card">
-							<div class="card-header">
-								<h6 class="mb-0">
-									<i class="ph-tree-structure me-2"></i>
-									Chart of Accounts
-								</h6>
-							</div>
-							<div class="list-group list-group-flush">
-								<a href="listing_accounts.php" class="list-group-item list-group-item-action d-flex align-items-center">
-									<i class="ph-database me-3 text-primary"></i>
-									<div class="flex-fill">
-										<div class="fw-semibold">Accounts</div>
-										<div class="fs-sm text-muted">Manage chart of accounts</div>
-									</div>
-									<span class="badge bg-primary bg-opacity-20 text-primary rounded-pill"><?php echo $total_accounts; ?></span>
-								</a>
-								<a href="listing_banks.php" class="list-group-item list-group-item-action d-flex align-items-center">
-									<i class="ph-bank me-3 text-success"></i>
-									<div class="flex-fill">
-										<div class="fw-semibold">Banks</div>
-										<div class="fs-sm text-muted">Manage bank accounts</div>
-									</div>
-									<span class="badge bg-success bg-opacity-20 text-success rounded-pill"><?php echo $total_banks; ?></span>
-								</a>
-								<a href="listing_journals.php" class="list-group-item list-group-item-action d-flex align-items-center">
-									<i class="ph-note-pencil me-3 text-info"></i>
-									<div class="flex-fill">
-										<div class="fw-semibold">Journal Entries</div>
-										<div class="fs-sm text-muted">View all transactions</div>
-									</div>
-									<i class="ph-caret-right"></i>
-								</a>
-							</div>
-						</div>
-
-						<!-- Quick Reports -->
-						<div class="card">
-							<div class="card-header">
-								<h6 class="mb-0">
-									<i class="ph-chart-line me-2"></i>
-									Quick Reports
-								</h6>
-							</div>
-							<div class="list-group list-group-flush">
-								<a href="report_profit_loss.php" class="list-group-item list-group-item-action">
-									<i class="ph-trending-up me-2 text-success"></i>
-									Profit & Loss Statement
-								</a>
-								<a href="report_balance_sheet.php" class="list-group-item list-group-item-action">
-									<i class="ph-scales me-2 text-primary"></i>
-									Balance Sheet
-								</a>
-								<a href="report_cash_flow.php" class="list-group-item list-group-item-action">
-									<i class="ph-arrows-left-right me-2 text-info"></i>
-									Cash Flow Statement
-								</a>
-									<a href="<?php echo $ar_report_link; ?>" class="list-group-item list-group-item-action">
-									<i class="ph-clock-countdown me-2 text-warning"></i>
-									AR Aging Summary
-								</a>
-								<a href="report_ap_aging_details.php" class="list-group-item list-group-item-action">
-									<i class="ph-clock me-2 text-danger"></i>
-									AP Aging Summary
-								</a>
-							</div>
-						</div>
-
 					</div>
-				</div>
-				<!-- /dashboard content -->
 
+					<div class="card">
+						<div class="card-header">
+							<h6 class="mb-0">
+								<i class="ph-tree-structure me-2"></i>
+								Chart of Accounts
+							</h6>
+						</div>
+						<div class="list-group list-group-flush">
+							<a href="listing_accounts.php" class="list-group-item list-group-item-action d-flex align-items-center">
+								<i class="ph-database me-3 text-primary"></i>
+								<div class="flex-fill">
+									<div class="fw-semibold">Accounts</div>
+									<div class="fs-sm text-muted">Manage chart of accounts</div>
+								</div>
+								<span class="badge bg-primary bg-opacity-20 text-primary rounded-pill"><?php echo $total_accounts; ?></span>
+							</a>
+							<a href="listing_banks.php" class="list-group-item list-group-item-action d-flex align-items-center">
+								<i class="ph-bank me-3 text-success"></i>
+								<div class="flex-fill">
+									<div class="fw-semibold">Banks</div>
+									<div class="fs-sm text-muted">Manage bank accounts</div>
+								</div>
+								<span class="badge bg-success bg-opacity-20 text-success rounded-pill"><?php echo $total_banks; ?></span>
+							</a>
+							<a href="listing_journals.php" class="list-group-item list-group-item-action d-flex align-items-center">
+								<i class="ph-note-pencil me-3 text-info"></i>
+								<div class="flex-fill">
+									<div class="fw-semibold">Journal Entries</div>
+									<div class="fs-sm text-muted">View all transactions</div>
+								</div>
+								<i class="ph-caret-right"></i>
+							</a>
+						</div>
+					</div>
+
+					<div class="card">
+						<div class="card-header">
+							<h6 class="mb-0">
+								<i class="ph-chart-line me-2"></i>
+								Quick Reports
+							</h6>
+						</div>
+						<div class="card-body p-2">
+							<div class="row g-2">
+								<div class="col-6">
+									<a href="report_profit_loss.php" class="card card-body text-center p-3 text-decoration-none border-start border-success border-3">
+										<i class="ph-trend-up ph-2x text-success mb-2"></i>
+										<div class="fw-semibold small">Profit & Loss</div>
+									</a>
+								</div>
+								<div class="col-6">
+									<a href="report_balance_sheet.php" class="card card-body text-center p-3 text-decoration-none border-start border-primary border-3">
+										<i class="ph-scales ph-2x text-primary mb-2"></i>
+										<div class="fw-semibold small">Balance Sheet</div>
+									</a>
+								</div>
+								<div class="col-6">
+									<a href="report_cash_flow.php" class="card card-body text-center p-3 text-decoration-none border-start border-info border-3">
+										<i class="ph-arrows-left-right ph-2x text-info mb-2"></i>
+										<div class="fw-semibold small">Cash Flow</div>
+									</a>
+								</div>
+								<div class="col-6">
+									<a href="<?php echo $ar_report_link; ?>" class="card card-body text-center p-3 text-decoration-none border-start border-warning border-3">
+										<i class="ph-clock-countdown ph-2x text-warning mb-2"></i>
+										<div class="fw-semibold small">AR Aging</div>
+									</a>
+								</div>
+								<div class="col-6">
+									<a href="report_ap_aging_details.php" class="card card-body text-center p-3 text-decoration-none border-start border-danger border-3">
+										<i class="ph-clock ph-2x text-danger mb-2"></i>
+										<div class="fw-semibold small">AP Aging</div>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
 			</div>
-			<!-- /content area -->
+			<!-- /dashboard content -->
 
 		</div>
-	<?php } // permissions 
-	?>
+		<!-- /content area -->
+
+	</div>
 	<!-- /inner content -->
 
 	<?php include('admin_elements/copyright.php'); ?>

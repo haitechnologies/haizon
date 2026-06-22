@@ -35,10 +35,7 @@ class CustomerContactsDataTable extends BaseDataTable
         $publishBadge = $publish == 0 ? BadgeHelper::danger('Inactive') : BadgeHelper::success('Active');
         $fullName = trim($firstName . ' ' . $lastName);
 
-        $timeAgoStr = '';
-        if (!empty($createdAt)) {
-            $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
-        }
+        $timeAgoStr = !empty($createdAt) ? $this->formatTimeAgo($createdAt) : '';
 
         return [
             $id,
@@ -68,10 +65,10 @@ class CustomerContactsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module, $publish)
     {
         $buttons = [];
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'customer_contacts.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

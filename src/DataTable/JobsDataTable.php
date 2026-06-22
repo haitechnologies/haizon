@@ -35,15 +35,12 @@ class JobsDataTable extends BaseDataTable
             return;
         }
 
-        $result = $this->mysqli->query("SELECT id, job_id FROM `" . DB::PROJECTS . "` WHERE job_id IN (" . implode(',', $jobIds) . ") ORDER BY id ASC");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $jobId = (int)($row['job_id'] ?? 0);
-                if ($jobId > 0 && !isset($this->relatedDataCache['projects'][$jobId])) {
-                    $this->relatedDataCache['projects'][$jobId] = (int)($row['id'] ?? 0);
-                }
+        $projects = $this->db->fetchAll("SELECT id, job_id FROM `" . DB::PROJECTS . "` WHERE job_id IN (" . implode(',', $jobIds) . ") ORDER BY id ASC", []);
+        foreach ($projects as $row) {
+            $jobId = (int)($row['job_id'] ?? 0);
+            if ($jobId > 0 && !isset($this->relatedDataCache['projects'][$jobId])) {
+                $this->relatedDataCache['projects'][$jobId] = (int)($row['id'] ?? 0);
             }
-            $result->free();
         }
     }
 
@@ -69,30 +66,13 @@ class JobsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton((int)$id, 'jobs.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return trim($actions);
     }
 
-    private function fetchLookupMap(string $table, array $ids, string $valueField): array
-    {
-        $ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
-        if (!$ids) {
-            return [];
-        }
-
-        $map = [];
-        $result = $this->mysqli->query("SELECT id, {$valueField} AS value_label FROM `" . $table . "` WHERE id IN (" . implode(',', $ids) . ")");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $map[(int)$row['id']] = (string)($row['value_label'] ?? '');
-            }
-            $result->free();
-        }
-        return $map;
-    }
 }

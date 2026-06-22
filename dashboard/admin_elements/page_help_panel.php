@@ -117,24 +117,5 @@ $helpTips   = (array)($pageHelpData['tips'] ?? []);
         });
     }
 
-    var visited = getDismissed();
-    var visitedKey = 'hai_page_help_visited';
-    var visitedPages;
-    try {
-        visitedPages = JSON.parse(localStorage.getItem(visitedKey) || '{}');
-    } catch(e) { visitedPages = {}; }
-
-    if (!visitedPages[page] && !visited[page]) {
-        visitedPages[page] = true;
-        localStorage.setItem(visitedKey, JSON.stringify(visitedPages));
-
-        var panelEl = document.getElementById('pageHelpPanel');
-        if (panelEl && typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-            setTimeout(function() {
-                var offcanvas = new bootstrap.Offcanvas(panelEl);
-                offcanvas.show();
-            }, 800);
-        }
-    }
 })();
 </script>

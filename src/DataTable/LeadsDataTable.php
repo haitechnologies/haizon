@@ -29,24 +29,17 @@ class LeadsDataTable extends BaseDataTable
 
         $userIds = array_values(array_filter(array_unique(array_map('intval', $userIds))));
         if ($userIds) {
-            $sql = "SELECT id, full_name FROM `" . DB::USERS . "` WHERE id IN (" . implode(',', $userIds) . ")";
-            $result = $this->mysqli->query($sql);
-            if ($result) {
-                while ($row = $result->fetch_assoc()) {
-                    $this->relatedDataCache['users'][(int)$row['id']] = (string)($row['full_name'] ?? '');
-                }
-                $result->free();
+            $users = $this->db->fetchAll("SELECT id, full_name FROM `" . DB::USERS . "` WHERE id IN (" . implode(',', $userIds) . ")", []);
+            foreach ($users as $row) {
+                $this->relatedDataCache['users'][(int)$row['id']] = (string)($row['full_name'] ?? '');
             }
         }
 
         $statusIds = array_values(array_filter(array_unique(array_map('intval', $statusIds))));
         if ($statusIds) {
-            $result = $this->mysqli->query("SELECT id, value as status FROM `" . DB::TAXONOMIES . "` WHERE id IN (" . implode(',', $statusIds) . ")");
-            if ($result) {
-                while ($row = $result->fetch_assoc()) {
-                    $this->relatedDataCache['statuses'][(int)$row['id']] = (string)($row['status'] ?? '');
-                }
-                $result->free();
+            $statuses = $this->db->fetchAll("SELECT id, value as status FROM `" . DB::TAXONOMIES . "` WHERE id IN (" . implode(',', $statusIds) . ")", []);
+            foreach ($statuses as $row) {
+                $this->relatedDataCache['statuses'][(int)$row['id']] = (string)($row['status'] ?? '');
             }
         }
     }
@@ -80,10 +73,10 @@ class LeadsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton((int)$id, 'leads.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return trim($actions);

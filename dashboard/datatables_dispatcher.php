@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 use App\DataTable\Registry;
 /**
  * DataTable Dispatcher - Phase 3B Live Testing
@@ -173,8 +174,8 @@ if (function_exists('backend_log_coverage_heartbeat')) {
 }
 
 // Get user session info (for permission checks)
-$userId = $_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? null;
-$roleId = $_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? null;
+$userId = Session::userId() ?? null;
+$roleId = Session::roleId() ?? null;
 
 // Release session lock before potentially expensive DB work.
 if (session_status() === PHP_SESSION_ACTIVE) {
@@ -265,7 +266,7 @@ try {
     }
 
     $project_pre = $GLOBALS['project_pre'] ?? 'haizon';
-    $sessionDashboardUserId = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
+    $sessionDashboardUserId = (int)(Session::userId() ?? 0);
 
     /*
     |--------------------------------------------------------------------------

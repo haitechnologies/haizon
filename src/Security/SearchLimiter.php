@@ -26,7 +26,7 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $resultLimit = SubscriptionTier::getFeatureValue($userIdOrTier, 'results_per_search');
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
             $resultLimit = SubscriptionTier::getFeatureValue($tier, 'results_per_search');
         }
 
@@ -73,7 +73,7 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $tier = $userIdOrTier;
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
         }
 
         if (in_array($tier, [SubscriptionTier::TIER_SILVER, SubscriptionTier::TIER_GOLD, SubscriptionTier::TIER_PLATINUM], true)) {
@@ -107,7 +107,7 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $tier = $userIdOrTier;
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
         }
 
         return $tier !== SubscriptionTier::TIER_FREE;
@@ -125,7 +125,7 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $tier = $userIdOrTier;
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
         }
 
         $baseFields = ['id', 'name', 'category', 'city', 'description'];
@@ -186,7 +186,7 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $limit = SubscriptionTier::getFeatureValue($userIdOrTier, 'csv_export_rows_per_month');
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
             $limit = SubscriptionTier::getFeatureValue($tier, 'csv_export_rows_per_month');
         }
 
@@ -241,7 +241,7 @@ class SearchLimiter
      */
     public static function canExportRows(int $userId, int $rowCount, mixed $conn = null): array
     {
-        $tier = SubscriptionTier::getUserTier($userId, $conn);
+        $tier = (new SubscriptionTier())->getUserTier($userId);
         $monthlyLimit = self::getCsvExportLimit($tier, null, 'month');
 
         if ($monthlyLimit >= 9999) {
@@ -282,7 +282,7 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $tier = $userIdOrTier;
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
         }
 
         $limits = [
@@ -318,10 +318,10 @@ class SearchLimiter
         if (is_string($userIdOrTier)) {
             $tier = $userIdOrTier;
         } else {
-            $tier = SubscriptionTier::getUserTier($userIdOrTier, $conn);
+            $tier = (new SubscriptionTier())->getUserTier((int)$userIdOrTier);
         }
 
-        $basePath = rtrim((string)($GLOBALS['basePath'] ?? ''), '/');
+        $basePath = rtrim((string)($_ENV['APP_URL'] ?? $GLOBALS['basePath'] ?? ''), '/');
         $registerUrl = $basePath . '/register';
         $pricingUrl = $basePath . '/pricing';
 
@@ -329,7 +329,7 @@ class SearchLimiter
             return <<<HTML
             <div class="upgrade-cta alert alert-info">
                 <h5>View More Results</h5>
-                <p>Showing $displayedResults of $totalResults results. 
+                <p>Showing $displayedResults of $totalResults results.
                          <a href="$registerUrl">Create free account</a> to see 1,000 results per search.</p>
                      <a href="$pricingUrl" class="btn btn-sm btn-primary">View Pricing Plans</a>
             </div>

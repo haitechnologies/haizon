@@ -22,6 +22,7 @@ use App\Core\DB;
  * @date 2026-02-17
  */
 
+if (!class_exists('ErrorLogger')) {
 class ErrorLogger {
     
     // Configuration Constants
@@ -801,6 +802,7 @@ class ErrorLogger {
         return $stats;
     }
 }
+}
 
 /**
  * Helper function for easy error logging throughout the application
@@ -812,8 +814,10 @@ class ErrorLogger {
  * @param array $context Context data
  * @return bool Success status
  */
+if (!function_exists('log_error')) {
 function log_error($message, $severity = 'ERROR', $file = __FILE__, $line = __LINE__, $context = []) {
     return ErrorLogger::log($message, $severity, $file, $line, $context);
+}
 }
 
 /**
@@ -822,12 +826,14 @@ function log_error($message, $severity = 'ERROR', $file = __FILE__, $line = __LI
  * @param array $context
  * @return bool
  */
+if (!function_exists('backend_log_coverage_heartbeat')) {
 function backend_log_coverage_heartbeat($context = []) {
     if (!is_array($context)) {
         $context = [];
     }
 
     return ErrorLogger::touch_coverage($context, false);
+}
 }
 
 /**
@@ -836,6 +842,7 @@ function backend_log_coverage_heartbeat($context = []) {
  * @param array $context
  * @return array
  */
+if (!function_exists('backend_runtime_log_context')) {
 function backend_runtime_log_context($context = []) {
     if (!is_array($context)) {
         $context = [];
@@ -853,6 +860,7 @@ function backend_runtime_log_context($context = []) {
 
     return $context;
 }
+}
 
 /**
  * Custom PHP error handler - catches all PHP warnings, notices, etc.
@@ -863,6 +871,7 @@ function backend_runtime_log_context($context = []) {
  * @param int $errline Error line
  * @return bool
  */
+if (!function_exists('custom_error_handler')) {
 function custom_error_handler($errno, $errstr, $errfile, $errline) {
     
     // Don't log if error reporting is disabled for this error
@@ -915,6 +924,7 @@ function custom_error_handler($errno, $errstr, $errfile, $errline) {
     // Return false to let PHP handle the error as well (for display)
     return false;
 }
+}
 
 /**
  * Custom exception handler
@@ -922,6 +932,7 @@ function custom_error_handler($errno, $errstr, $errfile, $errline) {
  * @param Throwable $exception
  * @return void
  */
+if (!function_exists('custom_exception_handler')) {
 function custom_exception_handler($exception) {
     $context = backend_runtime_log_context([
         'exception_class' => get_class($exception),
@@ -942,12 +953,14 @@ function custom_exception_handler($exception) {
     }
     echo "An error occurred. Please try again later.";
 }
+}
 
 /**
  * Handle fatal/parse errors that can't be caught by set_error_handler
  * 
  * @return void
  */
+if (!function_exists('handle_fatal_error')) {
 function handle_fatal_error() {
     
     $error = error_get_last();
@@ -963,6 +976,7 @@ function handle_fatal_error() {
             $context
         );
     }
+}
 }
 
 ?>

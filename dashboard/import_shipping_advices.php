@@ -365,7 +365,8 @@ if ($action == "add_$module") {
                 } // for
 
 
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
             }
         } // if
 
@@ -444,13 +445,15 @@ if ($action == "add_$module") {
                         $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                         if ($fileExt !== 'xlsx') {
                             $error_message = "Only .xlsx files are allowed!";
-                            header("Location:import_shipping_advices.php?error_message=$error_message");
+                            flash_error($error_message);
+                            header("Location:import_shipping_advices.php");
                         }
 
                         // Handle upload error
                         if ($fileError !== UPLOAD_ERR_OK) {
                             $error_message = "Please select File to upload.";
-                            header("Location:import_shipping_advices.php?error_message=$error_message");
+                            flash_error($error_message);
+                            header("Location:import_shipping_advices.php");
                         }
 
                         try {
@@ -721,7 +724,8 @@ if ($action == "add_$module") {
                     // Invalid Data in EXCEL Format File
                     if ($total_advice_rows <= 1) {
                         $error_message = "Invalid Excel File Format. Please selct Correct Format <a href=\"sample.xlsx\">Sample.xlsx</a> File to upload.";
-                        header("Location:import_shipping_advices.php?error_message=$error_message");
+                        flash_error($error_message);
+                        header("Location:import_shipping_advices.php");
                     }
 
                 ?>

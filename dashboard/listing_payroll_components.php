@@ -18,12 +18,12 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 | RESTRICT ACCESS: Only System Admin, Super Admin, and HR can view payroll components
 |--------------------------------------------------------------------------
 */
-if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
+if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
     echo 'Permission Denied.';
     exit();
 }
 
-if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'hr')) {
+if (($action == "delete_$module" && !empty($id)) && (has_full_access() || is_accounts() || is_role() == 'hr')) {
 
     // Check if component is being used in salary structures
     $usage_check = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALARY_STRUCTURES . "` WHERE component_id=$id");
@@ -36,144 +36,47 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
         $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
         if ($mysqli->affected_rows > 0) {
             $success_message = "Component deleted successfully.";
-            header("Location:listing_$module.php?success_message=$success_message");
-            exit;
+            flash_success($success_message);
+            header("Location:listing_$module.php");
         } else {
             $error_message = "Unable to delete component. Please try again.";
         }
     }
 }
+
+$listingConfig = [
+    'module' => $module,
+    'module_caption' => $module_caption,
+    'thead' => '
+        <th width="50">ID</th>
+        <th>Component Name</th>
+        <th>Type</th>
+        <th>Taxable</th>
+        <th>Account ID</th>
+        <th>In Use</th>
+        <th width="120" class="col-center">Action</th>
+    ',
+    'columns' => [
+        ['data' => 0],
+        ['data' => 1],
+        ['data' => 2],
+        ['data' => 3],
+        ['data' => 4],
+        ['data' => 5],
+        ['data' => 6, 'orderable' => false, 'searchable' => false, 'className' => 'col-center text-center'],
+    ],
+    'order' => [[2, 'desc'], [1, 'asc']], // order by component_type desc, component_name asc
+    'page_length' => 25,
+    'messages' => [
+        'success' => $success_message ?? '',
+        'error' => $error_message ?? ''
+    ]
+];
+
+ob_start();
+include('admin_elements/hr_navbar.php');
+$listingConfig['extra_header'] = ob_get_clean();
+
+include('admin_elements/listing_template.php');
+include('admin_elements/admin_footer.php');
 ?>
-
-<div class="content-wrapper">
-
-    <!-- Page header -->
-    <div class="page-header page-header-light shadow carriers-page-header">
-        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
-            <div class="my-1">
-                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
-                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo $module_caption; ?></a>
-                </h1>
-            </div>
-
-            <div class="my-1">
-                <?php if (empty($hide_add_button)) { ?>
-                    <a href="payroll_components.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
-                        <i class="ph-plus ph-sm me-2 opacity-75"></i>Add Component
-                    </a>
-                <?php } ?>
-            </div>
-        </div>
-    </div>
-    <!-- /page header -->
-
-    <div class="content-inner">
-        <div class="content">
-            <?php include('admin_elements/breadcrumb.php'); ?>
-
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Payroll Components</h5>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($error_message)) { ?>
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            <strong>Error:</strong> <?php echo $error_message; ?>
-                        </div>
-                    <?php } ?>
-
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="50">#</th>
-                                    <th>Component Name</th>
-                                    <th>Type</th>
-                                    <th>Taxable</th>
-                                    <th>Account ID</th>
-                                    <th>In Use</th>
-                                    <th>Status</th>
-                                    <th width="180">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $result = $mysqli->query("SELECT * FROM `$tbl_name` ORDER BY component_type DESC, component_name ASC");
-                                $counter = 1; // Sequential numbering
-
-                                while ($row = $result->fetch_array()) {
-                                    // Check usage in salary structures
-                                    $usage_query = $mysqli->query("SELECT COUNT(*) as count FROM `" . DB::SALARY_STRUCTURES . "` WHERE component_id=" . $row['id']);
-                                    $usage_count = $usage_query->fetch_assoc()['count'];
-                                    $is_in_use = $usage_count > 0;
-                                ?>
-                                    <tr>
-                                        <td><?php echo $counter++; ?></td>
-                                        <td class="fw-semibold"><?php echo s__($row['component_name']); ?></td>
-                                        <td>
-                                            <?php if ($row['component_type'] == 'earning') { ?>
-                                                <span class="badge bg-success bg-opacity-20 text-success">
-                                                    <i class="ph-plus-circle"></i> Earning
-                                                </span>
-                                            <?php } else { ?>
-                                                <span class="badge bg-danger bg-opacity-20 text-danger">
-                                                    <i class="ph-minus-circle"></i> Deduction
-                                                </span>
-                                            <?php } ?>
-                                        </td>
-                                        <td><?php echo ($row['taxable'] ? '<span class="badge bg-info">Yes</span>' : '<span class="text-muted">No</span>'); ?></td>
-                                        <td><?php echo s__($row['account_id']); ?></td>
-                                        <td>
-                                            <?php if ($is_in_use) { ?>
-                                                <span class="badge bg-primary" title="Used by <?php echo $usage_count; ?> employee(s)">
-                                                    <i class="ph-users"></i> <?php echo $usage_count; ?> employee<?php echo $usage_count > 1 ? 's' : ''; ?>
-                                                </span>
-                                            <?php } else { ?>
-                                                <span class="text-muted">-</span>
-                                            <?php } ?>
-                                        </td>
-                                        <td>
-                                            <?php if ($row['is_active']) { ?>
-                                                <span class="badge bg-success">Active</span>
-                                            <?php } else { ?>
-                                                <span class="badge bg-secondary">Inactive</span>
-                                            <?php } ?>
-                                        </td>
-                                        <td>
-                                            <a href="payroll_components.php?action=edit_<?php echo $module; ?>&id=<?php echo $row['id']; ?>"
-                                               class="btn btn-sm btn-primary"
-                                               title="Edit component">
-                                                <i class="ph-pencil"></i>
-                                            </a>
-
-                                            <?php if ($is_in_use) { ?>
-                                                <button type="button"
-                                                        class="btn btn-sm btn-secondary"
-                                                        disabled
-                                                        title="Cannot delete: In use by <?php echo $usage_count; ?> employee(s)">
-                                                    <i class="ph-lock"></i>
-                                                </button>
-                                            <?php } else { ?>
-                                                <a href="listing_<?php echo $module; ?>.php?action=delete_<?php echo $module; ?>&id=<?php echo $row['id']; ?>"
-                                                   class="btn btn-sm btn-danger"
-                                                   onclick="return confirm('Are you sure you want to delete \'<?php echo addslashes($row['component_name']); ?>\'?\n\nThis action cannot be undone.');"
-                                                   title="Delete component">
-                                                    <i class="ph-trash"></i>
-                                                </a>
-                                            <?php } ?>
-                                        </td>
-                                    </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <?php include('admin_elements/copyright.php'); ?>
-    </div>
-</div>
-
-<?php include('admin_elements/admin_footer.php'); ?>

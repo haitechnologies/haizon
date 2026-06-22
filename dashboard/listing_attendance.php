@@ -27,84 +27,42 @@ if (($action == "delete_$module" && !empty($id)) && (is_SystemAdmin() || is_Supe
     $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
     if ($mysqli->affected_rows > 0) {
         $success_message = "Item deleted successfully.";
-        header("Location:listing_$module.php?success_message=$success_message");
+        flash_success($success_message);
+        header("Location:listing_$module.php");
         exit;
     }
 }
+$listingConfig = [
+    'module' => $module,
+    'module_caption' => $module_caption,
+    'thead' => '
+        <th width="50">ID</th>
+        <th>Employee</th>
+        <th>Date</th>
+        <th>Check In</th>
+        <th>Check Out</th>
+        <th>Total Hours</th>
+        <th>Status</th>
+        <th width="100" class="col-center">Action</th>
+    ',
+    'columns' => [
+        ['data' => 0],
+        ['data' => 1],
+        ['data' => 2],
+        ['data' => 3],
+        ['data' => 4],
+        ['data' => 5],
+        ['data' => 6],
+        ['data' => 7, 'orderable' => false, 'searchable' => false, 'className' => 'col-center text-center'],
+    ],
+    'order' => [[2, 'desc'], [0, 'desc']], // order by date desc, id desc
+    'page_length' => 25,
+];
+
+ob_start();
+include('admin_elements/hr_navbar.php');
+$listingConfig['extra_header'] = ob_get_clean();
+
+include('admin_elements/listing_template.php');
+include('admin_elements/admin_footer.php');
 ?>
-
-<div class="content-wrapper">
-
-    <!-- Page header -->
-    <div class="page-header page-header-light shadow carriers-page-header">
-        <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
-            <div class="my-1">
-                <h1 class="h5 mb-0 d-inline-flex align-items-center gap-2">
-                    <a href="listing_<?php echo $module; ?>.php" class="text-dark">All <?php echo $module_caption; ?></a>
-                </h1>
-            </div>
-
-            <div class="my-1">
-                <?php if (empty($hide_add_button)) { ?>
-                    <a href="attendance.php" class="btn btn-primary btn-sm d-inline-flex align-items-center">
-                        <i class="ph-plus ph-sm me-2 opacity-75"></i>Add Attendance
-                    </a>
-                <?php } ?>
-            </div>
-        </div>
-    </div>
-    <!-- /page header -->
-
-    <div class="content-inner">
-        <div class="content">
-            <?php include('admin_elements/breadcrumb.php'); ?>
-
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Attendance</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Employee</th>
-                                    <th>Date</th>
-                                    <th>Check In</th>
-                                    <th>Check Out</th>
-                                    <th>Total Hours</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $result = $mysqli->query("SELECT * FROM `$tbl_name` ORDER BY work_date DESC, id DESC");
-                                while ($row = $result->fetch_array()) {
-                                ?>
-                                    <tr>
-                                        <td><?php echo $row['id']; ?></td>
-                                        <td><?php echo getTableAttr('full_name', DB::USERS, $row['employee_id']); ?></td>
-                                        <td><?php echo s__($row['work_date']); ?></td>
-                                        <td><?php echo s__($row['check_in']); ?></td>
-                                        <td><?php echo s__($row['check_out']); ?></td>
-                                        <td><?php echo s__($row['total_hours']); ?></td>
-                                        <td><?php echo s__($row['status']); ?></td>
-                                        <td>
-                                            <a href="attendance.php?action=edit_<?php echo $module; ?>&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Edit</a>
-                                            <a href="listing_<?php echo $module; ?>.php?action=delete_<?php echo $module; ?>&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this item?');">Delete</a>
-                                        </td>
-                                    </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php include('admin_elements/copyright.php'); ?>
-    </div>
-</div>
-
-<?php include('admin_elements/admin_footer.php'); ?>

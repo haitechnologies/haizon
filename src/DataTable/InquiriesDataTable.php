@@ -45,8 +45,12 @@ class InquiriesDataTable extends BaseDataTable
             return '';
         }
 
-        $searchValue = $this->mysqli->real_escape_string($searchValue);
-        return "AND (full_name LIKE '%{$searchValue}%' OR email LIKE '%{$searchValue}%' OR subject LIKE '%{$searchValue}%' OR message LIKE '%{$searchValue}%')";
+        $val = '%' . $searchValue . '%';
+        $this->params['sv1'] = $val;
+        $this->params['sv2'] = $val;
+        $this->params['sv3'] = $val;
+        $this->params['sv4'] = $val;
+        return "AND (full_name LIKE :sv1 OR email LIKE :sv2 OR subject LIKE :sv3 OR message LIKE :sv4)";
     }
 
     protected function buildOrderClause($requestData)
@@ -74,35 +78,33 @@ class InquiriesDataTable extends BaseDataTable
         $ids = array_map(fn($r) => (int)$r['id'], $rows);
         $placeholders = implode(',', $ids);
 
-        $result = $this->mysqli->query(
+        $rows_data = $this->db->fetchAll(
             "SELECT inquiry_id, COUNT(*) AS cnt
              FROM `" . DB::INQUIRY_REPLIES . "`
              WHERE inquiry_id IN ($placeholders)
-             GROUP BY inquiry_id"
+             GROUP BY inquiry_id",
+            []
         );
 
-        if ($result) {
-            while ($r = $result->fetch_assoc()) {
-                $this->replyCounts[(int)$r['inquiry_id']] = (int)$r['cnt'];
-            }
-            $result->free();
+        foreach ($rows_data as $r) {
+            $this->replyCounts[(int)$r['inquiry_id']] = (int)$r['cnt'];
         }
     }
 
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
-        $fullName = s__($row['full_name'] ?? '');
-        $email = s__($row['email'] ?? '');
-        $mobile = s__($row['mobile'] ?? '');
-        $subject = s__($row['subject'] ?? '');
-        $message = s__($row['message'] ?? '');
+        $fullName = $this->sanitize($row['full_name'] ?? '');
+        $email = $this->sanitize($row['email'] ?? '');
+        $mobile = $this->sanitize($row['mobile'] ?? '');
+        $subject = $this->sanitize($row['subject'] ?? '');
+        $message = $this->sanitize($row['message'] ?? '');
         $status = (int)($row['status'] ?? 0);
         $isSpam = (int)($row['is_spam'] ?? 0);
         $isActive = (int)($row['is_active'] ?? 0);
         $createdAt = $row['created_at'] ?? '';
-        $ipAddress = s__($row['ip_address'] ?? '');
-        $userAgent = s__($row['user_agent'] ?? '');
+        $ipAddress = $this->sanitize($row['ip_address'] ?? '');
+        $userAgent = $this->sanitize($row['user_agent'] ?? '');
 
         $messagePreview = $this->buildMessagePreview($message);
 
@@ -192,7 +194,7 @@ class InquiriesDataTable extends BaseDataTable
 
         return [
             '<input type="checkbox" class="inquiry-checkbox" data-id="' . $id . '">' . $viewButton,
-            timeAgo($createdAt),
+            $this->formatTimeAgo($createdAt),
             $senderCell,
             $inquiryCell,
             $statusCell,
@@ -240,7 +242,7 @@ class InquiriesDataTable extends BaseDataTable
     {
         $actions = '';
         // Only show delete button if permitted, no edit/close
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions = ActionButtonHelper::deleteButton($id, $module);
         }
         return $actions;

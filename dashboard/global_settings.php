@@ -1,13 +1,13 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
+use App\Core\Database;
 use App\Security\Roles;
 use App\Security\ImageUploadHandler;
+use App\Service\GlobalSettingsService;
 include('admin_elements/admin_header.php');
 Roles::requireAdminAccess();
-
-// Load centralized image upload handler
-// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/ImageUploadHandler.php';
 
 $module 		= 'system_settings';
 $module_caption = 'Global Settings';
@@ -18,47 +18,13 @@ $photo_upload_path = '../uploads/' . $module . '/';
 $error_message = '';
 $success_message = '';
 
-// Initialize upload handlers for different image types
-$logoHandler = new ImageUploadHandler(
-    $photo_upload_path,
-    5,  // 5 MB max
-    ImageUploadHandler::MIME_IMAGES_COMMON
-);
+$settingsService = new GlobalSettingsService(new Database());
 
-$faviconHandler = new ImageUploadHandler(
-    $photo_upload_path,
-    5,
-    ImageUploadHandler::MIME_IMAGES_WITH_ICO
-);
+$logoHandler = new ImageUploadHandler($photo_upload_path, 5, ImageUploadHandler::MIME_IMAGES_COMMON);
+$faviconHandler = new ImageUploadHandler($photo_upload_path, 5, ImageUploadHandler::MIME_IMAGES_WITH_ICO);
+$ampLogoHandler = new ImageUploadHandler($photo_upload_path, 5, ImageUploadHandler::MIME_IMAGES_COMMON);
+$loginLogoHandler = new ImageUploadHandler($photo_upload_path, 5, ImageUploadHandler::MIME_IMAGES_COMMON);
 
-$ampLogoHandler = new ImageUploadHandler(
-    $photo_upload_path,
-    5,
-    ImageUploadHandler::MIME_IMAGES_COMMON
-);
-
-$loginLogoHandler = new ImageUploadHandler(
-    $photo_upload_path,
-    5,
-    ImageUploadHandler::MIME_IMAGES_COMMON
-);
-
-
-// $organization_id = $_SESSION[$project_pre]['DASHBOARD']['organization_id']; 
-
-
-/*
-|--------------------------------------------------------------------------
-| PERMISSIONS
-|--------------------------------------------------------------------------
-|*/
-
-/*
-|--------------------------------------------------------------------------
-| CSRF TOKEN VALIDATION
-|--------------------------------------------------------------------------
-| Validate CSRF token for all POST requests
-*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
         $error_message = 'Invalid security token. Please refresh the page and try again.';
@@ -66,235 +32,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-*/
-
-
 // Handle delete requests for images
 if (isset($_REQUEST['delete_photo']) && $_REQUEST['delete_photo'] == 1) {
-    $logo = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="logo"'));
+    $logo = $settingsService->getSettingValue('logo');
     if (!empty($logo)) {
         $logoHandler->delete($logo);
-        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'logo'");
+        $settingsService->deleteSettingValue('logo');
         $success_message = 'Logo Deleted Successfully.';
     }
 }
-
 if (isset($_REQUEST['delete_favicon']) && $_REQUEST['delete_favicon'] == 1) {
-    $favicon = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="favicon"'));
+    $favicon = $settingsService->getSettingValue('favicon');
     if (!empty($favicon)) {
         $faviconHandler->delete($favicon);
-        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'favicon'");
+        $settingsService->deleteSettingValue('favicon');
         $success_message = 'Favicon Deleted Successfully.';
     }
 }
-
 if (isset($_REQUEST['delete_amp_logo']) && $_REQUEST['delete_amp_logo'] == 1) {
-    $amp_logo = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="amp_logo"'));
+    $amp_logo = $settingsService->getSettingValue('amp_logo');
     if (!empty($amp_logo)) {
         $ampLogoHandler->delete($amp_logo);
-        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'amp_logo'");
+        $settingsService->deleteSettingValue('amp_logo');
         $success_message = 'AMP Logo Deleted Successfully.';
     }
 }
-
 if (isset($_REQUEST['delete_login_logo']) && $_REQUEST['delete_login_logo'] == 1) {
-    $login_logo = s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting_slug ="login_logo"'));
+    $login_logo = $settingsService->getSettingValue('login_logo');
     if (!empty($login_logo)) {
         $loginLogoHandler->delete($login_logo);
-        $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='' WHERE setting_slug = 'login_logo'");
+        $settingsService->deleteSettingValue('login_logo');
         $success_message = 'Login Logo Deleted Successfully.';
     }
 }
 
-/*
-| ---------------------------------------------------------------------------------------------------
-| SYSTEM SETTINGS TBL
-| --------------------------------------------------------------------------------------------------- 
-*/
-
 $system_settings_arr = array();
-
-$result_system_settings 	= $mysqli->query("SELECT setting_slug, setting_name, setting_value, hint FROM `" . DB::SYSTEM_SETTINGS . "`");
+$result_system_settings = $mysqli->query("SELECT setting_slug, setting_name, setting_value, hint FROM `" . DB::SYSTEM_SETTINGS . "`");
 while ($row_system_settings = $result_system_settings->fetch_array()) {
-
-	$setting_slug    	= $row_system_settings["setting_slug"];
-	$setting_name    	= $row_system_settings["setting_name"];
-	$setting_value		= $row_system_settings["setting_value"];
-	$hint				= $row_system_settings["hint"];
-
-
-	$GLOBALS['SYS_SLUG'][$setting_slug] 	= $setting_slug;
-	$GLOBALS['SYS_NAME'][$setting_slug] 	= $setting_name;
-	$GLOBALS['SYS_VALUE'][$setting_slug] 	= $setting_value;
-	$GLOBALS['SYS_HINT'][$setting_slug] 	= $hint;
+    $GLOBALS['SYS_SLUG'][$row_system_settings["setting_slug"]] = $row_system_settings["setting_slug"];
+    $GLOBALS['SYS_NAME'][$row_system_settings["setting_slug"]] = $row_system_settings["setting_name"];
+    $GLOBALS['SYS_VALUE'][$row_system_settings["setting_slug"]] = $row_system_settings["setting_value"];
+    $GLOBALS['SYS_HINT'][$row_system_settings["setting_slug"]] = $row_system_settings["hint"];
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| 	GET ALL VARIABLES ADD/UPDATE
-|--------------------------------------------------------------------------
-|
-*/
 if ($action == "update_$module") {
-
-	// Use mysqli real_escape_string for SQL safety, not e_s__() which is for HTML
-	$software_name			= $mysqli->real_escape_string($_POST['software_name'] ?? '');
-	$company_name			= $mysqli->real_escape_string($_POST['company_name'] ?? '');
-	$phone					= $mysqli->real_escape_string($_POST['phone'] ?? '');
-	$email					= $mysqli->real_escape_string($_POST['email'] ?? '');
-	$website				= $mysqli->real_escape_string($_POST['website'] ?? '');
-	$trn					= $mysqli->real_escape_string($_POST['trn'] ?? '');
-
-	$street1				= $mysqli->real_escape_string($_POST['street1'] ?? '');
-	$street2				= $mysqli->real_escape_string($_POST['street2'] ?? '');
-	$city					= $mysqli->real_escape_string($_POST['city'] ?? '');
-	$pobox					= $mysqli->real_escape_string($_POST['pobox'] ?? '');
-	$country				= $mysqli->real_escape_string($_POST['country'] ?? '');
-
-	$social_fb				= $mysqli->real_escape_string($_POST['social_fb'] ?? '');
-	$social_x				= $mysqli->real_escape_string($_POST['social_x'] ?? '');
-	$social_insta			= $mysqli->real_escape_string($_POST['social_insta'] ?? '');
-	$social_gmb				= $mysqli->real_escape_string($_POST['social_gmb'] ?? '');
-
-	// New fields
-	$global_settings		= $mysqli->real_escape_string($_POST['global_settings'] ?? '');
-	$login_captcha_threshold = (int)($_POST['login_captcha_threshold'] ?? 3);
-	if ($login_captcha_threshold < 1 || $login_captcha_threshold > 10) {
-		$login_captcha_threshold = 3;
-	}
-	$sitemap_root			= $mysqli->real_escape_string($_POST['sitemap_root'] ?? '');
-	$sitemap_enabled		= isset($_POST['sitemap_enabled']) ? 1 : 0;
-	$ai_sitemap_enabled	= isset($_POST['ai_sitemap_enabled']) ? 1 : 0;
-	$sitemap_companies		= isset($_POST['sitemap_companies']) ? 1 : 0;
-	$sitemap_blogs			= isset($_POST['sitemap_blogs']) ? 1 : 0;
-	$sitemap_categories		= isset($_POST['sitemap_categories']) ? 1 : 0;
-	$sitemap_hs_codes		= isset($_POST['sitemap_hs_codes']) ? 1 : 0;
-	$sitemap_amp			= isset($_POST['sitemap_amp']) ? 1 : 0;
-	$seo_hsts_required		= isset($_POST['seo_hsts_required']) ? 1 : 0;
-	$seo_ai_policy_mode		= $mysqli->real_escape_string($_POST['seo_ai_policy_mode'] ?? 'inherit');
-	if (!in_array($seo_ai_policy_mode, ['allow', 'block', 'inherit'], true)) {
-		$seo_ai_policy_mode = 'inherit';
-	}
-
-	// SEO Settings for Public Website
-	$seo_meta_title				= $mysqli->real_escape_string($_POST['seo_meta_title'] ?? '');
-	$seo_meta_description		= $mysqli->real_escape_string($_POST['seo_meta_description'] ?? '');
-	$seo_meta_keywords			= $mysqli->real_escape_string($_POST['seo_meta_keywords'] ?? '');
-	$seo_og_title				= $mysqli->real_escape_string($_POST['seo_og_title'] ?? '');
-	$seo_og_description			= $mysqli->real_escape_string($_POST['seo_og_description'] ?? '');
-	$seo_og_image				= $mysqli->real_escape_string($_POST['seo_og_image'] ?? '');
-	$seo_og_type				= $mysqli->real_escape_string($_POST['seo_og_type'] ?? '');
-	$seo_og_url					= $mysqli->real_escape_string($_POST['seo_og_url'] ?? '');
-	$seo_twitter_card			= $mysqli->real_escape_string($_POST['seo_twitter_card'] ?? '');
-	$seo_twitter_site			= $mysqli->real_escape_string($_POST['seo_twitter_site'] ?? '');
-	$seo_twitter_creator		= $mysqli->real_escape_string($_POST['seo_twitter_creator'] ?? '');
-	$seo_google_analytics		= $mysqli->real_escape_string($_POST['seo_google_analytics'] ?? '');
-	$seo_google_tag_manager		= $mysqli->real_escape_string($_POST['seo_google_tag_manager'] ?? '');
-	$seo_google_site_verification = $mysqli->real_escape_string($_POST['seo_google_site_verification'] ?? '');
-	$seo_bing_verification		= $mysqli->real_escape_string($_POST['seo_bing_verification'] ?? '');
-	$seo_robots_meta			= $mysqli->real_escape_string($_POST['seo_robots_meta'] ?? '');
-	$seo_canonical_url			= $mysqli->real_escape_string($_POST['seo_canonical_url'] ?? '');
-	$seo_schema_organization	= $mysqli->real_escape_string($_POST['seo_schema_organization'] ?? '');
-
-	$bank_name				= $mysqli->real_escape_string($_POST['bank_name'] ?? '');
-	$beneficiary			= $mysqli->real_escape_string($_POST['beneficiary'] ?? '');
-	$account_number			= $mysqli->real_escape_string($_POST['account_number'] ?? '');
-	$iban					= $mysqli->real_escape_string($_POST['iban'] ?? '');
-
-	// ========================================================================
-	// UPDATE DATABASE - Save all settings
-	// ========================================================================
-	
-	try {
-		$updated_count = 0;
-		
-		// Basic Company Info
-		if (updateSystemSetting($mysqli, 'software_name', $software_name)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'company_name', $company_name)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'phone', $phone)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'email', $email)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'website', $website)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'trn', $trn)) $updated_count++;
-		
-		// Address
-		if (updateSystemSetting($mysqli, 'street1', $street1)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'street2', $street2)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'city', $city)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'pobox', $pobox)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'country', $country)) $updated_count++;
-		
-		// Social Media
-		if (updateSystemSetting($mysqli, 'social_fb', $social_fb)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'social_x', $social_x)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'social_insta', $social_insta)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'social_gmb', $social_gmb)) $updated_count++;
-		
-		// Sitemap & Global Settings
-		if (updateSystemSetting($mysqli, 'global_settings', $global_settings)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'login_captcha_threshold', $login_captcha_threshold)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_root', $sitemap_root)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_enabled', $sitemap_enabled)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'ai_sitemap_enabled', $ai_sitemap_enabled)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_companies', $sitemap_companies)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_blogs', $sitemap_blogs)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_categories', $sitemap_categories)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_hs_codes', $sitemap_hs_codes)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'sitemap_amp', $sitemap_amp)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_hsts_required', $seo_hsts_required)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_ai_policy_mode', $seo_ai_policy_mode)) $updated_count++;
-		
-		// SEO Settings for Public Website
-		if (updateSystemSetting($mysqli, 'seo_meta_title', $seo_meta_title)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_meta_description', $seo_meta_description)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_meta_keywords', $seo_meta_keywords)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_og_title', $seo_og_title)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_og_description', $seo_og_description)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_og_image', $seo_og_image)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_og_type', $seo_og_type)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_og_url', $seo_og_url)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_twitter_card', $seo_twitter_card)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_twitter_site', $seo_twitter_site)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_twitter_creator', $seo_twitter_creator)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_google_analytics', $seo_google_analytics)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_google_tag_manager', $seo_google_tag_manager)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_google_site_verification', $seo_google_site_verification)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_bing_verification', $seo_bing_verification)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_robots_meta', $seo_robots_meta)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_canonical_url', $seo_canonical_url)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'seo_schema_organization', $seo_schema_organization)) $updated_count++;
-		
-		// Bank Info
-		if (updateSystemSetting($mysqli, 'bank_name', $bank_name)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'beneficiary', $beneficiary)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'account_number', $account_number)) $updated_count++;
-		if (updateSystemSetting($mysqli, 'iban', $iban)) $updated_count++;
-		
-		$success_message = "Settings updated successfully! ({$updated_count} settings saved)";
-		
-	} catch (Exception $e) {
-		$error_message = "Error updating settings: " . $e->getMessage();
-	}
+    try {
+        $updated_count = $settingsService->updateSettings($_POST);
+        $success_message = "Settings updated successfully! ({$updated_count} settings saved)";
+    } catch (\Throwable $e) {
+        $error_message = "Error updating settings: " . $e->getMessage();
+    }
 }
 
 
 
-$company_name			= (empty($company_name) 	? 'Orange Ticks - FMS' : $company_name);
+$company_name			= (empty($company_name) 	? 'Flash Logistics FZCO' : $company_name);
 $phone					= (empty($phone) 			? '' : $phone);
 $email					= (empty($email) 			? '' : $email);
-$website				= (empty($website) 			? 'https://haitechnologies.com/' : $website);
-$pobox					= (empty($pobox) 			? '09710' : $pobox);
+$website				= (empty($website) 			? 'https://flashlogistics.com/' : $website);
+$pobox					= (empty($pobox) 			? '' : $pobox);
 $trn					= (empty($trn) 				? '' : $trn);
 
-$bank_name				= (empty($bank_name) 		? 'ENBD Bank' : $bank_name);
-$beneficiary			= (empty($beneficiary) 		? 'ABC Technical Company' : $beneficiary);
-$account_number			= (empty($account_number) 	? '0023512554781' : $account_number);
-$iban					= (empty($iban) 			? 'AE93040000023512554781' : $iban);
+$bank_name				= (empty($bank_name) 		? '' : $bank_name);
+$beneficiary			= (empty($beneficiary) 		? 'Flash Logistics FZCO' : $beneficiary);
+$account_number			= (empty($account_number) 	? '' : $account_number);
+$iban					= (empty($iban) 			? '' : $iban);
 
 /*
 |--------------------------------------------------------------------------
@@ -322,116 +124,17 @@ $iban					= (empty($iban) 			? 'AE93040000023512554781' : $iban);
 
 
 
-// ============================================================================
-// COLOR MANAGEMENT HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Sanitize color input
- */
-function sanitizeColorInput($color) {
-    // Remove any whitespace
-    $color = trim($color);
-    
-    // If starts with #, remove it for validation
-    if (substr($color, 0, 1) === '#') {
-        $color = substr($color, 1);
-    }
-    
-    // Add # back
-    return '#' . strtoupper($color);
-}
-
-/**
- * Validate hex color format
- */
-function isValidHexColor($color) {
-    $color = sanitizeColorInput($color);
-    return preg_match('/^#[0-9A-F]{6}$/i', $color) === 1;
-}
-
-/**
- * Update system color setting in database
- */
-function updateSystemColorSetting(&$mysqli, $slug, $value) {
-    $slug = $mysqli->real_escape_string($slug);
-    $value = $mysqli->real_escape_string($value);
-	$settingName = $mysqli->real_escape_string(ucwords(str_replace('_', ' ', $slug)));
-	$hint = $mysqli->real_escape_string('Auto-created from Global Settings (UI color setting).');
-    
-    // Check if record exists
-    $checkQuery = "SELECT id FROM " . DB::SYSTEM_SETTINGS . " WHERE setting_slug = '{$slug}' LIMIT 1";
-    $result = $mysqli->query($checkQuery);
-    
-    if ($result && $result->num_rows > 0) {
-        // Record exists - UPDATE
-        $query = "UPDATE `" . DB::SYSTEM_SETTINGS . "` 
-                  SET setting_value = '{$value}' 
-                  WHERE setting_slug = '{$slug}'";
-	} else {
-		// Record doesn't exist - INSERT
-		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) 
-				  VALUES ('{$slug}', '{$settingName}', '{$value}', '{$hint}', 1, 1, 1, NOW(), NOW())";
-	}
-    
-    return $mysqli->query($query);
-}
-
-/**
- * Update system setting in database (text/varchar fields)
- */
-function updateSystemSetting(&$mysqli, $slug, $value, $type = 'text') {
-    $slug = $mysqli->real_escape_string($slug);
-    $value = $mysqli->real_escape_string($value);
-    $type = $mysqli->real_escape_string($type);
-	$settingName = $mysqli->real_escape_string(ucwords(str_replace('_', ' ', $slug)));
-	$hint = $mysqli->real_escape_string('Auto-created from Global Settings.');
-    
-    // Check if record exists
-    $checkQuery = "SELECT id FROM " . DB::SYSTEM_SETTINGS . " WHERE setting_slug = '{$slug}' LIMIT 1";
-    $result = $mysqli->query($checkQuery);
-    
-    if ($result && $result->num_rows > 0) {
-        // Record exists - UPDATE
-        $query = "UPDATE `" . DB::SYSTEM_SETTINGS . "` 
-                  SET setting_value = '{$value}' 
-                  WHERE setting_slug = '{$slug}'";
-	} else {
-		// Record doesn't exist - INSERT
-		$query = "INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) 
-				  VALUES ('{$slug}', '{$settingName}', '{$value}', '{$hint}', 1, 1, 1, NOW(), NOW())";
-	}
-    
-    return $mysqli->query($query);
-}
-
 // Handle color POST submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_ui_colors'])) {
-	try {
-		$colorSlugs = [
-			'admin_header_bg_color', 'admin_header_text_color', 'admin_header_accent_color',
-			'sidebar_bg_color', 'sidebar_text_color', 'sidebar_active_bg_color', 'sidebar_active_text_color', 'sidebar_hover_bg_color',
-			'login_header_bg_color', 'login_header_text_color', 'login_form_bg_color', 'login_button_bg_color', 'login_button_text_color', 'login_button_hover_color'
-		];
-		
-		$updated_count = 0;
-		foreach ($colorSlugs as $slug) {
-			if (isset($_POST[$slug])) {
-				$color = sanitizeColorInput($_POST[$slug]);
-				if (isValidHexColor($color) && updateSystemColorSetting($mysqli, $slug, $color)) {
-					$updated_count++;
-				}
-			}
-		}
-		
-		   if ($updated_count > 0) {
-			   // Redirect to self to apply new color settings and prevent resubmission
-			   header('Location: ' . $_SERVER['REQUEST_URI']);
-			   exit;
-		   }
-	} catch (Exception $e) {
-		$error_message = "Error saving UI colors: " . htmlspecialchars($e->getMessage());
-	}
+    try {
+        $updated_count = $settingsService->updateColors($_POST);
+        if ($updated_count > 0) {
+            header('Location: ' . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+    } catch (\Throwable $e) {
+        $error_message = "Error saving UI colors: " . htmlspecialchars($e->getMessage());
+    }
 }
 
 // Get current color settings
@@ -1273,19 +976,19 @@ $login_logo			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting
 								<div class="settings-group">
 									<div class="form-section">
 										<label class="form-label"><i class="ph-text-t"></i> Meta Title</label>
-										<input type="text" class="form-control" name="seo_meta_title" value="<?php echo $seo_meta_title; ?>" placeholder="Your Business Directory - Find UAE Companies">
+										<input type="text" class="form-control" name="seo_meta_title" value="<?php echo $seo_meta_title; ?>" placeholder="Flash Logistics FZCO - Logistics & Supply Chain">
 										<div class="form-text">Default page title for SEO (50-60 characters recommended)</div>
 									</div>
 
 									<div class="form-section">
 										<label class="form-label"><i class="ph-article"></i> Meta Description</label>
-										<textarea class="form-control" name="seo_meta_description" rows="3" placeholder="Comprehensive business directory for UAE companies..."><?php echo $seo_meta_description; ?></textarea>
+										<textarea class="form-control" name="seo_meta_description" rows="3" placeholder="Flash Logistics FZCO - Logistics, freight forwarding & supply chain solutions"><?php echo $seo_meta_description; ?></textarea>
 										<div class="form-text">Brief description for search results (150-160 characters recommended)</div>
 									</div>
 
 									<div class="form-section">
 										<label class="form-label"><i class="ph-key"></i> Meta Keywords</label>
-										<input type="text" class="form-control" name="seo_meta_keywords" value="<?php echo $seo_meta_keywords; ?>" placeholder="uae business, dubai companies, business directory">
+										<input type="text" class="form-control" name="seo_meta_keywords" value="<?php echo $seo_meta_keywords; ?>" placeholder="logistics, freight forwarding, supply chain, UAE logistics">
 										<div class="form-text">Comma-separated keywords (optional, less important for modern SEO)</div>
 									</div>
 								</div>
@@ -1295,13 +998,13 @@ $login_logo			= s__(getTableAttrv('setting_value', DB::SYSTEM_SETTINGS, 'setting
 								<div class="settings-group">
 									<div class="form-section">
 										<label class="form-label"><i class="ph-text-t"></i> OG Title</label>
-										<input type="text" class="form-control" name="seo_og_title" value="<?php echo $seo_og_title; ?>" placeholder="UAE Business Directory">
+										<input type="text" class="form-control" name="seo_og_title" value="<?php echo $seo_og_title; ?>" placeholder="Flash Logistics FZCO - Logistics & Supply Chain">
 										<div class="form-text">Title when shared on Facebook/LinkedIn (leave empty to use Meta Title)</div>
 									</div>
 
 									<div class="form-section">
 										<label class="form-label"><i class="ph-article"></i> OG Description</label>
-										<textarea class="form-control" name="seo_og_description" rows="2" placeholder="Find and connect with businesses across UAE..."><?php echo $seo_og_description; ?></textarea>
+										<textarea class="form-control" name="seo_og_description" rows="2" placeholder="Flash Logistics FZCO provides logistics, freight forwarding & supply chain solutions"><?php echo $seo_og_description; ?></textarea>
 										<div class="form-text">Description for social media shares (leave empty to use Meta Description)</div>
 									</div>
 

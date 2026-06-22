@@ -26,12 +26,9 @@ class ProjectsDataTable extends BaseDataTable
             return;
         }
 
-        $result = $this->mysqli->query("SELECT id, display_name FROM `" . DB::CUSTOMERS . "` WHERE id IN (" . implode(',', $customerIds) . ")");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $this->relatedDataCache['customers'][(int)$row['id']] = (string)($row['display_name'] ?? '');
-            }
-            $result->free();
+        $customers = $this->db->fetchAll("SELECT id, display_name FROM `" . DB::CUSTOMERS . "` WHERE id IN (" . implode(',', $customerIds) . ")", []);
+        foreach ($customers as $row) {
+            $this->relatedDataCache['customers'][(int)$row['id']] = (string)($row['display_name'] ?? '');
         }
     }
 
@@ -54,10 +51,10 @@ class ProjectsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton((int)$id, 'projects.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return trim($actions);

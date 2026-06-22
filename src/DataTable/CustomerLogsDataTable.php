@@ -73,13 +73,12 @@ class CustomerLogsDataTable extends BaseDataTable
             return '';
         }
 
-        $searchValue = $this->mysqli->real_escape_string($searchValue);
+        $searchKey = 'search_val';
+        $this->params[$searchKey] = '%' . $searchValue . '%';
         $conditions = [];
-
         foreach ($this->searchFields as $field) {
-            $conditions[] = "{$field} LIKE '%{$searchValue}%'";
+            $conditions[] = "{$field} LIKE :{$searchKey}";
         }
-
         return 'AND (' . implode(' OR ', $conditions) . ')';
     }
 
@@ -94,12 +93,12 @@ class CustomerLogsDataTable extends BaseDataTable
     {
         $id = (int)($row['id'] ?? 0);
         $customerId = (int)($row['entity_id'] ?? 0);
-        $displayName = s__($row['display_name'] ?? '') ?: 'Unknown';
-        $module = s__($row['module'] ?? '') ?: '-';
-        $action = s__($row['action'] ?? '') ?: '-';
+        $displayName = $this->sanitize($row['display_name'] ?? '') ?: 'Unknown';
+        $module = $this->sanitize($row['module'] ?? '') ?: '-';
+        $action = $this->sanitize($row['action'] ?? '') ?: '-';
         $createdAt = $row['created_at'] ?? '';
 
-        $createdDisplay = !empty($createdAt) ? dd_($createdAt, 'd M Y g:ia') : '-';
+        $createdDisplay = $createdAt !== '' ? $this->formatDate($createdAt, 'd M Y g:ia') : '-';
 
         return [
             $id,
@@ -134,11 +133,11 @@ class CustomerLogsDataTable extends BaseDataTable
     {
         $actions = '';
 
-        if (granted_('edit', 'customers')) {
+        if ($this->isGranted('edit', 'customers')) {
             $actions .= '<a href="customer_logs.php?customer_id=' . $customerId . '" title="View"><span class="text-dark opacity-50"><i class="ph-eye"></i></span></a> ';
         }
 
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton($id, $module);
         }
 

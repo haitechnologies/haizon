@@ -82,11 +82,11 @@ class ShippingInvoicesDataTable extends BaseDataTable
         $statusBadge = '<span class="badge bg-light text-dark">' . htmlspecialchars(ucwords(str_replace('_', ' ', $invoiceStatus))) . '</span>';
 
         $currencyCode = defined('BASE_CURRENCY') ? BASE_CURRENCY['code'] : 'AED';
-        $formattedTotal = function_exists('dec_') ? dec_($grandTotal) : number_format($grandTotal, 2);
+        $formattedTotal = $this->formatDecimal((float)$grandTotal);
 
         $timeAgoStr = '';
         if (!empty($createdAt)) {
-            $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
+            $timeAgoStr = $this->formatTimeAgo($createdAt);
         }
 
         return [
@@ -121,7 +121,7 @@ class ShippingInvoicesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $actions;

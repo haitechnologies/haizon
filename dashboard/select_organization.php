@@ -9,11 +9,13 @@ $requestedOrganizationId = (int)($_GET['organization_id'] ?? 0);
 
 if ($requestedOrganizationId > 0) {
     if (dashboardSetActiveOrganization($requestedOrganizationId)) {
-        header('Location:index.php?success_message=' . urlencode('Organization switched successfully.'));
+        flash_success('Organization switched successfully.');
+        header('Location:index.php');
         exit;
     }
 
-    header('Location:select_organization.php?error_message=' . urlencode('You do not have access to that organization.'));
+    flash_error('You do not have access to that organization.');
+    header('Location:select_organization.php');
     exit;
 }
 

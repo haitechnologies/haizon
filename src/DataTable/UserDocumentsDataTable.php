@@ -42,7 +42,7 @@ class UserDocumentsDataTable extends BaseDataTable
         }
 
         return [
-            $id,
+            $this->rowNumber,
             htmlspecialchars((string)($row['document_name'] ?? '')),
             htmlspecialchars((string)($row['category_name'] ?? '')),
             htmlspecialchars((string)($row['full_name'] ?? '')),
@@ -57,10 +57,10 @@ class UserDocumentsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton((int)$id, 'user_documents.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return trim($actions);

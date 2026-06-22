@@ -40,7 +40,7 @@ class CompanyCategoriesDataTable extends BaseDataTable
             $slug,
             number_format($totalCompanies),
             $mainBadge,
-            timeAgo($createdAt),
+            $this->formatTimeAgo($createdAt),
             $publishBadge,
             $this->getActionButtons($id, 'company_categories', $publish)
         ];
@@ -49,10 +49,10 @@ class CompanyCategoriesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module, $publish)
     {
         $buttons = [];
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'company_categories.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

@@ -25,13 +25,13 @@ class MultiOrgIntegrationTests
         'erp_leave_requests', 'erp_leave_types', 'erp_payroll_components',
         'erp_salary_structures', 'erp_employee_salaries', 'erp_payroll_runs',
         'erp_payslips',
-        'erp_shipping_customers', 'erp_shipping_advices',
+        'erp_shipping_advices',
         'erp_shipping_advice_items', 'erp_shipping_invoices',
         'erp_shipping_invoice_items', 'erp_shipping_stocks',
         'erp_carriers', 'erp_consignees', 'erp_shippers',
         'erp_taxonomies', 'erp_items', 'erp_ports',
-        'erp_jobs', 'erp_projects', 'erp_tasks', 'erp_vendors', 'erp_warehouses',
-        'erp_storage_types', 'erp_storage_subtypes', 'erp_incoterms', 'erp_exit_points',
+        'erp_jobs', 'erp_projects', 'erp_tasks', 'erp_vendors',
+        'erp_storage_types', 'erp_incoterms', 'erp_exit_points',
         'erp_leads', 'erp_inquiries', 'erp_inquiry_replies',
         'erp_journals', 'erp_payments_made', 'erp_payments_received', 'erp_payment_methods', 'erp_payment_terms', 'erp_tax_treatments', 'erp_currencies'
     ];

@@ -31,7 +31,7 @@ class ActionButtonHelper
             return $url;
         }
 
-        $baseUrl = rtrim((string)($GLOBALS['base_url'] ?? ''), '/');
+        $baseUrl = rtrim((string)($_ENV['APP_URL'] ?? $GLOBALS['base_url'] ?? ''), '/');
         if ($baseUrl === '') {
             return $url;
         }
@@ -50,10 +50,10 @@ class ActionButtonHelper
     public static function viewButton($id, $module)
     {
         return '<a href="#" ' .
-               'data-action="view_' . htmlspecialchars($module) . '" ' .
-               'data-id="' . (int)$id . '" ' .
-               'title="View" ' .
-               'class="action-btn action-view"><i class="ph-eye"></i></a>';
+            'data-action="view_' . htmlspecialchars($module) . '" ' .
+            'data-id="' . (int)$id . '" ' .
+            'title="View" ' .
+            'class="action-btn action-view"><i class="ph-eye"></i></a>';
     }
 
     /**
@@ -71,10 +71,10 @@ class ActionButtonHelper
     {
         $text = $showText ? ' <span class="d-none d-md-inline">' . htmlspecialchars($label) . '</span>' : '';
         return '<a href="' . htmlspecialchars($editPage) .
-               '?action=edit_' . htmlspecialchars($module) .
-               '&id=' . (int)$id . '" ' .
-               'title="' . htmlspecialchars($label) . '" ' .
-               'class="action-btn action-edit"><i class="ph-pencil"></i>' . $text . '</a>';
+            '?action=edit_' . htmlspecialchars($module) .
+            '&id=' . (int)$id . '" ' .
+            'title="' . htmlspecialchars($label) . '" ' .
+            'class="action-btn action-edit"><i class="ph-pencil"></i>' . $text . '</a>';
     }
 
     /**
@@ -88,11 +88,11 @@ class ActionButtonHelper
     public static function deleteButton($id, $module)
     {
         return '<a href="#" ' .
-               'data-action="delete_record" ' .
-               'data-module="' . htmlspecialchars($module) . '" ' .
-               'data-id="' . (int)$id . '" ' .
-               'title="Delete" ' .
-               'class="action-btn action-delete"><i class="ph-trash"></i></a>';
+            'data-action="delete_record" ' .
+            'data-module="' . htmlspecialchars($module) . '" ' .
+            'data-id="' . (int)$id . '" ' .
+            'title="Delete" ' .
+            'class="action-btn action-delete"><i class="ph-trash"></i></a>';
     }
 
     /**
@@ -110,11 +110,11 @@ class ActionButtonHelper
         $title = $isPublished ? 'Unpublish' : 'Publish';
 
         return '<a href="#" ' .
-               'data-action="toggle_publish" ' .
-               'data-id="' . (int)$id . '" ' .
-               'data-module="' . htmlspecialchars($module) . '" ' .
-               'title="' . $title . '" ' .
-               'class="action-btn action-publish"><i class="' . $icon . '"></i></a>';
+            'data-action="toggle_publish" ' .
+            'data-id="' . (int)$id . '" ' .
+            'data-module="' . htmlspecialchars($module) . '" ' .
+            'title="' . $title . '" ' .
+            'class="action-btn action-publish"><i class="' . $icon . '"></i></a>';
     }
 
     /**
@@ -128,8 +128,8 @@ class ActionButtonHelper
     public static function downloadButton($id, $downloadUrl)
     {
         return '<a href="' . htmlspecialchars($downloadUrl) . '" ' .
-               'title="Download" ' .
-               'class="action-btn action-download"><i class="ph-download"></i></a>';
+            'title="Download" ' .
+            'class="action-btn action-download"><i class="ph-download"></i></a>';
     }
 
     /**
@@ -144,9 +144,9 @@ class ActionButtonHelper
     public static function testButton($id, $function, $title = 'Send Test')
     {
         return '<a href="javascript:void(0)" ' .
-               'onclick="' . htmlspecialchars($function) . '(' . (int)$id . ')" ' .
-               'title="' . htmlspecialchars($title) . '" ' .
-               'class="action-btn action-test"><i class="ph-paper-plane-tilt"></i></a>';
+            'onclick="' . htmlspecialchars($function) . '(' . (int)$id . ')" ' .
+            'title="' . htmlspecialchars($title) . '" ' .
+            'class="action-btn action-test"><i class="ph-paper-plane-tilt"></i></a>';
     }
 
     /**
@@ -161,9 +161,9 @@ class ActionButtonHelper
     {
         $normalizedUrl = self::normalizePublicUrl($url);
         return '<a href="' . htmlspecialchars($normalizedUrl) . '" ' .
-               'target="_blank" rel="noopener noreferrer" ' .
-               'title="' . htmlspecialchars($title) . '" ' .
-               'class="action-btn action-public"><i class="ph-globe"></i></a>';
+            'target="_blank" rel="noopener noreferrer" ' .
+            'title="' . htmlspecialchars($title) . '" ' .
+            'class="action-btn action-public"><i class="ph-globe"></i></a>';
     }
 
     /**
@@ -178,9 +178,9 @@ class ActionButtonHelper
     {
         $normalizedUrl = self::normalizePublicUrl($url);
         return '<a href="' . htmlspecialchars($normalizedUrl) . '" ' .
-               'target="_blank" rel="noopener noreferrer" ' .
-               'title="' . htmlspecialchars($title) . '" ' .
-               'class="action-btn action-public"><i class="ph-device-mobile"></i></a>';
+            'target="_blank" rel="noopener noreferrer" ' .
+            'title="' . htmlspecialchars($title) . '" ' .
+            'class="action-btn action-public"><i class="ph-device-mobile"></i></a>';
     }
 
     /**

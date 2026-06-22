@@ -124,6 +124,24 @@ class DB
     /** Generated payslips */
     public const PAYSLIPS = self::PREFIX . 'payslips';
 
+    /** Air ticket entitlements */
+    public const AIR_TICKETS = self::PREFIX . 'air_tickets';
+
+    /** Gratuity settlements */
+    public const GRATUITY_SETTLEMENTS = self::PREFIX . 'gratuity_settlements';
+
+    /** Annual leave entitlement records */
+    public const ANNUAL_LEAVE_ENTITLEMENTS = self::PREFIX . 'annual_leave_entitlements';
+
+    /** HR to-do tasks */
+    public const HR_TODO_TASKS = self::PREFIX . 'hr_todo_tasks';
+
+    /** Attendance device configurations */
+    public const ATTENDANCE_DEVICES = self::PREFIX . 'attendance_devices';
+
+    /** Raw attendance punch logs from devices */
+    public const ATTENDANCE_PUNCHES = self::PREFIX . 'attendance_punches';
+
     /** Payroll run line items */
     public const HR_PAYROLL_RUN_ITEMS = self::PREFIX . 'hr_payroll_run_items';
 
@@ -292,7 +310,7 @@ class DB
     // ================================
 
     /** @deprecated Table dropped. Merged into CUSTOMERS with entity_type='shipping' */
-    public const SHIPPING_CUSTOMERS = self::PREFIX . 'shipping_customers';
+    // public const SHIPPING_CUSTOMERS = self::PREFIX . 'shipping_customers';
 
     /** Shipping advice documents */
     public const SHIPPING_ADVICES = self::PREFIX . 'shipping_advices';
@@ -332,9 +350,16 @@ class DB
     // SETUP & MASTER DATA TABLES
     // ================================
 
-    // Note: SETUP_STATUSES, SETUP_TAGS, JOB_STATUSES are standalone tables (not in DB.php constants).
-    // They use publish/is_active sync triggers. See erp_setup_statuses, erp_setup_tags, erp_job_statuses.
-    /** Polymorphic taxonomies table for categorization (not for statuses/tags) */
+    /** Setup Groups (polymorphic, stored in taxonomies with type='setup_group') */
+    public const SETUP_GROUPS = self::TAXONOMIES;
+    /** Setup Sources (polymorphic, stored in taxonomies with type='lead_source'|'customer_source') */
+    public const SETUP_SOURCES = self::TAXONOMIES;
+    /** Setup Statuses (polymorphic, stored in taxonomies with type='lead_status'|'customer_status'|'vendor_status') */
+    public const SETUP_STATUSES = self::TAXONOMIES;
+    /** Setup Tags (polymorphic, stored in taxonomies with type='lead_tag'|'customer_tag'|'job_tag') */
+    public const SETUP_TAGS = self::TAXONOMIES;
+
+    /** Polymorphic taxonomies table for categorization */
     public const TAXONOMIES = self::PREFIX . 'taxonomies';
 
     /** @deprecated Dummy constant for dynamic reports — no physical table */
@@ -349,8 +374,7 @@ class DB
 
     // BLOG_CATEGORIES, BLOGS removed — decommissioned tables
 
-    /** CMS pages */
-    public const PAGES = self::PREFIX . 'pages';
+    // PAGES removed — table decommissioned
 
     // ================================
     // HS CODES (HARMONIZED SYSTEM)
@@ -627,7 +651,7 @@ class DB
     public const STORAGE_TYPES = self::PREFIX . 'storage_types';
 
     /** @deprecated Table dropped. Merged into STORAGE_TYPES with parent_id */
-    public const STORAGE_SUBTYPES = self::PREFIX . 'storage_subtypes';
+    // public const STORAGE_SUBTYPES = self::PREFIX . 'storage_subtypes';
 
     // ================================
     // PRODUCT / SERVICE SETUP
@@ -699,7 +723,7 @@ class DB
      */
     public static function getPrefix(): string
     {
-        return $GLOBALS['TBL']['PREFIX'] ?? self::PREFIX;
+        return $_ENV['DB_PREFIX'] ?? $GLOBALS['TBL']['PREFIX'] ?? self::PREFIX;
     }
 
     /**
@@ -719,6 +743,9 @@ class DB
 
     /**
      * Retrieve the global MySQLi connection.
+     *
+     * @deprecated Use DB::pdo() or DB::conn() for new code. This method exists
+     *             only for legacy dashboard pages that still use mysqli directly.
      *
      * @return \mysqli
      */

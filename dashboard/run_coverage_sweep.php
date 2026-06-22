@@ -2,12 +2,6 @@
 
 use App\Core\DB;
 use App\Security\Roles;
-/**
- * Coverage Sweep Runner
- *
- * Admin utility to trigger unobserved backend inventory entrypoints
- * while authenticated, so runtime coverage can be registered quickly.
- */
 
 include('admin_elements/admin_header.php');
 
@@ -18,591 +12,545 @@ if (!Roles::hasFullAccess($session_role_id)) {
 }
 
 if (!function_exists('coverage_table_exists')) {
-    function coverage_table_exists($mysqli, $tableName)
-    {
+    function coverage_table_exists($mysqli, $tableName) {
         $sql = "SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1";
         $stmt = $mysqli->prepare($sql);
-        if (!$stmt) {
-            return false;
-        }
-
+        if (!$stmt) return false;
         $stmt->bind_param('s', $tableName);
         $stmt->execute();
         $stmt->store_result();
         $exists = $stmt->num_rows > 0;
         $stmt->close();
-
         return $exists;
     }
 }
 
-function normalizeCoverageSweepPath($pagePath)
-{
-    $path = trim((string)$pagePath);
-    if ($path === '') {
-        return '';
-    }
-
-    if (preg_match('#^(https?:)?//#i', $path)) {
-        return $path;
-    }
-
-    if ($path[0] === '/') {
-        return $path;
-    }
-
-    if (strpos($path, 'api/') === 0) {
-        return '../' . $path;
-    }
-
-    return $path;
+function coverageResolveSlug(string $name): string {
+    $base = strtolower(pathinfo($name, PATHINFO_FILENAME));
+    if (str_starts_with($base, 'listing_')) return substr($base, 8) ?: 'unknown';
+    if (str_starts_with($base, 'dashboard_')) return substr($base, 10) ?: 'dashboard';
+    if (str_starts_with($base, 'report_')) return 'reports';
+    if (str_starts_with($base, 'view_')) return substr($base, 5);
+    return $base !== '' && $base !== 'index' ? $base : 'dashboard';
 }
 
-function coverageSweepResolveModuleSlug($pageName)
-{
-    $base = strtolower((string)pathinfo((string)$pageName, PATHINFO_FILENAME));
+// === CURATED QA PAGE LIST ===
+// Only user-interactive pages a QA tester would click through.
+// Technical/backend pages (ajax, api, cron, PDF generators, DataTable handlers,
+// debug scripts, auto-populate, sync tools) are excluded.
 
-    if (strpos($base, 'listing_') === 0) {
-        return substr($base, 8) ?: 'unknown';
-    }
+$QA_PAGES = [
+    // ── Listing Pages ─────────────────────────────────────────────
+    'listing_accounts.php',
+    'listing_accounts_report_categories.php',
+    'listing_alerts.php',
+    'listing_attendance.php',
+    'listing_authentication_activity.php',
+    'listing_banks.php',
+    'listing_banned_words.php',
+    'listing_carriers.php',
+    'listing_categories.php',
+    'listing_commodity_types.php',
+    'listing_consignees.php',
+    'listing_container_types.php',
+    'listing_credit_notes.php',
+    'listing_cron_jobs.php',
+    'listing_currencies.php',
+    'listing_customer_contacts.php',
+    'listing_customer_invoices.php',
+    'listing_customer_payments.php',
+    'listing_customers.php',
+    'listing_debit_notes.php',
+    'listing_departments.php',
+    'listing_designations.php',
+    'listing_disposable_email_domains.php',
+    'listing_document_categories.php',
+    'listing_documents.php',
+    'listing_email_history.php',
+    'listing_email_providers.php',
+    'listing_email_queue.php',
+    'listing_employee_salaries.php',
+    'listing_exit_points.php',
+    'listing_expenses.php',
+    'listing_geo_cities.php',
+    'listing_geo_countries.php',
+    'listing_geo_states.php',
+    'listing_hscodes.php',
+    'listing_incoterms.php',
+    'listing_inquiries.php',
+    'listing_invoices.php',
+    'listing_items.php',
+    'listing_job_statuses.php',
+    'listing_jobs.php',
+    'listing_journals.php',
+    'listing_lead_quotations.php',
+    'listing_leads.php',
+    'listing_leave_requests.php',
+    'listing_leave_types.php',
+    'listing_modules.php',
+    'listing_organization_roles.php',
+    'listing_organizations.php',
+    'listing_pages_audit.php',
+    'listing_payment_methods.php',
+    'listing_payment_terms.php',
+    'listing_payments_made.php',
+    'listing_payments_received.php',
+    'listing_payroll_components.php',
+    'listing_payroll_runs.php',
+    'listing_payslips.php',
+    'listing_ports.php',
+    'listing_projects.php',
+    'listing_purchase_orders.php',
+    'listing_purchase_types.php',
+    'listing_purchases.php',
+    'listing_quotations.php',
+    'listing_roles.php',
+    'listing_salary_structures.php',
+    'listing_sale_orders.php',
+    'listing_sale_types.php',
+    'listing_services.php',
+    'listing_setup_groups.php',
+    'listing_setup_sources.php',
+    'listing_setup_statuses.php',
+    'listing_setup_tags.php',
+    'listing_shippers.php',
+    'listing_shipping_advice_items.php',
+    'listing_shipping_advices.php',
+    'listing_shipping_customers.php',
+    'listing_shipping_invoices.php',
+    'listing_shipping_stocks.php',
+    'listing_storage_subtypes.php',
+    'listing_storage_types.php',
+    'listing_subcategories.php',
+    'listing_system_settings.php',
+    'listing_tax_treatments.php',
+    'listing_units.php',
+    'listing_user_documents.php',
+    'listing_users.php',
+    'listing_vendors.php',
 
-    if (strpos($base, 'dashboard_') === 0) {
-        return substr($base, 10) ?: 'dashboard';
-    }
+    // ── Auth Pages ─────────────────────────────────────────────────
+    'logout.php',
+    'forgot_password.php',
+    'reset_password.php',
+    'select_organization.php',
+    'organization_accept_invite.php',
 
-    if ($base !== '' && $base !== 'index') {
-        return $base;
-    }
+    // ── Dashboard / Index ──────────────────────────────────────────
+    'index.php',
+    'dashboard_accounting.php',
+    'dashboard_crm.php',
+    'dashboard_hr.php',
+    'dashboard_shipping.php',
+    'dashboard_sitemap.php',
 
-    return 'dashboard';
-}
+    // ── Core Modules ───────────────────────────────────────────────
+    'accounts.php',
+    'accounts_report_categories.php',
+    'accounts_report_subcategories.php',
+    'alerts.php',
+    'attendance.php',
+    'banks.php',
+    'banned_words.php',
+    'carriers.php',
+    'categories.php',
+    'category_hs_codes.php',
+    'change_password.php',
+    'commodity_types.php',
+    'consignees.php',
+    'container_types.php',
+    'currencies.php',
+    'customers.php',
+    'customer_billing_addresses.php',
+    'customer_comments.php',
+    'customer_contacts.php',
+    'customer_logs.php',
+    'customer_mails.php',
+    'customer_overview.php',
+    'customer_shipping_addresses.php',
+    'customer_statement.php',
+    'customer_transactions.php',
+    'credit_notes.php',
+    'credit_note_overview.php',
+    'debit_notes.php',
+    'debit_note_overview.php',
+    'departments.php',
+    'designations.php',
+    'document_categories.php',
+    'documents.php',
+    'email_history.php',
+    'email_providers.php',
+    'exit_points.php',
+    'expense_overview.php',
+    'expenses.php',
+    'features.php',
+    'global_settings.php',
+    'hscodes.php',
+    'import_shipping_advices.php',
+    'incoterms.php',
+    'inquiries.php',
+    'invoice_overview.php',
+    'invoices.php',
+    'items.php',
+    'job_statuses.php',
+    'jobs.php',
+    'journals.php',
+    'leads.php',
+    'lead.php',
+    'lead_attachments.php',
+    'lead_logs.php',
+    'lead_notes.php',
+    'lead_quotation.php',
+    'lead_quotations.php',
+    'leave_requests.php',
+    'leave_types.php',
+    'mfa_settings.php',
+    'module_permissions.php',
+    'modules.php',
+    'organization_invites.php',
+    'organization_roles.php',
+    'organizations.php',
+    'payment_methods.php',
+    'payment_received_overview.php',
+    'payment_terms.php',
+    'payments_made.php',
+    'payments_made_overview.php',
+    'payments_received.php',
+    'payroll_components.php',
+    'payroll_runs.php',
+    'ports.php',
+    'profile.php',
+    'projects.php',
+    'purchases.php',
+    'purchase_order_overview.php',
+    'purchase_orders.php',
+    'purchase_overview.php',
+    'purchase_types.php',
+    'quotations.php',
+    'quotation_overview.php',
+    'recurring_invoice_overview.php',
+    'recurring_invoices.php',
+    'roles.php',
+    'salary_structures.php',
+    'sale_orders.php',
+    'sale_order_overview.php',
+    'sale_types.php',
+    'seo_health_check.php',
+    'services.php',
+    'setup.php',
+    'setup_groups.php',
+    'setup_sources.php',
+    'setup_statuses.php',
+    'setup_tags.php',
+    'shippers.php',
+    'shipping_advices.php',
+    'shipping_customers.php',
+    'shipping_invoices.php',
+    'shipping_stocks.php',
+    'sitemap.php',
+    'sitemaps.php',
+    'storage_subtypes.php',
+    'storage_types.php',
+    'subcategories.php',
+    'subscription_management.php',
+    'system_settings.php',
+    'tax_treatments.php',
+    'ui_design_settings.php',
+    'units.php',
+    'user.php',
+    'user_documents.php',
+    'users.php',
+    'vendors.php',
+    'vendor_credit_overview.php',
+    'vendor_overview.php',
+    'view_job.php',
+    'view_payroll_run.php',
+    'view_payslip.php',
+    'view_project.php',
+    'view_shipping_advice.php',
+    'view_shipping_stocks.php',
 
-$sourceFilter = isset($_GET['source']) ? trim((string)$_GET['source']) : 'dashboard_runtime';
-if ($sourceFilter === '') {
-    $sourceFilter = 'dashboard_runtime';
-}
+    // ── Reports ────────────────────────────────────────────────────
+    'reports.php',
+    'report_account_transactions.php',
+    'report_account_type_summary.php',
+    'report_ar_aging_details.php',
+    'report_ar_aging_summary.php',
+    'report_ar_summary.php',
+    'report_balance_sheet.php',
+    'report_billable_expense_details.php',
+    'report_business_performance_ratios.php',
+    'report_cash_flow_statement.php',
+    'report_clients.php',
+    'report_credit_note_details.php',
+    'report_customer_balance_summary.php',
+    'report_detailed_general_ledger.php',
+    'report_expense_details.php',
+    'report_expenses_by_category.php',
+    'report_expenses_by_customer.php',
+    'report_general_ledger.php',
+    'report_hr.php',
+    'report_invoice_details.php',
+    'report_invoices.php',
+    'report_journal_report.php',
+    'report_leads.php',
+    'report_movement_of_equity.php',
+    'report_payable_details.php',
+    'report_payable_summary.php',
+    'report_payments_received.php',
+    'report_profit_and_loss.php',
+    'report_quote_details.php',
+    'report_receivable_details.php',
+    'report_receivable_summary.php',
+    'report_reconciliation_status.php',
+    'report_recurring_invoice_details.php',
+    'report_refund_history.php',
+    'report_sales_by_customer.php',
+    'report_sales_by_item.php',
+    'report_sales_by_sales_person.php',
+    'report_sales_summary.php',
+    'report_shipping_stocks.php',
+    'report_time_to_get_paid.php',
+    'report_trial_balance.php',
+    'report_vendor_balance_summary.php',
 
-$seedSummary = ['inserted' => 0, 'existing' => 0, 'skipped' => 0, 'failed' => 0];
-$seedNotice = '';
+    // ── Admin Tools ────────────────────────────────────────────────
+    'cron.php',
+    'cron_logs.php',
+    'system_settings.php',
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') === 'seed_inventory') {
-    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
-        $seedNotice = 'CSRF token validation failed.';
-    } elseif (!coverage_table_exists($mysqli, DB::BACKEND_LOG_COVERAGE)) {
-        $seedNotice = 'Coverage table is not available. Run migrations first.';
-    } else {
-        $insertSql = "INSERT IGNORE INTO `" . DB::BACKEND_LOG_COVERAGE . "` (
-            module_slug, page_name, page_path, entrypoint_type, source_channel,
-            bootstrap_included, first_seen_at, last_seen_at, last_seen_error_at, seen_count
-        ) VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW(), NULL, 0)";
-        $insertStmt = $mysqli->prepare($insertSql);
+    // ── Error/Info ─────────────────────────────────────────────────
+    '404.php',
+    '500.php',
+];
 
-        if (!$insertStmt) {
-            $seedNotice = 'Failed to prepare inventory seed query.';
-        } else {
-            $skipNames = ['login.php', 'logout.php', 'datatables_dispatcher.php'];
-            $dashboardFiles = glob(__DIR__ . '/*.php') ?: [];
-            $cronFiles = glob(__DIR__ . '/cron/*.php') ?: [];
-
-            foreach ($dashboardFiles as $filePath) {
-                $pageName = basename((string)$filePath);
-
-                if (in_array($pageName, $skipNames, true)) {
-                    $seedSummary['skipped']++;
-                    continue;
-                }
-
-                $moduleSlug = coverageSweepResolveModuleSlug($pageName);
-                $pagePath = $pageName;
-                $entrypointType = 'page';
-                $sourceChannel = 'dashboard_runtime';
-
-                $insertStmt->bind_param('sssss', $moduleSlug, $pageName, $pagePath, $entrypointType, $sourceChannel);
-                if (!$insertStmt->execute()) {
-                    $seedSummary['failed']++;
-                    continue;
-                }
-
-                if ($insertStmt->affected_rows > 0) {
-                    $seedSummary['inserted']++;
-                } else {
-                    $seedSummary['existing']++;
-                }
-            }
-
-            foreach ($cronFiles as $filePath) {
-                $pageName = basename((string)$filePath);
-                $moduleSlug = coverageSweepResolveModuleSlug($pageName);
-                $pagePath = 'cron/' . $pageName;
-                $entrypointType = 'cron';
-                $sourceChannel = 'cron_runtime';
-
-                $insertStmt->bind_param('sssss', $moduleSlug, $pageName, $pagePath, $entrypointType, $sourceChannel);
-                if (!$insertStmt->execute()) {
-                    $seedSummary['failed']++;
-                    continue;
-                }
-
-                if ($insertStmt->affected_rows > 0) {
-                    $seedSummary['inserted']++;
-                } else {
-                    $seedSummary['existing']++;
-                }
-            }
-
-            $insertStmt->close();
-
-            $seedNotice = 'Inventory seed completed. Inserted: ' . (int)$seedSummary['inserted']
-                . ', Existing: ' . (int)$seedSummary['existing']
-                . ', Skipped: ' . (int)$seedSummary['skipped']
-                . ', Failed: ' . (int)$seedSummary['failed'] . '.';
-        }
-    }
-}
-
+// ── Auto-sync coverage table with the curated QA list ─────────────
 $pendingRows = [];
 if (coverage_table_exists($mysqli, DB::BACKEND_LOG_COVERAGE)) {
-    $sql = "SELECT module_slug, page_name, page_path, source_channel, entrypoint_type, seen_count
-            FROM `" . DB::BACKEND_LOG_COVERAGE . "`
-            WHERE seen_count = 0";
+    // Delete stale entries not in the curated list
+    $ph = implode(',', array_fill(0, count($QA_PAGES), '?'));
+    $tp = str_repeat('s', count($QA_PAGES));
+    $ds = $mysqli->prepare("DELETE FROM `" . DB::BACKEND_LOG_COVERAGE . "` WHERE page_path NOT IN ($ph)");
+    if ($ds) { $ds->bind_param($tp, ...$QA_PAGES); $ds->execute(); $ds->close(); }
 
-    $params = [];
-    $types = '';
-    if (strcasecmp($sourceFilter, 'all') !== 0) {
-        $sql .= " AND source_channel = ?";
-        $params[] = $sourceFilter;
-        $types .= 's';
+    // Insert new entries not yet tracked
+    $is = $mysqli->prepare("INSERT IGNORE INTO `" . DB::BACKEND_LOG_COVERAGE . "`
+        (module_slug, page_name, page_path, entrypoint_type, source_channel, bootstrap_included, first_seen_at, last_seen_at, seen_count)
+        VALUES (?, ?, ?, 'page', 'dashboard_runtime', 1, NOW(), NOW(), 0)");
+    if ($is) {
+        foreach ($QA_PAGES as $pagePath) {
+            $slug = coverageResolveSlug($pagePath);
+            $is->bind_param('sss', $slug, $pagePath, $pagePath);
+            $is->execute();
+        }
+        $is->close();
     }
 
-    $sql .= " ORDER BY CASE WHEN module_slug = '404' THEN 0 WHEN module_slug = '500' THEN 1 ELSE 2 END, page_path ASC";
-
-    $stmt = $mysqli->prepare($sql);
+    // Fetch ALL pages with their status for display
+    $stmt = $mysqli->prepare("SELECT module_slug, page_name, page_path, seen_count, last_seen_error_at,
+        CASE WHEN last_seen_error_at IS NOT NULL THEN 'error'
+             WHEN seen_count > 0 THEN 'ok'
+             ELSE 'unknown'
+        END AS page_status
+        FROM `" . DB::BACKEND_LOG_COVERAGE . "`
+        ORDER BY page_path ASC");
     if ($stmt) {
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
-        }
         $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result ? $result->fetch_assoc() : null) {
-            $rawPath = (string)($row['page_path'] ?? '');
-            $requestPath = normalizeCoverageSweepPath($rawPath);
-            if ($requestPath === '') {
-                continue;
-            }
-            $row['request_path'] = $requestPath;
             $pendingRows[] = $row;
         }
         $stmt->close();
     }
 }
 
-$pendingCount = count($pendingRows);
+// ── Compute stats ─────────────────────────────────────────────────
+$totalCount = count($pendingRows);
+$okCount = 0; $errorCount = 0; $unknownCount = 0;
+foreach ($pendingRows as $r) {
+    $s = (string)($r['page_status'] ?? 'unknown');
+    if ($s === 'error') $errorCount++;
+    elseif ($s === 'ok') $okCount++;
+    else $unknownCount++;
+}
 
-// Group pending rows by module_slug
+// Group by module
 $groupedRows = [];
 foreach ($pendingRows as $row) {
-    $mod = trim((string)($row['module_slug'] ?? ''));
-    if ($mod === '') {
-        $mod = 'unknown';
-    }
+    $mod = trim((string)($row['module_slug'] ?? 'unknown'));
+    if ($mod === '') $mod = 'unknown';
     $groupedRows[$mod][] = $row;
 }
-// Sort: error modules first, then alphabetical
-uksort($groupedRows, function ($a, $b) {
-    $priority = ['404' => 0, '500' => 1, 'unknown' => 99];
-    $ap = $priority[$a] ?? 50;
-    $bp = $priority[$b] ?? 50;
-    if ($ap !== $bp) return $ap - $bp;
-    return strcmp($a, $b);
-});
+uksort($groupedRows, fn($a, $b) => strcmp($a, $b));
+$moduleCount = count($groupedRows);
 
-// Fetch overall coverage stats for stat cards
-$coverageStats = ['total' => 0, 'observed' => 0, 'unobserved' => 0, 'with_errors' => 0, 'total_errors' => 0];
-if (coverage_table_exists($mysqli, DB::BACKEND_LOG_COVERAGE)) {
-    $r = $mysqli->query("SELECT COUNT(*) AS total,
-        SUM(CASE WHEN seen_count > 0 THEN 1 ELSE 0 END) AS observed,
-        SUM(CASE WHEN seen_count = 0 THEN 1 ELSE 0 END) AS unobserved,
-        SUM(CASE WHEN last_seen_error_at IS NOT NULL THEN 1 ELSE 0 END) AS with_errors
-        FROM `" . DB::BACKEND_LOG_COVERAGE . "`");
-    if ($r) {
-        $cr = $r->fetch_assoc();
-        $coverageStats['total']       = (int)($cr['total'] ?? 0);
-        $coverageStats['observed']    = (int)($cr['observed'] ?? 0);
-        $coverageStats['unobserved']  = (int)($cr['unobserved'] ?? 0);
-        $coverageStats['with_errors'] = (int)($cr['with_errors'] ?? 0);
-        $r->free();
-    }
-}
+$totalErrors = 0;
 if (coverage_table_exists($mysqli, DB::BACKEND_ERROR_LOGS)) {
     $r2 = $mysqli->query("SELECT COUNT(*) AS cnt FROM `" . DB::BACKEND_ERROR_LOGS . "`");
-    if ($r2) {
-        $er = $r2->fetch_assoc();
-        $coverageStats['total_errors'] = (int)($er['cnt'] ?? 0);
-        $r2->free();
-    }
+    if ($r2) { $er = $r2->fetch_assoc(); $totalErrors = (int)($er['cnt'] ?? 0); $r2->free(); }
 }
-$moduleCount = count($groupedRows);
-$coveragePct = $coverageStats['total'] > 0 ? round(($coverageStats['observed'] / $coverageStats['total']) * 100, 1) : 0;
+$coveragePct = $totalCount > 0 ? round(($okCount / $totalCount) * 100, 1) : 0;
 ?>
 
 <style>
-    .coverage-sweep-wrap .stat-card {
-        border-radius: 10px;
-        padding: 14px 18px;
-        border: 1px solid #e3e8f0;
-        background: #fff;
-        min-width: 130px;
-    }
-    .coverage-sweep-wrap .stat-card .stat-val {
-        font-size: 1.6rem;
-        font-weight: 700;
-        line-height: 1.1;
-    }
-    .coverage-sweep-wrap .stat-card .stat-lbl {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #6c7a8d;
-        margin-top: 2px;
-    }
-    .coverage-sweep-wrap .sweep-table-card {
-        border: 1px solid #dee2e9;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    .coverage-sweep-wrap .sweep-table {
-        font-size: 0.84rem;
-    }
-    .coverage-sweep-wrap .sweep-table th {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #6c7a8d;
-        background: #f7f9fc;
-        white-space: nowrap;
-    }
-    .coverage-sweep-wrap .sweep-table td {
-        vertical-align: middle;
-    }
-    .coverage-sweep-wrap .module-row {
-        background: #eef3fb;
-    }
-    .coverage-sweep-wrap .module-row td {
-        font-weight: 600;
-        color: #33435d;
-        border-top: 1px solid #d8e2f0;
-    }
-    .coverage-sweep-wrap .module-row .module-count {
-        font-size: 0.75rem;
-        color: #5f6d82;
-        font-weight: 500;
-        margin-left: 8px;
-    }
-    .coverage-sweep-wrap .progress-bar-coverage {
-        height: 6px;
-        border-radius: 4px;
-        background: #e3e8f0;
-        overflow: hidden;
-    }
-    .coverage-sweep-wrap .progress-bar-coverage .bar-fill {
-        height: 100%;
-        border-radius: 4px;
-        background: #28a745;
-        transition: width 0.4s;
-    }
+    .coverage-sweep-wrap .stat-card { border-radius: 8px; padding: 10px 14px; border: 1px solid #e3e8f0; background: #fff; min-width: 100px; }
+    .coverage-sweep-wrap .stat-card .stat-val { font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
+    .coverage-sweep-wrap .stat-card .stat-lbl { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6c7a8d; margin-top: 1px; }
+    .coverage-sweep-wrap .sweep-table-card { border: 1px solid #dee2e9; border-radius: 8px; overflow: hidden; }
+    .coverage-sweep-wrap .sweep-table { font-size: 0.84rem; }
+    .coverage-sweep-wrap .sweep-table th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6c7a8d; background: #f7f9fc; white-space: nowrap; }
+    .coverage-sweep-wrap .sweep-table td { vertical-align: middle; }
+    .coverage-sweep-wrap .module-row { background: #eef3fb; }
+    .coverage-sweep-wrap .module-row td { font-weight: 600; color: #33435d; border-top: 1px solid #d8e2f0; }
+    .coverage-sweep-wrap .module-row .module-count { font-size: 0.75rem; color: #5f6d82; font-weight: 500; margin-left: 8px; }
+    .coverage-sweep-wrap .progress-bar-coverage { height: 6px; border-radius: 4px; background: #e3e8f0; overflow: hidden; }
+    .coverage-sweep-wrap .progress-bar-coverage .bar-fill { height: 100%; border-radius: 4px; background: #28a745; transition: width 0.4s; }
 </style>
 
 <div class="content-wrapper coverage-sweep-wrap">
     <div class="content-inner">
         <div class="content">
 
-            <!-- Header -->
             <div class="page-header page-header-light shadow carriers-page-header">
                 <div class="page-header-content d-lg-flex carriers-page-header-content">
                     <div class="d-flex align-items-center">
                         <h4 class="page-title mb-0">
-                            Coverage Sweep Runner
-                            <small class="ms-2 text-muted">Auto-hit unobserved backend entrypoints</small>
+                            QA Page Health
+                            <small class="ms-2 text-muted"><?php echo $totalCount; ?> user-facing pages</small>
                         </h4>
-                    </div>
-                    <div class="ms-lg-auto mt-2 mt-lg-0 d-flex flex-wrap gap-2">
-                        <a href="view_backend_error_logs.php" class="btn btn-light btn-sm">
-                            <i class="ph-arrow-left me-1"></i> Back to Logs
-                        </a>
-                        <a href="run_coverage_sweep.php?source=dashboard_runtime" class="btn btn-outline-primary btn-sm <?php echo $sourceFilter === 'dashboard_runtime' ? 'active' : ''; ?>">Runtime Only</a>
-                        <a href="run_coverage_sweep.php?source=all" class="btn btn-outline-secondary btn-sm <?php echo $sourceFilter === 'all' ? 'active' : ''; ?>">All Sources</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Stat Cards -->
-            <div class="d-flex flex-wrap gap-3 mb-4 mt-3">
+            <div class="d-flex flex-wrap gap-2 mb-3 mt-2">
                 <div class="stat-card">
-                    <div class="stat-val text-primary"><?php echo number_format($coverageStats['total']); ?></div>
-                    <div class="stat-lbl">Total Inventory</div>
+                    <div class="stat-val text-success"><?php echo number_format($okCount); ?></div>
+                    <div class="stat-lbl">Working</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-val text-success"><?php echo number_format($coverageStats['observed']); ?></div>
-                    <div class="stat-lbl">Observed</div>
+                    <div class="stat-val text-danger"><?php echo number_format($errorCount); ?></div>
+                    <div class="stat-lbl">Errors</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-val text-warning"><?php echo number_format($coverageStats['unobserved']); ?></div>
-                    <div class="stat-lbl">Unobserved</div>
+                    <div class="stat-val text-muted"><?php echo number_format($unknownCount); ?></div>
+                    <div class="stat-lbl">Untested</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-val text-danger"><?php echo number_format($coverageStats['with_errors']); ?></div>
-                    <div class="stat-lbl">Pages w/ Errors</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val text-danger"><?php echo number_format($coverageStats['total_errors']); ?></div>
-                    <div class="stat-lbl">Error Log Entries</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val <?php echo $pendingCount > 0 ? 'text-warning' : 'text-success'; ?>"><?php echo number_format($pendingCount); ?></div>
-                    <div class="stat-lbl">Pending Sweep</div>
+                    <div class="stat-val text-danger"><?php echo number_format($totalErrors); ?></div>
+                    <div class="stat-lbl">Error Logs</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-val text-secondary"><?php echo number_format($moduleCount); ?></div>
                     <div class="stat-lbl">Modules</div>
                 </div>
-                <div class="stat-card" style="min-width:180px;">
+                <div class="stat-card">
+                    <div class="stat-val text-primary"><?php echo number_format($totalCount); ?></div>
+                    <div class="stat-lbl">Total Pages</div>
+                </div>
+                <div class="stat-card" style="min-width:150px;">
                     <div class="stat-val <?php echo $coveragePct >= 80 ? 'text-success' : ($coveragePct >= 50 ? 'text-warning' : 'text-danger'); ?>"><?php echo $coveragePct; ?>%</div>
-                    <div class="stat-lbl">Coverage</div>
+                    <div class="stat-lbl">Tested</div>
                     <div class="progress-bar-coverage mt-1">
                         <div class="bar-fill" style="width:<?php echo $coveragePct; ?>%;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Toolbar -->
-            <div class="card mb-3">
-                <div class="card-body py-2 d-flex flex-wrap align-items-center gap-2">
-                    <span class="badge bg-secondary">Source: <?php echo htmlspecialchars($sourceFilter, ENT_QUOTES); ?></span>
-                    <form method="post" class="d-inline-block m-0">
-                        <?php echo csrf_field(); ?>
-                        <input type="hidden" name="action" value="seed_inventory">
-                        <button type="submit" class="btn btn-sm btn-outline-dark">
-                            <i class="ph-database me-1"></i> Seed Inventory
-                        </button>
-                    </form>
-                    <button type="button" id="selectAllBtn" class="btn btn-sm btn-light"><i class="ph-check-square me-1"></i>Select All</button>
-                    <button type="button" id="clearAllBtn" class="btn btn-sm btn-light"><i class="ph-square me-1"></i>Clear All</button>
-                    <button type="button" id="runSelectedBtn" class="btn btn-sm btn-success ms-auto">
-                        <i class="ph-play me-1"></i> Run Selected Sweep
-                    </button>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <button type="button" id="runAllBtn" class="btn btn-sm btn-success">
+                    <i class="ph-play me-1"></i> Run Full QA Test
+                </button>
+                <span id="sweepProgress" class="small text-muted" style="display:none;"></span>
+            </div>
+
+            <div class="sweep-table-card">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0 sweep-table">
+                        <thead>
+                            <tr>
+                                <th>Page</th>
+                                <th style="width:80px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($groupedRows as $moduleName => $moduleRows): ?>
+                                <tr class="module-row">
+                                    <td colspan="2">
+                                        <i class="ph-folder me-1"></i>
+                                        <?php echo htmlspecialchars(ucfirst(str_replace(['_', '-'], ' ', $moduleName)), ENT_QUOTES); ?>
+                                        <span class="module-count"><?php echo count($moduleRows); ?></span>
+                                    </td>
+                                </tr>
+                                <?php foreach ($moduleRows as $row):
+                                    $pagePath = (string)($row['page_path'] ?? ($row['page_name'] ?? 'unknown'));
+                                    $status   = (string)($row['page_status'] ?? 'unknown');
+                                ?>
+                                    <tr data-url="<?php echo htmlspecialchars($pagePath, ENT_QUOTES); ?>">
+                                        <td><code><?php echo htmlspecialchars($pagePath, ENT_QUOTES); ?></code></td>
+                                        <td>
+                                            <?php if ($status === 'ok'): ?>
+                                                <span class="badge bg-success">OK</span>
+                                            <?php elseif ($status === 'error'): ?>
+                                                <span class="badge bg-danger">Error</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <?php if ($seedNotice !== ''): ?>
-                <div class="alert <?php echo $seedSummary['failed'] > 0 ? 'alert-warning' : 'alert-success'; ?> mb-3">
-                    <?php echo htmlspecialchars($seedNotice, ENT_QUOTES); ?>
-                </div>
-            <?php endif; ?>
-
-            <div id="sweepSummary" class="alert alert-info mb-3" style="display:none;"></div>
-
-            <?php if ($pendingCount === 0): ?>
-                <div class="alert alert-success"><i class="ph-check-circle me-2"></i>No pending unobserved entrypoints for this source filter. All pages are observed!</div>
-            <?php else: ?>
-
-                <div class="sweep-table-card">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover align-middle mb-0 sweep-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:36px;"></th>
-                                    <th style="width:170px;">Module</th>
-                                    <th>Page Path</th>
-                                    <th>Request URL</th>
-                                    <th style="width:120px;">Source</th>
-                                    <th style="width:130px;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($groupedRows as $moduleName => $moduleRows): ?>
-                                    <tr class="module-row">
-                                        <td colspan="6">
-                                            <i class="ph-folder me-1"></i>
-                                            <?php echo htmlspecialchars(ucfirst(str_replace(['_', '-'], ' ', $moduleName)), ENT_QUOTES); ?>
-                                            <span class="module-count"><?php echo count($moduleRows); ?> pages</span>
-                                        </td>
-                                    </tr>
-                                    <?php foreach ($moduleRows as $row): ?>
-                                        <?php
-                                        $pagePath    = (string)($row['page_path'] ?? ($row['page_name'] ?? 'unknown'));
-                                        $requestPath = (string)($row['request_path'] ?? $pagePath);
-                                        $source      = (string)($row['source_channel'] ?? 'unknown');
-                                        ?>
-                                        <tr>
-                                            <td>
-                                                <input type="checkbox" class="form-check-input sweep-check" checked
-                                                    data-url="<?php echo htmlspecialchars($requestPath, ENT_QUOTES); ?>"
-                                                    data-module="<?php echo htmlspecialchars($moduleName, ENT_QUOTES); ?>">
-                                            </td>
-                                            <td><span class="text-muted"><?php echo htmlspecialchars($moduleName, ENT_QUOTES); ?></span></td>
-                                            <td><a href="<?php echo htmlspecialchars($requestPath, ENT_QUOTES); ?>" target="_blank" rel="noopener"><code><?php echo htmlspecialchars($pagePath, ENT_QUOTES); ?></code></a></td>
-                                            <td><code class="text-muted" style="font-size:0.75rem;"><?php echo htmlspecialchars($requestPath, ENT_QUOTES); ?></code></td>
-                                            <td><span class="badge bg-light text-dark"><?php echo htmlspecialchars($source, ENT_QUOTES); ?></span></td>
-                                            <td><span class="badge bg-secondary status-pill">Pending</span></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            <?php endif; ?>
-
         </div>
     </div>
-</div>
-
-<script>
-function toggleModuleCard(moduleId) {
-    var card = document.getElementById('card-' + moduleId);
-    var body = document.getElementById('body-' + moduleId);
-    if (!card || !body) return;
-    var collapsed = card.classList.contains('collapsed');
-    if (collapsed) {
-        body.style.display = '';
-        card.classList.remove('collapsed');
-    } else {
-        body.style.display = 'none';
-        card.classList.add('collapsed');
-    }
-}
-
-(function () {
-    var selectAllBtn   = document.getElementById('selectAllBtn');
-    var clearAllBtn    = document.getElementById('clearAllBtn');
-    var expandAllBtn   = document.getElementById('expandAllBtn');
-    var collapseAllBtn = document.getElementById('collapseAllBtn');
-    var runBtn         = document.getElementById('runSelectedBtn');
-    var summaryBox     = document.getElementById('sweepSummary');
-
-    function getChecks() {
-        return Array.prototype.slice.call(document.querySelectorAll('.sweep-check'));
-    }
-
-    function setStatus(check, label, cls) {
-        var row = check.closest('tr');
-        if (!row) return;
-        var pill = row.querySelector('.status-pill');
-        if (!pill) return;
-        pill.className = 'badge status-pill ' + cls;
-        pill.textContent = label;
-    }
-
-    // Module-level select-all checkboxes
-    document.querySelectorAll('.module-select-all').forEach(function (modCb) {
-        modCb.addEventListener('change', function () {
-            var mod = modCb.getAttribute('data-module');
-            document.querySelectorAll('.sweep-check[data-module="' + mod + '"]').forEach(function (cb) {
-                cb.checked = modCb.checked;
-            });
-        });
-    });
-
-    if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', function () {
-            getChecks().forEach(function (cb) { cb.checked = true; });
-            document.querySelectorAll('.module-select-all').forEach(function (cb) { cb.checked = true; });
-        });
-    }
-
-    if (clearAllBtn) {
-        clearAllBtn.addEventListener('click', function () {
-            getChecks().forEach(function (cb) { cb.checked = false; });
-            document.querySelectorAll('.module-select-all').forEach(function (cb) { cb.checked = false; });
-        });
-    }
-
-    if (expandAllBtn) {
-        expandAllBtn.addEventListener('click', function () {
-            document.querySelectorAll('.module-card').forEach(function (card) {
-                var bodyId = card.id.replace('card-', 'body-');
-                var body = document.getElementById(bodyId);
-                if (body) body.style.display = '';
-                card.classList.remove('collapsed');
-            });
-        });
-    }
-
-    if (collapseAllBtn) {
-        collapseAllBtn.addEventListener('click', function () {
-            document.querySelectorAll('.module-card').forEach(function (card) {
-                var bodyId = card.id.replace('card-', 'body-');
-                var body = document.getElementById(bodyId);
-                if (body) body.style.display = 'none';
-                card.classList.add('collapsed');
-            });
-        });
-    }
-
-    async function runSweep() {
-        var checks = getChecks().filter(function (cb) { return cb.checked; });
-        if (!checks.length) {
-            alert('Select at least one entrypoint to run.');
-            return;
-        }
-
-        checks.sort(function (a, b) {
-            var am = (a.getAttribute('data-module') || '').toLowerCase();
-            var bm = (b.getAttribute('data-module') || '').toLowerCase();
-            var ap = am === '404' ? 0 : (am === '500' ? 1 : 2);
-            var bp = bm === '404' ? 0 : (bm === '500' ? 1 : 2);
-            if (ap !== bp) return ap - bp;
-            return 0;
-        });
-
-        runBtn.disabled = true;
-        var ok = 0, fail = 0;
-
-        for (var i = 0; i < checks.length; i++) {
-            var cb = checks[i];
-            var url = cb.getAttribute('data-url') || '';
-            if (!url) {
-                setStatus(cb, 'Skipped', 'bg-warning');
-                fail++;
-                continue;
-            }
-            setStatus(cb, 'Running…', 'bg-primary');
-            try {
-                var response = await fetch(url, {
-                    method: 'GET',
-                    credentials: 'include',
-                    cache: 'no-store',
-                    redirect: 'follow'
-                });
-                if (response.ok) {
-                    setStatus(cb, 'OK ' + response.status, 'bg-success');
-                    ok++;
-                } else {
-                    setStatus(cb, 'HTTP ' + response.status, 'bg-danger');
-                    fail++;
-                }
-            } catch (err) {
-                setStatus(cb, 'Failed', 'bg-danger');
-                fail++;
-            }
-            await new Promise(function (resolve) { setTimeout(resolve, 250); });
-        }
-
-        runBtn.disabled = false;
-        if (summaryBox) {
-            summaryBox.style.display = 'block';
-            summaryBox.innerHTML = '<strong>Sweep finished.</strong> Success: <strong>' + ok + '</strong> | Failed: <strong>' + fail + '</strong>' +
-                ' &mdash; <a href="view_backend_error_logs.php">Refresh backend logs</a> to verify coverage changes.';
-        }
-    }
-
-    if (runBtn) {
-        runBtn.addEventListener('click', runSweep);
-    }
-})();
-</script>
 
     <?php include('admin_elements/copyright.php'); ?>
 </div>
+<script>
+(function () {
+    var runBtn = document.getElementById('runAllBtn');
+    var progress = document.getElementById('sweepProgress');
+    if (!runBtn) return;
+
+    runBtn.addEventListener('click', async function () {
+        var rows = Array.prototype.slice.call(document.querySelectorAll('tr[data-url]'));
+        if (!rows.length) return;
+
+        runBtn.disabled = true;
+        progress.style.display = '';
+        var ok = 0, fail = 0, total = rows.length;
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var badge = row.querySelector('.badge');
+            var url = row.getAttribute('data-url') || '';
+            progress.textContent = (i + 1) + ' / ' + total;
+
+            if (!url) { fail++; continue; }
+
+            if (badge) { badge.className = 'badge bg-primary'; badge.textContent = '...'; }
+            try {
+                var r = await fetch(url, { method: 'GET', credentials: 'include', cache: 'no-store', redirect: 'follow' });
+                if (r.ok) {
+                    if (badge) { badge.className = 'badge bg-success'; badge.textContent = 'OK'; }
+                    ok++;
+                } else {
+                    if (badge) { badge.className = 'badge bg-danger'; badge.textContent = 'HTTP ' + r.status; }
+                    fail++;
+                }
+            } catch (e) {
+                if (badge) { badge.className = 'badge bg-danger'; badge.textContent = 'Fail'; }
+                fail++;
+            }
+            await new Promise(function (r) { setTimeout(r, 200); });
+        }
+
+        runBtn.disabled = false;
+        progress.textContent = 'Done: ' + ok + ' OK, ' + fail + ' failed';
+    });
+})();
+</script>
 <?php include('admin_elements/admin_footer.php'); ?>

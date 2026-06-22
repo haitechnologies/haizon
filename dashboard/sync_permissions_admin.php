@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 use App\Core\DB;
 // Sync hai_permissions for System Admin (role_id=1) with current modules and module permissions.
 

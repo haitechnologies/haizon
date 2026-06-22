@@ -218,11 +218,11 @@ class InvoicesDataTable extends BaseDataTable
     {
         $actions = '';
 
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= '<a href="invoice_overview.php?invoice_id=' . $id . '" title="View"><span class="text-dark opacity-50"><i class="ph-eye"></i></span></a> ';
         }
 
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton($id, $module);
         }
 

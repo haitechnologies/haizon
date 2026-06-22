@@ -46,7 +46,7 @@ class SystemSettingsDataTable extends BaseDataTable
             $value,
             $hint,
             $publishBadge,
-            !empty($updatedAt) ? timeAgo($updatedAt) : '-',
+            !empty($updatedAt) ? $this->formatTimeAgo($updatedAt) : '-',
             $this->getActionButtons('system_settings', $id)
         ];
     }
@@ -54,7 +54,7 @@ class SystemSettingsDataTable extends BaseDataTable
     protected function getActionButtons($module, $id)
     {
         $actions = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton($id, 'system_settings.php', $module, 'Edit', false);
         }
         return $actions;

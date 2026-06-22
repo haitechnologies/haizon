@@ -24,7 +24,7 @@ class ServicesDataTable extends BaseDataTable
         return [
             $id,
             htmlspecialchars($name),
-            timeAgo($created),
+            $this->formatTimeAgo($created),
             $badge,
             $this->getActionButtons($id, 'services'),
         ];
@@ -33,10 +33,10 @@ class ServicesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'services.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

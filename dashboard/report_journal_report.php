@@ -675,7 +675,7 @@ $accounts_report_category_name  = getTableAttr('category_name', tbl_accounts_rep
                     <li>Account codes have been added where available for better GL reference</li>
                     <li>Each journal entry includes descriptions for complete audit trail tracking</li>
                     <li>Debits must equal Credits for each journal entry (Double-Entry Bookkeeping)</li>
-                    <li>This report reflects entries from the new AccountingJournalManager implementation</li>
+                    <li>This report reflects entries from the JournalService implementation</li>
                 </ul>
             </div>
         </div>

@@ -64,6 +64,20 @@ class InvoiceRepository
     }
 
     /**
+     * Find all invoices in an organization
+     */
+    public function findAll(int $orgId): array
+    {
+        $sql = "SELECT * FROM `{DB::INVOICES}` WHERE organization_id = :org_id ORDER BY id DESC";
+        $rows = $this->db->fetchAll($sql, ['org_id' => $orgId]);
+        $invoices = [];
+        foreach ($rows as $row) {
+            $invoices[] = $this->mapRowToInvoice($row);
+        }
+        return $invoices;
+    }
+
+    /**
      * Save Invoice (Insert or Update)
      */
     public function save(Invoice $invoice): Invoice
@@ -83,7 +97,7 @@ class InvoiceRepository
                     destination, no_of_packs, gross_weight, chargeable_weight, volume,
                     terms_and_conditions, grand_subtotal, grand_discount_type, grand_discount_type_value,
                     grand_discount_amount, grand_after_discount, customer_notes, grand_tax, grand_total,
-                    is_active, created_at, updated_at, updated_by, created_by, recurring, pdf
+                    publish, is_active, created_at, updated_at, updated_by, created_by, recurring, pdf
                 ) VALUES (
                     :organization_id, :invoice_no, :customer_id, :invoice_status, :invoice_date, :expiry_date,
                     :reference_no, :warehouse_id, :expected_shipment_date, :payment_term, :shipment_type,
@@ -91,7 +105,7 @@ class InvoiceRepository
                     :destination, :no_of_packs, :gross_weight, :chargeable_weight, :volume,
                     :terms_and_conditions, :grand_subtotal, :grand_discount_type, :grand_discount_type_value,
                     :grand_discount_amount, :grand_after_discount, :customer_notes, :grand_tax, :grand_total,
-                    :is_active, NOW(), NOW(), :updated_by, :created_by, :recurring, :pdf
+                    :publish, :is_active, NOW(), NOW(), :updated_by, :created_by, :recurring, :pdf
                 )";
 
         $params = $invoice->toArray();
@@ -143,6 +157,7 @@ class InvoiceRepository
                     customer_notes = :customer_notes,
                     grand_tax = :grand_tax,
                     grand_total = :grand_total,
+                    publish = :publish,
                     is_active = :is_active,
                     updated_at = NOW(),
                     updated_by = :updated_by,

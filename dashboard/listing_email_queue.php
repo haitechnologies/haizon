@@ -70,7 +70,7 @@ if (($action == "process_{$module}_now") && granted('edit', $module_id)) {
                AND (next_retry_at IS NULL OR next_retry_at <= NOW())"
         );
 
-        $queue = new EmailQueue($mysqli);
+        $queue = new EmailQueue();
         $sentNow = (int)$queue->processPending($batchLimit);
 
         $afterPending = 0;
@@ -245,7 +245,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
                 $result = DeletionManager::delete(
                     $tbl_name,
                     $id,
-                    $session_user_id,
+                    Session::userId(),
                     ['item_label' => 'Email Queue Entry', 'module_slug' => 'email_queue']
                 );
                 if ($result['success']) {
@@ -357,7 +357,8 @@ if ($lastSentResult && ($lastSentRow = $lastSentResult->fetch_assoc()) && !empty
 
         <div class="card">
             <div class="card-body">
-                <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
+                <div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
                     <thead>
                         <tr>
                             <th width="60">ID</th>
@@ -371,6 +372,7 @@ if ($lastSentResult && ($lastSentRow = $lastSentResult->fetch_assoc()) && !empty
                         </tr>
                     </thead>
                 </table>
+</div>
             </div>
         </div>
 

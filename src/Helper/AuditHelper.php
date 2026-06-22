@@ -54,7 +54,7 @@ class AuditHelper
     public static function getCurrentUserId(?string $project_prefix = null): ?int
     {
         if ($project_prefix === null) {
-            $project_prefix = (string)($GLOBALS['project_pre'] ?? '');
+            $project_prefix = defined('PROJECT_PREFIX') ? PROJECT_PREFIX : '';
         }
 
         if ($project_prefix === '') {

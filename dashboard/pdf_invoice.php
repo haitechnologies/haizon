@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 use App\Core\DB;
 require_once __DIR__ . '/../config/session.php';
 startDashboardSession();

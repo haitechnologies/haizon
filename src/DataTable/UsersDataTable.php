@@ -1,9 +1,5 @@
 <?php
 
-/**
-     * Search fields
-     */
-
 declare(strict_types=1);
 
 namespace App\DataTable;
@@ -14,10 +10,16 @@ use App\Helper\ActionButtonHelper;
 
 class UsersDataTable extends BaseDataTable
 {
-    /**
-     * Table name
-     */
     protected $table = DB::USERS;
+
+    protected function buildBaseQuery($requestData)
+    {
+        $orgWhere = $this->getOrgIdWhereClause();
+        if ($orgWhere !== '') {
+            $orgWhere = str_replace('`organization_id` = :active_org_id', '(`organization_id` = :active_org_id OR `organization_id` IS NULL)', $orgWhere);
+        }
+        return "SELECT * FROM `" . $this->table . "` WHERE id > 0" . $orgWhere;
+    }
 
     protected $searchFields = [
         'full_name',
@@ -103,10 +105,10 @@ class UsersDataTable extends BaseDataTable
             ? BadgeHelper::success('Active')
             : BadgeHelper::danger('Inactive');
 
-        $lastLoginDisplay = !empty($lastLogin) && function_exists('timeAgo') ? timeAgo($lastLogin) : 'Never';
+        $lastLoginDisplay = !empty($lastLogin) ? $this->formatTimeAgo($lastLogin) : 'Never';
 
         return [
-            $id,
+            $this->rowNumber,
             $fullName ?: '-',
             $email ?: '-',
             $contact1 ?: '-',
@@ -128,11 +130,11 @@ class UsersDataTable extends BaseDataTable
     {
         $buttons = [];
 
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'users.php', $module, 'Edit', false);
         }
 
-        if (function_exists('granted_') && granted_('delete', $module) && (int)$id !== 1) {
+        if ($this->isGranted('delete', $module) && (int)$id !== 1) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
 

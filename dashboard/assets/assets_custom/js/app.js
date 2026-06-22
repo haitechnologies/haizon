@@ -73,12 +73,18 @@ const App = function () {
             let timerStart,
                 timerFinish;
 
+            // Restore sidebar state from localStorage
+            if (localStorage.getItem('sidebar_resized') === 'true') {
+                sidebarMainElement.classList.add(resizeClass);
+            }
+
             // Toggle classes on click
             sidebarMainToggler.forEach(function(toggler) {
                 toggler.addEventListener('click', function(e) {
                     e.preventDefault();
                     sidebarMainElement.classList.toggle(resizeClass);
                     !sidebarMainElement.classList.contains(resizeClass) && sidebarMainElement.classList.remove(unfoldClass);
+                    localStorage.setItem('sidebar_resized', sidebarMainElement.classList.contains(resizeClass) ? 'true' : 'false');
                 });                
             });
 

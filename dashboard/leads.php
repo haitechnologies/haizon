@@ -40,9 +40,10 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 // CHECK IF NOT SUPER ADMIN
 // FOR - LEAD OWNER - ASSGINED TO - CREATED BY
 if ($session_role_id > 2 && !empty($id)) {
-    $rs_verify = $mysqli->query("SELECT id FROM `" . DB::LEADS  . "` WHERE id=$id AND (lead_owner = $session_user_id OR assigned_to = $session_user_id OR created_by = $session_user_id)");
+    $rs_verify = $mysqli->query("SELECT id FROM `" . DB::LEADS  . "` WHERE id=$id AND (lead_owner = Session::userId() OR assigned_to = Session::userId() OR created_by = Session::userId())");
     if ($rs_verify->num_rows == 0) {
-        header("Location:listing_leads.php?error_message=Leads Permissions not Valid.");
+        flash_error('Leads Permissions not Valid.');
+        header("Location:listing_leads.php");
     }
 }
 /*
@@ -238,7 +239,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
             fp__($tbl_name, $id);
             // Lead Logs
             updateLeadLogs($id, 'lead', $id, 'updated');
-            header("Location:listing_$module.php?success_message=$success_message");
+            flash_success($success_message);
+            header("Location:listing_$module.php");
         } else {
             $error_message = "The $module_caption could not be updated. Please try again.";
             //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
@@ -280,7 +282,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
             // Lead Logs
             updateLeadLogs($id, 'lead',  $id, 'created');
             ////////////////////////////////////////////////////////////////////////
-            header("Location:listing_$module.php?success_message=$success_message");
+            flash_success($success_message);
+            header("Location:listing_$module.php");
         } else {
             $error_message = "The $module_caption could not be saved. Please try again.";
             // header("Location:$module.php?error_message=$error_message");

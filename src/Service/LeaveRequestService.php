@@ -10,6 +10,7 @@ use App\Repository\LeaveTypeRepository;
 use App\Repository\UserRepository;
 use App\Exception\NotFoundException;
 use App\Exception\ValidationException;
+use App\Utility\DateHelper;
 
 /**
  * LeaveRequest Service
@@ -54,16 +55,24 @@ class LeaveRequestService
             throw new ValidationException($errors);
         }
 
+        $startDate = trim((string)$data['start_date']);
+        $endDate = trim((string)$data['end_date']);
+        $totalDays = (float)(DateHelper::daysBetween($startDate, $endDate) + 1);
+        $paidDays = $this->calculatePaidDays((int)$data['leave_type_id'], $organizationId, $totalDays);
+
         $request = new LeaveRequest(
             id: null,
             organizationId: $organizationId,
             employeeId: (int)$data['employee_id'],
             leaveTypeId: (int)$data['leave_type_id'],
-            startDate: trim((string)$data['start_date']),
-            endDate: trim((string)$data['end_date']),
-            totalDays: (float)$data['total_days'],
+            startDate: $startDate,
+            endDate: $endDate,
+            totalDays: $totalDays,
+            paidDays: $paidDays,
             reason: !empty($data['reason']) ? trim((string)$data['reason']) : null,
             status: trim((string)($data['status'] ?? 'pending')),
+            medicalReportProvided: !empty($data['medical_report_provided']),
+            medicalReportFile: !empty($data['medical_report_file']) ? trim((string)$data['medical_report_file']) : null,
             approvedBy: !empty($data['approved_by']) ? (int)$data['approved_by'] : null
         );
 
@@ -82,16 +91,24 @@ class LeaveRequestService
             throw new ValidationException($errors);
         }
 
+        $startDate = trim((string)$data['start_date']);
+        $endDate = trim((string)$data['end_date']);
+        $totalDays = (float)(DateHelper::daysBetween($startDate, $endDate) + 1);
+        $paidDays = $this->calculatePaidDays((int)$data['leave_type_id'], $organizationId, $totalDays);
+
         $updatedRequest = new LeaveRequest(
             id: $request->id,
             organizationId: $request->organizationId,
             employeeId: (int)$data['employee_id'],
             leaveTypeId: (int)$data['leave_type_id'],
-            startDate: trim((string)$data['start_date']),
-            endDate: trim((string)$data['end_date']),
-            totalDays: (float)$data['total_days'],
+            startDate: $startDate,
+            endDate: $endDate,
+            totalDays: $totalDays,
+            paidDays: $paidDays,
             reason: !empty($data['reason']) ? trim((string)$data['reason']) : null,
             status: trim((string)($data['status'] ?? $request->status)),
+            medicalReportProvided: !empty($data['medical_report_provided']),
+            medicalReportFile: !empty($data['medical_report_file']) ? trim((string)$data['medical_report_file']) : $request->medicalReportFile,
             approvedBy: !empty($data['approved_by']) ? (int)$data['approved_by'] : null,
             createdAt: $request->createdAt,
             updatedAt: null
@@ -162,16 +179,24 @@ class LeaveRequestService
             }
         }
 
-        $totalDays = isset($data['total_days']) ? (float)$data['total_days'] : 0.0;
-        if ($totalDays <= 0) {
-            $errors['total_days'] = 'Total Days must be greater than 0.';
-        }
-
         $status = isset($data['status']) ? trim((string)$data['status']) : 'pending';
         if (!in_array($status, ['pending', 'approved', 'rejected'], true)) {
             $errors['status'] = 'Invalid status value.';
         }
 
         return $errors;
+    }
+
+    private function calculatePaidDays(int $leaveTypeId, int $organizationId, float $totalDays): float
+    {
+        try {
+            $leaveType = $this->typeRepo->find($leaveTypeId, $organizationId);
+            if ($leaveType === null) {
+                return 0;
+            }
+            return min((float)$leaveType->paidDays, $totalDays);
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 }

@@ -26,7 +26,7 @@ class DocumentCategoriesDataTable extends BaseDataTable
             $id,
             htmlspecialchars($name),
             htmlspecialchars($type),
-            timeAgo($created),
+            $this->formatTimeAgo($created),
             $badge,
             $this->getActionButtons($id, 'document_categories'),
         ];
@@ -35,10 +35,10 @@ class DocumentCategoriesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'document_categories.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

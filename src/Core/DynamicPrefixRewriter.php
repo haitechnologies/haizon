@@ -103,7 +103,7 @@ class DynamicPrefixRewriter
             // Sort tables by length descending to prevent partial match issues (e.g. erp_leave_requests before erp_leave)
             usort($tables, fn(string $a, string $b): int => strlen($b) - strlen($a));
             self::$tables = $tables;
-            
+
             // Extract base names without prefix erp_
             $baseTables = array_map(fn(string $t): string => preg_replace('/^erp_/', '', $t), $tables);
             usort($baseTables, fn(string $a, string $b): int => strlen($b) - strlen($a));

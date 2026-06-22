@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 use App\Core\DB;
 // Sync hai_permissions for all roles based on existing permission patterns per role.
 // - Removes orphaned rows (module/permission no longer exists).

@@ -37,7 +37,7 @@ class BanksDataTable extends BaseDataTable
             htmlspecialchars($code),
             htmlspecialchars($bankName),
             htmlspecialchars($routing),
-            timeAgo($created),
+            $this->formatTimeAgo($created),
             $badge,
             $this->getActionButtons($id, 'banks'),
         ];
@@ -46,10 +46,10 @@ class BanksDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'banks.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

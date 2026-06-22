@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller;
+
+use App\Core\Database;
+use App\Http\Request;
+use App\Http\Response;
+use App\Service\AccountReportCategoryService;
+use App\Exception\ValidationException;
+
+class AccountReportCategoryController extends BaseController
+{
+    private AccountReportCategoryService $service;
+
+    public function __construct(
+        Database $db,
+        int $userId,
+        int $roleId,
+        int $orgId,
+        AccountReportCategoryService $service,
+    ) {
+        parent::__construct($db, $userId, $roleId, $orgId);
+        $this->service = $service;
+    }
+
+    public function __invoke(Request $request): Response
+    {
+        $this->requiresModule('category_names', 'Account Report Category');
+
+        if (!$this->canView()) {
+            return new Response('Forbidden', 403);
+        }
+
+        if ($request->isPost() && !$this->validateCsrf($request)) {
+            flash_error('Invalid security token.');
+            return Response::redirect('category_names.php');
+        }
+
+        $id = $request->getInt('id');
+        $action = $request->getString('action');
+
+        return match (true) {
+            $request->isPost() && $action === 'update_category_names' && $id > 0 && $this->canEdit()
+            => $this->handleUpdate($request, $id),
+            $request->isPost() && $action === 'add_category_names' && $this->canCreate()
+            => $this->handleCreate($request),
+            default => $this->showForm($id),
+        };
+    }
+
+    private function handleUpdate(Request $request, int $id): Response
+    {
+        try {
+            $this->service->update($id, [
+                'category_name' => $request->post('category_name', ''),
+                'description' => $request->post('description', ''),
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ], $this->userId);
+            flash_success('The Account Report Category has been updated successfully.');
+            return Response::redirect('listing_category_names.php');
+        } catch (ValidationException $e) {
+            $error = current($e->getErrors());
+            flash_error($error);
+            return Response::redirect("category_names.php?id=$id&action=edit_category_names");
+        } catch (\Throwable) {
+            flash_error('The Account Report Category could not be updated.');
+            return Response::redirect("category_names.php?id=$id&action=edit_category_names");
+        }
+    }
+
+    private function handleCreate(Request $request): Response
+    {
+        try {
+            $this->service->create([
+                'category_name' => $request->post('category_name', ''),
+                'description' => $request->post('description', ''),
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ], $this->userId);
+            flash_success('The Account Report Category has been saved successfully.');
+            return Response::redirect('listing_category_names.php');
+        } catch (ValidationException $e) {
+            $error = current($e->getErrors());
+            flash_error($error);
+            return Response::redirect("category_names.php");
+        } catch (\Throwable) {
+            flash_error('The Account Report Category could not be saved.');
+            return Response::redirect("category_names.php");
+        }
+    }
+
+    private function showForm(int $id): Response
+    {
+        $categoryName = '';
+        $description = '';
+        $publish = 1;
+
+        if ($id > 0) {
+            $item = $this->service->getById($id);
+            if ($item === null) {
+                flash_error('Record not found.');
+                return Response::redirect('listing_category_names.php');
+            }
+            $categoryName = $item->categoryName;
+            $description = $item->description;
+            $publish = $item->isActive ? 1 : 0;
+        }
+
+        return Response::html($this->view->render('accounts_report_categories/form.php', [
+            'id' => $id,
+            'categoryName' => $categoryName,
+            'description' => $description,
+            'publish' => $publish,
+            'moduleCaption' => $this->moduleCaption,
+            'module' => 'category_names',
+            'canCreate' => $this->canCreate(),
+            'canEdit' => $this->canEdit(),
+        ]));
+    }
+}

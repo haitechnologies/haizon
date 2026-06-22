@@ -354,7 +354,8 @@ if ($accounts_report_subcategory_id > 0) {
                     <div class="card bg-light">
                         <div class="card-body">
                             <h6 class="fw-semibold">Financial Metrics</h6>
-                            <table class="table table-sm">
+                            <div class="table-responsive">
+<table class="table table-sm">
                                 <tr>
                                     <td>Total Assets:</td>
                                     <td class="text-end fw-semibold"><?php echo dec_($metrics['total_assets'], BASE_CURRENCY['code']); ?></td>
@@ -380,6 +381,7 @@ if ($accounts_report_subcategory_id > 0) {
                                     <td class="text-end fw-semibold <?php echo ($metrics['total_net_profit'] >= 0) ? 'text-success' : 'text-danger'; ?>"><?php echo dec_($metrics['total_net_profit'], BASE_CURRENCY['code']); ?></td>
                                 </tr>
                             </table>
+</div>
                         </div>
                     </div>
                 </div>
@@ -387,7 +389,8 @@ if ($accounts_report_subcategory_id > 0) {
                     <div class="card bg-light">
                         <div class="card-body">
                             <h6 class="fw-semibold">Balance Sheet Equation</h6>
-                            <table class="table table-sm">
+                            <div class="table-responsive">
+<table class="table table-sm">
                                 <tr>
                                     <td class="fw-semibold">Assets</td>
                                     <td class="text-end fw-semibold"><?php echo dec_($metrics['total_assets'], BASE_CURRENCY['code']); ?></td>
@@ -412,6 +415,7 @@ if ($accounts_report_subcategory_id > 0) {
                                     </td>
                                 </tr>
                             </table>
+</div>
                         </div>
                     </div>
                 </div>

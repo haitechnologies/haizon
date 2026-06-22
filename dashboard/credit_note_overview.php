@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Service\JournalService;
 include('admin_elements/admin_header.php');
 
 $module = 'credit_notes';
@@ -27,14 +28,16 @@ include('admin_elements/permissions.php');
 $credit_note_id = '';
 if (isset($_REQUEST['credit_note_id']))        $credit_note_id     = e_s__($_REQUEST['credit_note_id']);
 if (isset($_POST['credit_note_id']))           $credit_note_id     = e_s__($_POST['credit_note_id']);
-
+if (empty($credit_note_id) && isset($_REQUEST['id'])) $credit_note_id = e_s__($_REQUEST['id']);
 
 
 // ------------------ CHECK IF EXISTS ----------------
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_credit_notes . "` WHERE id='" . $credit_note_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_credit_notes.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_credit_notes.php");
+    exit;
 }
 
 
@@ -98,7 +101,7 @@ if (($action == "convert_$module" && !empty($credit_note_id))) {
 
     // -- Invoice Items
     $result = $mysqli->query("INSERT INTO `" . tbl_invoice_items . "` ( invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_invoice_items . "` WHERE invoice_id = $invoice_id");
+    SELECT $new_invoice_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_invoice_items . "` WHERE invoice_id = $invoice_id");
 
     fp__(tbl_invoice_items, $mysqli->insert_id);
 
@@ -149,14 +152,15 @@ if (($action == "convert_$module" && !empty($credit_note_id))) {
 
     // -- Credit Note Items
     $result = $mysqli->query("INSERT INTO `" . tbl_credit_note_items . "` (credit_note_id, service, description, qty, rate, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, service, description, qty, rate, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_credit_note_items . "` WHERE credit_note_id = $credit_note_id");
+    SELECT $new_cloned_id, service, description, qty, rate, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_credit_note_items . "` WHERE credit_note_id = $credit_note_id");
 
     fp__(tbl_credit_note_items, $mysqli->insert_id);
 
 
     $success_message = 'Credit Note has been cloned successfully. Please click here to view. <a href="credit_note_overview.php?credit_note_id=' . $new_cloned_id . '"> ' . $credit_note_no . '</a>';
 
-    header("Location:credit_note_overview.php?credit_note_id=$new_cloned_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:credit_note_overview.php?credit_note_id=$new_cloned_id");
     exit;
 
 
@@ -202,8 +206,7 @@ if (($action == "convert_$module" && !empty($credit_note_id))) {
                     $success_message .= " Note: Void journal entry already exists.";
                 } else {
                     // Initialize Journal Manager
-                    require_once('../classes/AccountingJournalManager.php');
-                    $journal = new AccountingJournalManager($mysqli);
+                    $journal = new JournalService();
                     
                     // Get credit note data
                     $credit_note_no = getTableAttr('credit_note_no', tbl_credit_notes, $credit_note_id);
@@ -294,8 +297,7 @@ if (($action == "convert_$module" && !empty($credit_note_id))) {
                     $success_message .= " Note: Journal entry already exists.";
                 } else {
                     // Initialize Journal Manager
-                    require_once('../classes/AccountingJournalManager.php');
-                    $journal = new AccountingJournalManager($mysqli);
+                    $journal = new JournalService();
                     
                     // Get credit note data
                     $credit_note_no = getTableAttr('credit_note_no', tbl_credit_notes, $credit_note_id);
@@ -305,7 +307,6 @@ if (($action == "convert_$module" && !empty($credit_note_id))) {
                     $grand_total = getTableAttr('grand_total', tbl_credit_notes, $credit_note_id);
                     
                     // Get account mappings from config
-                    require_once('../config/accounting.php');
 
                     // Accounts for Credit Note
                     // DR: Sales Returns & Allowances (decrease revenue)
@@ -482,7 +483,9 @@ if (($action == "convert_$module" && !empty($credit_note_id))) {
 
 
         // --------------------------------------------------------------------------------
-        header("Location:credit_note_overview.php?credit_note_id=$credit_note_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:credit_note_overview.php?credit_note_id=$credit_note_id");
+        exit;
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";

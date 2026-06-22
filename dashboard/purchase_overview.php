@@ -28,6 +28,7 @@ include('admin_elements/permissions.php');
 $purchase_id = '';
 if (isset($_REQUEST['purchase_id']))        $purchase_id     = e_s__($_REQUEST['purchase_id']);
 if (isset($_POST['purchase_id']))           $purchase_id     = e_s__($_POST['purchase_id']);
+if (empty($purchase_id) && isset($_REQUEST['id'])) $purchase_id = e_s__($_REQUEST['id']);
 
 
 
@@ -35,7 +36,9 @@ if (isset($_POST['purchase_id']))           $purchase_id     = e_s__($_POST['pur
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_purchases . "` WHERE id='" . $purchase_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_purchases.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_purchases.php");
+    exit;
 }
 
 
@@ -116,7 +119,7 @@ if (($action == "convert_$module" && !empty($purchase_id))) {
 
     // -- purchase Items
     $result = $mysqli->query("INSERT INTO `" . tbl_purchase_items . "` ( purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_purchase_items . "` WHERE purchase_id = $purchase_id");
+    SELECT $new_purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_purchase_items . "` WHERE purchase_id = $purchase_id");
 
     fp__(tbl_purchase_items, $mysqli->insert_id);
 
@@ -169,7 +172,7 @@ if (($action == "convert_$module" && !empty($purchase_id))) {
 
     // -- Purchase order Items
     $result = $mysqli->query("INSERT INTO `" . tbl_purchase_items . "` ( purchase_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, created_at, updated_at, created_by) 
-    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . $session_user_id . "' FROM `" . tbl_purchase_items . "` WHERE purchase_id = $purchase_id");
+    SELECT $new_cloned_id, service, description, qty, rate, discount_type, discount_type_value, discount_amount, tax, tax_amount, sub_total, total, NOW(), NOW(), '" . Session::userId() . "' FROM `" . tbl_purchase_items . "` WHERE purchase_id = $purchase_id");
 
     fp__(tbl_purchase_items, $mysqli->insert_id);
 
@@ -206,7 +209,8 @@ if (($action == "convert_$module" && !empty($purchase_id))) {
 
 
         // --------------------------------------------------------------------------------
-        header("Location:purchase_overview.php?purchase_id=$purchase_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:purchase_overview.php?purchase_id=$purchase_id");
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";
@@ -234,7 +238,15 @@ $tax_arr                    = array();
 $tax_amount_arr             = array();
 $total_arr                  = array();
 
-
+$vendor_id = $display_name = $company_name = '';
+$billing_attention = $billing_country = $billing_address_line1 = '';
+$billing_address_line2 = $billing_city = $billing_state = '';
+$billing_zipcode = $billing_phone = $billing_fax = '';
+$warehouse_id = $purchase_no = $purchase_status = $purchase_date = '';
+$expiry_date = $vendor_notes = $final_terms_and_conditions = '';
+$grand_subtotal = $grand_discount_type = $grand_discount_type_value = '';
+$grand_discount_amount = $grand_after_discount = $grand_tax = $grand_total = '';
+$salutation = $first_name = $last_name = $email = $phone = $mobile = $trn = '';
 
 if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
     $total_rows            = e_s__($_POST['total_rows']);

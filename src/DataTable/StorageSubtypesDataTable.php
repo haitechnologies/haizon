@@ -38,7 +38,7 @@ class StorageSubtypesDataTable extends BaseDataTable
             $id,
             htmlspecialchars($sub),
             htmlspecialchars($type),
-            timeAgo($created),
+            $this->formatTimeAgo($created),
             $badge,
             $this->getActionButtons($id, 'storage_subtypes'),
         ];
@@ -47,10 +47,10 @@ class StorageSubtypesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'storage_subtypes.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

@@ -34,10 +34,10 @@ class ItemsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $buttons = [];
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'items.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

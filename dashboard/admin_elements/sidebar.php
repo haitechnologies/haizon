@@ -188,7 +188,7 @@ $menuConfig = [
         'items' => [
             [
                 'href' => '#hr-people-submenu',
-                'label' => 'People Setup',
+                'label' => 'Organization',
                 'icon' => 'ph-users-three',
                 'pages' => ['listing_departments.php', 'departments.php', 'listing_designations.php', 'designations.php'],
                 'type' => 'submenu',
@@ -219,7 +219,7 @@ $menuConfig = [
                 'href' => '#hr-payroll-submenu',
                 'label' => 'Payroll',
                 'icon' => 'ph-calculator',
-                'pages' => ['listing_payroll_components.php', 'payroll_components.php', 'listing_salary_structures.php', 'salary_structures.php', 'listing_employee_salaries.php', 'listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php', 'listing_payslips.php', 'view_payslip.php'],
+                'pages' => ['listing_payroll_components.php', 'payroll_components.php', 'listing_salary_structures.php', 'salary_structures.php', 'listing_employee_salaries.php', 'listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php', 'listing_payslips.php', 'payslips.php', 'view_payslip.php'],
                 'type' => 'submenu',
                 'condition' => function() {
                     return has_full_access()
@@ -234,7 +234,7 @@ $menuConfig = [
                     ['href' => 'listing_salary_structures.php', 'label' => 'Salary Structures', 'pages' => ['listing_salary_structures.php', 'salary_structures.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('salary_structures'); }],
                     ['href' => 'listing_employee_salaries.php', 'label' => 'Employee Salaries', 'pages' => ['listing_employee_salaries.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('employee_salaries'); }],
                     ['href' => 'listing_payroll_runs.php', 'label' => 'Payroll Runs', 'pages' => ['listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payroll_runs'); }],
-                    ['href' => 'listing_payslips.php', 'label' => 'Payslips', 'pages' => ['listing_payslips.php', 'view_payslip.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payslips'); }],
+                    ['href' => 'listing_payslips.php', 'label' => 'Payslips', 'pages' => ['listing_payslips.php', 'payslips.php', 'view_payslip.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payslips'); }],
                 ]
             ],
             [
@@ -245,11 +245,32 @@ $menuConfig = [
                 'condition' => function() { return has_full_access() || hasModuleAccess('user_documents'); }
             ],
             [
+                'href' => 'listing_air_tickets.php',
+                'label' => 'Air Tickets',
+                'icon' => 'ph-airplane-takeoff',
+                'pages' => ['air_tickets.php', 'listing_air_tickets.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('air_tickets'); }
+            ],
+            [
+                'href' => 'listing_gratuity_settlements.php',
+                'label' => 'Gratuity',
+                'icon' => 'ph-coins',
+                'pages' => ['gratuity_settlements.php', 'listing_gratuity_settlements.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('gratuity_settlements'); }
+            ],
+            [
                 'href' => 'report_hr.php',
                 'label' => 'HR Report',
                 'icon' => 'ph-chart-line-up',
                 'pages' => ['report_hr.php'],
                 'condition' => function() { return has_full_access() || hasModuleAccess('report_hr'); }
+            ],
+            [
+                'href' => 'hr_guide.php',
+                'label' => 'HR Help Guide',
+                'icon' => 'ph-question',
+                'pages' => ['hr_guide.php'],
+                'condition' => function() { return has_full_access() || dashboardHasSystemAccess('hr'); }
             ],
         ]
     ],
@@ -383,16 +404,7 @@ $menuConfig = [
     'content' => [
         'label' => 'Content',
         'items' => [
-            // Decommissioned: blogs, guest_posts, blog_categories
-            [
-                'key' => 'pages',
-                'href' => 'listing_pages.php',
-                'label' => 'Static Pages',
-                'icon' => 'ph-file-doc',
-                'pages' => ['listing_pages.php', 'pages.php', 'page_detail.php'],
-                'condition' => function() { return has_full_access() && hasModuleAccess('pages'); },
-                'hidden' => true
-            ],
+            // Decommissioned: blogs, guest_posts, blog_categories, pages
             // User Favorites link moved to setup.php
         ]
      ],
@@ -401,13 +413,6 @@ $menuConfig = [
 // ============================================================================
 // RENDER SIDEBAR
 // ============================================================================
-
-// Get list of items hidden by user from system settings
-$defaultHiddenItems = ['pages'];
-$hiddenItemsJson = getSystemSetting('sidebar_hidden_items', json_encode($defaultHiddenItems));
-$storedHiddenItems = json_decode($hiddenItemsJson, true);
-$userHiddenItems = array_values(array_unique(array_merge($defaultHiddenItems, is_array($storedHiddenItems) ? $storedHiddenItems : [])));
-$userHiddenItemsMap = array_flip($userHiddenItems);
 $sectionOrder = ['dashboard', 'projects_jobs', 'shipping', 'accounting', 'crm', 'hr', 'content'];
 $sectionSystemMap = [
     'shipping' => 'shipping',
@@ -433,11 +438,8 @@ $sectionSystemMap = [
                         continue;
                     }
                     $section = $menuConfig[$sectionKey];
-                    $visibleItems = array_filter($section['items'], function($item) use ($userHiddenItemsMap) {
-                        // Check if item is in the hidden list
-                        $itemKey = $item['key'] ?? null;
-                        $isHidden = $itemKey && isset($userHiddenItemsMap[$itemKey]);
-                        return !$isHidden && call_user_func($item['condition']);
+                    $visibleItems = array_filter($section['items'], function($item) {
+                        return call_user_func($item['condition']);
                     });
                     if (empty($visibleItems)) {
                         continue;
@@ -490,17 +492,6 @@ $sectionSystemMap = [
                 <!-- Footer section -->
                 <li class="nav-item-divider" style="margin: 16px 0 12px;"></li>
             </ul>
-            <!-- Hidden Items Management -->
-            <div style="margin: 12px 16px 8px;">
-                <a href="sidebar_hidden_items.php" style="display: inline-block; text-align: center; width: 100%; font-size: 11px; color: #667eea; padding: 8px 0; text-decoration: none; border-top: 1px solid #e9ecef; padding-top: 12px;">
-                    📋 View Hidden Sidebar Items
-                </a>
-            </div>
-            <div style="margin: 0 16px 16px;">
-                <div style="text-align: center; font-size: 11px; color: #999; padding: 8px 0;">
-                    HAIPULSE Dashboard v2.1
-                </div>
-            </div>
         </div>
     </div>
 

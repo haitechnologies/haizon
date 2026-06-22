@@ -30,13 +30,15 @@ $userService = \App\Core\Container::getInstance()->get(\App\Service\UserService:
 try {
     $user = $userService->getById((int)$id);
 } catch (\App\Exception\NotFoundException $e) {
-    header("Location:listing_users.php?error_message=User Information is not accessible");
+    flash_error('User Information is not accessible');
+    header("Location:listing_users.php");
     exit;
 }
 
 // -- System Admin
-if (!Roles::isSystemAdmin($_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? null) && $id == 1) {
-    header("Location:listing_users.php?error_message=Only System Admin has the rights to access this User.");
+if (!Roles::isSystemAdmin(Session::roleId() ?? null) && $id == 1) {
+    flash_error('Only System Admin has the rights to access this User.');
+    header("Location:listing_users.php");
     exit;
 }
 

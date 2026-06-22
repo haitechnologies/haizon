@@ -32,12 +32,12 @@ foreach ($statusLabels as $val => $lbl) {
             <table class="table table-hover"><tbody>
 <?php
 $where = $purchase_orders_ordering !== "all" ? " AND t.purchase_order_status = '" . $purchase_orders_ordering . "'" : "";
-$r = $mysqli->query("SELECT t.id, t.purchase_order_status, t.purchase_order_date, t.grand_total, t.customer_id FROM `" . DB::PURCHASE_ORDERS . "` t WHERE t.id > 0 AND t.customer_id != '' $where ORDER BY t.id DESC LIMIT 25");
-$c = $mysqli->query("SELECT COUNT(*) FROM `" . DB::PURCHASE_ORDERS . "` t WHERE t.id > 0 AND t.customer_id != '' $where")->fetch_row();
+$r = $mysqli->query("SELECT t.id, t.purchase_order_status, t.purchase_order_date, t.grand_total, t.vendor_id FROM `" . DB::PURCHASE_ORDERS . "` t WHERE t.id > 0 AND t.vendor_id != '' $where ORDER BY t.id DESC LIMIT 25");
+$c = $mysqli->query("SELECT COUNT(*) FROM `" . DB::PURCHASE_ORDERS . "` t WHERE t.id > 0 AND t.vendor_id != '' $where")->fetch_row();
 $total = $c[0] ?? 0;
 while ($row = $r->fetch_array()) {
     $sel = $row["id"] == $current_id ? "table-primary shadow-sm" : "";
-    $name = getTableAttr("display_name", DB::CUSTOMERS, $row["customer_id"]);
+    $name = getTableAttr("display_name", DB::VENDORS, $row["vendor_id"]);
     $date = dd_($row["purchase_order_date"]);
     $amt = number_format($row["grand_total"], 2);
     $st = strtoupper($row["purchase_order_status"]);

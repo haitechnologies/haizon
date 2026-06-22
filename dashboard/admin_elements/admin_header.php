@@ -440,6 +440,7 @@ $adminHeaderQuickAccessSections = [
 	[
 		'title' => 'CRM',
 		'icon' => 'ph-users-three',
+		'dashboard' => 'dashboard_crm.php',
 		'links' => [
 			['href' => 'listing_leads.php', 'label' => 'Leads', 'icon' => 'ph-target'],
 			['href' => 'listing_customers.php', 'label' => 'Customers', 'icon' => 'ph-user-circle'],
@@ -450,6 +451,7 @@ $adminHeaderQuickAccessSections = [
 	[
 		'title' => 'Accounting',
 		'icon' => 'ph-currency-circle-dollar',
+		'dashboard' => 'dashboard_accounting.php',
 		'links' => [
 			['href' => 'listing_quotations.php', 'label' => 'Quotations', 'icon' => 'ph-file-text'],
 			['href' => 'listing_invoices.php', 'label' => 'Invoices', 'icon' => 'ph-receipt'],
@@ -461,16 +463,30 @@ $adminHeaderQuickAccessSections = [
 	[
 		'title' => 'HR',
 		'icon' => 'ph-identification-card',
+		'dashboard' => 'dashboard_hr.php',
 		'links' => [
-			['href' => 'listing_user_documents.php', 'label' => 'User Documents', 'icon' => 'ph-folder-open'],
+			['group' => 'ORGANIZATION'],
+			['href' => 'listing_departments.php', 'label' => 'Departments', 'icon' => 'ph-building'],
+			['href' => 'listing_designations.php', 'label' => 'Designations', 'icon' => 'ph-identification-badge'],
+			['group' => 'TIME & ATTENDANCE'],
 			['href' => 'listing_attendance.php', 'label' => 'Attendance', 'icon' => 'ph-clock'],
 			['href' => 'listing_leave_requests.php', 'label' => 'Leave Requests', 'icon' => 'ph-calendar-check'],
+			['href' => 'listing_leave_types.php', 'label' => 'Leave Types', 'icon' => 'ph-calendar-blank'],
+			['group' => 'PAYROLL'],
+			['href' => 'listing_payroll_components.php', 'label' => 'Payroll Components', 'icon' => 'ph-puzzle-piece'],
+			['href' => 'listing_salary_structures.php', 'label' => 'Salary Structures', 'icon' => 'ph-currency-circle-dollar'],
+			['href' => 'listing_employee_salaries.php', 'label' => 'Employee Salaries', 'icon' => 'ph-wallet'],
 			['href' => 'listing_payroll_runs.php', 'label' => 'Payroll Runs', 'icon' => 'ph-money'],
+			['href' => 'listing_payslips.php', 'label' => 'Payslips', 'icon' => 'ph-receipt'],
+			['group' => 'DOCUMENTS & REPORTS'],
+			['href' => 'listing_user_documents.php', 'label' => 'User Documents', 'icon' => 'ph-folder-open'],
+			['href' => 'report_hr.php', 'label' => 'HR Report', 'icon' => 'ph-chart-line-up'],
 		],
 	],
 	[
 		'title' => 'Shipping',
 		'icon' => 'ph-package',
+		'dashboard' => 'dashboard_shipping.php',
 		'links' => [
 			['href' => 'listing_shipping_advices.php', 'label' => 'Shipping Advices', 'icon' => 'ph-note-pencil'],
 			['href' => 'listing_shipping_invoices.php', 'label' => 'Shipping Invoices', 'icon' => 'ph-files'],
@@ -627,7 +643,7 @@ if (!function_exists('renderEmailQuickbar')) {
 
 	<!-- DataTables Standardization - Badges, Action Buttons, Table Styling -->
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/datatables-unified.css?v=<?php echo @filemtime(__DIR__ . '/../../assets/css/datatables-unified.css'); ?>">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/dashboard-listing-pages.css?v=<?php echo @filemtime(__DIR__ . '/../../assets/css/dashboard-listing-pages.css'); ?>">
+	<!-- dashboard-listing-pages.css removed — pages module decommissioned -->
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/badges.css">
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/action-buttons.css">
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/assets/css/datatable-error-handler.css?v=<?php echo @filemtime(__DIR__ . '/../../assets/css/datatable-error-handler.css'); ?>">
@@ -909,12 +925,12 @@ if (!function_exists('renderEmailQuickbar')) {
         } */
 
 
-		/* colorful sidebar 
+		/* colorful sidebar
         .nav-sidebar .nav-item a {
             color: #ccc;
             font-weight: 300;
         }
-        
+
         .nav-sidebar .nav-item-open>.nav-link:not(.disabled):not(:active),
         .nav-sidebar>.nav-item-expanded>.nav-link:not(:active) .nav-sidebar .nav-item a:hover {
             color: #fff;
@@ -1211,12 +1227,6 @@ if (!function_exists('renderEmailQuickbar')) {
 				</li>
 
 				<!-- <li class="nav-item mt-2 ms-lg-2">
-					<a href="listing_pages_audit.php" class="text-white">
-						<i class="ph-check"></i>
-					</a>
-				</li> -->
-
-				<!-- <li class="nav-item mt-2 ms-lg-2">
 					<a href="sitemaps.php" class="text-white">
 						&nbsp; Sitemaps
 					</a>
@@ -1249,15 +1259,19 @@ if (!function_exists('renderEmailQuickbar')) {
 										<div class="p-3 h-100">
 											<div class="d-flex align-items-center gap-2 mb-2">
 												<i class="<?php echo htmlspecialchars($section['icon'], ENT_QUOTES); ?> fs-5 text-primary"></i>
-												<div class="fw-semibold"><?php echo htmlspecialchars($section['title'], ENT_QUOTES); ?></div>
+												<a href="<?php echo htmlspecialchars($section['dashboard'] ?? '#', ENT_QUOTES); ?>" class="fw-semibold text-dark text-decoration-none"><?php echo htmlspecialchars($section['title'], ENT_QUOTES); ?></a>
 											</div>
 											<div class="list-group list-group-flush">
 												<?php foreach ($section['links'] as $link): ?>
-													<?php $isSystemMenuActive = $current_page === basename($link['href']); ?>
-													<a href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES); ?>" class="list-group-item list-group-item-action border-0 px-0 py-1<?php echo $isSystemMenuActive ? ' active' : ''; ?>">
-														<i class="<?php echo htmlspecialchars($link['icon'], ENT_QUOTES); ?> me-2"></i>
-														<?php echo htmlspecialchars($link['label'], ENT_QUOTES); ?>
-													</a>
+													<?php if (isset($link['group'])): ?>
+														<div class="list-group-item border-0 px-0 pt-2 pb-0 fw-semibold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($link['group'], ENT_QUOTES); ?></div>
+													<?php else: ?>
+														<?php $isSystemMenuActive = $current_page === basename($link['href']); ?>
+														<a href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES); ?>" class="list-group-item list-group-item-action border-0 px-0 py-1<?php echo $isSystemMenuActive ? ' active' : ''; ?>">
+															<i class="<?php echo htmlspecialchars($link['icon'], ENT_QUOTES); ?> me-2"></i>
+															<?php echo htmlspecialchars($link['label'], ENT_QUOTES); ?>
+														</a>
+													<?php endif; ?>
 												<?php endforeach; ?>
 											</div>
 										</div>
@@ -1267,45 +1281,6 @@ if (!function_exists('renderEmailQuickbar')) {
 						</div>
 					</li>
 				<?php endif; ?>
-
-			<?php if (Roles::hasFullAccess($session_role_id)): ?>
-				<li class="nav-item dropdown ms-lg-2">
-					<a href="#" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center dropdown-toggle<?php echo in_array($current_page, ['qa_test.php', 'run_coverage_sweep.php']) ? ' active' : ''; ?>" data-bs-toggle="dropdown" aria-expanded="false" title="QA Test Menu">
-						<i class="ph-seal-check me-1" aria-hidden="true"></i>
-						<span class="d-none d-xl-inline">QA Test</span>
-					</a>
-					<ul class="dropdown-menu dropdown-menu-end">
-						<li>
-							<a href="qa_test.php" class="dropdown-item<?php echo ($current_page === 'qa_test.php') ? ' active' : ''; ?>">
-								<i class="ph-shield-check me-2"></i> QA Test Dashboard
-							</a>
-						</li>
-						<li>
-							<a href="run_coverage_sweep.php?source=dashboard_runtime" class="dropdown-item<?php echo ($current_page === 'run_coverage_sweep.php') ? ' active' : ''; ?>">
-								<i class="ph-rocket-launch me-2"></i> Run Coverage Sweep
-							</a>
-						</li>
-					</ul>
-				</li>
-				<li class="nav-item ms-lg-2">
-					<a href="dashboard_accounting.php" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center<?php echo ($current_page === 'dashboard_accounting.php') ? ' active' : ''; ?>" title="Accounting Dashboard">
-						<i class="ph-currency-circle-dollar me-1" aria-hidden="true"></i>
-						<span class="d-none d-xl-inline">Accounting</span>
-					</a>
-				</li>
-				<li class="nav-item ms-lg-2">
-					<a href="dashboard_crm.php" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center<?php echo ($current_page === 'dashboard_crm.php') ? ' active' : ''; ?>" title="CRM Dashboard">
-						<i class="ph-users-three me-1" aria-hidden="true"></i>
-						<span class="d-none d-xl-inline">CRM</span>
-					</a>
-				</li>
-				<li class="nav-item ms-lg-2">
-					<a href="dashboard_shipping.php" class="navbar-nav-link rounded-pill px-2 py-1 d-flex align-items-center<?php echo ($current_page === 'dashboard_shipping.php') ? ' active' : ''; ?>" title="Shipping Dashboard">
-						<i class="ph-package me-1" aria-hidden="true"></i>
-						<span class="d-none d-xl-inline">Shipping</span>
-					</a>
-				</li>
-			<?php endif; ?>
 
 			</ul>
 
@@ -1384,6 +1359,11 @@ if (!function_exists('renderEmailQuickbar')) {
 								</a>
 							</li>
 							<li>
+								<a href="run_coverage_sweep.php" class="dropdown-item<?php echo ($current_page === 'run_coverage_sweep.php') ? ' active' : ''; ?>">
+									<i class="ph-rocket-launch me-2"></i> QA Test
+								</a>
+							</li>
+							<li>
 								<a href="listing_email_providers.php" class="dropdown-item<?php echo ($current_page === 'listing_email_providers.php') ? ' active' : ''; ?>">
 									<i class="ph-envelope-simple me-2"></i> Email Providers
 								</a>
@@ -1415,11 +1395,6 @@ if (!function_exists('renderEmailQuickbar')) {
 					<a href="#" class="navbar-nav-link rounded-pill d-inline-flex align-items-center" data-bs-toggle="offcanvas" data-bs-target="#organizations" title="Organizations">
 						<i class="ph-buildings me-1" aria-hidden="true"></i>
 						<span class="d-none d-xl-inline"><?php echo htmlspecialchars($activeOrganizationName !== '' ? $activeOrganizationName : 'Organizations', ENT_QUOTES, 'UTF-8'); ?></span>
-						<?php if ($headerOrganizationCount > 1): ?>
-							<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size:10px;min-width:18px;line-height:1.2;">
-								<?php echo (int)$headerOrganizationCount; ?>
-							</span>
-						<?php endif; ?>
 					</a>
 				</li>
 
@@ -1479,6 +1454,18 @@ if (!function_exists('renderEmailQuickbar')) {
 								</div>
 							</div>
 						<?php endif; ?>
+
+						<div class="px-3 py-2 border-bottom">
+							<div class="text-muted text-uppercase" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px;">User Management</div>
+							<div class="d-grid gap-1">
+								<a href="listing_users.php" class="dropdown-item px-2 py-1 rounded">
+									<i class="ph-users me-2"></i> Users
+								</a>
+								<a href="listing_roles.php" class="dropdown-item px-2 py-1 rounded">
+									<i class="ph-user-check me-2"></i> Roles & Permissions
+								</a>
+							</div>
+						</div>
 
 						<div class="px-3 py-2 border-bottom">
 							<div class="text-muted text-uppercase" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px;">Profile & Security</div>

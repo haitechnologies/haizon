@@ -1,7 +1,7 @@
 <?php
 
+use App\Core\DB;
 include('admin_elements/admin_header.php');
-include('includes/accounting_functions.php');
 
 $module = 'vendors';
 $module_caption = 'Vendor';
@@ -28,13 +28,16 @@ include('admin_elements/permissions.php');
 $vendor_id = '';
 if (isset($_REQUEST['vendor_id']))        $vendor_id     = e_s__($_REQUEST['vendor_id']);
 if (isset($_POST['vendor_id']))           $vendor_id     = e_s__($_POST['vendor_id']);
+if (empty($vendor_id) && isset($_REQUEST['id'])) $vendor_id = e_s__($_REQUEST['id']);
 
 
 // ------------------ CHECK IF EXISTS ----------------
 //VERIFY IF IS VALID 
 $rs_valid     = $mysqli->query("SELECT id FROM `" . tbl_vendors . "` WHERE id='" . $vendor_id . "'");
 if ($rs_valid->num_rows == 0) {
-    header("Location:listing_vendors.php?error_message=Invalid Record in the database.");
+    flash_error('Invalid Record in the database.');
+    header("Location:listing_vendors.php");
+    exit;
 }
 
 // //---------------
@@ -55,11 +58,12 @@ if (isset($_POST['contact_id']))           $contact_id     = e_s__($_POST['conta
 */
 if ($action == "approved" && !empty($vendor_id)) {
 
-    $rs = $mysqli->query("UPDATE `" . tbl_vendors . "` SET approved='1', approved_by=$session_user_id, approved_at=now() WHERE id=$vendor_id");
+    $rs = $mysqli->query("UPDATE `" . tbl_vendors . "` SET approved='1', approved_by=Session::userId(), approved_at=now() WHERE id=$vendor_id");
 
     $success_message = 'This Vendor is Approved.';
-    header("Location:vendor_overview.php?vendor_id=$vendor_id&success_message=$success_message");
-
+    flash_success($success_message);
+    header("Location:vendor_overview.php?vendor_id=$vendor_id");
+    exit;
 
     /*
 |--------------------------------------------------------------------------
@@ -72,8 +76,9 @@ if ($action == "approved" && !empty($vendor_id)) {
     $rs = $mysqli->query("UPDATE `" . tbl_vendors . "` SET approved='0', updated_at=now() WHERE id=$vendor_id");
 
     $success_message = 'This Vendor is Dis-Approved.';
-    header("Location:vendor_overview.php?vendor_id=$vendor_id&success_message=$success_message");
-
+    flash_success($success_message);
+    header("Location:vendor_overview.php?vendor_id=$vendor_id");
+    exit;
 
     /*
 |--------------------------------------------------------------------------
@@ -111,7 +116,9 @@ if ($action == "approved" && !empty($vendor_id)) {
         $success_message = 'Vendor has been cloned Successfully. Please click here to view. <a href="vendor_overview.php?vendor_id=' . $new_cloned_id . '"> Vendor ID: ' . $new_cloned_id . '</a>';
         // Vendor Logs
         // updateVendorLogs($vendor_id, 'vendor', 'updated');
-        header("Location:vendor_overview.php?vendor_id=$vendor_id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:vendor_overview.php?vendor_id=$vendor_id");
+        exit;
     } else {
         $error_message = "$module_caption Could Not Be Cloned.";
         //header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
@@ -128,7 +135,9 @@ if ($action == "approved" && !empty($vendor_id)) {
     $rs = $mysqli->query("UPDATE `" . tbl_vendors . "` SET is_active='1' WHERE id=$vendor_id");
 
     $success_message = 'Vendor has marked as Active';
-    header("Location:vendor_overview.php?vendor_id=$vendor_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:vendor_overview.php?vendor_id=$vendor_id");
+    exit;
 
     /*
 |--------------------------------------------------------------------------
@@ -141,7 +150,9 @@ if ($action == "approved" && !empty($vendor_id)) {
     $rs = $mysqli->query("UPDATE `" . tbl_vendors . "` SET is_active='0' WHERE id=$vendor_id");
 
     $success_message = 'Vendor has marked as Inactive';
-    header("Location:vendor_overview.php?vendor_id=$vendor_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:vendor_overview.php?vendor_id=$vendor_id");
+    exit;
 
     /*
 |--------------------------------------------------------------------------
@@ -158,7 +169,9 @@ if ($action == "approved" && !empty($vendor_id)) {
     $mysqli->query("UPDATE `" . tbl_vendor_contacts . "` SET is_primary='1' WHERE id=$contact_id AND vendor_id=$vendor_id");
 
     $success_message = 'Contact Person is Set as Primary';
-    header("Location:vendor_overview.php?vendor_id=$vendor_id&success_message=$success_message");
+    flash_success($success_message);
+    header("Location:vendor_overview.php?vendor_id=$vendor_id");
+    exit;
 }
 
 
@@ -169,6 +182,7 @@ if ($action == "approved" && !empty($vendor_id)) {
 |
 */
 $vendor_name = '';
+$payment_term = '';
 
 if (!empty($vendor_id)) {
 

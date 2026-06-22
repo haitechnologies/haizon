@@ -71,7 +71,7 @@ class RolesDataTable extends BaseDataTable
             'role_name' => htmlspecialchars($roleName),
             'role_description' => htmlspecialchars($descDisplay),
             'user_count' => number_format($userCount),
-            'created_at' => timeAgo($createdAt),
+            'created_at' => $this->formatTimeAgo($createdAt),
             'actions' => $this->getActionButtons($id, 'roles')
         ];
     }
@@ -84,10 +84,10 @@ class RolesDataTable extends BaseDataTable
         }
 
         $buttons = [];
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'roles.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

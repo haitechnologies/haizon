@@ -34,12 +34,22 @@ class UserRepository
     }
 
     /**
+     * Check if any users are associated with a designation
+     */
+    public function hasUsersInDesignation(int $designationId): bool
+    {
+        $sql = "SELECT id FROM DB::USERS WHERE designation_id = :designation_id LIMIT 1";
+        $row = $this->db->fetchOne($sql, ['designation_id' => $designationId]);
+        return $row !== null;
+    }
+
+    /**
      * Find user by ID
      */
     public function find(int $id): ?User
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
-                       full_name, mobile, contact1, contact2, address, dob, 
+                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
                        department_id, last_login, photo, created_at, updated_at, created_by 
                 FROM DB::USERS 
                 WHERE id = :id";
@@ -58,7 +68,7 @@ class UserRepository
     public function findByEmail(string $email): ?User
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
-                       full_name, mobile, contact1, contact2, address, dob, 
+                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
                        department_id, last_login, photo, created_at, updated_at, created_by 
                 FROM DB::USERS 
                 WHERE email = :email";
@@ -104,11 +114,11 @@ class UserRepository
     {
         $sql = "INSERT INTO DB::USERS (
                     can_access_system, is_active, role_id, email, password, 
-                    full_name, mobile, contact1, contact2, address, dob, 
+                    full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
                     department_id, photo, created_by, created_at
                 ) VALUES (
                     :can_access_system, :is_active, :role_id, :email, :password, 
-                    :full_name, :mobile, :contact1, :contact2, :address, :dob, 
+                    :full_name, :first_name, :last_name, :mobile, :contact1, :contact2, :address, :dob, 
                     :department_id, :photo, :created_by, NOW()
                 )";
 
@@ -119,6 +129,8 @@ class UserRepository
             'email' => $user->email,
             'password' => $user->password,
             'full_name' => $user->fullName,
+            'first_name' => $user->firstName,
+            'last_name' => $user->lastName,
             'mobile' => $user->mobile,
             'contact1' => $user->contact1,
             'contact2' => $user->contact2,
@@ -148,6 +160,8 @@ class UserRepository
                     email = :email, 
                     password = :password, 
                     full_name = :full_name, 
+                    first_name = :first_name, 
+                    last_name = :last_name, 
                     mobile = :mobile, 
                     contact1 = :contact1, 
                     contact2 = :contact2, 
@@ -165,6 +179,8 @@ class UserRepository
             'email' => $user->email,
             'password' => $user->password,
             'full_name' => $user->fullName,
+            'first_name' => $user->firstName,
+            'last_name' => $user->lastName,
             'mobile' => $user->mobile,
             'contact1' => $user->contact1,
             'contact2' => $user->contact2,
@@ -183,6 +199,24 @@ class UserRepository
         }
 
         return $updated;
+    }
+
+    /**
+     * Find all users
+     */
+    public function findAll(): array
+    {
+        $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
+                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
+                       department_id, last_login, photo, created_at, updated_at, created_by 
+                FROM DB::USERS 
+                ORDER BY full_name ASC";
+        $rows = $this->db->fetchAll($sql);
+        $users = [];
+        foreach ($rows as $row) {
+            $users[] = $this->mapRowToDto($row);
+        }
+        return $users;
     }
 
     /**
@@ -208,6 +242,8 @@ class UserRepository
             email: (string)$row['email'],
             password: $row['password'] !== null ? (string)$row['password'] : null,
             fullName: (string)$row['full_name'],
+            firstName: $row['first_name'] !== null ? (string)$row['first_name'] : null,
+            lastName: $row['last_name'] !== null ? (string)$row['last_name'] : null,
             mobile: $row['mobile'] !== null ? (string)$row['mobile'] : null,
             contact1: $row['contact1'] !== null ? (string)$row['contact1'] : null,
             contact2: $row['contact2'] !== null ? (string)$row['contact2'] : null,
@@ -216,7 +252,7 @@ class UserRepository
             departmentId: $row['department_id'] !== null ? (int)$row['department_id'] : null,
             lastLogin: $row['last_login'] !== null ? (string)$row['last_login'] : null,
             photo: $row['photo'] !== null ? (string)$row['photo'] : null,
-            publish: (bool)$row['publish'],
+            publish: (bool)($row['publish'] ?? false),
             createdAt: $row['created_at'] !== null ? (string)$row['created_at'] : null,
             updatedAt: $row['updated_at'] !== null ? (string)$row['updated_at'] : null,
             createdBy: (int)($row['created_by'] ?? 0)

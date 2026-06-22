@@ -28,7 +28,7 @@ class OrganizationRolesDataTable extends BaseDataTable
             htmlspecialchars($desc),
             0,
             $badge,
-            timeAgo($created),
+            $this->formatTimeAgo($created),
             $this->getActionButtons($id, 'organization_roles'),
         ];
     }
@@ -36,10 +36,10 @@ class OrganizationRolesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'organization_roles.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

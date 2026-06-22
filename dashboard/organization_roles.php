@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 use App\Security\Roles;
 /**
  * Organization Roles Management
@@ -32,7 +33,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 |--------------------------------------------------------------------------
 | Only org owners and admins can manage roles for their organization
 */
-$canManageRoles = dashboardUserIsOrganizationOwner($activeOrganizationId, (int)$session_user_id) || 
+$canManageRoles = dashboardUserIsOrganizationOwner($activeOrganizationId, (int)Session::userId()) || 
                   Roles::currentUserHasFullAccess();
 
 if (!$canManageRoles) {
@@ -120,7 +121,8 @@ if ($action == "delete_$module" && !empty($id) && !$error_message) {
                             $deleteStmt->bind_param('ii', $id, $activeOrganizationId);
                             if ($deleteStmt->execute()) {
                                 $success_message = "Role deleted successfully.";
-                                header("Location:listing_organization_roles.php?success_message=" . urlencode($success_message));
+                                flash_success($success_message);
+                                header("Location:listing_organization_roles.php");
                                 exit;
                             } else {
                                 $error_message = "Failed to delete role. Please try again.";
@@ -162,11 +164,12 @@ if ($action == "update_$module" && !empty($id) && !$error_message) {
                      WHERE id = ? AND organization_id = ?"
                 );
                 if ($updateStmt) {
-                    $updateStmt->bind_param('ssiiii', $role_name, $role_description, $is_active, $session_user_id, $id, $activeOrganizationId);
-                    if ($updateStmt->execute()) {
-                        $success_message = "Role updated successfully.";
-                        header("Location:listing_organization_roles.php?success_message=" . urlencode($success_message));
-                        exit;
+                    $updateStmt->bind_param('ssiiii', $role_name, $role_description, $is_active, Session::userId(), $id, $activeOrganizationId);
+                        if ($updateStmt->execute()) {
+                            $success_message = "Role updated successfully.";
+                            flash_success($success_message);
+                            header("Location:listing_organization_roles.php");
+                            exit;
                     } else {
                         $error_message = "Failed to update role. Please try again.";
                     }
@@ -210,11 +213,12 @@ if ($action == "add_$module" && !$error_message) {
                      VALUES (?, ?, ?, ?, ?, NOW())"
                 );
                 if ($insertStmt) {
-                    $insertStmt->bind_param('issii', $activeOrganizationId, $role_name, $role_description, $is_active, $session_user_id);
-                    if ($insertStmt->execute()) {
-                        $success_message = "Role created successfully.";
-                        header("Location:listing_organization_roles.php?success_message=" . urlencode($success_message));
-                        exit;
+                    $insertStmt->bind_param('issii', $activeOrganizationId, $role_name, $role_description, $is_active, Session::userId());
+                        if ($insertStmt->execute()) {
+                            $success_message = "Role created successfully.";
+                            flash_success($success_message);
+                            header("Location:listing_organization_roles.php");
+                            exit;
                     } else {
                         $error_message = "Failed to create role. Please try again.";
                     }
@@ -397,7 +401,8 @@ if ($action == "edit_$module" && !empty($id) && empty($_POST)) {
                             echo '<p class="text-muted mb-0">No members currently have this role.</p>';
                         } else {
                             ?>
-                            <table class="table table-sm table-hover">
+                            <div class="table-responsive">
+<table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Member Name</th>
@@ -413,6 +418,7 @@ if ($action == "edit_$module" && !empty($id) && empty($_POST)) {
                                     <?php } ?>
                                 </tbody>
                             </table>
+</div>
                             <?php
                         }
                         ?>

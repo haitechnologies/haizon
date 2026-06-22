@@ -71,13 +71,12 @@ class CustomerCommentsDataTable extends BaseDataTable
             return '';
         }
 
-        $searchValue = $this->mysqli->real_escape_string($searchValue);
+        $searchKey = 'search_val';
+        $this->params[$searchKey] = '%' . $searchValue . '%';
         $conditions = [];
-
         foreach ($this->searchFields as $field) {
-            $conditions[] = "{$field} LIKE '%{$searchValue}%'";
+            $conditions[] = "{$field} LIKE :{$searchKey}";
         }
-
         return 'AND (' . implode(' OR ', $conditions) . ')';
     }
 
@@ -92,8 +91,8 @@ class CustomerCommentsDataTable extends BaseDataTable
     {
         $id = (int)($row['id'] ?? 0);
         $customerId = (int)($row['entity_id'] ?? 0);
-        $displayName = s__($row['display_name'] ?? '') ?: 'Unknown';
-        $comments = s__($row['notes'] ?? '');
+        $displayName = $this->sanitize($row['display_name'] ?? '') ?: 'Unknown';
+        $comments = $this->sanitize($row['notes'] ?? '');
         $createdAt = $row['created_at'] ?? '';
 
         $commentPreview = $comments;
@@ -101,7 +100,7 @@ class CustomerCommentsDataTable extends BaseDataTable
             $commentPreview = substr($commentPreview, 0, 117) . '...';
         }
 
-        $createdDisplay = !empty($createdAt) ? dd_($createdAt, 'd M Y') : '-';
+        $createdDisplay = $this->formatDate($createdAt, 'd M Y') ?: '-';
 
         return [
             $id,
@@ -135,11 +134,11 @@ class CustomerCommentsDataTable extends BaseDataTable
     {
         $actions = '';
 
-        if (granted_('edit', 'customers')) {
+        if ($this->isGranted('edit', 'customers')) {
             $actions .= '<a href="customer_comments.php?customer_id=' . $customerId . '" title="View"><span class="text-dark opacity-50"><i class="ph-eye"></i></span></a> ';
         }
 
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton($id, $module);
         }
 

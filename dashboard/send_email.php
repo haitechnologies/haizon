@@ -175,7 +175,7 @@ if ($action == 'send_email' && !empty($id)) {
 
 
     // Resolve SMTP credentials strictly from selected email_providers account.
-    $epm = new EmailProviderManager($GLOBALS['conn']);
+    $epm = new EmailProviderService();
     $provider = $epm->getByEmail($from);
 
     if (!$provider) {

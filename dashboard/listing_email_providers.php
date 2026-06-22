@@ -36,7 +36,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
     $result = DeletionManager::delete(
         $tbl_name,
         $id,
-        $session_user_id,
+        Session::userId(),
         ['verify_field' => 'provider_name', 'item_label' => 'Email Provider', 'module_slug' => 'email_providers']
     );
     if ($result['success']) {
@@ -308,7 +308,8 @@ $ep_remaining_today = max(0, $ep_total_daily_limit - $ep_sent_today);
         <div class="card">
 
             <div class="card-body">
-                <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
+                <div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
                     <thead>
                         <tr>
                             <th width="200">PROVIDER NAME</th>
@@ -320,6 +321,7 @@ $ep_remaining_today = max(0, $ep_total_daily_limit - $ep_sent_today);
                         </tr>
                     </thead>
                 </table>
+</div>
             </div>
         </div>
 

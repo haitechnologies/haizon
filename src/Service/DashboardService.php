@@ -4,93 +4,56 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Core\DB;
 use App\Core\Database;
 
-/**
- * Dashboard Service
- *
- * Consolidates all database logic and statistics computation for the admin dashboard.
- */
 class DashboardService
 {
-    private \mysqli $mysqli;
+    private Database $db;
 
-    public function __construct()
+    public function __construct(?Database $db = null)
     {
-        $this->mysqli = DB::mysqli();
+        $this->db = $db ?? new Database();
     }
 
-    /**
-     * Compute and fetch all dashboard stats, trends, and recent logs.
-     *
-     * @param int $unreadErrorLogsCount Unread admin logs count
-     * @param int $frontendErrorLogsCount Unread public logs count
-     * @param string $dashboardView Compact or detailed view
-     * @return array
-     */
     public function getDashboardData(int $unreadErrorLogsCount, int $frontendErrorLogsCount, string $dashboardView): array
     {
-        // Helper count function
         $countFn = function (string $sql): int {
-            $res = $this->mysqli->query($sql);
-            if (!$res) {
-                return 0;
-            }
-            $row = $res->fetch_assoc();
+            $row = $this->db->fetchOne($sql);
             return (int)($row['cnt'] ?? 0);
         };
 
-        // Recent emails
-        $recentEmailsLimit = 5;
-        $recentDashboardEmails = [];
-        $recentWebsiteEmails = [];
-
-        $recentDashboardEmailsResult = $this->mysqli->query(
+        $recentDashboardEmails = $this->db->fetchAll(
             "SELECT eh.recipient_email, eh.subject, COALESCE(eh.sent_at, eh.created_at) AS sent_time
-             FROM `" . DB::EMAIL_HISTORY . "` eh
-             LEFT JOIN `" . DB::USERS . "` du ON du.id = eh.user_id
+             FROM {DB::EMAIL_HISTORY} eh
+             LEFT JOIN {DB::USERS} du ON du.id = eh.user_id
              WHERE eh.status = 'sent'
                AND (du.id IS NOT NULL OR (eh.campaign_id IS NOT NULL AND eh.campaign_id > 0))
              ORDER BY COALESCE(eh.sent_at, eh.created_at) DESC
-             LIMIT " . (int)$recentEmailsLimit
+             LIMIT 5"
         );
-        if ($recentDashboardEmailsResult) {
-            while ($emailRow = $recentDashboardEmailsResult->fetch_assoc()) {
-                $recentDashboardEmails[] = $emailRow;
-            }
-        }
 
-        $recentWebsiteEmailsResult = $this->mysqli->query(
+        $recentWebsiteEmails = $this->db->fetchAll(
             "SELECT eh.recipient_email, eh.subject, COALESCE(eh.sent_at, eh.created_at) AS sent_time
-             FROM `" . DB::EMAIL_HISTORY . "` eh
-             LEFT JOIN `" . DB::USERS . "` du ON du.id = eh.user_id
+             FROM {DB::EMAIL_HISTORY} eh
+             LEFT JOIN {DB::USERS} du ON du.id = eh.user_id
              WHERE eh.status = 'sent'
                AND NOT (du.id IS NOT NULL OR (eh.campaign_id IS NOT NULL AND eh.campaign_id > 0))
              ORDER BY COALESCE(eh.sent_at, eh.created_at) DESC
-             LIMIT " . (int)$recentEmailsLimit
+             LIMIT 5"
         );
-        if ($recentWebsiteEmailsResult) {
-            while ($emailRow = $recentWebsiteEmailsResult->fetch_assoc()) {
-                $recentWebsiteEmails[] = $emailRow;
-            }
-        }
 
-        // Inquiries trend
         $inquiries30d = [];
         $inquiries30dMap = [];
-        $inquiries30dResult = $this->mysqli->query(
+        $inquiriesTrendRows = $this->db->fetchAll(
             "SELECT DATE(created_at) AS day_key, COUNT(*) AS cnt
-             FROM `" . DB::INQUIRIES . "`
+             FROM {DB::INQUIRIES}
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
              GROUP BY DATE(created_at)"
         );
-        if ($inquiries30dResult) {
-            while ($trendRow = $inquiries30dResult->fetch_assoc()) {
-                $key = (string)($trendRow['day_key'] ?? '');
-                if ($key !== '') {
-                    $inquiries30dMap[$key] = (int)($trendRow['cnt'] ?? 0);
-                }
+        foreach ($inquiriesTrendRows as $trendRow) {
+            $key = (string)($trendRow['day_key'] ?? '');
+            if ($key !== '') {
+                $inquiries30dMap[$key] = (int)($trendRow['cnt'] ?? 0);
             }
         }
         for ($i = 29; $i >= 0; $i--) {
@@ -107,26 +70,26 @@ class DashboardService
             }
         }
 
-        $todayInquiries = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::INQUIRIES . "` WHERE DATE(created_at) = CURDATE()");
-        $weekInquiries = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::INQUIRIES . "` WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
-        $totalInquiries = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::INQUIRIES . "`");
+        $todayInquiries = $countFn("SELECT COUNT(*) AS cnt FROM {DB::INQUIRIES} WHERE DATE(created_at) = CURDATE()");
+        $weekInquiries = $countFn("SELECT COUNT(*) AS cnt FROM {DB::INQUIRIES} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+        $totalInquiries = $countFn("SELECT COUNT(*) AS cnt FROM {DB::INQUIRIES}");
 
-        $totalHsCodes = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::HS_CODES . "`");
-        $emailsSentTotal = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_HISTORY . "` WHERE status = 'sent'");
-        $emailsSent24h = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_HISTORY . "` WHERE status = 'sent' AND DATE(COALESCE(sent_at, created_at)) = CURDATE()");
-        $emailsSent7d = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_HISTORY . "` WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+        $totalHsCodes = $countFn("SELECT COUNT(*) AS cnt FROM {DB::HS_CODES}");
+        $emailsSentTotal = $countFn("SELECT COUNT(*) AS cnt FROM {DB::EMAIL_HISTORY} WHERE status = 'sent'");
+        $emailsSent24h = $countFn("SELECT COUNT(*) AS cnt FROM {DB::EMAIL_HISTORY} WHERE status = 'sent' AND DATE(COALESCE(sent_at, created_at)) = CURDATE()");
+        $emailsSent7d = $countFn("SELECT COUNT(*) AS cnt FROM {DB::EMAIL_HISTORY} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
 
         $emailsSentDashboardTotal = $countFn(
             "SELECT COUNT(*) AS cnt
-             FROM `" . DB::EMAIL_HISTORY . "` eh
-             LEFT JOIN `" . DB::USERS . "` du ON du.id = eh.user_id
+             FROM {DB::EMAIL_HISTORY} eh
+             LEFT JOIN {DB::USERS} du ON du.id = eh.user_id
              WHERE eh.status = 'sent'
                  AND (du.id IS NOT NULL OR (eh.campaign_id IS NOT NULL AND eh.campaign_id > 0))"
         );
         $emailsSentDashboard24h = $countFn(
             "SELECT COUNT(*) AS cnt
-             FROM `" . DB::EMAIL_HISTORY . "` eh
-             LEFT JOIN `" . DB::USERS . "` du ON du.id = eh.user_id
+             FROM {DB::EMAIL_HISTORY} eh
+             LEFT JOIN {DB::USERS} du ON du.id = eh.user_id
              WHERE eh.status = 'sent'
                  AND DATE(COALESCE(eh.sent_at, eh.created_at)) = CURDATE()
                  AND (du.id IS NOT NULL OR (eh.campaign_id IS NOT NULL AND eh.campaign_id > 0))"
@@ -134,32 +97,28 @@ class DashboardService
 
         $emailsSentWebsiteTotal = max(0, $emailsSentTotal - $emailsSentDashboardTotal);
         $emailsSentWebsite24h = max(0, $emailsSent24h - $emailsSentDashboard24h);
-        $emailsPending = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_QUEUE . "` WHERE status IN ('pending','queued','retry')");
+        $emailsPending = $countFn("SELECT COUNT(*) AS cnt FROM {DB::EMAIL_QUEUE} WHERE status IN ('pending','queued','retry')");
 
         $emailDailyLimitTotal = $countFn(
             "SELECT COALESCE(SUM(CASE WHEN daily_limit > 0 THEN daily_limit ELSE 100 END), 0) AS cnt
-             FROM `" . DB::EMAIL_PROVIDERS . "`
+             FROM {DB::EMAIL_PROVIDERS}
              WHERE is_active = 1"
         );
         $emailsRemaining24h = max(0, $emailDailyLimitTotal - $emailsSent24h);
-        $emailProvidersCount = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::EMAIL_PROVIDERS . "`");
-        $disposableEmailDomainsCount = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::DISPOSABLE_EMAIL_DOMAINS . "`");
-        $bannedWordsCount = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::BANNED_WORDS . "`");
+        $emailProvidersCount = $countFn("SELECT COUNT(*) AS cnt FROM {DB::EMAIL_PROVIDERS}");
+        $disposableEmailDomainsCount = $countFn("SELECT COUNT(*) AS cnt FROM {DB::DISPOSABLE_EMAIL_DOMAINS}");
+        $bannedWordsCount = $countFn("SELECT COUNT(*) AS cnt FROM {DB::BANNED_WORDS}");
 
-        $totalCustomers = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::CUSTOMERS . "`");
-        $newCustomers7d = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::CUSTOMERS . "` WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+        $totalCustomers = $countFn("SELECT COUNT(*) AS cnt FROM {DB::CUSTOMERS}");
+        $newCustomers7d = $countFn("SELECT COUNT(*) AS cnt FROM {DB::CUSTOMERS} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+        $totalDashboardUsers = $countFn("SELECT COUNT(*) AS cnt FROM {DB::USERS}");
 
-        $totalDashboardUsers = $countFn("SELECT COUNT(*) AS cnt FROM `" . DB::USERS . "`");
-
-        // Logs path setup
         $adminLogPath = dirname(__DIR__, 2) . '/dashboard/CONSOLIDATED_ERROR_LOG.txt';
         if (!is_file($adminLogPath)) {
             $adminLogPath = dirname(__DIR__, 2) . '/dashboard/error_log.txt';
         }
 
-        $frontendLogPath = function_exists('resolveFrontendErrorLogPath')
-            ? resolveFrontendErrorLogPath()
-            : dirname(__DIR__, 2) . '/logs/FRONTEND_ERROR_LOG.txt';
+        $frontendLogPath = dirname(__DIR__, 2) . '/logs/FRONTEND_ERROR_LOG.txt';
 
         $adminRecentEntries = $this->getRecentErrorEntries($adminLogPath, 5);
         $publicRecentEntries = $this->getRecentErrorEntries($frontendLogPath, 5);

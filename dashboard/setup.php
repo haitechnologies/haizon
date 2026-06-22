@@ -24,20 +24,15 @@ $setupSections = [
 		'title' => 'Platform Administration',
 		'icon' => 'ph-gear-six',
 		'links' => [
-			['href' => 'global_settings.php', 'label' => 'Global Settings', 'desc' => 'Branding, domain, identity, and global platform options.', 'icon' => 'ph-sliders-horizontal', 'visible' => has_full_access()],
 			['href' => 'system_settings.php', 'label' => 'System Settings', 'desc' => 'Core behavior and technical feature settings.', 'icon' => 'ph-cpu', 'visible' => has_full_access()],
-			['href' => 'listing_users.php', 'label' => 'Users', 'desc' => 'Manage admin users and account access.', 'icon' => 'ph-users', 'visible' => has_full_access()],
-			['href' => 'listing_roles.php', 'label' => 'Roles & Permissions', 'desc' => 'Permission matrix and role access controls.', 'icon' => 'ph-lock-key', 'visible' => has_full_access()],
 			['href' => 'listing_modules.php', 'label' => 'Modules', 'desc' => 'Module catalog and permission-linked module setup.', 'icon' => 'ph-puzzle-piece', 'visible' => has_full_access()],
-			['href' => 'listing_authentication_activity.php', 'label' => 'Authentication Activity', 'desc' => 'Security access logs and authentication events.', 'icon' => 'ph-shield-check', 'visible' => has_full_access()],
 		],
 	],
 	[
-		'title' => 'Operations & Master Data',
+		'title' => 'Master Data',
 		'icon' => 'ph-database',
 		'links' => [
 			['href' => 'listing_inquiries.php', 'label' => 'Inquiries', 'desc' => 'Customer inquiries and follow-ups.', 'icon' => 'ph-chat-circle-dots', 'visible' => setupCanSee('inquiries')],
-			['href' => 'listing_warehouses.php', 'label' => 'Warehouses', 'desc' => 'Warehouse and location records.', 'icon' => 'ph-warehouse', 'visible' => setupCanSee('warehouses')],
 			['href' => 'listing_setup_groups.php', 'label' => 'Setup Groups', 'desc' => 'Reusable setup group definitions.', 'icon' => 'ph-sliders', 'visible' => setupCanSee('setup_groups')],
 			['href' => 'listing_document_categories.php', 'label' => 'Document Categories', 'desc' => 'Document taxonomy and filing categories.', 'icon' => 'ph-folders', 'visible' => setupCanSee('document_categories')],
 			['href' => 'listing_incoterms.php', 'label' => 'Incoterms', 'desc' => 'Trade incoterm definitions.', 'icon' => 'ph-globe-hemisphere-west', 'visible' => setupCanSee('incoterms')],
@@ -59,20 +54,9 @@ $setupSections = [
 		],
 	],
 	[
-		'title' => 'Business Systems',
-		'icon' => 'ph-squares-four',
-		'links' => [
-			['href' => 'listing_customers.php', 'label' => 'CRM Setup', 'desc' => 'Customer, lead, and project-related setup.', 'icon' => 'ph-users-three', 'visible' => dashboardHasSystemAccess('crm') && (setupCanSee('customers') || setupCanSee('leads'))],
-			['href' => 'listing_payroll_components.php', 'label' => 'HR Setup', 'desc' => 'Payroll, attendance, and people setup items.', 'icon' => 'ph-identification-card', 'visible' => dashboardHasSystemAccess('hr') && (setupCanSee('payroll_components') || setupCanSee('departments'))],
-			['href' => 'listing_accounts.php', 'label' => 'Accounting Setup', 'desc' => 'Chart of accounts and financial configuration.', 'icon' => 'ph-currency-circle-dollar', 'visible' => dashboardHasSystemAccess('accounting') && (setupCanSee('accounts') || setupCanSee('banks'))],
-			['href' => 'listing_shipping_advices.php', 'label' => 'Shipping Setup', 'desc' => 'Shipping operations and master shipping entities.', 'icon' => 'ph-package', 'visible' => dashboardHasSystemAccess('shipping') && (setupCanSee('shipping_advices') || setupCanSee('shipping_invoices'))],
-		],
-	],
-	[
 		'title' => 'Communication & Risk Controls',
 		'icon' => 'ph-envelope-simple',
 		'links' => [
-			['href' => 'listing_email_providers.php', 'label' => 'Email Providers', 'desc' => 'SMTP/provider configuration and credentials.', 'icon' => 'ph-envelope-simple', 'visible' => setupCanSee('email_providers')],
 			['href' => 'listing_disposable_email_domains.php', 'label' => 'Disposable Email Domains', 'desc' => 'Block throwaway domains to reduce abuse.', 'icon' => 'ph-shield-slash', 'visible' => setupCanSee('disposable_email_domains')],
 			['href' => 'listing_banned_words.php', 'label' => 'Banned Words', 'desc' => 'Filter prohibited terms across content inputs.', 'icon' => 'ph-prohibit', 'visible' => setupCanSee('banned_words')],
 		],
@@ -93,7 +77,6 @@ $visibleSectionCount = 0;
 				</div>
 			</div>
 			<div class="d-flex gap-2 py-2">
-				<a href="global_settings.php" class="btn btn-sm btn-light">Global Settings</a>
 				<a href="listing_system_settings.php" class="btn btn-sm btn-primary">System Settings</a>
 			</div>
 		</div>

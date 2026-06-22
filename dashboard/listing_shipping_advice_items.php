@@ -195,7 +195,8 @@ if ($action == "update_$module" && !empty($id)) {
                 $invoice_date = processDateYtoD($invoice_date);
                 $error_message = "Please add at least one Invoice Item.";
             } else {
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
             }
         } else {
             $error_message = "The $module_caption could not be updated. Please try again.";
@@ -271,7 +272,8 @@ if ($action == "update_$module" && !empty($id)) {
                 <div class="card">
                     <div class="card-body">
                         <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                        <table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
+                        <div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="custom_datatables datatable-professional display responsive no-wrap table-hover" width="100%">
                             <thead>
                                 <tr>
                                     <th width="100"><input type="checkbox" class="form-check-input" id="select-all" title="Select all"></th>
@@ -287,6 +289,7 @@ if ($action == "update_$module" && !empty($id)) {
                                 </tr>
                             </thead>
                         </table>
+</div>
                     </div>
                 </div>
 

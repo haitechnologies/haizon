@@ -224,7 +224,7 @@ class Registry
         // Phase 2 Week 2: Category, Content & Setup handlers (completed)
         $this->register('listing_categories', CategoriesDataTable::class);
         $this->register('listing_subcategories', SubcategoriesDataTable::class);
-        $this->register('listing_pages', PagesDataTable::class);
+        // $this->register('listing_pages', PagesDataTable::class); // decommissioned
         $this->register('listing_items', ItemsDataTable::class);
         $this->register('listing_hscodes', HSCodesDataTable::class);
         $this->register('listing_roles', RolesDataTable::class);
@@ -278,6 +278,12 @@ class Registry
 
         // Lead/CRM filtered listings
         $this->register('listing_lead_quotations', LeadQuotationsDataTable::class);
+
+        // HR & Payroll listings
+        $this->register('listing_gratuity_settlements', GratuitySettlementsDataTable::class);
+        $this->register('listing_air_tickets', AirTicketsDataTable::class);
+        $this->register('listing_hr_todo_tasks', HrTodoTasksDataTable::class);
+        $this->register('listing_annual_leave_entitlements', AnnualLeaveEntitlementsDataTable::class);
     }
 
     /**

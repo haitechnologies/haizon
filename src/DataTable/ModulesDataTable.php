@@ -69,7 +69,7 @@ class ModulesDataTable extends BaseDataTable
 
         // Build permissions display - single line to avoid JSON issues
         $permissionsDisplay = '<span class="badge bg-info bg-opacity-20 text-info">' . $permissionsCount . ' permissions</span>';
-        if (granted_('edit', 'modules')) {
+        if ($this->isGranted('edit', 'modules')) {
             $permissionsDisplay .= ' <a href="module_permissions.php?module_id=' . $id . '" class="btn btn-sm btn-light"><i class="ph-shield-check"></i> Manage</a>';
         }
 
@@ -80,10 +80,10 @@ class ModulesDataTable extends BaseDataTable
 
         // Action buttons
         $actions = '';
-        if (granted_('edit', 'modules')) {
+        if ($this->isGranted('edit', 'modules')) {
             $actions .= ActionButtonHelper::editButton($id, 'modules.php', 'modules', 'Edit', false);
         }
-        if (granted_('delete', 'modules')) {
+        if ($this->isGranted('delete', 'modules')) {
             $actions .= ' ' . ActionButtonHelper::deleteButton($id, 'modules');
         }
 

@@ -64,10 +64,10 @@ class LeadQuotationsDataTable extends BaseDataTable
         }
 
         $actions = '';
-        if (granted_('edit', 'quotations')) {
+        if ($this->isGranted('edit', 'quotations')) {
             $actions .= ActionButtonHelper::editButton($id, 'quotations.php' . '&lead_id=' . $leadId, 'quotations', 'Edit', false);
         }
-        if (granted_('delete', 'quotations')) {
+        if ($this->isGranted('delete', 'quotations')) {
             $actions .= ' ' . ActionButtonHelper::deleteButton($id, 'quotations');
         }
 

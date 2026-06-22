@@ -16,7 +16,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 | RESTRICT ACCESS: Only System Admin, Super Admin, and HR
 |--------------------------------------------------------------------------
 */
-if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
+if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
     echo 'Permission Denied.';
     exit();
 }
@@ -44,9 +44,8 @@ $payroll_summary = $mysqli->query("
         SUM(CASE WHEN pc.component_type = 'deduction' THEN ss.amount ELSE 0 END) as total_deductions
     FROM `" . DB::SALARY_STRUCTURES . "` ss
     INNER JOIN `" . DB::PAYROLL_COMPONENTS . "` pc ON ss.component_id = pc.id
-    WHERE pc.is_active = 1
-    AND (ss.effective_to IS NULL OR ss.effective_to >= CURDATE())
-    AND (ss.effective_from IS NULL OR ss.effective_from <= CURDATE())
+    WHERE (ss.effective_to IS NULL OR YEAR(ss.effective_to) = 0 OR ss.effective_to >= CURDATE())
+    AND (ss.effective_from IS NULL OR YEAR(ss.effective_from) = 0 OR ss.effective_from <= CURDATE())
 ")->fetch_assoc();
 
 $total_gross = floatval($payroll_summary['total_gross'] ?? 0);
@@ -69,6 +68,8 @@ $leave_summary = $mysqli->query("
 ?>
 
 <div class="content-wrapper">
+    <?php include('admin_elements/hr_navbar.php'); ?>
+
         <!-- Page header -->
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">

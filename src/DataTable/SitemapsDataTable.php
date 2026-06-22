@@ -29,8 +29,8 @@ class SitemapsDataTable extends BaseDataTable
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)($row['id'] ?? 0);
-        $name = s__($row['name'] ?? '');
-        $type = s__($row['type'] ?? '');
+        $name = $this->sanitize($row['name'] ?? '');
+        $type = $this->sanitize($row['type'] ?? '');
         $lastGenerated = $row['last_generated'] ?? '';
         $entries = (int)($row['total_entries'] ?? 0);
 
@@ -45,7 +45,7 @@ class SitemapsDataTable extends BaseDataTable
 
         // Last generated time
         $generatedDisplay = $lastGenerated
-            ? '<span title="' . htmlspecialchars($lastGenerated) . '">' . timeAgo($lastGenerated) . '</span>'
+            ? '<span title="' . htmlspecialchars($lastGenerated) . '">' . $this->formatTimeAgo($lastGenerated) . '</span>'
             : '<span class="text-muted">Never</span>';
 
         return [
@@ -68,7 +68,7 @@ class SitemapsDataTable extends BaseDataTable
                          <i class="ph-arrows-clockwise"></i>
                       </a>';
 
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
 

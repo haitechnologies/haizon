@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__) . '/admin_elements/error_handler_init.php';
+
 /**
  * CustomerAPI.php - API Handler for Customer Operations
  * 

@@ -169,6 +169,19 @@
             changeYear: true
         });
 
+        // === USER DOCUMENT DATES (Employee Profile) ===
+        $("#doc-issued").datepicker({
+            dateFormat: 'dd-mm-yy',
+            changeMonth: true,
+            changeYear: true
+        });
+
+        $("#doc-expiry").datepicker({
+            dateFormat: 'dd-mm-yy',
+            changeMonth: true,
+            changeYear: true
+        });
+
         // === SHIPMENT DATES ===
         $("#expected_shipment_date").datepicker({
             dateFormat: 'dd-mm-yy',

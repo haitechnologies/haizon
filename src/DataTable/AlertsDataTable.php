@@ -17,19 +17,29 @@ class AlertsDataTable extends BaseDataTable
     protected $table = DB::ALERTS;
     protected $searchFields = ['alert_name'];
     protected $sortableColumns = [
-        0 => 'id', 1 => 'alert_name', 2 => 'created_at', 3 => 'id'
+        0 => 'id', 1 => 'alert_name', 2 => 'type', 3 => 'created_at', 4 => 'id'
     ];
 
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
         $alertName = $row['alert_name'] ?? '';
+        $type = $row['type'] ?? 'general';
         $createdAt = $row['created_at'] ?? '';
+
+        $badgeMap = [
+            'general' => 'bg-secondary',
+            'system' => 'bg-primary',
+            'warning' => 'bg-warning text-dark',
+            'info' => 'bg-info text-dark',
+        ];
+        $badgeClass = $badgeMap[$type] ?? 'bg-secondary';
 
         return [
             $id,
             htmlspecialchars($alertName),
-            timeAgo($createdAt),
+            '<span class="badge ' . $badgeClass . '">' . htmlspecialchars(ucfirst($type)) . '</span>',
+            $this->formatTimeAgo($createdAt),
             $this->getActionButtons($id, 'alerts')
         ];
     }
@@ -50,10 +60,10 @@ class AlertsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $buttons = [];
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'alerts.php', $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

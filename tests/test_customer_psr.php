@@ -26,6 +26,7 @@ try {
     // Clean up any old test data
     $db->execute("DELETE FROM `erp_addresses` WHERE addressable_type = 'Customer' AND organization_id = :org", ['org' => $testOrgId]);
     $db->execute("DELETE FROM `erp_contacts` WHERE contactable_type = 'Customer' AND organization_id = :org", ['org' => $testOrgId]);
+    $db->execute("DELETE FROM `erp_invoices` WHERE organization_id = :org", ['org' => $testOrgId]);
     $db->execute("DELETE FROM `erp_customers` WHERE organization_id = :org", ['org' => $testOrgId]);
 
     // Test 1: Create Customer

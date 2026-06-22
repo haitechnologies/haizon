@@ -1,41 +1,119 @@
-# Haipulse ERP Agent Rules & Context
+# Haizon ERP — AI Agent Context
 
-## Project Identity
-- **Stack:** PHP 8.2+ (no framework), Bootstrap 5, jQuery 3.7, MySQL 8.0+ (PDO, no ORM, Repository pattern). PSR-4 `App\` -> `src/`.
-- **Database:** InnoDB, `utf8mb4_unicode_ci`, dynamic prefix `erp_` (rewrite at runtime).
-- **Multi-Tenancy:** Row isolation via `organization_id` on scoped tables, auto-injected by `OrgIdInjectionMiddleware`.
-- **Session Keys:** `$_SESSION['haipulse']['DASHBOARD']`.
+> **Single source of truth for AI coding agents.**
+
+## Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Language | PHP 8.2+ (`declare(strict_types=1)`) |
+| Framework | None — custom platform, PSR-4 `App\` → `src/` |
+| Frontend | Bootstrap 5.3, jQuery 3.7, DataTables.js |
+| Database | MySQL 8.0+ / InnoDB / utf8mb4_unicode_ci / PDO |
+| DB Prefix | `erp_` (rewritten at runtime via `DynamicPrefixPdo`) |
+| Multi-Tenancy | Row-level isolation via `organization_id` on ~70 tables |
+| Session | `App\Core\Session` — `Session::userId()`, `Session::roleId()`, `Session::orgId()` |
+| DI | Custom PSR-11 container with reflection auto-wiring |
+
+## Architecture
+
+```
+Controller (__invoke(Request): Response) → Service → Repository → Model (readonly DTO)
+  Permission/CSRF checks           Business logic      SQL+PDO       Type-safe DTOs
+  View::render()                   Validation          Org-scoping
+```
 
 ## Directory Map
-- `src/`: Namespace `App\` (OOP layer: Core, DataTable, Exception, Frontend, Helper, Model, Repository, Security, Service).
-- `dashboard/`: Admin backend (views/ views templates, api/ endpoints, pages/ controllers).
-- `config/`: globals.php (procedural helpers), database.php (DB connection), session.php (sessions, CSRF).
 
-## Coding Conventions
-- Start all files with `declare(strict_types=1);`.
-- Use table constants from `App\Core\DB` (e.g. `DB::CUSTOMERS`) instead of hardcoding `'erp_customers'`.
-- Database access: Use `App\Core\Database` PDO wrapper with named parameters `['id' => $id]`. No raw queries with interpolation.
-- CSRF validation: Run `validate_csrf_token($_POST['csrf_token'] ?? '')` for all POST requests.
-- Authorization: Check via `granted('action', $module_id)` or `granted_('action', 'module_slug')`.
-- Models: Readonly PHP 8.2+ classes with constructor promotion.
-- Exceptions: Throw typed exceptions under `App\Exception\`. No `die()` / `exit()` in `src/`.
-- Deletion: Soft delete (`is_active = 0`), never hard delete.
+- `src/` — PSR-4 `App\` namespace (Http/, Core/, DataTable/, Exception/, Helper/, Model/, Repository/, Security/, Service/)
+- `resources/views/` — PHP templates
+- `dashboard/` — Admin backend (page controllers, admin_elements/, api/, ajax/, cron/)
+- `config/` — globals.php (procedural helpers), database.php (DB connection), session.php
+- `tests/`, `docs/`, `docs/archive/` — Tests, active refs, historical refs
+
+## Key Classes
+
+| Class | Location | Purpose |
+|-------|----------|---------|
+| `App\Core\Database` | src/Core/ | PDO wrapper: `fetchOne()`, `fetchAll()`, `execute()`, `insert()` |
+| `App\Core\DB` | src/Core/ | Table constants (`DB::CUSTOMERS`), `getPrefix()`, `pdo()` |
+| `App\Core\Container` | src/Core/ | PSR-11 DI container, `autowire()`, `register()`, `get()` |
+| `App\Core\Session` | src/Core/ | Static: `userId()`, `roleId()`, `orgId()`, `get(key, default)` |
+| `App\Http\Request` | src/Http/ | Wraps `$_GET/POST/SERVER/FILES`: `get()`, `post()`, `getInt()`, `has()` |
+| `App\Http\Response` | src/Http/ | Immutable: `html()`, `json()`, `redirect()` |
+| `App\Http\Controller\BaseController` | src/Http/Controller/ | `requiresModule()`, `canView/Edit/Create/Delete()`, `validateCsrf()` |
+| `App\Core\View` | src/Core/ | Renderer: `render(template, data)`, `share(key, value)` |
+| `App\DataTable\BaseDataTable` | src/DataTable/ | Abstract base for server-side DataTables |
+| `App\DataTable\Registry` | src/DataTable/ | Module→Handler mapping for datatables_dispatcher.php |
+
+## Database Rules
+
+- Use `App\Core\Database` PDO wrapper with named params: `['id' => $id]`
+- Use `DB::*` constants for table names — never hardcode
+- Always scope by `organization_id` on tenant tables
+- No `SELECT *` — specify columns
+- No raw `$mysqli->query()` with interpolation
+
+## Permission System
+
+```php
+granted('view', $module_id);      // By module_id (integer)
+granted_('edit', 'customers');    // By module slug (string)
+```
+
+- Role-based: `Roles::SYSTEM_ADMIN`, `Roles::hasFullAccess($role_id)`
+- In controllers: `$this->canView()`, `$this->canEdit()`, etc.
+
+## Creating a New CRUD Page
+
+1. **Model** (`src/Model/{Entity}.php`): `readonly class` with constructor promotion
+2. **Repository** (`src/Repository/{Entity}Repository.php`): PDO CRUD, `DB::*` constants
+3. **Service** (`src/Service/{Entity}Service.php`): Validation, business logic, throws `ValidationException`
+4. **Controller** (`src/Http/Controller/{Entity}Controller.php`): Extends `BaseController`, `__invoke(Request): Response`
+5. **View** (`resources/views/{module}/form.php`): Bootstrap 5 form, CSRF token, `include admin_header.php`
+6. **Dashboard** (`dashboard/{module}.php`): 13-line dispatcher
+7. **Register** in `dashboard/bootstrap.php`: autowire Repository + Service, register Controller with factory closure
 
 ## CLI Commands
-- Run tests: `php tests/run_all_tests.php`
-- Run migration: `php database/migrate.php`
-- PHP Syntax check: `php -l <file>`
-- PHPStan: `vendor/bin/phpstan analyse`
-- PHPCS: `vendor/bin/phpcs --standard=.phpcs.xml`
 
-## Strict Avoidance List
-- DO NOT add `package.json`, npm, or Node.js toolchains.
-- DO NOT add any PHP frameworks (Laravel, Symfony).
-- DO NOT use raw `$mysqli->query()` with string interpolation.
-- DO NOT use `SELECT *` in production queries.
-- DO NOT use `@` error suppression.
-- DO NOT add comments unless explicitly requested.
-- **Setup tables (`erp_setup_statuses`, `erp_setup_tags`, `erp_job_statuses`)** are standalone tables with `publish`/`is_active` sync triggers. Use them for status/tag management. Do NOT use `erp_taxonomies` for these — that table is reserved for polymorphic categorization only.
-- **Shared tables:** `erp_contacts`, `erp_addresses`, and `erp_attachments` serve multiple entities (customers, vendors, leads, users). Query with appropriate context filters.
-- Use `DB::*` constants (e.g., `DB::CUSTOMERS`) — never hardcode `erp_customers`. Note: Some constants are aliases pointing to the same physical table (see `src/Core/DB.php` alias documentation).
+- Tests: `php tests/run_all_tests.php` | Syntax: `php -l <file>`
+- PHPStan: `vendor/bin/phpstan analyse` | PHPCS: `vendor/bin/phpcs --standard=.phpcs.xml`
 
+## Strict Avoidance
+
+- No `package.json`, npm, Node.js
+- No PHP frameworks (Laravel, Symfony)
+- No raw `$mysqli->query()` with interpolation, no `SELECT *`, no `@` error suppression
+- No comments unless requested | No hard deletes (use `is_active = 0`)
+- Global functions in `src/` are `function_exists()` guarded
+- Use `SlugHelper::slugify()` not global `slugify()`
+
+## Listing Template
+
+`listing_template.php` accepts `$listingConfig` with keys: `module`, `module_caption`, `tbl_name`, `hide_add_button`, `error_message`, `success_message`, `dt_columns` (JSON), `dt_options`, `custom_dt_init`, `extra_js`, `after_card`. Handler: `listing_handler.php` provides AJAX delete.
+
+## Page Header Standard
+
+Title on left with help icon; action buttons on right. Use `d-flex align-items-center justify-content-between`. See `listing_invoices.php` (gold standard), `listing_template.php` (template version).
+
+## Form Partials (`form_*.php`)
+
+| Partial | Usage |
+|---------|-------|
+| `form_field_text.php` | Text/email/number inputs |
+| `form_field_select.php` | Select dropdowns (supports `options_html`) |
+| `form_field_textarea.php` | Textarea inputs |
+| `form_field_date.php` | Date picker with calendar icon |
+| `form_card_section.php` | Bootstrap card wrapper |
+| `form_line_items_table.php` | Dynamic add/remove row table |
+
+## Migration Status
+
+See `docs/MIGRATION-AUDIT-REMAINING.md` for details.
+
+- **P1-P7 (Core infra):** 100% | **P8 (Legacy cleanup):** ~99%
+- **P14 (Dashboard migration):** ~28% (~95/~340)
+- **P14a-c (CRUD):** 56 modules done | **P14d (Listing handler):** 20 files
+- **P14e (Complex CRUD):** 20 modules migrated, ~95 new src/ files
+- **Remaining:** `src/Core/DynamicPrefixMysqli.php` (kept for config/database.php)
+- **Error coverage:** 100% — all 335+ entry points include `error_handler_init.php`

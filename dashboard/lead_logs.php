@@ -40,6 +40,10 @@ else $publish = 0;
 $lead_id = '';
 if (isset($_REQUEST['lead_id']))        $lead_id     = e_s__($_REQUEST['lead_id']);
 if (isset($_POST['lead_id']))           $lead_id     = e_s__($_POST['lead_id']);
+if (empty($lead_id) || !is_numeric($lead_id)) {
+    $error_message = 'Invalid or missing Lead ID.';
+    $lead_id = 0;
+}
 
 
 /*

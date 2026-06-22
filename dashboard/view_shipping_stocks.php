@@ -2,6 +2,7 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
 include('admin_elements/admin_header.php');
 require '../vendor/autoload.php';
 
@@ -25,6 +26,7 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 // print_r($_REQUEST);
 
 $id_list = $_REQUEST['id_list'] ?? '';
+$id = $_REQUEST['id'] ?? '';
 
 
 /*
@@ -32,6 +34,12 @@ $id_list = $_REQUEST['id_list'] ?? '';
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
+
+// Validate required params
+if (empty($id) && empty($id_list)) {
+    header("Location:listing_$module.php");
+    exit;
+}
 
 // if (empty($id_list)) {
 //     echo $error_message = 'No items found. Please select at least 1 Shipping Advice Item to Proceed for Stock Management.';
@@ -66,7 +74,7 @@ $out_qty_arr                = array();
 $created_by = getTableAttr('created_by', DB::QUOTATIONS, $id);
 
 if (
-    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
+    (!empty($id) && Session::roleId() == '1')
     ||
     (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['admin_id'] == $created_by)
 ) {
@@ -97,6 +105,9 @@ if (
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
+
+$publish = '';
+
 ?>
 
 <div class="content-wrapper">

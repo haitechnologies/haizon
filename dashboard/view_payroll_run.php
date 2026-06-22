@@ -14,13 +14,12 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 | RESTRICT ACCESS
 |--------------------------------------------------------------------------
 */
-if (!is_SystemAdmin() && !is_SuperAdmin() && is_role() != 'hr') {
+if (!has_full_access() && !is_accounts() && is_role() != 'hr') {
     echo 'Permission Denied.';
     exit();
 }
 
 $payroll_run_id = intval($_GET['id'] ?? 0);
-$success_message = stripslashes($_GET['success_message'] ?? '');
 
 if (empty($payroll_run_id)) {
     header("Location:listing_payroll_runs.php");
@@ -45,6 +44,8 @@ $total_net = $run['total_net'];
 ?>
 
 <div class="content-wrapper">
+    <?php include('admin_elements/hr_navbar.php'); ?>
+
         <!-- Page header -->
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
@@ -84,27 +85,6 @@ $total_net = $run['total_net'];
     <div class="content-inner">
         <div class="content">
             <?php include('admin_elements/breadcrumb.php'); ?>
-
-            <?php if (!empty($success_message)) { ?>
-                <div class="alert alert-success alert-dismissible fade show">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <strong>Success:</strong> <?php echo $success_message; ?>
-                </div>
-            <?php } ?>
-
-            <?php if (!empty($_SESSION['success_message'])) { ?>
-                <div class="alert alert-success alert-dismissible fade show">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <strong>Success:</strong> <?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?>
-                </div>
-            <?php } ?>
-
-            <?php if (!empty($_SESSION['error_message'])) { ?>
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <strong>Error:</strong> <?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?>
-                </div>
-            <?php } ?>
 
             <!-- Payroll Run Summary -->
             <div class="card mb-3">

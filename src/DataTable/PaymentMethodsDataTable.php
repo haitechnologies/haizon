@@ -27,7 +27,7 @@ class PaymentMethodsDataTable extends BaseDataTable
 
         $timeAgoStr = '';
         if (!empty($createdAt)) {
-            $timeAgoStr = function_exists('timeAgo') ? timeAgo($createdAt) : $createdAt;
+            $timeAgoStr = $this->formatTimeAgo($createdAt);
         }
 
         return [
@@ -42,10 +42,10 @@ class PaymentMethodsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module, $publish)
     {
         $actions = '';
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $actions .= ActionButtonHelper::editButton($id, 'payment_methods.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ' ' . ActionButtonHelper::deleteButton($id, $module);
         }
         return $actions;

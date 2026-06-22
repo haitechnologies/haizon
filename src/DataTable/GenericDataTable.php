@@ -35,9 +35,9 @@ final class GenericDataTable extends BaseDataTable
         $hasPublish = $this->config['publish'] ?? false;
 
         $cols = [
-            $id,
+            $this->rowNumber,
             htmlspecialchars($label),
-            timeAgo($created),
+            $this->formatTimeAgo($created),
         ];
 
         if ($hasPublish) {
@@ -53,11 +53,11 @@ final class GenericDataTable extends BaseDataTable
     private function buildActionButtons(int $id, string $module): string
     {
         $a = '';
-        if (granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $editUrl = $module . '.php';
             $a .= ActionButtonHelper::editButton($id, $editUrl, $module, 'Edit', false);
         }
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton($id, $module);
         }
         return $a;

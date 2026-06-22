@@ -52,8 +52,6 @@ $sitemap = [
         ['name'=>'Add/Edit Organization','url'=>'organizations.php']
     ],
     'Content Management' => [
-        ['name'=>'Pages','url'=>'listing_pages.php'],
-        ['name'=>'Add/Edit Page','url'=>'pages.php'],
         ['name'=>'Banned Words','url'=>'listing_banned_words.php'],
         ['name'=>'Add/Edit Banned Word','url'=>'banned_words.php']
     ],
@@ -116,7 +114,7 @@ $sitemap = [
         ['name'=>'Generate PDF','url'=>'generate_pdf.php'],
         ['name'=>'Generate','url'=>'generate.php'],
         ['name'=>'Send Email','url'=>'send_email.php'],
-        ['name'=>'DataTable Pages Audit','url'=>'listing_pages_audit.php']
+        ['name'=>'DataTable Pages Audit','url'=>'listing_pages_audit.php'] // not part of pages module
     ],
     'Logs & Debugging' => [
         ['name'=>'View Error Logs','url'=>'view_backend_error_logs.php'],
@@ -448,7 +446,8 @@ $total_pages=0;foreach($sitemap as $p)$total_pages+=count($p);
                         <div class="badge"><?=count($pages)?> pages</div>
                     </div>
                     <div class="cat-body">
-                        <table class="table table-sm table-hover compact-table mb-0">
+                        <div class="table-responsive">
+<table class="table table-sm table-hover compact-table mb-0">
                             <thead>
                                 <tr>
                                     <th width="40">#</th>
@@ -472,6 +471,7 @@ $total_pages=0;foreach($sitemap as $p)$total_pages+=count($p);
                                 <?php endforeach;?>
                             </tbody>
                         </table>
+</div>
                     </div>
                 </div>
                 <?php endforeach;?>

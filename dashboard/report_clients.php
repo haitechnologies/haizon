@@ -1,5 +1,7 @@
 <?php
 
+use App\Core\DB;
+
 include('admin_elements/admin_header.php');
 require '../vendor/autoload.php';
 
@@ -118,17 +120,17 @@ $search_query = '';
 if ($action == "generate_report") {
 
 	//COUNT QUERY
-	$result 		= $mysqli->query("SELECT id FROM `" . tbl_clients . "` WHERE id>0 " . $search_query);
+	$result 		= $mysqli->query("SELECT id FROM `" . DB::CUSTOMERS . "` WHERE id>0 " . $search_query);
 	$total_pages  	= $result->num_rows;
 
 	//NORMAL QUERY
-	// $result_clients = $mysqli->query("SELECT * FROM `" . tbl_clients . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit");
-	// echo "SELECT * FROM `" . tbl_clients . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit";
-	$result_clients = $mysqli->query("SELECT * FROM `" . tbl_clients . "` WHERE id>0 " . $search_query . " ORDER BY id ASC LIMIT $start, $limit");
+	// $result_clients = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit");
+	// echo "SELECT * FROM `" . DB::CUSTOMERS . "` WHERE id>0 " . $search_query . " ORDER BY id DESC LIMIT $start, $limit";
+	$result_clients = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` WHERE id>0 " . $search_query . " ORDER BY id ASC LIMIT $start, $limit");
 
 	//EXPORT EXCEL
-	// $result_clients_ = $mysqli->query("SELECT * FROM `" . tbl_clients . "` WHERE id>0 " . $search_query . " ORDER BY id ASC LIMIT $start, $limit");
-	$result_clients_ = $mysqli->query("SELECT * FROM `" . tbl_clients . "` WHERE id>0 " . $search_query . " ORDER BY id ASC"); // Remove Limit
+	// $result_clients_ = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` WHERE id>0 " . $search_query . " ORDER BY id ASC LIMIT $start, $limit");
+	$result_clients_ = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS . "` WHERE id>0 " . $search_query . " ORDER BY id ASC"); // Remove Limit
 }
 
 
@@ -228,7 +230,7 @@ if ($action == "generate_report") {
 
 											$client_details = '';
 
-											$result = $mysqli->query("SELECT * FROM `" . tbl_clients  . "` WHERE is_active=1 ORDER BY id DESC");
+											$result = $mysqli->query("SELECT * FROM `" . DB::CUSTOMERS  . "` WHERE is_active=1 ORDER BY id DESC");
 											while ($rows = $result->fetch_array()) {
 
 												$title                = $rows["title"];

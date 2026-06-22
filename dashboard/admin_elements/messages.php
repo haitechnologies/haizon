@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Standardized Success/Error/Info Toast Alerts (Centralized Queue)
  *
@@ -118,13 +119,14 @@ if (!function_exists('dashboard_render_messages')) {
                     .toast-alerts-container {
                         position: fixed;
                         top: 20px;
-                        right: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
                         z-index: 10050;
                         display: flex;
                         flex-direction: column;
                         gap: 12px;
-                        max-width: 380px;
-                        width: 100%;
+                        max-width: 480px;
+                        width: calc(100% - 40px);
                         pointer-events: none;
                     }
                     .toast-alert {

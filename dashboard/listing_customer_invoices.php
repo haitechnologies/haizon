@@ -128,14 +128,15 @@ if (($action == "delete_$module" && !empty($id))) {
             // Check ownership if not superadmin
             if (!Roles::hasFullAccess($session_role_id)) {
                 $invoice = $invoiceService->getInvoice($validInvoiceId, $activeOrganizationId);
-                if ($invoice->createdBy !== (int)$session_user_id) {
+                if ($invoice->createdBy !== (int)Session::userId()) {
                     throw new \Exception("You do not have permission to delete this invoice");
                 }
             }
 
             if ($invoiceService->deleteInvoice($validInvoiceId, $activeOrganizationId)) {
                 $success_message = "$module_caption Deleted Successfully.";
-                header("Location:listing_customer_invoices.php?customer_id=$customer_id&success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_customer_invoices.php?customer_id=$customer_id");
                 exit;
             } else {
                 $error_message = "Sorry! $module Could Not Be Deleted.";

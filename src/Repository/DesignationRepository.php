@@ -31,7 +31,7 @@ class DesignationRepository
      */
     public function find(int $id): ?Designation
     {
-        $sql = "SELECT id, organization_id, designation, is_active, created_at, updated_at, created_by 
+        $sql = "SELECT id, organization_id, designation, publish, created_at, updated_at, created_by 
                 FROM `{DB::DESIGNATIONS}` 
                 WHERE id = :id";
 
@@ -51,7 +51,7 @@ class DesignationRepository
      */
     public function findAll(int $organizationId): array
     {
-        $sql = "SELECT id, organization_id, designation, is_active, created_at, updated_at, created_by 
+        $sql = "SELECT id, organization_id, designation, publish, created_at, updated_at, created_by 
                 FROM `{DB::DESIGNATIONS}` 
                 WHERE organization_id = :organization_id 
                 ORDER BY designation ASC";
@@ -105,13 +105,13 @@ class DesignationRepository
      */
     private function insert(Designation $designation): Designation
     {
-        $sql = "INSERT INTO `{DB::DESIGNATIONS}` (organization_id, designation, is_active, created_by) 
-                VALUES (:organization_id, :designation, :is_active, :created_by)";
+        $sql = "INSERT INTO `{DB::DESIGNATIONS}` (organization_id, designation, publish, created_by) 
+                VALUES (:organization_id, :designation, :publish, :created_by)";
 
         $params = [
             'organization_id' => $designation->organizationId,
             'designation' => $designation->designation,
-            'is_active' => $designation->publish ? 1 : 0,
+            'publish' => $designation->publish ? 1 : 0,
             'created_by' => $designation->createdBy,
         ];
 
@@ -127,14 +127,14 @@ class DesignationRepository
         $sql = "UPDATE `{DB::DESIGNATIONS}` 
                 SET organization_id = :organization_id, 
                     designation = :designation, 
-                    is_active = :is_active, 
+                    publish = :publish, 
                     created_by = :created_by 
                 WHERE id = :id";
 
         $params = [
             'organization_id' => $designation->organizationId,
             'designation' => $designation->designation,
-            'is_active' => $designation->publish ? 1 : 0,
+            'publish' => $designation->publish ? 1 : 0,
             'created_by' => $designation->createdBy,
             'id' => $designation->id,
         ];
@@ -165,8 +165,7 @@ class DesignationRepository
             id: (int)$row['id'],
             organizationId: $row['organization_id'] !== null ? (int)$row['organization_id'] : null,
             designation: (string)$row['designation'],
-            publish: (bool)$row['publish'],
-            isActive: (bool)($row['is_active'] ?? $row['publish'] ?? true),
+            publish: (bool)($row['publish'] ?? false),
             createdAt: (string)($row['created_at'] ?? ''),
             updatedAt: (string)($row['updated_at'] ?? ''),
             createdBy: (int)($row['created_by'] ?? 0)

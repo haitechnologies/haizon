@@ -42,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
             $settingExists = ($existsResult && $existsResult->num_rows > 0);
 
             if ($settingExists) {
-                $saveResult = $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='" . $escapedFilename . "', updated_at=NOW(), updated_by='" . (int)$session_user_id . "' WHERE setting_slug='" . $escapedSlug . "'");
+                $saveResult = $mysqli->query("UPDATE `" . DB::SYSTEM_SETTINGS . "` SET setting_value='" . $escapedFilename . "', updated_at=NOW(), updated_by='" . (int)Session::userId() . "' WHERE setting_slug='" . $escapedSlug . "'");
             } else {
-                $saveResult = $mysqli->query("INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) VALUES ('" . $escapedSlug . "', 'Master Sitemap Filename', '" . $escapedFilename . "', 'Custom filename used for the primary sitemap endpoint', 1, '" . (int)$session_user_id . "', '" . (int)$session_user_id . "', NOW(), NOW())");
+                $saveResult = $mysqli->query("INSERT INTO `" . DB::SYSTEM_SETTINGS . "` (setting_slug, setting_name, setting_value, hint, is_active, created_by, updated_by, created_at, updated_at) VALUES ('" . $escapedSlug . "', 'Master Sitemap Filename', '" . $escapedFilename . "', 'Custom filename used for the primary sitemap endpoint', 1, '" . (int)Session::userId() . "', '" . (int)Session::userId() . "', NOW(), NOW())");
             }
 
             if ($saveResult) {
@@ -411,7 +411,8 @@ unset($file);
                 <div class="row g-3">
                     <div class="col-md-4">
                         <h6 class="mb-2"><i class="ph-star me-1"></i> Priority Guidelines</h6>
-                        <table class="table table-sm small mb-0">
+                        <div class="table-responsive">
+<table class="table table-sm small mb-0">
                             <tbody>
                                 <tr>
                                     <td><code>1.0</code></td>
@@ -435,11 +436,13 @@ unset($file);
                                 </tr>
                             </tbody>
                         </table>
+</div>
                     </div>
                     
                     <div class="col-md-4">
                         <h6 class="mb-2"><i class="ph-clock me-1"></i> Change Frequency</h6>
-                        <table class="table table-sm small mb-0">
+                        <div class="table-responsive">
+<table class="table table-sm small mb-0">
                             <tbody>
                                 <tr>
                                     <td><code>always</code></td>
@@ -467,6 +470,7 @@ unset($file);
                                 </tr>
                             </tbody>
                         </table>
+</div>
                     </div>
                     
                     <div class="col-md-4">

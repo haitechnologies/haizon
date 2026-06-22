@@ -2,12 +2,14 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
+
 include('admin_elements/admin_header.php');
 
 $module             = 'quotations';
 $module_caption     = 'Quotation';
 $tbl_name = DB::QUOTATIONS;
-$create_by          = $_SESSION[$project_pre]['DASHBOARD']['user_id'];
+$create_by          = Session::userId();
 
 
 $error_message              = '';
@@ -96,14 +98,14 @@ if (($action == "update_$module" && !empty($id) && !empty($quotation_status))) {
         if ($quotation_status == 'not_confirmed') {
 
 
-            // Delete PDF - Next Time System will Generate New with Confirmed Status 
+            // Delete PDF - Next Time System will Generate New with Confirmed Status
             $pdf        = getTableAttr('pdf', DB::QUOTATIONS, $id);
             unlink("../pdfs_quotations/" . $pdf . ".pdf");
             $mysqli->query("UPDATE " . DB::QUOTATIONS . "  SET pdf = '' WHERE id=$id");
         } else if ($quotation_status == 'confirmed') {
 
 
-            // Delete PDF - Next Time System will Generate New with Confirmed Status 
+            // Delete PDF - Next Time System will Generate New with Confirmed Status
             // $pdf        = getTableAttr('pdf', DB::QUOTATIONS, $id);
             // unlink("../pdfs_quotations/" . $pdf . ".pdf");
             // $mysqli->query("UPDATE " . DB::QUOTATIONS . "  SET pdf = '' WHERE id=$id");
@@ -114,7 +116,7 @@ if (($action == "update_$module" && !empty($id) && !empty($quotation_status))) {
             // -----------------------------------------------------------------------------------------------------------------------------------------------
         } else if ($quotation_status == 'cancelled' || $quotation_status == 'on_hold') {
 
-            // Delete PDF - Next Time System will Generate New 
+            // Delete PDF - Next Time System will Generate New
             // $pdf        = getTableAttr('pdf', DB::QUOTATIONS, $id);
             // unlink("../pdfs_quotations/" . $pdf . ".pdf");
             // $mysqli->query("UPDATE " . DB::QUOTATIONS . "  SET pdf = '' WHERE id=$id");
@@ -125,7 +127,8 @@ if (($action == "update_$module" && !empty($id) && !empty($quotation_status))) {
 
 
         // --------------------------------------------------------------------------------
-        header("Location:quotation.php?id=$id&success_message=$success_message");
+        flash_success($success_message);
+        header("Location:quotation.php?id=$id");
         // $error_message = "Sorry! $module Status Could Not Be Updated.";
     } else {
         $error_message = "Sorry! $module Status Could Not Be Updated.";
@@ -266,6 +269,30 @@ if (!empty($id)) {
 }
 
 
+if (!isset($customer_id)) $customer_id = '';
+if (!isset($display_name)) $display_name = '';
+if (!isset($company_name)) $company_name = '';
+if (!isset($street1)) $street1 = '';
+if (!isset($street2)) $street2 = '';
+if (!isset($city)) $city = '';
+if (!isset($state)) $state = '';
+if (!isset($country)) $country = '';
+if (!isset($mobile)) $mobile = '';
+if (!isset($email)) $email = '';
+if (!isset($quotation_no)) $quotation_no = '';
+if (!isset($quotation_date)) $quotation_date = '';
+if (!isset($expiry_date)) $expiry_date = '';
+if (!isset($customer_notes)) $customer_notes = '';
+if (!isset($terms_and_conditions)) $terms_and_conditions = '';
+if (!isset($grand_subtotal)) $grand_subtotal = 0;
+if (!isset($grand_discount_type)) $grand_discount_type = '';
+if (!isset($grand_discount_type_value)) $grand_discount_type_value = 0;
+if (!isset($grand_discount_amount)) $grand_discount_amount = 0;
+if (!isset($grand_after_discount)) $grand_after_discount = 0;
+if (!isset($grand_tax)) $grand_tax = 0;
+if (!isset($grand_total)) $grand_total = 0;
+if (!isset($quotation_status)) $quotation_status = '';
+
 if ($total_rows == 0)           $total_rows = 1;
 
 
@@ -294,7 +321,7 @@ if ($total_rows == 0)           $total_rows = 1;
             </div>
 
             <div class="my-1">
-                
+
                 <a href="listing_<?php echo $module; ?>.php" class="btn btn-light btn-sm">Cancel</a>
             </div>
         </div>
@@ -307,10 +334,10 @@ if ($total_rows == 0)           $total_rows = 1;
             <?php include('admin_elements/breadcrumb.php'); ?>
 
             <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="quotation.php" autocomplete="off" enctype="multipart/form-data">
-        <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
 
-        <!-- Page header -->
+                <!-- Page header -->
 
 
                 <div class="row p-lg-2">
@@ -327,13 +354,13 @@ if ($total_rows == 0)           $total_rows = 1;
                                 //if ($past_quotation == 0) {
                                 ?>
 
-                                <?php //if ($quotation_status != 'confirmed') { 
+                                <?php //if ($quotation_status != 'confirmed') {
                                 ?>
                                 <button type="button" onclick="window.location.href='lead_quotations.php?action=edit_lead_quotations&id=<?php echo $id; ?>&customer_id=<?php echo $customer_id; ?>'" class="btn btn-light"><i class="ph-pencil me-2"></i> Edit</button>
-                                <?php //} 
+                                <?php //}
                                 ?>
 
-                                <?php //} 
+                                <?php //}
                                 ?>
 
                                 <?php
@@ -497,6 +524,8 @@ if ($total_rows == 0)           $total_rows = 1;
                                         $index = $quotation_item;
                                         $index = $index - 1;
 
+                                        if (!isset($quotation_item_id_arr[$index])) continue;
+
                                         // $fee_included = '';
                                         // if (isset($fee_included_arr[$index]) && !empty($fee_included_arr[$index])) {
                                         //     $fee_included    = $fee_included_arr[$index];
@@ -629,11 +658,11 @@ if ($total_rows == 0)           $total_rows = 1;
 
                 </div>
 
-            </div>
         </div>
+    </div>
 
 
-        </form>
+    </form>
     <?php include('admin_elements/copyright.php'); ?>
 </div>
 

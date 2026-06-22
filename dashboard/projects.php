@@ -2,6 +2,8 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
+
 include('admin_elements/admin_header.php');
 
 $module             = 'projects';
@@ -21,6 +23,7 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
+$id = $_REQUEST['id'] ?? '';
 
 // print_r($_REQUEST);
 
@@ -51,6 +54,7 @@ $books_customer_id          = '';
 $approved_time              = '';
 $project_id                 = '';
 $approved_time_resubmission = '';
+$reference_no               = '';
 
 
 // ---------------------- Items Rows -----------------------------
@@ -127,7 +131,7 @@ if ($action == "update_$module" || $action == "add_$module") {
         array_push($tax_arr,                    e_s__($post_tax));
         array_push($tax_amount_arr,             e_s__($post_tax_amount));
         array_push($total_arr,                  e_s__($post_total));
-    } //for 
+    } //for
 }
 
 
@@ -156,7 +160,9 @@ if ($action == "update_$module" || $action == "add_$module") {
             if ($update_row) {
                 $success_message = "The $module_caption has been updated successfully.";
                 fp__($tbl_name, $id);
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
+                exit;
             } else {
                 $error_message = "The $module_caption could not be updated. Please try again.";
             }
@@ -164,13 +170,12 @@ if ($action == "update_$module" || $action == "add_$module") {
     } else if ($action == "add_$module") {
         $error_message = 'New projects are not created here. Only Project Name can be updated.';
     }
-
 }
 
 $created_by = getTableAttr('created_by', DB::PROJECTS, $id);
 
 if (
-    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
+    (!empty($id) && Session::roleId() == '1')
     ||
     (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['admin_id'] == $created_by)
 ) {
@@ -345,6 +350,8 @@ if (
 |--------------------------------------------------------------------------
 */
 
+$job_id = $customer_id = $project_name = $job_seq = $job_status = '';
+
 ?>
 
 
@@ -379,14 +386,14 @@ if (
             <?php include('admin_elements/breadcrumb.php'); ?>
 
             <form class="steps-basic clearfix" method="post" id="frm<?php echo $module; ?>" name="frm<?php echo $module; ?>" action="<?php echo $module; ?>.php" enctype="multipart/form-data">
-        <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
-            <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
-            <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
-        <?php } else { ?>
-            <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
-        <?php } ?>
+                <?php if (($action == "edit_$module" || $action == "update_$module") && !empty($id)) { ?>
+                    <input type="hidden" name="action" id="action" value="update_<?php echo $module; ?>" />
+                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                <?php } else { ?>
+                    <input type="hidden" name="action" id="action" value="add_<?php echo $module; ?>" />
+                <?php } ?>
 
-        <!-- Page header -->
+                <!-- Page header -->
 
 
 
@@ -416,7 +423,7 @@ if (
                                     if (!empty($customer_id)) {
                                         $customer_display = getTableAttr('display_name', DB::CUSTOMERS, $customer_id);
                                     }
-                                    
+
                                     $job_status_display = '';
                                     if (!empty($job_status)) {
                                         $job_status_display = getTableAttr('job_status', DB::JOB_STATUSES, $job_status);
@@ -501,11 +508,11 @@ if (
                 </div>
 
 
-            </div>
-
-
-            <?php include('admin_elements/copyright.php'); ?>
         </div>
+
+
+        <?php include('admin_elements/copyright.php'); ?>
+    </div>
     </form>
 </div>
 

@@ -120,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 |--------------------------------------------------------------------------
 */
 
-$publish = isset($_POST['publish']) ? 1 : 0;
 
 
 /*
@@ -216,16 +215,19 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 										state					        = '" . $state . "',
 										phone			            = '" . $phone . "',
 										email			            = '" . $email . "',
-										trn			                = '" . $trn . "',
-										is_active 						= '" . $publish . "'
+										trn			                = '" . $trn . "'
 									WHERE id=$id");
         if ($update_row) {
             $success_message = "The $module_caption has been updated successfully.";
             fp__($tbl_name, $id);
-            header("Location:listing_$module.php?success_message=$success_message");
+            flash_success($success_message);
+            header("Location:listing_$module.php");
+            exit;
         } else {
             $error_message = "The $module_caption could not be updated. Please try again.";
-            header("Location:$module.php?action=edit_$module&id=$id&error_message=$error_message");
+            flash_error($error_message);
+            header("Location:$module.php?action=edit_$module&id=$id");
+            exit;
         }
     }
 
@@ -249,7 +251,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
         $error_message = 'Duplicate Organization name. Please enter different.';
     } else {
         $maxOrganizations = function_exists('dashboardMaxOrganizations') ? dashboardMaxOrganizations() : 0;
-        $ownedOrganizations = countOwnedOrganizations($mysqli, $tbl_name, (int)$session_user_id);
+        $ownedOrganizations = countOwnedOrganizations($mysqli, $tbl_name, (int)Session::userId());
         if ($maxOrganizations > 0 && $ownedOrganizations >= $maxOrganizations) {
             $error_message = 'Your subscription organization limit has been reached.';
         }
@@ -275,7 +277,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
             } //endif
         }
 
-        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(owner_user_id, warehouse_no, warehouse_name, slug, status, street1, street2, country, state, phone, email, trn, is_active) VALUES ('" . (int)$session_user_id . "', '" . $warehouse_no . "', '" . $warehouse_name . "', '" . $organizationSlug . "', 'active', '" . $street1 . "', '" . $street2 . "',  '" . $country . "', '" . $state . "', '" . $phone . "', '" . $email . "', '" . $trn . "', '" . $publish . "'); ");
+        $insert_row = $mysqli->query("INSERT INTO `$tbl_name`(owner_user_id, warehouse_no, warehouse_name, slug, status, street1, street2, country, state, phone, email, trn) VALUES ('" . (int)Session::userId() . "', '" . $warehouse_no . "', '" . $warehouse_name . "', '" . $organizationSlug . "', 'active', '" . $street1 . "', '" . $street2 . "',  '" . $country . "', '" . $state . "', '" . $phone . "', '" . $email . "', '" . $trn . "'); ");
 
         if ($insert_row) {
             $id = $mysqli->insert_id;
@@ -285,7 +287,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                 "INSERT INTO `" . DB::ORGANIZATION_MEMBERSHIPS . "` (organization_id, user_id, membership_status, is_owner, invited_by, joined_at) VALUES (?, ?, 'active', 1, ?, NOW())"
             );
             if ($membershipStmt) {
-                $ownerUserId = (int)$session_user_id;
+                $ownerUserId = (int)Session::userId();
                 $membershipStmt->bind_param('iii', $id, $ownerUserId, $ownerUserId);
                 $membershipStmt->execute();
                 $membershipStmt->close();
@@ -293,7 +295,9 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 
             $success_message = "The $module_caption has been saved successfully.";
             fp__($tbl_name, $id);
-            header("Location:listing_$module.php?success_message=$success_message");
+            flash_success($success_message);
+            header("Location:listing_$module.php");
+            exit;
             //////////////////////////////////////////////////
         } else {
             $error_message = "The $module_caption could not be saved. Please try again.";
@@ -323,16 +327,159 @@ if (!empty($id)) {
     $phone                              = s__($row['phone']);
     $email                              = s__($row['email']);
     $trn                                = s__($row['trn']);
-    $is_active = s__($row['is_active']);
+
 }
 
 $photo = getTableAttr('photo', $tbl_name, $id);
 
 /*
 |--------------------------------------------------------------------------
+| ORGANIZATION DOCUMENT HANDLING (UPLOAD / DELETE)
+|--------------------------------------------------------------------------
+*/
+$documents = [];
+if (!empty($id)) {
+    $docStmt = $mysqli->prepare("
+        SELECT a.id, a.document_category, a.display_name, a.filename, a.original_filename,
+               a.file_size, a.description, a.issued_date, a.expiry_date, a.created_at,
+               dc.document_category AS category_name
+        FROM `" . DB::USER_DOCUMENTS . "` a
+        LEFT JOIN `" . DB::DOCUMENT_CATEGORIES . "` dc ON a.document_category = dc.id
+        WHERE a.attachable_type = 'OrganizationDoc' AND a.attachable_id = ?
+        ORDER BY a.created_at DESC
+    ");
+    if ($docStmt) {
+        $docStmt->bind_param('i', $id);
+        $docStmt->execute();
+        $docResult = $docStmt->get_result();
+        while ($r = $docResult->fetch_assoc()) {
+            $documents[] = $r;
+        }
+        $docStmt->close();
+    }
+}
+
+// Handle document upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($id) && isset($_POST['action']) && $_POST['action'] === 'org_upload_doc') {
+    $docCategory = (int)($_POST['doc_category'] ?? 0);
+    $docDesc = e_s__($_POST['doc_description'] ?? '');
+    $issuedDate = e_s__($_POST['doc_issued_date'] ?? '');
+    $expiryDate = e_s__($_POST['doc_expiry_date'] ?? '');
+
+    if ($docCategory <= 0) {
+        flash_error('Please select a document category.');
+        header("Location: organizations.php?id=$id&action=edit_organizations");
+        exit;
+    } elseif (!isset($_FILES['doc_file']) || $_FILES['doc_file']['error'] !== UPLOAD_ERR_OK) {
+        flash_error('Please select a file to upload.');
+        header("Location: organizations.php?id=$id&action=edit_organizations");
+        exit;
+    }
+
+    $file = $_FILES['doc_file'];
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowedExts = ['doc', 'docx', 'pdf', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'jpeg', 'jpg', 'png'];
+
+    if (!in_array($ext, $allowedExts, true)) {
+        flash_error('File type not allowed. Allowed: ' . implode(', ', $allowedExts));
+        header("Location: organizations.php?id=$id&action=edit_organizations");
+        exit;
+    } elseif ($file['size'] > 5242880) {
+        flash_error('File size must be under 5 MB.');
+        header("Location: organizations.php?id=$id&action=edit_organizations");
+        exit;
+    }
+
+    $uploadDir = __DIR__ . '/../uploads/organization_documents/';
+    if (!is_dir($uploadDir)) {
+        @mkdir($uploadDir, 0755, true);
+    }
+
+    $filename = 'org_doc_' . $id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    if (!move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+        flash_error('Failed to upload document. Please try again.');
+        header("Location: organizations.php?id=$id&action=edit_organizations");
+        exit;
+    }
+
+    $insStmt = $mysqli->prepare("
+        INSERT INTO `" . DB::USER_DOCUMENTS . "`
+        (organization_id, attachable_type, attachable_id, document_category, display_name,
+         filename, original_filename, file_size, description, issued_date, expiry_date,
+         created_at, updated_at, created_by)
+        VALUES (?, 'OrganizationDoc', ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)
+    ");
+    if (!$insStmt) {
+        flash_error('Database error. Please try again.');
+        header("Location: organizations.php?id=$id&action=edit_organizations");
+        exit;
+    }
+
+    $displayName = $file['name'];
+    $fileSize = $file['size'];
+    $insStmt->bind_param(
+        'iiississssi',
+        $activeOrganizationId, $id, $docCategory, $displayName,
+        $filename, $file['name'], $fileSize,
+        $docDesc, $issuedDate, $expiryDate,
+        (int)Session::userId()
+    );
+    $insStmt->execute();
+    $insStmt->close();
+    flash_success('Document uploaded successfully.');
+    header("Location: organizations.php?id=$id&action=edit_organizations");
+    exit;
+}
+
+// Handle document delete
+if (!empty($id) && isset($_GET['delete_doc']) && (int)$_GET['delete_doc'] > 0) {
+    $docId = (int)$_GET['delete_doc'];
+    $selStmt = $mysqli->prepare("SELECT filename FROM `" . DB::USER_DOCUMENTS . "` WHERE id = ? AND attachable_type = 'OrganizationDoc' AND attachable_id = ?");
+    if ($selStmt) {
+        $selStmt->bind_param('ii', $docId, $id);
+        $selStmt->execute();
+        $docRow = $selStmt->get_result()->fetch_assoc();
+        $selStmt->close();
+
+        if ($docRow) {
+            $delStmt = $mysqli->prepare("DELETE FROM `" . DB::USER_DOCUMENTS . "` WHERE id = ? AND attachable_type = 'OrganizationDoc' AND attachable_id = ?");
+            if ($delStmt) {
+                $delStmt->bind_param('ii', $docId, $id);
+                $delStmt->execute();
+                $delStmt->close();
+            }
+            $filePath = __DIR__ . '/../uploads/organization_documents/' . $docRow['filename'];
+            if (!empty($docRow['filename']) && file_exists($filePath)) {
+                @unlink($filePath);
+            }
+            flash_success('Document deleted successfully.');
+            header("Location: organizations.php?id=$id&action=edit_organizations");
+            exit;
+        }
+    }
+    flash_error('Document not found.');
+    header("Location: organizations.php?id=$id&action=edit_organizations");
+    exit;
+}
+
+// Fetch active organization document categories
+$orgCategories = [];
+$catResult = $mysqli->query("SELECT id, document_category FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active = 1 AND document_category_type = 'organizations' ORDER BY document_category ASC");
+if ($catResult) {
+    while ($cr = $catResult->fetch_assoc()) {
+        $orgCategories[] = $cr;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
+
+
+
+
 
 ?>
 
@@ -345,12 +492,6 @@ $photo = getTableAttr('photo', $tbl_name, $id);
                 <h5 class="mb-0"><?php if (($action == "edit_$module" || $action == "update_$module" || $action == "change_password") && !empty($id)) { ?>Edit<?php } else { ?>New<?php } ?> <?php echo $module_caption; ?></h5>
             </div>
 
-            <div class="my-1 d-inline-flex align-items-center me-2">
-                <div class="form-check form-check-inline form-switch mb-0">
-                    <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php if ($is_active == '1') { ?>checked="checked" <?php } ?> form="frmorganizations">
-                    <label class="form-check-label" for="is_active">Active</label>
-                </div>
-            </div>
             <div class="my-1">
                 <?php if (empty($id) || (isset($module_id) && granted('create', $module_id)) || (isset($module_id) && granted('edit', $module_id)) || $file === 'profile.php' || $file === 'change_password.php') { ?>
                     <button type="submit" form="frmorganizations" class="btn btn-primary btn-sm me-2">Save</button>
@@ -471,39 +612,139 @@ $photo = getTableAttr('photo', $tbl_name, $id);
                                     </div>
                                 </div>
 
+                                <hr class="my-4">
+
+                                <div class="row mb-3">
+                                    <label class="form-label fw-semibold">Organization Logo</label>
+                                    <div class="col-lg-9">
+                                        <input type="file" name="photo" id="photo" class="form-control">
+                                        <div class="form-text text-muted">Size <?php echo $image_width; ?>px x <?php echo $image_height; ?>px -> <?php echo $allowed_file_formats; ?>. Max file size <?php echo $allowed_file_size; ?> Mb</div>
+                                    </div>
+                                </div>
+
+                                <?php if (!empty($photo) && file_exists('../uploads/organizations/thumbs/' . $photo)) { ?>
+                                <div class="row mb-3">
+                                    <div class="col-lg-9 offset-lg-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <a data-lightbox="organization" href="<?php echo $photo_upload_path . $photo ?>" target="_blank">
+                                                <img src="<?php echo $photo_upload_path . '/thumbs/' . $photo; ?>" alt="" width="<?php echo $display_thumb_width; ?>" height="<?php echo $display_thumb_height; ?>" />
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-sm delete-photo" name="delete_photo" id="delete_photo">
+                                                <i class="ph-trash me-1"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php } ?>
 
                             </div>
 
                         </div>
-
 
                     </div>
 
+                    <div class="col-lg-6">
 
-                    <div class="col-lg-4">
+                        <?php if (!empty($id)): ?>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="ph-files me-2"></i>Organization Documents</h5>
+                            </div>
+                            <div class="card-body">
 
-                        <div class="card card-body">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="row mb-3">
-                                        <label class="form-label">Logo (Display on Quotaitons, Sale Orders, Invoices PDFs etc..)</label>
-                                        <input type="file" name="photo" id="photo" class="form-control">
-                                    </div>
-                                    <div class="form-text text-muted">Size <?php echo $image_width; ?>px x <?php echo $image_height; ?>px -> <?php echo $allowed_file_formats; ?>. Max file size <?php echo $allowed_file_size; ?> Mb</div>
-
-                                    <?php if (!empty($photo) && file_exists('../uploads/organizations/thumbs/' . $photo)) { ?>
-                                        <div class="form-group">
-                                            <a data-lightbox="organization" href="<?php echo $photo_upload_path .  $photo ?>" target="_blank">
-                                                <img src="<?php echo $photo_upload_path . '/thumbs/' . $photo; ?>" alt="" width="<?php echo $display_thumb_width; ?>" height="<?php echo $display_thumb_height; ?>" />
-                                            </a><br /><br />
-
-                                            <button type="button" class="btn btn-danger btn-sm delete-photo" name="delete_photo" id="delete_photo">Delete</button>
-
-                                        </div>
-                                    <?php } ?>
+                                <?php if (!empty($documents)): ?>
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Category</th>
+                                                <th>Document</th>
+                                                <th>Issue Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php $di = 1; foreach ($documents as $doc): ?>
+                                            <tr>
+                                                <td><?php echo $di++; ?></td>
+                                                <td><?php echo htmlspecialchars($doc['category_name'] ?? '-'); ?></td>
+                                                <td>
+                                                    <a href="../uploads/organization_documents/<?php echo rawurlencode($doc['filename'] ?? ''); ?>" target="_blank" class="text-info">
+                                                        <i class="ph-file"></i> <?php echo htmlspecialchars($doc['original_filename'] ?? $doc['display_name'] ?? 'View'); ?>
+                                                    </a>
+                                                </td>
+                                                <td><?php echo !empty($doc['issued_date']) && $doc['issued_date'] !== '1970-01-01' ? htmlspecialchars($doc['issued_date']) : '-'; ?></td>
+                                                <td>
+                                                    <?php if (!empty($doc['expiry_date']) && $doc['expiry_date'] !== '1970-01-01'): ?>
+                                                        <?php
+                                                        $expiryTs = strtotime($doc['expiry_date']);
+                                                        $daysLeft = $expiryTs ? ceil(($expiryTs - time()) / 86400) : null;
+                                                        $badgeClass = 'bg-secondary';
+                                                        if ($daysLeft !== null && $daysLeft <= 0) $badgeClass = 'bg-danger';
+                                                        elseif ($daysLeft !== null && $daysLeft <= 7) $badgeClass = 'bg-warning text-dark';
+                                                        elseif ($daysLeft !== null && $daysLeft <= 30) $badgeClass = 'bg-info';
+                                                        ?>
+                                                        <span class="badge <?php echo $badgeClass; ?>">
+                                                            <?php echo htmlspecialchars($doc['expiry_date']); ?>
+                                                            <?php if ($daysLeft !== null): ?>
+                                                                (<?php echo $daysLeft <= 0 ? 'Expired' : "$daysLeft days"; ?>)
+                                                            <?php endif; ?>
+                                                        </span>
+                                                    <?php else: ?>
+                                                        -
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <a href="?id=<?php echo $id; ?>&action=edit_organizations&delete_doc=<?php echo $doc['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this document?');">
+                                                        <i class="ph-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
+                                <?php endif; ?>
+
+                                <form method="post" action="organizations.php?id=<?php echo $id; ?>&action=edit_organizations" enctype="multipart/form-data" class="border rounded p-3 bg-light">
+                                    <input type="hidden" name="action" value="org_upload_doc">
+                                    <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-lg-4">
+                                            <select name="doc_category" class="form-select form-select-sm" required>
+                                                <option value="">Category</option>
+                                                <?php foreach ($orgCategories as $cat): ?>
+                                                <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['document_category']); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <input type="file" name="doc_file" class="form-control form-control-sm" required>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <input type="date" name="doc_issued_date" class="form-control form-control-sm" placeholder="Issue date">
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <input type="date" name="doc_expiry_date" class="form-control form-control-sm" placeholder="Expiry date">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-lg-8">
+                                            <input type="text" name="doc_description" class="form-control form-control-sm" placeholder="Description (optional)">
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                                <i class="ph-upload"></i> Upload Document
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
                             </div>
                         </div>
+                        <?php endif; ?>
 
                     </div>
                 </div>
@@ -514,6 +755,8 @@ $photo = getTableAttr('photo', $tbl_name, $id);
             <?php include('admin_elements/copyright.php'); ?>
         </div>
     </form>
+
+
 
 </div>
 <?php include('admin_elements/admin_footer.php'); ?>

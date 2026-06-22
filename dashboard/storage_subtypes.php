@@ -80,7 +80,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
             if ($update_row) {
                 $success_message = "The $module_caption has been updated successfully.";
                 fp__($tbl_name, $id);
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
             } else {
                 $error_message = "The $module_caption could not be updated. Please try again.";
             }
@@ -121,7 +122,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                 $id = $mysqli->insert_id;
                 $success_message = "The $module_caption has been saved successfully.";
                 fp__($tbl_name, $id);
-                header("Location:listing_$module.php?success_message=$success_message");
+                flash_success($success_message);
+                header("Location:listing_$module.php");
             } else {
                 $error_message = "The $module_caption could not be saved. Please try again.";
             }

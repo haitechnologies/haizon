@@ -21,6 +21,16 @@ include('admin_elements/permissions.php');
 
 $activeOrganizationId = dashboardRequireActiveOrganization();
 
+if (empty($id) && isset($_REQUEST['job_id'])) $id = e_s__($_REQUEST['job_id']);
+
+if (!empty($id)) {
+    $rs_valid = $mysqli->query("SELECT id FROM `" . $tbl_name . "` WHERE id='" . $id . "'");
+    if ($rs_valid->num_rows == 0) {
+        flash_error('Invalid Record in the database.');
+        header("Location:listing_jobs.php");
+        exit;
+    }
+}
 
 // print_r($_REQUEST);
 
@@ -131,6 +141,38 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
     $total_rows            = 1;
 }
 
+// Default variable initializations (prevent undefined variable warnings)
+$job_no = $job_ref_no = $job_status = $job_seq = '';
+$sales_person = $sales_person_from_lead = '';
+$warehouse_id = '';
+$display_name = $company_name = '';
+$currency = $exchange_rate = $transport_mode = $shipment_type = $job_owner = '';
+$tags_captions = $cs_agent = $services_captions = $incoterm = $email = '';
+$supplier_rate = $estimated_net_profit = '';
+$job_date = $estimated_invoice_amount = $etd = $eta = '';
+$carrier = $vessel_name = $vessel_departure_date = '';
+$flight_no = $flight_departure_date = '';
+$job_completion_date = $payment_terms = $hawb = $mawb = '';
+$estimated_cost_amount = $declaration_no = '';
+$gross_weight = $volume_weight = $chargeable_weight = $no_of_pieces = '';
+$commodity_type = '';
+$no_of_containers = $insurance_needed = $container_type = '';
+$temperature_control_required = $container_number = $special_comments = '';
+$landing_country = $landing_port = $loading_place = '';
+$billing_city = $billing_state = $billing_code = $billing_country = '';
+$destination_country = $destination_port = $fdp = '';
+$shipping_city = $shipping_state = $shipping_code = $shipping_country = '';
+$happy_customer = $unhappy_reason = $shipment_on_time = '';
+$referral = $notes = '';
+$project_created = '';
+// Dimension arrays
+if (!isset($item_dim_id_arr)) $item_dim_id_arr = [];
+if (!isset($dim_length_arr)) $dim_length_arr = [];
+if (!isset($dim_width_arr)) $dim_width_arr = [];
+if (!isset($dim_height_arr)) $dim_height_arr = [];
+if (!isset($dim_pcs_arr)) $dim_pcs_arr = [];
+if (!isset($dim_volume_arr)) $dim_volume_arr = [];
+if (!isset($dim_cbm_arr)) $dim_cbm_arr = [];
 
 /*
 |--------------------------------------------------------------------------
@@ -140,7 +182,7 @@ if (isset($_POST['total_rows']) && !empty($_POST['total_rows'])) {
 */
 $created_by = getTableAttr('created_by', DB::JOBS, $id);
 
-if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'accounts' || is_role() == 'operations' || $session_user_id == $created_by)) {
+if (!empty($id) && (is_SystemAdmin() || is_SuperAdmin() || is_role() == 'accounts' || is_role() == 'operations' || Session::userId() == $created_by)) {
 
     $result = $mysqli->query("SELECT * FROM `$tbl_name` WHERE id=$id");
     $row = $result->fetch_array();

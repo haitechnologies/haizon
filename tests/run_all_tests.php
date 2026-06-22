@@ -15,10 +15,14 @@ $tests = [
     "tests/test_customer_psr.php",
     "tests/test_department_psr.php",
     "tests/test_designation_psr.php",
+    "tests/test_bank_psr.php",
+    "tests/test_currency_psr.php",
+    "tests/test_payment_method_psr.php",
     "tests/test_leave_psr.php",
     "tests/test_invoice_psr.php",
     "tests/test_datatable_psr.php",
-    "tests/test_error_capture.php"
+    "tests/test_error_capture.php",
+    "tests/test_setup_entities_psr.php"
 ];
 
 $failed = 0;

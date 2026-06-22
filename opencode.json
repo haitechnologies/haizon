@@ -1,0 +1,46 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "instructions": ["docs/AGENTS.md"],
+
+  "references": {
+    "docs": {
+      "path": "docs",
+      "description": "Use for project architecture, database schema, and AI context documentation"
+    }
+  },
+
+  "compaction": {
+    "auto": true,
+    "tail_turns": 20
+  },
+
+  "tool_output": {
+    "max_lines": 200,
+    "max_bytes": 8192
+  },
+
+  "command": {
+    "test": {
+      "template": "vendor/bin/phpunit {file}"
+    },
+    "lint": {
+      "template": "php -l {file}"
+    },
+    "stan": {
+      "template": "vendor/bin/phpstan analyse {file}"
+    },
+    "cs": {
+      "template": "vendor/bin/phpcs {file}"
+    },
+    "cbf": {
+      "template": "vendor/bin/phpcbf {file}"
+    },
+    "migrate": {
+      "template": "php database/migrate.php"
+    },
+    "compose": {
+      "template": "composer install"
+    }
+  }
+}

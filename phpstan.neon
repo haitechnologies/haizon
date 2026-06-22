@@ -20,7 +20,6 @@ parameters:
         - dashboard/logout.php
         - dashboard/index.php
     reportUnmatchedIgnoredErrors: false
-    checkMissingIterableValueType: false
     treatPhpDocTypesAsCertain: false
 
     ignoreErrors:
@@ -29,7 +28,8 @@ parameters:
         - '#Cannot access property .* on (null|mixed)#'
         - '#Call to an undefined method .*::query\(\)#'
         - '#\$GLOBALS\[#'
-        - '#Function (e|e_s__|s__|dd_|dd__|dec_|_err_) not found#'
+        - '#Function (granted|granted_|display_text|validate_csrf_token|dashboardRequireActiveOrganization) not found#'
+        - '#Property .* is never read, only written#'
         -
             message: '#^Variable \$mysqli might not be defined\.#'
             path: config/globals.php

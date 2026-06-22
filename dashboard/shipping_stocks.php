@@ -2,6 +2,7 @@
 
 
 use App\Core\DB;
+use App\Core\Session;
 include('admin_elements/admin_header.php');
 require '../vendor/autoload.php';
 
@@ -118,7 +119,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                 }
             } //for 
 
-            header("Location:listing_shipping_stocks.php?success_message=$success_message");
+            flash_success($success_message);
+            header("Location:listing_shipping_stocks.php");
         } else {
             $error_message = "Failed to save the item. Please try again";
             //header("Location:$module.php?error_message=$error_message");
@@ -177,7 +179,8 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
                 }
             } //for 
 
-            header("Location:listing_shipping_stocks.php?success_message=$success_message");
+            flash_success($success_message);
+            header("Location:listing_shipping_stocks.php");
         } else {
             $error_message = "Failed to save the item. Please try again";
             //header("Location:$module.php?error_message=$error_message");
@@ -196,7 +199,7 @@ if ($action == "update_$module" && !empty($id) && granted('edit', $module_id)) {
 $created_by = getTableAttr('created_by', DB::QUOTATIONS, $id);
 
 if (
-    (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['role_id'] == '1')
+    (!empty($id) && Session::roleId() == '1')
     ||
     (!empty($id) && $_SESSION[$project_pre]['DASHBOARD']['admin_id'] == $created_by)
 ) {

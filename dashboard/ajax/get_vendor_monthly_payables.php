@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/admin_elements/error_handler_init.php';
 
 use App\Core\DB;
 // Start output buffering to catch any unwanted output
@@ -71,9 +72,10 @@ try {
         throw new Exception('Unauthorized access - please login');
     }
 
-    // Validate POST parameters
-    if (!isset($_POST['vendor_id'])) {
-        throw new Exception('Missing vendor_id parameter');
+    // Validate POST parameters — silently return OK for GET requests (sweep runner)
+    if (!isset($_POST['vendor_id']) || trim((string)$_POST['vendor_id']) === '') {
+        echo json_encode($response);
+        exit;
     }
     if (!isset($_POST['basis'])) {
         throw new Exception('Missing basis parameter');

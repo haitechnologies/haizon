@@ -44,7 +44,7 @@ class DisposableEmailDomainsDataTable extends BaseDataTable
             !empty($source) ? '<span class="text-muted small">' . $source . '</span>' : '—',
             $disposableBadge,
             $allowlistedBadge,
-            !empty($updatedAt) ? timeAgo($updatedAt) : '—',
+            !empty($updatedAt) ? $this->formatTimeAgo($updatedAt) : '—',
             $this->getActionButtons($id, 'disposable_email_domains'),
         ];
     }
@@ -52,7 +52,7 @@ class DisposableEmailDomainsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $buttons = [];
-        if (granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

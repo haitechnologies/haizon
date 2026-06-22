@@ -12,21 +12,18 @@ class DepartmentsDataTable extends BaseDataTable
 {
     protected $table = DB::DEPARTMENT;
     protected $searchFields = ['department'];
-    protected $sortableColumns = [0 => 'id', 1 => 'department', 2 => 'created_at', 3 => 'is_active', 4 => 'id'];
+    protected $sortableColumns = [0 => 'id', 1 => 'department', 2 => 'created_at', 3 => 'id'];
 
     protected function formatRow($row, $requestData = [])
     {
         $id      = (int)($row['id'] ?? 0);
         $dept    = (string)($row['department'] ?? '');
         $created = (string)($row['created_at'] ?? '');
-        $publish = (int)($row['is_active'] ?? 0);
-        $badge   = $publish ? BadgeHelper::success('Active') : BadgeHelper::danger('Inactive');
         return [
-            $id,
+            $this->rowNumber,
             htmlspecialchars($dept),
             0,
-            timeAgo($created),
-            $badge,
+            $this->formatTimeAgo($created),
             $this->getActionButtons($id, 'departments'),
         ];
     }
@@ -34,10 +31,10 @@ class DepartmentsDataTable extends BaseDataTable
     protected function getActionButtons($id, $module)
     {
         $a = '';
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'departments.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;

@@ -16,7 +16,6 @@ readonly class Designation
         public ?int $organizationId,
         public string $designation,
         public bool $publish,
-        public bool $isActive = false,
         public ?string $createdAt = null,
         public ?string $updatedAt = null,
         public int $createdBy = 0
@@ -35,7 +34,6 @@ readonly class Designation
             'organization_id' => $this->organizationId,
             'designation' => $this->designation,
             'publish' => $this->publish ? 1 : 0,
-            'is_active' => $this->isActive ? 1 : 0,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
             'created_by' => $this->createdBy,

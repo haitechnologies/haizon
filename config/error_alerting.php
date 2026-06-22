@@ -25,7 +25,7 @@ function send_critical_error_alert($errorType, $message, $context = []) {
     // Get admin email from system settings
     $adminEmail = getTableAttrv('email', DB::SYSTEM_SETTINGS, 'id', '1');
     if (empty($adminEmail)) {
-        $adminEmail = 'admin@haizon.com'; // Fallback
+        $adminEmail = 'admin@flashlogisticsserver.com'; // Fallback
     }
     
     // Check if we've already sent this error recently (throttle duplicate alerts)
@@ -122,7 +122,7 @@ function send_critical_error_alert($errorType, $message, $context = []) {
     
     // Send via email queue (high priority)
     try {
-        $emailQueue = new EmailQueue($mysqli);
+        $emailQueue = new EmailQueue();
         $queueId = $emailQueue->enqueue($adminEmail, $subject, $body, [], 1); // Priority 1 (high)
         
         if ($queueId) {

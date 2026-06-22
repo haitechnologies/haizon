@@ -43,6 +43,7 @@ class OrgIdInjectionMiddleware
             'erp_departments', 'erp_designations', 'erp_document_types',
             'erp_employee_salaries', 'erp_entity_logs', 'erp_entity_notes',
             'erp_exit_points', 'erp_expenses',
+            'erp_air_tickets', 'erp_gratuity_settlements',
             'erp_hr_leave_balances', 'erp_hr_payroll_run_items', 'erp_incoterms',
             'erp_inquiries', 'erp_inquiry_replies', 'erp_invoice_items',
             'erp_invoices', 'erp_items', 'erp_job_items', 'erp_job_statuses',

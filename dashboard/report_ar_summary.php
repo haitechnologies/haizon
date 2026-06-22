@@ -1,7 +1,12 @@
 <?php
 
+use App\Core\DB;
+
 include('admin_elements/admin_header.php');
 // require 'vendor/autoload.php';
+
+if (!defined('tbl_bookings')) { define('tbl_bookings', DB::getPrefix() . 'bookings'); }
+if (!defined('tbl_tickets'))  { define('tbl_tickets',  DB::getPrefix() . 'tickets'); }
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

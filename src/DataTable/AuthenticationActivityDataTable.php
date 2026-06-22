@@ -49,7 +49,7 @@ class AuthenticationActivityDataTable extends BaseDataTable
             $userId . ' (' . htmlspecialchars($fullName) . ')',
             htmlspecialchars($activityType),
             htmlspecialchars($ipAddress),
-            timeAgo($createdAt),
+            $this->formatTimeAgo($createdAt),
             $this->getActionButtons($id, 'authentication_activity')
         ];
     }

@@ -1,0 +1,144 @@
+{
+    // PHP Intelephense (LSP) — Primary PHP language server
+    "php.suggest.basic": false,
+    "php.validate.enable": true,
+    "php.validate.executablePath": "",
+    "[php]": {
+        "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+
+    // Intelephense settings
+    "intelephense.files.maxSize": 5000000,
+    "intelephense.files.associations": [
+        "*.php",
+        "*.phtml"
+    ],
+    "intelephense.environment.includePaths": [
+        "config/",
+        "dashboard/"
+    ],
+    "intelephense.environment.phpVersion": "8.2.0",
+    "intelephense.environment.shortOpenTag": false,
+    "intelephense.completion.triggerParameterHints": true,
+    "intelephense.references.exclude": [
+        "vendor/**",
+        "tcpdf/**",
+        "assets/**",
+        "uploads/**",
+        "pdfs_invoices/**"
+    ],
+    "intelephense.stubs": [
+        "apache",
+        "bcmath",
+        "bz2",
+        "calendar",
+        "ctype",
+        "curl",
+        "date",
+        "dom",
+        "fileinfo",
+        "filter",
+        "ftp",
+        "gd",
+        "gettext",
+        "gmp",
+        "hash",
+        "iconv",
+        "imap",
+        "intl",
+        "json",
+        "ldap",
+        "libxml",
+        "mbstring",
+        "mcrypt",
+        "mysqli",
+        "mysql",
+        "oauth",
+        "odbc",
+        "opcache",
+        "openssl",
+        "pcntl",
+        "pcre",
+        "pdo",
+        "pdo_mysql",
+        "phar",
+        "posix",
+        "readline",
+        "redis",
+        "reflection",
+        "session",
+        "shmop",
+        "soap",
+        "sockets",
+        "sodium",
+        "spl",
+        "ssh2",
+        "standard",
+        "superglobals",
+        "sysvmsg",
+        "sysvsem",
+        "sysvshm",
+        "tidy",
+        "tokenizer",
+        "xml",
+        "xmlreader",
+        "xmlwriter",
+        "xsl",
+        "zip",
+        "zlib"
+    ],
+    "intelephense.telemetry.enabled": false,
+    "intelephense.format.enable": true,
+
+    // PHP DocBlocker
+    "php-docblocker.returnGap": true,
+    "php-docblocker.align": true,
+
+    // Files to exclude from VS Code explorer
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "vendor/": true,
+        "tcpdf/": true,
+        "dashboard/vendor/": true,
+        "uploads/": true,
+        "pdfs_invoices/": true,
+        "backups/": true,
+        "logs/": true
+    },
+
+    // Search exclusions (improves search speed)
+    "search.exclude": {
+        "vendor/": true,
+        "tcpdf/": true,
+        "dashboard/vendor/": true,
+        "uploads/": true,
+        "pdfs_invoices/": true,
+        "assets/": true,
+        "backups/": true,
+        "logs/": true,
+        "*.min.js": true,
+        "*.min.css": true
+    },
+
+    // Editor settings
+    "editor.rulers": [120, 160],
+    "editor.renderWhitespace": "boundary",
+    "files.encoding": "utf8",
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+
+    // PHPUnit integration (for test runner)
+    "phpunit.php": "",
+    "phpunit.args": [
+        "--configuration=tests/phpunit.xml"
+    ]
+}

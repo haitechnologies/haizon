@@ -109,10 +109,7 @@ class CustomerAddressesDataTable extends BaseDataTable
 
         $countryName = $this->relatedDataCache['countries'][$countryId] ?? '-';
 
-        $createdDisplay = '-';
-        if (!empty($createdAt)) {
-            $createdDisplay = function_exists('dd_') ? dd_($createdAt, 'd M Y') : date('d M Y', strtotime($createdAt));
-        }
+        $createdDisplay = !empty($createdAt) ? date('d M Y', strtotime($createdAt)) : '-';
 
         return [
             $id,
@@ -144,10 +141,10 @@ class CustomerAddressesDataTable extends BaseDataTable
     protected function getActionButtons($id, $module, $customerId)
     {
         $actions = '';
-        if (function_exists('granted_') && granted_('edit', 'customers')) {
+        if ($this->isGranted('edit', 'customers')) {
             $actions .= '<a href="customer_overview.php?customer_id=' . $customerId . '" title="View"><span class="text-dark opacity-50"><i class="ph-eye"></i></span></a> ';
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $actions .= ActionButtonHelper::deleteButton($id, $module);
         }
         return $actions;

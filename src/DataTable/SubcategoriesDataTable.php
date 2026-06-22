@@ -144,10 +144,10 @@ class SubcategoriesDataTable extends BaseDataTable
         if (!empty($slug)) {
             $buttons[] = ActionButtonHelper::publicLinkButton('/subcategory/' . rawurlencode($slug), 'Open Public Subcategory Page');
         }
-        if (function_exists('granted_') && granted_('edit', $module)) {
+        if ($this->isGranted('edit', $module)) {
             $buttons[] = ActionButtonHelper::editButton($id, 'subcategories.php', $module, 'Edit', false);
         }
-        if (function_exists('granted_') && granted_('delete', $module)) {
+        if ($this->isGranted('delete', $module)) {
             $buttons[] = ActionButtonHelper::deleteButton($id, $module);
         }
         return implode(' ', array_filter($buttons));

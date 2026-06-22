@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/admin_elements/error_handler_init.php';
+
 use App\Core\DB;
 // error_reporting(E_ALL);
 // ini_set('display_errors', 1);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\DB;
+use App\Core\Session;
 use App\Security\InputValidator;
 include('admin_elements/admin_header.php');
 // Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/InputValidator.php';
@@ -91,15 +92,16 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
             $invoice = $invoiceService->getInvoice($invoiceId, $activeOrganizationId);
 
             // IDOR PROTECTION: Check ownership (unless system admin / full access)
-            $canDelete = has_full_access() || ($invoice->createdBy === (int)$session_user_id);
+            $canDelete = has_full_access() || ($invoice->createdBy === (int)Session::userId());
             
             if (!$canDelete) {
                 $error_message = "You do not have permission to delete this invoice";
-                log_error("IDOR attempt: User $session_user_id tried to delete invoice $invoiceId", 'WARNING', __FILE__, __LINE__);
+                log_error("IDOR attempt: User Session::userId() tried to delete invoice $invoiceId", 'WARNING', __FILE__, __LINE__);
             } else {
                 if ($invoiceService->deleteInvoice($invoiceId, $activeOrganizationId)) {
                     $success_message = "$module_caption Deleted Successfully.";
-                    header("Location:listing_$module.php?page=$page&success_message=" . urlencode($success_message));
+                    flash_success($success_message);
+                    header("Location:listing_$module.php?page=$page");
                     exit;
                 } else {
                     $error_message = "Could not delete record. It may have already been deleted.";
@@ -182,7 +184,8 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
                 <!-- CSRF Protection Token -->
                 <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
                 
-                <table id="grid-<?php echo $module; ?>" class="table table-hover align-middle mb-0 custom_datatables datatable-professional display responsive nowrap" width="100%">
+                <div class="table-responsive">
+<table id="grid-<?php echo $module; ?>" class="table table-hover align-middle mb-0 custom_datatables datatable-professional display responsive nowrap" width="100%">
                     <thead class="table-light border-bottom text-uppercase fs-8 fw-semibold text-muted">
                         <tr>
                             <th class="ps-4">Invoice Info</th>
@@ -196,6 +199,7 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
                         </tr>
                     </thead>
                 </table>
+</div>
             </div>
         </div>
 
@@ -219,8 +223,8 @@ $(document).ready(function() {
                 d.action = '<?php echo $action; ?>';
                 d.edit_permission = <?php echo granted('edit', $module_id) ? '1' : '0'; ?>;
                 d.delete_permission = <?php echo granted('delete', $module_id) ? '1' : '0'; ?>;
-                d.session_user_id = '<?php echo $_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? ''; ?>';
-                d.dt_session_role_id = '<?php echo $_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? ''; ?>';
+                d.session_user_id = '<?php echo Session::userId() ?? ''; ?>';
+                d.dt_session_role_id = '<?php echo Session::roleId() ?? ''; ?>';
                 return d;
             },
             error: function(xhr, status, error) {

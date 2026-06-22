@@ -17,16 +17,12 @@ readonly class LeaveType
         public string $leaveType,
         public int $maxPerYear,
         public bool $paid,
+        public int $paidDays = 3,
         public ?string $createdAt = null,
         public ?string $updatedAt = null
     ) {
     }
 
-    /**
-     * Convert DTO to array representation
-     *
-     * @return array
-     */
     public function toArray(): array
     {
         return [
@@ -35,6 +31,7 @@ readonly class LeaveType
             'leave_type' => $this->leaveType,
             'max_per_year' => $this->maxPerYear,
             'paid' => $this->paid ? 1 : 0,
+            'paid_days' => $this->paidDays,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
         ];
