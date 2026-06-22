@@ -100,7 +100,6 @@ $sitemap = [
         ['name'=>'User Details','url'=>'user.php','id'=>1],
         ['name'=>'Profile','url'=>'profile.php'],
         ['name'=>'Change Password','url'=>'change_password.php'],
-        ['name'=>'Two-Factor Authentication','url'=>'mfa_settings.php'],
         ['name'=>'Authentication Activity','url'=>'listing_authentication_activity.php'],
         ['name'=>'Roles & Permissions','url'=>'listing_roles.php'],
         ['name'=>'Add/Edit Role','url'=>'roles.php'],

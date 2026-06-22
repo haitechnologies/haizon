@@ -7,7 +7,6 @@ require_once __DIR__ . '/admin_elements/error_handler_init.php';
 use App\Core\DB;
 use App\Core\Session;
 use App\Security\RateLimiter;
-use App\Security\TOTPAuthenticator;
 
 require_once __DIR__ . '/../config/session.php';
 
@@ -40,10 +39,6 @@ if (function_exists('backend_log_coverage_heartbeat')) {
 
 $isLiveServer = function_exists('isRemote') ? isRemote() : false;
 
-// Initialize Rate Limiter for login protection
-// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/RateLimiter.php';
-// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/DB.php';
-// Removed legacy require for autoloader compatibility: require_once __DIR__ . '/../classes/TOTPAuthenticator.php';
 RateLimiter::init($mysqli);
 
 $module = 'users';
@@ -91,8 +86,6 @@ function complete_dashboard_login($row, $client_ip, $project_pre)
     $_SESSION[$project_pre]['DASHBOARD']['last_activity'] = time();
     $_SESSION[$project_pre]['DASHBOARD']['ip_address'] = $client_ip;
     $_SESSION[$project_pre]['DASHBOARD']['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $_SESSION[$project_pre]['DASHBOARD']['mfa_verified'] = 1;
-    $_SESSION[$project_pre]['DASHBOARD']['mfa_verified_at'] = time();
 
     // Regenerate CSRF token after login
     $_SESSION[$project_pre]['DASHBOARD']['csrf_token'] = bin2hex(random_bytes(32));
@@ -135,10 +128,7 @@ if (isset($_SESSION[$project_pre]['email']) && !empty(Session::email())) {
 $action     = '';
 $email         = '';
 $password     = '';
-$otp_code    = '';
-$recovery_code = '';
 $csrf_token = '';
-$mfaChallengeTriggered = false; // tracks whether server actually challenged user for MFA
 
 if (isset($_POST['action'])     && !empty($_POST['action']))
     $action     =  e_s__($_POST['action']);
@@ -148,12 +138,6 @@ if (isset($_POST['email']) && !empty($_POST['email']))
 
 if (isset($_POST['password']) && !empty($_POST['password']))
     $password     = $_POST['password']; // Don't sanitize password (may contain special chars)
-
-if (isset($_POST['otp_code']) && !empty($_POST['otp_code']))
-    $otp_code     = preg_replace('/\D+/', '', $_POST['otp_code']);
-
-if (isset($_POST['recovery_code']) && !empty($_POST['recovery_code']))
-    $recovery_code     = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $_POST['recovery_code']));
 
 if (isset($_POST['csrf_token']) && !empty($_POST['csrf_token']))
     $csrf_token = $_POST['csrf_token'];
@@ -225,67 +209,20 @@ if ($action == 'login' && empty($email)) {
             $stmt->close();
 
 
-            if (password_verify($password, $hash)) {
-                // Upgrade hash cost/algorithm if needed after valid password.
-                if (password_needs_rehash($hash, PASSWORD_DEFAULT)) {
-                    $rehash = password_hash($password, PASSWORD_DEFAULT);
-                    $rehashStmt = $mysqli->prepare("UPDATE `" . DB::USERS . "` SET password = ? WHERE id = ? LIMIT 1");
-                    if ($rehashStmt) {
-                        $userId = (int)$row['id'];
-                        $rehashStmt->bind_param('si', $rehash, $userId);
-                        $rehashStmt->execute();
-                        $rehashStmt->close();
-                    }
-                }
-
-                $mfaEnabled = !empty($row['mfa_totp_enabled']) && !empty($row['mfa_totp_secret']);
-                $mfaPassed = true;
-
-                // Enforce MFA only on live server.
-                if ($isLiveServer && $mfaEnabled) {
-                    $mfaChallengeTriggered = true;
-                    $mfaPassed = false;
-                    $storedSecret = (string)$row['mfa_totp_secret'];
-                    $totpSecret = TOTPAuthenticator::decryptSecret($storedSecret);
-                    if ($totpSecret === '' && strpos($storedSecret, 'enc:') !== 0) {
-                        $totpSecret = $storedSecret;
+                if (password_verify($password, $hash)) {
+                    // Upgrade hash cost/algorithm if needed after valid password.
+                    if (password_needs_rehash($hash, PASSWORD_DEFAULT)) {
+                        $rehash = password_hash($password, PASSWORD_DEFAULT);
+                        $rehashStmt = $mysqli->prepare("UPDATE `" . DB::USERS . "` SET password = ? WHERE id = ? LIMIT 1");
+                        if ($rehashStmt) {
+                            $userId = (int)$row['id'];
+                            $rehashStmt->bind_param('si', $rehash, $userId);
+                            $rehashStmt->execute();
+                            $rehashStmt->close();
+                        }
                     }
 
-                    if ($totpSecret === '') {
-                        $message = 'Two-factor authentication is enabled but not configured correctly. Please contact an administrator.';
-                        log_error('MFA secret decrypt failed during login', 'ERROR', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
-                    } else if ($otp_code !== '') {
-                        $mfaPassed = TOTPAuthenticator::verifyCode($totpSecret, $otp_code, 1);
-                        if (!$mfaPassed) {
-                            $message = 'Invalid authenticator code.';
-                        }
-                    } else if ($recovery_code !== '') {
-                        $storedRecoveryCodes = json_decode((string)($row['mfa_recovery_codes'] ?? ''), true);
-                        if (!is_array($storedRecoveryCodes)) {
-                            $storedRecoveryCodes = [];
-                        }
-
-                        $consume = TOTPAuthenticator::consumeRecoveryCode($recovery_code, $storedRecoveryCodes);
-                        if (!empty($consume['valid'])) {
-                            $mfaPassed = true;
-                            $remainingCodesJson = json_encode($consume['remaining']);
-                            $updateRecoveryStmt = $mysqli->prepare("UPDATE `" . DB::USERS . "` SET mfa_recovery_codes = ? WHERE id = ? LIMIT 1");
-                            if ($updateRecoveryStmt) {
-                                $userId = (int)$row['id'];
-                                $updateRecoveryStmt->bind_param('si', $remainingCodesJson, $userId);
-                                $updateRecoveryStmt->execute();
-                                $updateRecoveryStmt->close();
-                            }
-                        } else {
-                            $message = 'Invalid recovery code.';
-                        }
-                    } else {
-                        $message = 'Enter your authenticator code or a recovery code to continue.';
-                    }
-                }
-
-                if ($mfaPassed) {
-                    // RATE LIMITING: Reset attempts only after complete auth succeeds
+                    // RATE LIMITING: Reset attempts after successful login
                     if ($rateLimitEnabled) {
                         RateLimiter::reset($client_ip, 'login');
                     }
@@ -307,23 +244,6 @@ if ($action == 'login' && empty($email)) {
                     $target = !empty($storedRedirect) ? $storedRedirect : 'index.php';
                     unset($_SESSION[$project_pre]['DASHBOARD']['redirect_to']);
                     header('location:' . $target);
-                } else {
-                    if ($rateLimitEnabled) {
-                        RateLimiter::recordAttempt($client_ip, 'login', 5, 1800);
-                        if (RateLimiter::isBlocked($client_ip, 'login')) {
-                            log_account_blocked($email);
-                        }
-                    }
-                    log_error('Failed login attempt - MFA check failed', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
-                    // Preserve email during MFA challenge so user doesn't retype it
-                    if (!in_array($message, [
-                        'Enter your authenticator code or a recovery code to continue.',
-                        'Invalid authenticator code.',
-                        'Invalid recovery code.'
-                    ])) {
-                        $email = '';
-                    }
-                }
             } else {
                 // Invalid password - RATE LIMITING: Record failed attempt
                 if ($rateLimitEnabled) {
@@ -351,17 +271,9 @@ if ($action == 'login' && empty($email)) {
 |--------------------------------------------------------------------------|
 */
 
-// MFA challenge flag - only shows MFA fields when server actually challenged user for MFA
-$showMfaFields = $mfaChallengeTriggered && in_array($message, [
-    'Enter your authenticator code or a recovery code to continue.',
-    'Invalid authenticator code.',
-    'Invalid recovery code.',
-    'Two-factor authentication is enabled but not configured correctly. Please contact an administrator.',
-]);
-
-// Always show sign-in button text; update placeholder text for MFA step
-$buttonLabel = $showMfaFields ? 'Verify' : 'Sign in';
-$formCaption  = $showMfaFields ? 'Enter your verification code' : 'Enter your credentials below';
+$heading     = 'Login to your account';
+$formCaption = 'Enter your credentials below';
+$buttonLabel = 'Sign in';
 
 ?>
 
@@ -447,7 +359,7 @@ $loginColors = getLoginPageColors();
                         <div class="card">
                             <div class="card-body">
                                 <div class="text-center mb-3">
-                                    <h5 class="mb-0"><?= $showMfaFields ? 'Two-Factor Authentication' : 'Login to your account' ?></h5>
+                                    <h5 class="mb-0"><?= $heading ?></h5>
                                     <span class="d-block text-muted"><?= $formCaption ?></span>
                                 </div>
 
@@ -468,30 +380,6 @@ $loginColors = getLoginPageColors();
                                         <div class="form-control-feedback-icon">
                                             <i class="ph-lock text-muted"></i>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3" id="mfa-fields"<?= $showMfaFields ? '' : ' style="display:none"' ?>>
-                                    <div class="mb-3">
-                                        <label class="form-label">Authenticator Code</label>
-                                        <div class="form-control-feedback form-control-feedback-start">
-                                            <input type="text" class="form-control" name="otp_code" id="otp_code" value="<?php echo htmlspecialchars($otp_code); ?>" placeholder="6-digit code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}">
-                                            <div class="form-control-feedback-icon">
-                                                <i class="ph-shield-check text-muted"></i>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">Enter the 6-digit code from your authenticator app.</small>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Recovery Code</label>
-                                        <div class="form-control-feedback form-control-feedback-start">
-                                            <input type="text" class="form-control" name="recovery_code" id="recovery_code" value="<?php echo htmlspecialchars($recovery_code); ?>" placeholder="Use if authenticator unavailable" autocomplete="off" maxlength="32">
-                                            <div class="form-control-feedback-icon">
-                                                <i class="ph-key text-muted"></i>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">Use a recovery code if you lost access to your authenticator.</small>
                                     </div>
                                 </div>
 

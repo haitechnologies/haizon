@@ -1476,9 +1476,6 @@ if (!function_exists('renderEmailQuickbar')) {
 								<a href="change_password.php" class="dropdown-item px-2 py-1 rounded">
 									<i class="ph-key me-2"></i> Change Password
 								</a>
-								<a href="mfa_settings.php" class="dropdown-item px-2 py-1 rounded">
-									<i class="ph-shield-check me-2"></i> Two-Factor Authentication
-								</a>
 							</div>
 						</div>
 

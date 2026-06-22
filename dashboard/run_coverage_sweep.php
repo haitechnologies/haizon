@@ -204,7 +204,6 @@ $QA_PAGES = [
     'lead_quotations.php',
     'leave_requests.php',
     'leave_types.php',
-    'mfa_settings.php',
     'module_permissions.php',
     'modules.php',
     'organization_invites.php',

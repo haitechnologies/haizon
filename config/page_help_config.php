@@ -574,7 +574,6 @@ return [
         ],
         'tips' => [
             'Multiple failed login attempts from the same IP may indicate a brute-force attack.',
-            'Enable Two-Factor Authentication (2FA) for extra security.',
         ],
     ],
 
@@ -2534,22 +2533,6 @@ return [
         ],
         'tips' => [
             'These settings are personal — each user can have their own preferences.',
-        ],
-    ],
-
-    'mfa_settings.php' => [
-        'title' => 'Multi-Factor Authentication',
-        'icon'  => 'ph-shield-check',
-        'what'  => 'Configure Two-Factor Authentication (2FA) for your account using an authenticator app (e.g., Google Authenticator, Authy).',
-        'steps' => [
-            'Scan the QR code with your authenticator app.',
-            'Enter the 6-digit code from the app to verify.',
-            'Save your backup codes in a safe place.',
-            'Enable 2FA — you will need the code on every login.',
-        ],
-        'tips' => [
-            'Store backup codes securely — they allow access if you lose your authenticator device.',
-            '2FA significantly improves account security.',
         ],
     ],
 

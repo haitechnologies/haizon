@@ -1,6 +1,5 @@
 <?php
 	
-use App\Core\DB;
 // ============================================================================
 	// SESSION SECURITY VALIDATION
 	// ============================================================================
@@ -42,62 +41,6 @@ use App\Core\DB;
 	
 	// Update last activity time
 	$_SESSION[$project_pre]['DASHBOARD']['last_activity'] = time();
-	$currentDashboardPage = basename($_SERVER['PHP_SELF'] ?? '');
-	$isLiveServer = function_exists('isRemote') ? isRemote() : false;
-
-	// Role-based MFA policy (defaults to System Admin + Super Admin).
-	$mfaRequiredRoleIds = [];
-	$mfaRequiredRolesEnv = (string)($_ENV['MFA_REQUIRED_ROLE_IDS'] ?? getenv('MFA_REQUIRED_ROLE_IDS') ?: '1,2');
-	foreach (explode(',', $mfaRequiredRolesEnv) as $roleChunk) {
-		$roleId = (int)trim($roleChunk);
-		if ($roleId > 0) {
-			$mfaRequiredRoleIds[] = $roleId;
-		}
-	}
-	$mfaRequiredRoleIds = array_values(array_unique($mfaRequiredRoleIds));
-	$currentRoleId = (int)($_SESSION[$project_pre]['DASHBOARD']['role_id'] ?? 0);
-	$requiresMfaByPolicy = $isLiveServer && in_array($currentRoleId, $mfaRequiredRoleIds, true);
-
-	// Enforce MFA only on live server; local keeps MFA UI visible but login remains OTP-optional.
-	if ($isLiveServer && isset($mysqli)) {
-		$userIdForMfa = (int)($_SESSION[$project_pre]['DASHBOARD']['user_id'] ?? 0);
-		if ($userIdForMfa > 0) {
-			$mfaStmt = $mysqli->prepare("SELECT mfa_totp_enabled, mfa_totp_secret FROM `" . DB::USERS . "` WHERE id = ? LIMIT 1");
-			if ($mfaStmt) {
-				$mfaStmt->bind_param('i', $userIdForMfa);
-				$mfaStmt->execute();
-				$mfaResult = $mfaStmt->get_result();
-				$mfaRow = $mfaResult ? $mfaResult->fetch_assoc() : null;
-				$mfaStmt->close();
-
-				$mfaEnabled = !empty($mfaRow['mfa_totp_enabled']) && !empty($mfaRow['mfa_totp_secret']);
-				$mfaVerifiedInSession = !empty($_SESSION[$project_pre]['DASHBOARD']['mfa_verified']);
-				$mfaSetupWhitelist = ['mfa_settings.php', 'logout.php'];
-
-				if ($requiresMfaByPolicy && !$mfaEnabled && !in_array($currentDashboardPage, $mfaSetupWhitelist, true)) {
-					log_error('MFA policy enforcement redirect - setup required', 'WARNING', __FILE__, __LINE__, [
-						'user_id' => $userIdForMfa,
-						'role_id' => $currentRoleId,
-						'page' => $currentDashboardPage,
-						'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-					]);
-					header('Location: mfa_settings.php?enforce=1');
-					exit;
-				}
-
-				if ($mfaEnabled && !$mfaVerifiedInSession) {
-					log_error('MFA session enforcement logout triggered', 'WARNING', __FILE__, __LINE__, [
-						'user_id' => $userIdForMfa,
-						'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-					]);
-					session_unset();
-					session_destroy();
-					header('Location: login.php?message=' . urlencode('Please login again and complete two-factor authentication.'));
-					exit;
-				}
-			}
-		}
-	}
 
 	/**
 	 * SESSION HIJACKING PROTECTION - User-Agent Validation
