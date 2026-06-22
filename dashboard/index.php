@@ -18,58 +18,67 @@ include('admin_elements/admin_header.php');
                 <h1>Flash ERP</h1>
             </div>
 
+            <?php
+            $dashboardSystems = [
+                'shipping' => [
+                    'label' => 'Shipping & Logistics System',
+                    'desc'  => 'Smart system for managing shipping, logistics, and deliveries.',
+                    'icon'  => 'ph-lifebuoy',
+                    'color' => 'success',
+                    'link'  => 'dashboard_shipping.php',
+                    'modules' => ['shipping_advices', 'shipping_invoices', 'shipping_stocks', 'shipping_customers', 'hscodes', 'ports', 'carriers', 'consignees', 'shippers'],
+                ],
+                'accounting' => [
+                    'label' => 'Accounting System',
+                    'desc'  => 'Efficient system for managing business finance and accounting.',
+                    'icon'  => 'ph-stack',
+                    'color' => 'warning',
+                    'link'  => 'dashboard_accounting.php',
+                    'modules' => ['banks', 'customers', 'quotations', 'sale_orders', 'invoices', 'payments_received', 'credit_notes', 'vendors', 'expenses', 'purchase_orders', 'purchases', 'payments_made', 'debit_notes', 'journals', 'accounts'],
+                ],
+                'crm' => [
+                    'label' => 'CRM',
+                    'desc'  => 'Powerful CRM to manage leads, customers, and sales pipeline.',
+                    'icon'  => 'ph-files',
+                    'color' => 'primary',
+                    'link'  => 'dashboard_crm.php',
+                    'modules' => ['leads', 'lead_quotations'],
+                ],
+                'hr' => [
+                    'label' => 'HR',
+                    'desc'  => 'Streamlined HR system for employee records and payroll.',
+                    'icon'  => 'ph-users',
+                    'color' => 'indigo',
+                    'link'  => 'dashboard_hr.php',
+                    'modules' => ['departments', 'designations', 'attendance', 'leave_requests', 'leave_types', 'payroll_components', 'salary_structures', 'employee_salaries', 'payroll_runs', 'payslips', 'user_documents', 'users', 'report_hr'],
+                ],
+            ];
+
+            $hasSystemAccess = function ($modules) {
+                if (function_exists('has_full_access') && has_full_access()) return true;
+                foreach ($modules as $module) {
+                    if (function_exists('granted_') && granted_('view', $module)) return true;
+                }
+                return false;
+            };
+            ?>
             <div class="row">
+                <?php foreach ($dashboardSystems as $system): ?>
+                <?php if ($hasSystemAccess($system['modules'])): ?>
                 <div class="col-lg-4">
                     <div class="card">
                         <div class="card-body text-center">
-                            <div class="d-inline-flex bg-success bg-opacity-10 text-success rounded-pill p-2 mb-3 mt-1">
-                                <i class="ph-lifebuoy ph-2x m-1"></i>
+                            <div class="d-inline-flex bg-<?php echo $system['color']; ?> bg-opacity-10 text-<?php echo $system['color']; ?> rounded-pill p-2 mb-3 mt-1">
+                                <i class="<?php echo $system['icon']; ?> ph-2x m-1"></i>
                             </div>
-                            <h5 class="card-title">Shipping &amp; Logistics System</h5>
-                            <p class="mb-3">Smart system for managing shipping, logistics, and deliveries.</p>
-                            <a href="dashboard_shipping.php" class="btn btn-success mb-1">Dashboard</a>
+                            <h5 class="card-title"><?php echo $system['label']; ?></h5>
+                            <p class="mb-3"><?php echo $system['desc']; ?></p>
+                            <a href="<?php echo $system['link']; ?>" class="btn btn-<?php echo $system['color']; ?> mb-1">Dashboard</a>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <div class="d-inline-flex bg-warning bg-opacity-10 text-warning rounded-pill p-2 mb-3 mt-1">
-                                <i class="ph-stack ph-2x m-1"></i>
-                            </div>
-                            <h5 class="card-title">Accounting System</h5>
-                            <p class="mb-3">Efficient system for managing business finance and accounting.</p>
-                            <a href="dashboard_accounting.php" class="btn btn-warning mb-1">Dashboard</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <div class="d-inline-flex bg-primary bg-opacity-10 text-primary rounded-pill p-2 mb-3 mt-1">
-                                <i class="ph-files ph-2x m-1"></i>
-                            </div>
-                            <h5 class="card-title">CRM</h5>
-                            <p class="mb-3">Powerful CRM to manage leads, customers, and sales pipeline.</p>
-                            <a href="dashboard_crm.php" class="btn btn-primary mb-1">Dashboard</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <div class="d-inline-flex bg-indigo bg-opacity-10 text-primary rounded-pill p-2 mb-3 mt-1">
-                                <i class="ph-users ph-2x m-1"></i>
-                            </div>
-                            <h5 class="card-title">HR</h5>
-                            <p class="mb-3">Streamlined HR system for employee records and payroll.</p>
-                            <a href="dashboard_hr.php" class="btn btn-indigo mb-1">Dashboard</a>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
 
             <div class="live-status-container text-center mt-4">
