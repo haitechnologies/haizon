@@ -313,7 +313,14 @@ if ($action == 'login' && empty($email)) {
                         }
                     }
                     log_error('Failed login attempt - MFA check failed', 'WARNING', __FILE__, __LINE__, ['email' => $email, 'ip' => $client_ip]);
-                    $email = '';
+                    // Preserve email during MFA challenge so user doesn't retype it
+                    if (!in_array($message, [
+                        'Enter your authenticator code or a recovery code to continue.',
+                        'Invalid authenticator code.',
+                        'Invalid recovery code.'
+                    ])) {
+                        $email = '';
+                    }
                 }
             } else {
                 // Invalid password - RATE LIMITING: Record failed attempt
@@ -342,7 +349,20 @@ if ($action == 'login' && empty($email)) {
 |--------------------------------------------------------------------------|
 */
 
+// MFA challenge flag - hides MFA fields on initial load, shows them only when challenged
+$showMfaFields = in_array($message, [
+    'Enter your authenticator code or a recovery code to continue.',
+    'Invalid authenticator code.',
+    'Invalid recovery code.',
+    'Two-factor authentication is enabled but not configured correctly. Please contact an administrator.',
+]);
+
+// Always show sign-in button text; update placeholder text for MFA step
+$buttonLabel = $showMfaFields ? 'Verify' : 'Sign in';
+$formCaption  = $showMfaFields ? 'Enter your verification code' : 'Enter your credentials below';
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
@@ -425,8 +445,8 @@ $loginColors = getLoginPageColors();
                         <div class="card">
                             <div class="card-body">
                                 <div class="text-center mb-3">
-                                    <h5 class="mb-0">Login to your account</h5>
-                                    <span class="d-block text-muted">Enter your credentials below</span>
+                                    <h5 class="mb-0"><?= $showMfaFields ? 'Two-Factor Authentication' : 'Login to your account' ?></h5>
+                                    <span class="d-block text-muted"><?= $formCaption ?></span>
                                 </div>
 
                                 <div class="mb-3">
@@ -449,29 +469,32 @@ $loginColors = getLoginPageColors();
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">Authenticator Code</label>
-                                    <div class="form-control-feedback form-control-feedback-start">
-                                        <input type="text" class="form-control" name="otp_code" id="otp_code" value="<?php echo htmlspecialchars($otp_code); ?>" placeholder="6-digit code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}">
-                                        <div class="form-control-feedback-icon">
-                                            <i class="ph-shield-check text-muted"></i>
+                                <div class="mb-3" id="mfa-fields"<?= $showMfaFields ? '' : ' style="display:none"' ?>>
+                                    <div class="mb-3">
+                                        <label class="form-label">Authenticator Code</label>
+                                        <div class="form-control-feedback form-control-feedback-start">
+                                            <input type="text" class="form-control" name="otp_code" id="otp_code" value="<?php echo htmlspecialchars($otp_code); ?>" placeholder="6-digit code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}">
+                                            <div class="form-control-feedback-icon">
+                                                <i class="ph-shield-check text-muted"></i>
+                                            </div>
                                         </div>
+                                        <small class="text-muted">Enter the 6-digit code from your authenticator app.</small>
                                     </div>
-                                    <small class="text-muted">Required if 2FA is enabled for your account.</small>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Recovery Code</label>
+                                        <div class="form-control-feedback form-control-feedback-start">
+                                            <input type="text" class="form-control" name="recovery_code" id="recovery_code" value="<?php echo htmlspecialchars($recovery_code); ?>" placeholder="Use if authenticator unavailable" autocomplete="off" maxlength="32">
+                                            <div class="form-control-feedback-icon">
+                                                <i class="ph-key text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Use a recovery code if you lost access to your authenticator.</small>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Recovery Code (optional)</label>
-                                    <div class="form-control-feedback form-control-feedback-start">
-                                        <input type="text" class="form-control" name="recovery_code" id="recovery_code" value="<?php echo htmlspecialchars($recovery_code); ?>" placeholder="Use if authenticator unavailable" autocomplete="off" maxlength="32">
-                                        <div class="form-control-feedback-icon">
-                                            <i class="ph-key text-muted"></i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <button type="submit" class="btn w-100" style="background-color: <?php echo $loginColors['button_bg']; ?>; color: <?php echo $loginColors['button_text']; ?>; border: none;" onmouseover="this.style.backgroundColor='<?php echo $loginColors['button_hover']; ?>'" onmouseout="this.style.backgroundColor='<?php echo $loginColors['button_bg']; ?>'">Sign in</button>
+                                    <button type="submit" class="btn w-100" style="background-color: <?php echo $loginColors['button_bg']; ?>; color: <?php echo $loginColors['button_text']; ?>; border: none;" onmouseover="this.style.backgroundColor='<?php echo $loginColors['button_hover']; ?>'" onmouseout="this.style.backgroundColor='<?php echo $loginColors['button_bg']; ?>'"><?= $buttonLabel ?></button>
                                 </div>
 
                                 <div class="text-center">
