@@ -209,6 +209,9 @@ if (($action == "delete_$module" && !empty($id)) && granted('delete', $module_id
 </div>
 
 <script>
+var INVOICE_EDIT_PERM = <?php echo granted('edit', $module_id) ? '1' : '0'; ?>;
+var INVOICE_DELETE_PERM = <?php echo granted('delete', $module_id) ? '1' : '0'; ?>;
+
 $(document).ready(function() {
 
     window.HAIDatatableInitializer.init('#grid-<?php echo $module; ?>', '<?php echo $module; ?>', {
@@ -339,10 +342,14 @@ $(document).ready(function() {
                     html += '</button>';
                     html += '<ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 fs-7">';
                     html += '<li><a class="dropdown-item py-2" href="invoice_overview.php?invoice_id=' + id + '"><i class="ph-eye me-2 align-middle text-muted"></i> View Details</a></li>';
-                    html += '<li><a class="dropdown-item py-2" href="invoices.php?action=edit_invoices&id=' + id + '"><i class="ph-pencil me-2 align-middle text-muted"></i> Edit Invoice</a></li>';
+                    if (INVOICE_EDIT_PERM) {
+                        html += '<li><a class="dropdown-item py-2" href="invoices.php?action=edit_invoices&id=' + id + '"><i class="ph-pencil me-2 align-middle text-muted"></i> Edit Invoice</a></li>';
+                    }
                     html += '<li><a class="dropdown-item py-2" href="generate_pdf.php?invoice_id=' + id + '" target="_blank"><i class="ph-file-pdf me-2 align-middle text-muted"></i> Download PDF</a></li>';
-                    html += '<li><hr class="dropdown-divider my-1"></li>';
-                    html += '<li><a class="dropdown-item py-2 text-danger fw-semibold" href="#" data-action="delete_record" data-module="' + module + '" data-id="' + id + '"><i class="ph-trash me-2 align-middle text-danger"></i> Delete</a></li>';
+                    if (INVOICE_DELETE_PERM) {
+                        html += '<li><hr class="dropdown-divider my-1"></li>';
+                        html += '<li><a class="dropdown-item py-2 text-danger fw-semibold" href="#" data-action="delete_record" data-module="' + module + '" data-id="' + id + '"><i class="ph-trash me-2 align-middle text-danger"></i> Delete</a></li>';
+                    }
                     html += '</ul>';
                     html += '</div>';
                     return html;

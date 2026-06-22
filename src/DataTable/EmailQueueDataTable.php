@@ -119,12 +119,12 @@ class EmailQueueDataTable extends BaseDataTable
         $sentAt = !empty($sentAtRaw) ? $this->formatTimeAgo($sentAtRaw) : '-';
 
         $sendBtn = '';
-        if (in_array($status, ['pending', 'retry', 'queued', 'failed'], true)) {
+        if (in_array($status, ['pending', 'retry', 'queued', 'failed'], true) && $this->isGranted('edit')) {
             $sendBtn = '<a href="#" data-action="send_now_record" data-id="' . $id . '" class="action-btn text-primary" title="Send Now"><i class="ph-paper-plane-tilt"></i></a>';
         }
 
         $deleteBtn = '';
-        if ($status === 'pending') {
+        if ($status === 'pending' && $this->isGranted('delete')) {
             $deleteBtn = '<a href="#" data-action="delete_record" data-id="' . $id . '" class="action-btn action-delete text-danger" title="Delete"><i class="ph-trash"></i></a>';
         }
 

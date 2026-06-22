@@ -32,12 +32,12 @@ $ownership_check = (bool)($handler_config['ownership_check'] ?? false);
 $redirect_on_success = (bool)($handler_config['redirect_on_success'] ?? false);
 
 // Publish
-if ($action === "publish_{$module}" && !empty($id)) {
+if ($action === "publish_{$module}" && !empty($id) && granted('edit', $module_id)) {
     $db->execute("UPDATE `{$tbl_name}` SET is_active = 1 WHERE id = :id", ['id' => $id]);
     $success_message = "{$module_caption} Published Successfully.";
 
 // Unpublish
-} elseif ($action === "unpublish_{$module}" && !empty($id)) {
+} elseif ($action === "unpublish_{$module}" && !empty($id) && granted('edit', $module_id)) {
     $db->execute("UPDATE `{$tbl_name}` SET is_active = 0 WHERE id = :id", ['id' => $id]);
     $success_message = "{$module_caption} Un-Published Successfully.";
 

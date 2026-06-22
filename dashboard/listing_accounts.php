@@ -248,7 +248,7 @@ if (isset($_REQUEST['type']) && !empty($_REQUEST['type'])) {
 														} else if ($is_parent_account) {
 															// Parent account with children - show lock icon
 												echo "<span class=\"text-danger\" title=\"Parent account with sub-accounts - cannot be edited\"><i class=\"ph-lock\"></i></span>";
-														} else if ($level > 1 && !$has_transactions) {
+														} else if ($level > 1 && !$has_transactions && granted('edit', $module_id)) {
 															// Regular account - editable
 															echo "<a href='accounts.php?action=edit_accounts&id=$id'><span class=\"text-dark opacity-50\"><i class=\"ph-pencil\"></i></span></a>";
 														} else if ($has_transactions) {
