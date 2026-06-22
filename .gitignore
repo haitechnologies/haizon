@@ -6,6 +6,12 @@
 .env.*.local
 scripts/.env
 .private/
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
 
 # ============================================================
 # DEPENDENCY DIRECTORIES (generated, not committed)
@@ -24,24 +30,77 @@ scripts/.env
 !dashboard/assets/js/vendor/tables/
 !dashboard/assets/js/vendor/tables/datatables/
 !dashboard/assets/js/vendor/tables/datatables/**
-# composer.lock is intentionally tracked — ensures reproducible installs in CI and production
 
 # ============================================================
-# AI / COPILOT DEV ARTIFACTS (local development only)
+# IDE & EDITOR CONFIG (local only)
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+.editorconfig
+.cursorignore
+.cursorrules
+
+# ============================================================
+# AI / COPILOT / DEV TOOL ARTIFACTS (local development only)
 # ============================================================
 .context/
 .continue/
-ai/
+.ai/
 .opencode/
 .github/
-.vscode/
 claude-archive.md
 claude-mini.md
 claude-quick.md
 index.md
 
 # ============================================================
-# DEVELOPER TOOLS & SCRIPTS (not for production)
+# DEVELOPMENT TOOL CONFIG (not for production)
+# ============================================================
+.phpcs.xml
+phpstan.neon
+phpstan.baseline.neon
+phpunit.xml
+
+# ============================================================
+# APP-SPECIFIC DEV CONFIG
+# ============================================================
+opencode.json
+
+# ============================================================
+# DOCUMENTATION & PLANNING (not for production)
+# ============================================================
+docs/
+CHANGELOG.md
+CHANGE_SUMMARY_EMAIL.md
+CONTRIBUTING.md
+ZKTeco-attendance-integration-plan.md
+BACKUP_STRATEGY_GUIDE.html
+ZERO_RESULT_RECOVERY_PLAN.html
+PRODUCTION_LAUNCH_CHECKLIST.html
+manual-test-links.html
+manual-test-links.php
+token-optimization-report.html
+ROBOTS_SITEMAPS.txt
+Muje Parh Lo.txt
+@source.lnk
+*.lnk
+DEPLOYMENT_HOSTINGER.md
+DEPLOYMENT_*.md
+deploy-exclude.txt
+*.md
+
+# keep README.md
+!README.md
+
+# ============================================================
+# TESTS (not for production)
+# ============================================================
+tests/
+
+# ============================================================
+# DEVELOPER TOOLS & SCRIPTS
 # ============================================================
 scripts/
 backups/
@@ -55,33 +114,14 @@ error_log.txt
 pages/error_log.txt
 logs/
 *.log
+*.tmp
 
 # ============================================================
-# DOCUMENTATION & PLANNING FILES (not for production)
+# SQL DUMPS
 # ============================================================
-BACKUP_STRATEGY_GUIDE.html
-ZERO_RESULT_RECOVERY_PLAN.html
-PRODUCTION_LAUNCH_CHECKLIST.html
-manual-test-links.html
-manual-test-links.php
-token-optimization-report.html
-ROBOTS_SITEMAPS.txt
-Muje Parh Lo.txt
-@source.lnk
-*.lnk
-
-# ============================================================
-# DEPLOYMENT & SERVER CONFIGURATION (contain server/infra details)
-# ============================================================
-DEPLOYMENT_HOSTINGER.md
-DEPLOYMENT_*.md
-deploy-exclude.txt
-.htaccess.anti-scraping
-
-# ============================================================
-# TEMPORARY & AUDIT FILES
-# ============================================================
-.tmp*
+*.sql
+haizon_raw.sql
+haizon_live.sql
 
 # ============================================================
 # DASHBOARD DEV/AUDIT FILES
@@ -99,11 +139,6 @@ dashboard/validate_listing_styles.php
 dashboard/VALIDATOR_README.md
 dashboard/clean_audit_script.php
 dashboard/audit_cleanup.php
-
-# ============================================================
-# SQL DUMPS
-# ============================================================
-*.sql
 
 # ============================================================
 # USER-GENERATED CONTENT (not tracked in git)

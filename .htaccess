@@ -22,6 +22,12 @@ Options -Indexes
     Deny from all
 </FilesMatch>
 
+# Block composer dependency files specifically (reveals dependency info)
+<FilesMatch "^(composer\.json|composer\.lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
 # Block developer/AI documentation and planning files at web root
 <FilesMatch "\.(md|csv|ps1|lnk|sh|bat|cmd)$">
     Order allow,deny
@@ -149,7 +155,7 @@ RedirectMatch 410 ^/(haipulse/)?pages/register_example\.php/?$
 
     # Block direct access to sensitive directories (anchored to root to avoid
     # accidentally blocking asset paths like /dashboard/assets/js/vendor/...)
-    RewriteCond %{REQUEST_URI} ^/(haipulse/)?(config|classes|vendor|migrations|cron|database)(/|$) [NC]
+    RewriteCond %{REQUEST_URI} ^/(haipulse/)?(config|classes|vendor|migrations|cron|database|src|resources|tcpdf)(/|$) [NC]
     RewriteRule ^ - [F,L]
 
     # Block hidden dot-directories (.git, .vscode, .github, .context, .continue, etc.)
