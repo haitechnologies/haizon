@@ -65,6 +65,7 @@ include 'admin_elements/admin_header.php';
                     <div class="col-lg-6">
                         <div class="card">
                             <div class="card-body">
+                                <?php if (function_exists('has_full_access') && has_full_access()): ?>
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label"><span class="text-danger">System Role:*</span></label>
                                     <div class="col-lg-9">
@@ -75,6 +76,9 @@ include 'admin_elements/admin_header.php';
                                         <div class="form-text text-muted">System Access: Roles & Permissions</div>
                                     </div>
                                 </div>
+                                <?php else: ?>
+                                <input type="hidden" name="role_id" value="<?php echo $roleId; ?>">
+                                <?php endif; ?>
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label"><span class="text-danger">Name:*</span></label>
                                     <div class="col-lg-9">
@@ -94,6 +98,7 @@ include 'admin_elements/admin_header.php';
                                         <input required type="email" name="email" id="email" value="<?php echo $email; ?>" class="form-control">
                                     </div>
                                 </div>
+                                <?php if (!function_exists('has_full_access') || has_full_access() || $id <= 0): ?>
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label">Password:</label>
                                     <div class="col-lg-9">
@@ -102,6 +107,7 @@ include 'admin_elements/admin_header.php';
                                         <div id="password-strength-status" class="mt-1"></div>
                                     </div>
                                 </div>
+                                <?php endif; ?>
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label"><span class="text-danger">Contact 1:*</span></label>
                                     <div class="col-lg-9">

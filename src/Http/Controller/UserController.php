@@ -81,6 +81,11 @@ class UserController extends BaseController
             'is_active' => $request->get('is_active') ? true : false,
         ];
 
+        $isFullAccess = function_exists('has_full_access') && has_full_access();
+        if (!$isFullAccess) {
+            unset($data['role_id'], $data['password']);
+        }
+
         try {
             $this->userService->update($id, $data);
             flash_success('Employee profile updated successfully.');
@@ -113,6 +118,11 @@ class UserController extends BaseController
             'can_access_system' => $request->get('can_access_system') ? true : false,
             'is_active' => $request->get('is_active') ? true : false,
         ];
+
+        $isFullAccess = function_exists('has_full_access') && has_full_access();
+        if (!$isFullAccess) {
+            unset($data['role_id']);
+        }
 
         try {
             $newUser = $this->userService->create($data, $this->userId);
