@@ -32,6 +32,14 @@ include 'admin_elements/admin_header.php';
             <div class="my-1">
                 <h5 class="mb-0"><?php echo $id > 0 ? 'Edit' : 'New'; ?> <?php echo $moduleCaption; ?></h5>
             </div>
+            <?php
+            $canManageSystemAccess = function_exists('has_full_access') && has_full_access();
+            if (!$canManageSystemAccess && class_exists('App\\Security\\Roles')) {
+                $sessionRoleId = \App\Core\Session::roleId();
+                $canManageSystemAccess = in_array($sessionRoleId, [\App\Security\Roles::ACCOUNTS], true);
+            }
+            ?>
+            <?php if ($canManageSystemAccess): ?>
             <div class="my-1 d-inline-flex align-items-center me-2">
                 <div class="form-check form-check-inline form-switch mb-0">
                     <input type="checkbox" class="form-check-input form-check-input-info" name="can_access_system" id="can_access_system" <?php echo $canAccessSystem ? 'checked="checked"' : ''; ?> form="frmusers">
@@ -42,6 +50,10 @@ include 'admin_elements/admin_header.php';
                     <label class="form-check-label" for="is_active">Active</label>
                 </div>
             </div>
+            <?php else: ?>
+            <input type="hidden" name="can_access_system" value="<?php echo $canAccessSystem; ?>">
+            <input type="hidden" name="is_active" value="<?php echo $isActive; ?>">
+            <?php endif; ?>
             <div class="my-1">
                 <?php if ($canCreate || $canEdit) { ?>
                     <button type="submit" form="frmusers" class="btn btn-primary btn-sm me-2">Save</button>

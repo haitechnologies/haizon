@@ -104,7 +104,7 @@ foreach ($hrGroups as $key => $group) {
                            class="nav-link dropdown-toggle <?php echo $isActive ? 'active' : ''; ?>"
                            data-bs-toggle="dropdown"
                            aria-expanded="false">
-                            <i class="<?php echo $group['icon']; ?> me-2"></i><?php echo $group['label']; ?>
+                            <i class="<?php echo $group['icon']; ?> me-2"></i><?php echo $group['label']; ?> <i class="ph-caret-down fw-bold"></i>
                         </a>
                         <div class="dropdown-menu">
                             <?php foreach ($group['children'] as $childFile => $childLabel): ?>

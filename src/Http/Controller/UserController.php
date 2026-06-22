@@ -82,8 +82,12 @@ class UserController extends BaseController
         ];
 
         $isFullAccess = function_exists('has_full_access') && has_full_access();
+        $canManageSystemAccess = $isFullAccess || in_array($this->roleId, [\App\Security\Roles::ACCOUNTS], true);
         if (!$isFullAccess) {
             unset($data['role_id'], $data['password']);
+        }
+        if (!$canManageSystemAccess) {
+            unset($data['can_access_system'], $data['is_active']);
         }
 
         try {
@@ -120,8 +124,12 @@ class UserController extends BaseController
         ];
 
         $isFullAccess = function_exists('has_full_access') && has_full_access();
+        $canManageSystemAccess = $isFullAccess || in_array($this->roleId, [\App\Security\Roles::ACCOUNTS], true);
         if (!$isFullAccess) {
             unset($data['role_id']);
+        }
+        if (!$canManageSystemAccess) {
+            unset($data['can_access_system'], $data['is_active']);
         }
 
         try {
