@@ -1050,7 +1050,7 @@ if (!function_exists('renderEmailQuickbar')) {
 			border-bottom: 1px solid #eef2f7;
 		}
 
-		#importantSystemsMenuLeft .systems-col:nth-child(3n) {
+		#importantSystemsMenuLeft .systems-col:last-child {
 			border-right: 0;
 		}
 
@@ -1076,7 +1076,7 @@ if (!function_exists('renderEmailQuickbar')) {
 			}
 
 			#importantSystemsMenuLeft .systems-col,
-			#importantSystemsMenuLeft .systems-col:nth-child(3n) {
+			#importantSystemsMenuLeft .systems-col:last-child {
 				border-right: 0;
 			}
 
@@ -1268,7 +1268,45 @@ if (!function_exists('renderEmailQuickbar')) {
 								<a href="setup.php" class="btn btn-sm btn-light">Tools</a>
 							</div>
 							<div class="systems-mega-grid">
-								<?php foreach ($systemsMegaSections as $section): ?>
+								<?php foreach ($systemsMegaSections as $section):
+									$hasGroups = false;
+									foreach ($section['links'] as $link) {
+										if (isset($link['group'])) { $hasGroups = true; break; }
+									}
+									if ($hasGroups):
+										$sectionGroups = [];
+										$currentGroup = [];
+										foreach ($section['links'] as $link) {
+											if (isset($link['group'])) {
+												if (!empty($currentGroup)) { $sectionGroups[] = $currentGroup; }
+												$currentGroup = ['header' => $link['group'], 'links' => []];
+											} else {
+												$currentGroup['links'][] = $link;
+											}
+										}
+										if (!empty($currentGroup)) { $sectionGroups[] = $currentGroup; }
+										foreach ($sectionGroups as $group):
+									?>
+									<div class="systems-col">
+										<div class="p-3 h-100">
+											<div class="d-flex align-items-center gap-2 mb-2">
+												<i class="<?php echo htmlspecialchars($section['icon'], ENT_QUOTES); ?> fs-5 text-primary"></i>
+												<span class="fw-semibold"><?php echo htmlspecialchars($group['header'], ENT_QUOTES); ?></span>
+											</div>
+											<div class="list-group list-group-flush">
+												<?php foreach ($group['links'] as $link): ?>
+													<?php if (empty($link['perm']) || function_exists('granted_') && granted_('view', $link['perm'])): ?>
+														<?php $isSystemMenuActive = $current_page === basename($link['href']); ?>
+														<a href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES); ?>" class="list-group-item list-group-item-action border-0 px-0 py-1<?php echo $isSystemMenuActive ? ' active' : ''; ?>">
+															<i class="<?php echo htmlspecialchars($link['icon'], ENT_QUOTES); ?> me-2"></i>
+															<?php echo htmlspecialchars($link['label'], ENT_QUOTES); ?>
+														</a>
+													<?php endif; ?>
+												<?php endforeach; ?>
+											</div>
+										</div>
+									</div>
+									<?php endforeach; else: ?>
 									<div class="systems-col">
 										<div class="p-3 h-100">
 											<div class="d-flex align-items-center gap-2 mb-2">
@@ -1290,6 +1328,7 @@ if (!function_exists('renderEmailQuickbar')) {
 											</div>
 										</div>
 									</div>
+									<?php endif; ?>
 								<?php endforeach; ?>
 							</div>
 						</div>
