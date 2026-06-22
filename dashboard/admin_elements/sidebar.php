@@ -197,18 +197,18 @@ $menuConfig = [
         'label' => 'HR System',
         'items' => [
             [
-                'href' => '#hr-people-submenu',
-                'label' => 'Organization',
-                'icon' => 'ph-users-three',
-                'pages' => ['listing_departments.php', 'departments.php', 'listing_designations.php', 'designations.php'],
-                'type' => 'submenu',
-                'condition' => function() {
-                    return has_full_access() || hasModuleAccess('departments') || hasModuleAccess('designations');
-                },
-                'children' => [
-                    ['href' => 'listing_departments.php', 'label' => 'Departments', 'pages' => ['listing_departments.php', 'departments.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('departments'); }],
-                    ['href' => 'listing_designations.php', 'label' => 'Designations', 'pages' => ['listing_designations.php', 'designations.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('designations'); }],
-                ]
+                'href' => 'listing_departments.php',
+                'label' => 'Departments',
+                'icon' => 'ph-buildings',
+                'pages' => ['listing_departments.php', 'departments.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('departments'); }
+            ],
+            [
+                'href' => 'listing_designations.php',
+                'label' => 'Designations',
+                'icon' => 'ph-briefcase',
+                'pages' => ['listing_designations.php', 'designations.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('designations'); }
             ],
             [
                 'href' => '#hr-attendance-leave-submenu',
