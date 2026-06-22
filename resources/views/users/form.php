@@ -68,8 +68,8 @@ include 'admin_elements/admin_header.php';
                                 <div class="row mb-3">
                                     <label class="col-lg-3 col-form-label"><span class="text-danger">System Role:*</span></label>
                                     <div class="col-lg-9">
-                                        <select class="form-select" name="role_id" id="role_id">
-                                            <option value='0'>Please select</option>
+                                        <select required class="form-select" name="role_id" id="role_id">
+                                            <option value="">Please select</option>
                                             <?php echo $rolesHtml; ?>
                                         </select>
                                         <div class="form-text text-muted">System Access: Roles & Permissions</div>
