@@ -12,17 +12,42 @@ class DepartmentsDataTable extends BaseDataTable
 {
     protected $table = DB::DEPARTMENT;
     protected $searchFields = ['department'];
-    protected $sortableColumns = [0 => 'id', 1 => 'department', 2 => 'created_at', 3 => 'id'];
+    protected $sortableColumns = [0 => 'id', 1 => 'department', 3 => 'created_at'];
+
+    protected function prepareRelatedData(array $rows, array $requestData = []): void
+    {
+        $deptIds = array_filter(array_map(fn($r) => (int)($r['id'] ?? 0), $rows));
+        if (empty($deptIds)) {
+            return;
+        }
+
+        $idList = implode(',', $deptIds);
+
+        $this->relatedDataCache['employees'] = [];
+        try {
+            $sql = "SELECT department_id, COUNT(*) as cnt 
+                    FROM " . DB::USERS . " 
+                    WHERE department_id IN ({$idList}) AND is_active = 1
+                    GROUP BY department_id";
+            $empRows = $this->db->fetchAll($sql);
+            foreach ($empRows as $empRow) {
+                $this->relatedDataCache['employees'][(int)$empRow['department_id']] = (int)$empRow['cnt'];
+            }
+        } catch (\Throwable $e) {
+            error_log("DepartmentsDataTable::prepareRelatedData error: " . $e->getMessage());
+        }
+    }
 
     protected function formatRow($row, $requestData = [])
     {
         $id      = (int)($row['id'] ?? 0);
         $dept    = (string)($row['department'] ?? '');
         $created = (string)($row['created_at'] ?? '');
+        $empCount = $this->relatedDataCache['employees'][$id] ?? 0;
         return [
             $this->rowNumber,
             htmlspecialchars($dept),
-            0,
+            $empCount,
             $this->formatTimeAgo($created),
             $this->getActionButtons($id, 'departments'),
         ];

@@ -36,7 +36,7 @@ class HrTodoTaskController extends BaseController
 
         if ($request->isPost() && !$this->validateCsrf($request)) {
             flash_error('Invalid security token.');
-            return Response::redirect('listing_hr_todo_tasks.php');
+            return Response::redirect('hr_todo_tasks.php');
         }
 
         $id = $request->getInt('id');
@@ -64,7 +64,7 @@ class HrTodoTaskController extends BaseController
         try {
             $this->hrTodoTaskService->update($id, $data, $this->userId, $this->orgId);
             flash_success('The HR To-Do Task has been updated successfully.');
-            return Response::redirect('listing_hr_todo_tasks.php');
+            return Response::redirect('hr_todo_tasks.php');
         } catch (ValidationException $e) {
             $error = current($e->getErrors());
             flash_error($error);
@@ -92,7 +92,7 @@ class HrTodoTaskController extends BaseController
         try {
             $this->hrTodoTaskService->create($data, $this->userId, $this->orgId);
             flash_success('The HR To-Do Task has been saved successfully.');
-            return Response::redirect('listing_hr_todo_tasks.php');
+            return Response::redirect('hr_todo_tasks.php');
         } catch (ValidationException $e) {
             $error = current($e->getErrors());
             flash_error($error);

@@ -34,7 +34,7 @@ $total_net = $run['total_net'];
 ?>
 
 <div class="content-wrapper">
-    <?php include('admin_elements/hr_navbar.php'); ?>
+    <?php  ?>
 
         <!-- Page header -->
     <div class="page-header page-header-light shadow carriers-page-header">

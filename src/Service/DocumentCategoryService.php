@@ -29,19 +29,19 @@ class DocumentCategoryService
 
     public function create(array $data, int $createdBy): int
     {
-        $name = trim((string)($data['category_name'] ?? ''));
+        $name = trim((string)($data['document_category'] ?? ''));
         if ($name === '') {
-            throw new ValidationException(['category_name' => 'Commodity type is mandatory.']);
+            throw new ValidationException(['document_category' => 'Document category is mandatory.']);
         }
         if ($this->repo->exists($name)) {
-            throw new ValidationException(['category_name' => 'Commodity type already exists. Please enter a different one.']);
+            throw new ValidationException(['document_category' => 'Document category already exists. Please enter a different one.']);
         }
 
         $item = new DocumentCategory(
             id: 0,
-            categoryName: $name,
-            description: (string)($data['description'] ?? ''),
-            isActive: (bool)($data['is_active'] ?? true),
+            documentCategory: $name,
+            documentCategoryType: (string)($data['document_category_type'] ?? 'employees'),
+            isActive: true,
             createdBy: $createdBy,
         );
 
@@ -55,18 +55,18 @@ class DocumentCategoryService
             return false;
         }
 
-        $name = trim((string)($data['category_name'] ?? $existing->categoryName));
+        $name = trim((string)($data['document_category'] ?? $existing->documentCategory));
         if ($name === '') {
-            throw new ValidationException(['category_name' => 'Commodity type is mandatory.']);
+            throw new ValidationException(['document_category' => 'Document category is mandatory.']);
         }
         if ($this->repo->exists($name, $id)) {
-            throw new ValidationException(['category_name' => 'Commodity type already exists. Please enter a different one.']);
+            throw new ValidationException(['document_category' => 'Document category already exists. Please enter a different one.']);
         }
 
         return $this->repo->update($id, [
-            'category_name' => $name,
-            'description' => (string)($data['description'] ?? $existing->description),
-            'is_active' => (bool)($data['is_active'] ?? $existing->isActive) ? 1 : 0,
+            'document_category' => $name,
+            'document_category_type' => (string)($data['document_category_type'] ?? $existing->documentCategoryType),
+            'is_active' => $existing->isActive ? 1 : 0,
             'updated_by' => $updatedBy,
         ]);
     }

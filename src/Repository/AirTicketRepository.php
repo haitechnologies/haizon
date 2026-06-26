@@ -29,7 +29,8 @@ class AirTicketRepository
     public function find(int $id, int $organizationId): ?AirTicket
     {
         $sql = "SELECT id, organization_id, employee_id, entitlement_amount, status, 
-                       eligibility_date, paid_date, payment_reference, notes, 
+                       eligibility_date, paid_date, departure_date, arrival_date, ticket_file,
+                       payment_reference, notes, 
                        created_by, created_at, updated_at
                 FROM " . DB::AIR_TICKETS . "
                 WHERE id = :id AND organization_id = :organization_id";
@@ -54,7 +55,8 @@ class AirTicketRepository
     public function findAll(?int $organizationId = null): array
     {
         $sql = "SELECT id, organization_id, employee_id, entitlement_amount, status, 
-                       eligibility_date, paid_date, payment_reference, notes, 
+                       eligibility_date, paid_date, departure_date, arrival_date, ticket_file,
+                       payment_reference, notes, 
                        created_by, created_at, updated_at
                 FROM " . DB::AIR_TICKETS;
 
@@ -83,7 +85,8 @@ class AirTicketRepository
     public function findByEmployee(int $employeeId, ?int $organizationId = null): array
     {
         $sql = "SELECT id, organization_id, employee_id, entitlement_amount, status, 
-                       eligibility_date, paid_date, payment_reference, notes, 
+                       eligibility_date, paid_date, departure_date, arrival_date, ticket_file,
+                       payment_reference, notes, 
                        created_by, created_at, updated_at
                 FROM " . DB::AIR_TICKETS . "
                 WHERE employee_id = :employee_id";
@@ -113,7 +116,8 @@ class AirTicketRepository
     public function findByStatus(string $status, ?int $organizationId = null): array
     {
         $sql = "SELECT id, organization_id, employee_id, entitlement_amount, status, 
-                       eligibility_date, paid_date, payment_reference, notes, 
+                       eligibility_date, paid_date, departure_date, arrival_date, ticket_file,
+                       payment_reference, notes, 
                        created_by, created_at, updated_at
                 FROM " . DB::AIR_TICKETS . "
                 WHERE status = :status";
@@ -142,9 +146,11 @@ class AirTicketRepository
     {
         $sql = "INSERT INTO " . DB::AIR_TICKETS . " 
                 (organization_id, employee_id, entitlement_amount, status, 
-                 eligibility_date, paid_date, payment_reference, notes, created_by)
+                 eligibility_date, paid_date, departure_date, arrival_date, ticket_file,
+                 payment_reference, notes, created_by)
                 VALUES (:organization_id, :employee_id, :entitlement_amount, :status,
-                        :eligibility_date, :paid_date, :payment_reference, :notes, :created_by)";
+                        :eligibility_date, :paid_date, :departure_date, :arrival_date, :ticket_file,
+                        :payment_reference, :notes, :created_by)";
 
         $params = [
             'organization_id' => $ticket->organizationId,
@@ -153,6 +159,9 @@ class AirTicketRepository
             'status' => $ticket->status,
             'eligibility_date' => $ticket->eligibilityDate,
             'paid_date' => $ticket->paidDate,
+            'departure_date' => $ticket->departureDate,
+            'arrival_date' => $ticket->arrivalDate,
+            'ticket_file' => $ticket->ticketFile,
             'payment_reference' => $ticket->paymentReference,
             'notes' => $ticket->notes,
             'created_by' => $ticket->createdBy,
@@ -166,7 +175,7 @@ class AirTicketRepository
      */
     public function update(int $id, array $data, int $organizationId): bool
     {
-        $allowedFields = ['status', 'paid_date', 'payment_reference', 'notes', 'eligibility_date', 'entitlement_amount'];
+        $allowedFields = ['status', 'paid_date', 'payment_reference', 'notes', 'eligibility_date', 'entitlement_amount', 'departure_date', 'arrival_date', 'ticket_file'];
         $setClauses = [];
         $params = ['id' => $id, 'organization_id' => $organizationId];
 
@@ -237,6 +246,9 @@ class AirTicketRepository
             status: (string)$row['status'],
             eligibilityDate: $row['eligibility_date'] ?? null,
             paidDate: $row['paid_date'] ?? null,
+            departureDate: $row['departure_date'] ?? null,
+            arrivalDate: $row['arrival_date'] ?? null,
+            ticketFile: $row['ticket_file'] ?? null,
             paymentReference: (string)($row['payment_reference'] ?? ''),
             notes: (string)($row['notes'] ?? ''),
             createdBy: (int)($row['created_by'] ?? 0),

@@ -41,7 +41,7 @@ class UserDocumentService
 
     public function createDocument(array $data, ?array $file, int $orgId, int $userId): UserDocument
     {
-        $this->validateCreate($data, $file);
+        $this->validateCreate($data, $file, $orgId);
 
         $uploadedFilename = $this->handleUpload($file, $userId);
         $originalFilename = $file['name'] ?? '';
@@ -123,6 +123,37 @@ class UserDocumentService
         }
     }
 
+    public function updateDocumentDates(int $id, array $data, int $orgId): UserDocument
+    {
+        $existing = $this->getDocument($id, $orgId);
+
+        $document = new UserDocument(
+            id: $existing->id,
+            organizationId: $existing->organizationId,
+            userId: $existing->userId,
+            documentType: $existing->documentType,
+            filename: $existing->filename,
+            originalFilename: $existing->originalFilename,
+            fileSize: $existing->fileSize,
+            description: $existing->description,
+            issuedDate: $this->parseDate($data['issued_date'] ?? ''),
+            expiryDate: $this->parseDate($data['expiry_date'] ?? ''),
+            createdAt: $existing->createdAt,
+            updatedAt: $existing->updatedAt,
+            createdBy: $existing->createdBy,
+        );
+
+        $this->db->beginTransaction();
+        try {
+            $saved = $this->repo->save($document);
+            $this->db->commit();
+            return $saved;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function deleteDocument(int $id, int $orgId, int $userId, bool $isSuperAdmin): bool
     {
         $document = $this->getDocument($id, $orgId);
@@ -147,7 +178,7 @@ class UserDocumentService
         }
     }
 
-    private function validateCreate(array $data, ?array $file): void
+    private function validateCreate(array $data, ?array $file, int $orgId): void
     {
         if (empty($data['user_id']) || (int)$data['user_id'] <= 0) {
             throw new ValidationException(['user_id' => 'Please select an Employee.']);
@@ -157,6 +188,16 @@ class UserDocumentService
         }
         $this->validateFile($file);
         $this->validateDates($data);
+
+        if (!empty($data['document_type'])) {
+            $userId = (int)$data['user_id'];
+            $categoryId = (int)$data['document_type'];
+            $issuedDate = $this->parseDate($data['issued_date'] ?? '');
+            $expiryDate = $this->parseDate($data['expiry_date'] ?? '');
+            if ($this->repo->existsByUserCategoryAndDates($userId, $orgId, $categoryId, $issuedDate, $expiryDate)) {
+                throw new ValidationException(['document' => 'A document with the same category, issue date, and expiry date already exists for this employee.']);
+            }
+        }
     }
 
     private function validateUpdate(array $data): void

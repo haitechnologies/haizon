@@ -196,22 +196,34 @@ function parse_php_error_entries($filePath, $limit = 0) {
         return $entries;
     }
 
-    $lines = @file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if (!$lines) {
+    $rawLines = @file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!$rawLines) {
         return $entries;
     }
 
-    $count = 0;
-    foreach (array_reverse($lines) as $line) {
-        $line = trim((string)$line);
-        if ($line === '') {
+    // Group multi-line entries: a line starting with [timestamp] begins a new entry;
+    // subsequent lines without a timestamp are appended to the previous entry.
+    $grouped = [];
+    $currentIdx = -1;
+    foreach ($rawLines as $rawLine) {
+        $rawLine = trim((string)$rawLine);
+        if ($rawLine === '') {
             continue;
         }
+        if (preg_match('/^\[/', $rawLine)) {
+            $currentIdx++;
+            $grouped[$currentIdx] = $rawLine;
+        } elseif ($currentIdx >= 0) {
+            $grouped[$currentIdx] .= "\n" . $rawLine;
+        }
+    }
 
+    $count = 0;
+    foreach (array_reverse($grouped) as $entryText) {
         $ts = '';
-        $msg = $line;
+        $msg = $entryText;
 
-        if (preg_match('/^\[([^\]]+)\]\s*(.+)$/', $line, $m)) {
+        if (preg_match('/^\[([^\]]+)\]\s*(.+)$/s', $entryText, $m)) {
             $ts = normalize_backend_timestamp((string)$m[1]);
             $msg = (string)$m[2];
         }
@@ -1291,10 +1303,20 @@ $php_error_log_size = file_exists($error_log_file) ? round(filesize($error_log_f
                                 </thead>
                                 <tbody>
                                     <?php foreach ($php_error_lines as $php_entry): ?>
-                                        <tr>
+                                        <tr class="log-row">
                                             <td><span class="severity-badge severity-<?php echo strtolower($php_entry['severity']); ?>"><?php echo htmlspecialchars($php_entry['severity']); ?></span></td>
                                             <td style="white-space:nowrap;"><small><?php echo htmlspecialchars($php_entry['timestamp']); ?></small></td>
-                                            <td style="font-size:0.83rem; word-break:break-word;"><?php echo htmlspecialchars($php_entry['message']); ?></td>
+                                            <td class="log-msg-cell" style="cursor:pointer;">
+                                                <div class="log-msg d-flex align-items-center" title="Click to expand full entry">
+                                                    <span class="arrow-icon" style="display:inline-block;transition:transform 0.2s; margin-right:6px;">
+                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6L8 9.5L11.5 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                    </span>
+                                                    <span><?php echo htmlspecialchars(mb_substr($php_entry['message'], 0, 200) . (mb_strlen($php_entry['message']) > 200 ? '...' : '')); ?></span>
+                                                </div>
+                                                <div class="log-details-content" style="display:none;">
+                                                    <pre style="margin:8px 0 0 22px; white-space:pre-wrap; overflow-x:hidden;"><?php echo htmlspecialchars($php_entry['message']); ?></pre>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

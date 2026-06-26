@@ -197,20 +197,6 @@ $menuConfig = [
         'label' => 'HR System',
         'items' => [
             [
-                'href' => 'listing_departments.php',
-                'label' => 'Departments',
-                'icon' => 'ph-buildings',
-                'pages' => ['listing_departments.php', 'departments.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('departments'); }
-            ],
-            [
-                'href' => 'listing_designations.php',
-                'label' => 'Designations',
-                'icon' => 'ph-briefcase',
-                'pages' => ['listing_designations.php', 'designations.php'],
-                'condition' => function() { return has_full_access() || hasModuleAccess('designations'); }
-            ],
-            [
                 'href' => 'listing_users.php',
                 'label' => 'Employees',
                 'icon' => 'ph-users',
@@ -218,36 +204,33 @@ $menuConfig = [
                 'condition' => function() { return has_full_access() || hasModuleAccess('users'); }
             ],
             [
-                'href' => '#hr-attendance-leave-submenu',
-                'label' => 'Attendance & Leave',
+                'href' => 'listing_attendance.php',
+                'label' => 'Attendance',
                 'icon' => 'ph-calendar-check',
-                'pages' => ['listing_attendance.php', 'attendance.php', 'listing_leave_requests.php', 'leave_requests.php', 'listing_leave_types.php', 'leave_types.php'],
-                'type' => 'submenu',
-                'condition' => function() {
-                    return has_full_access() || hasModuleAccess('attendance') || hasModuleAccess('leave_requests') || hasModuleAccess('leave_types');
-                },
-                'children' => [
-                    ['href' => 'listing_attendance.php', 'label' => 'Attendance', 'pages' => ['listing_attendance.php', 'attendance.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('attendance'); }],
-                    ['href' => 'listing_leave_requests.php', 'label' => 'Leave Requests', 'pages' => ['listing_leave_requests.php', 'leave_requests.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('leave_requests'); }],
-                    ['href' => 'listing_leave_types.php', 'label' => 'Leave Types', 'pages' => ['listing_leave_types.php', 'leave_types.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('leave_types'); }],
-                ]
+                'pages' => ['listing_attendance.php', 'attendance.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('attendance'); }
+            ],
+            [
+                'href' => 'listing_leave_requests.php',
+                'label' => 'Leave Requests',
+                'icon' => 'ph-calendar-x',
+                'pages' => ['listing_leave_requests.php', 'leave_requests.php'],
+                'condition' => function() { return has_full_access() || hasModuleAccess('leave_requests'); }
             ],
             [
                 'href' => '#hr-payroll-submenu',
                 'label' => 'Payroll',
                 'icon' => 'ph-calculator',
-                'pages' => ['listing_payroll_components.php', 'payroll_components.php', 'listing_salary_structures.php', 'salary_structures.php', 'listing_employee_salaries.php', 'listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php', 'listing_payslips.php', 'payslips.php', 'view_payslip.php'],
+                'pages' => ['listing_salary_structures.php', 'salary_structures.php', 'listing_employee_salaries.php', 'listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php', 'listing_payslips.php', 'payslips.php', 'view_payslip.php'],
                 'type' => 'submenu',
                 'condition' => function() {
                     return has_full_access()
-                        || hasModuleAccess('payroll_components')
                         || hasModuleAccess('salary_structures')
                         || hasModuleAccess('employee_salaries')
                         || hasModuleAccess('payroll_runs')
                         || hasModuleAccess('payslips');
                 },
                 'children' => [
-                    ['href' => 'listing_payroll_components.php', 'label' => 'Payroll Components', 'pages' => ['listing_payroll_components.php', 'payroll_components.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payroll_components'); }],
                     ['href' => 'listing_salary_structures.php', 'label' => 'Salary Structures', 'pages' => ['listing_salary_structures.php', 'salary_structures.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('salary_structures'); }],
                     ['href' => 'listing_employee_salaries.php', 'label' => 'Employee Salaries', 'pages' => ['listing_employee_salaries.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('employee_salaries'); }],
                     ['href' => 'listing_payroll_runs.php', 'label' => 'Payroll Runs', 'pages' => ['listing_payroll_runs.php', 'payroll_runs.php', 'view_payroll_run.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payroll_runs'); }],
@@ -281,6 +264,23 @@ $menuConfig = [
                 'icon' => 'ph-chart-line-up',
                 'pages' => ['report_hr.php'],
                 'condition' => function() { return has_full_access() || hasModuleAccess('report_hr'); }
+            ],
+            [
+                'href' => '#hr-settings-submenu',
+                'label' => 'HR Settings',
+                'icon' => 'ph-gear',
+                'pages' => ['listing_departments.php', 'departments.php', 'listing_designations.php', 'designations.php', 'listing_leave_types.php', 'leave_types.php', 'listing_document_categories.php', 'document_categories.php', 'listing_payroll_components.php', 'payroll_components.php'],
+                'type' => 'submenu',
+                'condition' => function() {
+                    return has_full_access() || hasModuleAccess('departments') || hasModuleAccess('designations') || hasModuleAccess('leave_types') || hasModuleAccess('document_categories') || hasModuleAccess('payroll_components');
+                },
+                'children' => [
+                    ['href' => 'listing_departments.php', 'label' => 'Departments', 'pages' => ['listing_departments.php', 'departments.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('departments'); }],
+                    ['href' => 'listing_designations.php', 'label' => 'Designations', 'pages' => ['listing_designations.php', 'designations.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('designations'); }],
+                    ['href' => 'listing_leave_types.php', 'label' => 'Leave Types', 'pages' => ['listing_leave_types.php', 'leave_types.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('leave_types'); }],
+                    ['href' => 'listing_document_categories.php', 'label' => 'Document Categories', 'pages' => ['listing_document_categories.php', 'document_categories.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('document_categories'); }],
+                    ['href' => 'listing_payroll_components.php', 'label' => 'Payroll Components', 'pages' => ['listing_payroll_components.php', 'payroll_components.php'], 'condition' => function() { return has_full_access() || hasModuleAccess('payroll_components'); }],
+                ]
             ],
             [
                 'href' => 'hr_guide.php',
@@ -444,7 +444,7 @@ $sectionModuleMap = [
     'shipping' => ['shipping_advices', 'shipping_invoices', 'shipping_stocks', 'shipping_customers', 'hscodes', 'ports', 'carriers', 'consignees', 'shippers'],
     'accounting' => ['banks', 'customers', 'quotations', 'sale_orders', 'invoices', 'payments_received', 'credit_notes', 'vendors', 'expenses', 'purchase_orders', 'purchases', 'payments_made', 'debit_notes', 'journals', 'accounts'],
     'crm' => ['leads', 'lead_quotations'],
-    'hr' => ['departments', 'designations', 'attendance', 'leave_requests', 'leave_types', 'annual_leave_entitlements', 'payroll_components', 'salary_structures', 'employee_salaries', 'payroll_runs', 'payslips', 'user_documents', 'air_tickets', 'gratuity_settlements', 'report_hr'],
+    'hr' => ['departments', 'designations', 'attendance', 'leave_requests', 'leave_types', 'annual_leave_entitlements', 'payroll_components', 'salary_structures', 'employee_salaries', 'payroll_runs', 'payslips', 'user_documents', 'document_categories', 'air_tickets', 'gratuity_settlements', 'report_hr'],
 ];
 
 ?>

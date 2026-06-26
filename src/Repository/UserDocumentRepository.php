@@ -119,6 +119,37 @@ class UserDocumentRepository
         return $updated;
     }
 
+    public function existsByUserCategoryAndDates(int $userId, int $orgId, int $documentCategory, ?string $issuedDate, ?string $expiryDate): bool
+    {
+        $sql = "SELECT COUNT(*) as cnt FROM `{DB::USER_DOCUMENTS}` 
+                WHERE attachable_type = 'UserDoc' 
+                AND attachable_id = :user_id 
+                AND organization_id = :org_id 
+                AND document_category = :document_category";
+        $params = [
+            'user_id' => $userId,
+            'org_id' => $orgId,
+            'document_category' => $documentCategory,
+        ];
+
+        if ($issuedDate !== null) {
+            $sql .= " AND issued_date = :issued_date";
+            $params['issued_date'] = $issuedDate;
+        } else {
+            $sql .= " AND issued_date IS NULL";
+        }
+
+        if ($expiryDate !== null) {
+            $sql .= " AND expiry_date = :expiry_date";
+            $params['expiry_date'] = $expiryDate;
+        } else {
+            $sql .= " AND expiry_date IS NULL";
+        }
+
+        $row = $this->db->fetchOne($sql, $params);
+        return ($row['cnt'] ?? 0) > 0;
+    }
+
     public function delete(int $id, int $orgId): bool
     {
         $sql = "DELETE FROM `{DB::USER_DOCUMENTS}` WHERE id = :id AND organization_id = :org_id";

@@ -1,5 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Core\DB;
+use App\Core\Container;
+use App\Service\SalaryStructureService;
+use App\Exception\NotFoundException;
+
 $module = 'salary_structures';
 $module_caption = 'Salary Structures';
 $error_message = '';
@@ -7,7 +14,6 @@ $success_message = '';
 
 include('admin_elements/admin_header.php');
 
-use App\Core\DB;
 $tbl_name = DB::SALARY_STRUCTURES;
 
 include('admin_elements/permissions.php');
@@ -16,20 +22,27 @@ $activeOrganizationId = dashboardRequireActiveOrganization();
 $action = $_GET['action'] ?? '';
 $id = (int)($_GET['id'] ?? 0);
 
+$container = Container::getInstance();
+/** @var SalaryStructureService $service */
+$service = $container->get(SalaryStructureService::class);
+
 if ($action == "delete_$module" && !empty($id) && (has_full_access() || (isset($module_id) && granted('delete', $module_id)))) {
-    $mysqli->query("DELETE FROM `$tbl_name` WHERE id=$id");
-    if ($mysqli->affected_rows > 0) {
-        $success_message = "Item deleted successfully.";
+    try {
+        $service->delete((int)$id, $activeOrganizationId);
+        $success_message = "Salary component deleted successfully.";
         flash_success($success_message);
         header("Location:listing_$module.php");
         exit;
+    } catch (\Throwable $e) {
+        $error_message = "Salary component could not be deleted.";
     }
 }
+
 $listingConfig = [
     'module' => $module,
     'module_caption' => $module_caption,
     'thead' => '
-        <th width="50">ID</th>
+        <th width="50">#</th>
         <th>Employee</th>
         <th>Component</th>
         <th>Amount</th>
@@ -46,7 +59,7 @@ $listingConfig = [
         ['data' => 5],
         ['data' => 6, 'orderable' => false, 'searchable' => false, 'className' => 'col-center text-center'],
     ],
-    'order' => [[0, 'desc']], // order by id desc
+    'order' => [[0, 'desc']],
     'page_length' => 25,
     'messages' => [
         'success' => $success_message ?? '',
@@ -54,10 +67,5 @@ $listingConfig = [
     ]
 ];
 
-ob_start();
-include('admin_elements/hr_navbar.php');
-$listingConfig['extra_header'] = ob_get_clean();
-
 include('admin_elements/listing_template.php');
 include('admin_elements/admin_footer.php');
-?>

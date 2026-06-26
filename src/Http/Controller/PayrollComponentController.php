@@ -27,7 +27,7 @@ class PayrollComponentController extends BaseController
 
     public function __invoke(Request $request): Response
     {
-        $this->requiresModule('component_names', 'Payroll Component');
+        $this->requiresModule('payroll_components', 'Payroll Component');
 
         if (!$this->canView()) {
             return new Response('Forbidden', 403);

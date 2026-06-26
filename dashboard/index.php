@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 include('admin_elements/admin_header.php');
+
+if (\App\Core\Session::roleId() === 6) {
+    header('Location: dashboard_hr.php');
+    exit;
+}
 ?>
 <div class="content-wrapper">
     <div class="page-header page-header-light shadow carriers-page-header">

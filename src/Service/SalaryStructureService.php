@@ -17,60 +17,71 @@ class SalaryStructureService
         $this->repo = $repo;
     }
 
-    public function getById(int $id): ?SalaryStructure
+    public function getById(int $id, int $orgId): ?SalaryStructure
     {
-        return $this->repo->find($id);
+        return $this->repo->find($id, $orgId);
     }
 
-    public function list(): array
+    public function getByEmployee(int $employeeId, int $orgId): array
     {
-        return $this->repo->findAll();
+        return $this->repo->findByEmployee($employeeId, $orgId);
     }
 
-    public function create(array $data, int $createdBy): int
+    public function getByEmployeeIndexed(int $employeeId, int $orgId): array
     {
-        $name = trim((string)($data['effective_from'] ?? ''));
-        if ($name === '') {
-            throw new ValidationException(['effective_from' => 'Commodity type is mandatory.']);
-        }
-        if ($this->repo->exists($name)) {
-            throw new ValidationException(['effective_from' => 'Commodity type already exists. Please enter a different one.']);
-        }
-
-        $item = new SalaryStructure(
-            id: 0,
-            effectiveFrom: $name,
-            description: (string)($data['description'] ?? ''),
-            createdBy: $createdBy,
-        );
-
-        return $this->repo->insert($item);
+        return $this->repo->findByEmployeeIndexed($employeeId, $orgId);
     }
 
-    public function update(int $id, array $data, int $updatedBy): bool
+    public function list(int $orgId): array
     {
-        $existing = $this->repo->find($id);
-        if ($existing === null) {
-            return false;
-        }
-
-        $name = trim((string)($data['effective_from'] ?? $existing->effectiveFrom));
-        if ($name === '') {
-            throw new ValidationException(['effective_from' => 'Commodity type is mandatory.']);
-        }
-        if ($this->repo->exists($name, $id)) {
-            throw new ValidationException(['effective_from' => 'Commodity type already exists. Please enter a different one.']);
-        }
-
-        return $this->repo->update($id, [
-            'effective_from' => $name,
-            'description' => (string)($data['description'] ?? $existing->description),
-            'updated_by' => $updatedBy,
-        ]);
+        return $this->repo->findAll($orgId);
     }
 
-    public function delete(int $id): bool
+    public function saveBatch(int $employeeId, array $components, int $orgId, int $createdBy): void
     {
-        return $this->repo->delete($id);
+        if ($employeeId <= 0) {
+            throw new ValidationException(['employee_id' => 'Employee is mandatory.']);
+        }
+
+        $valid = false;
+        $records = [];
+        foreach ($components as $componentId => $data) {
+            $componentId = (int)$componentId;
+            $amount = (float)($data['amount'] ?? 0);
+            if ($componentId <= 0 || $amount <= 0) {
+                continue;
+            }
+            $valid = true;
+            $records[] = new SalaryStructure(
+                id: 0,
+                organizationId: $orgId,
+                employeeId: $employeeId,
+                componentId: $componentId,
+                amount: $amount,
+                effectiveFrom: !empty($data['effective_from']) ? trim((string)$data['effective_from']) : null,
+                effectiveTo: !empty($data['effective_to']) ? trim((string)$data['effective_to']) : null,
+                isBasic: $componentId === 1,
+                createdBy: $createdBy,
+            );
+        }
+
+        if (!$valid) {
+            throw new ValidationException(['amount' => 'At least one component must have an amount greater than zero.']);
+        }
+
+        $this->repo->deleteByEmployee($employeeId, $orgId);
+        foreach ($records as $record) {
+            $this->repo->insert($record);
+        }
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        return $this->repo->update($id, $data);
+    }
+
+    public function delete(int $id, int $orgId): bool
+    {
+        return $this->repo->delete($id, $orgId);
     }
 }

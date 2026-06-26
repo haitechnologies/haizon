@@ -41,7 +41,7 @@ class LeaveTypeService
     /**
      * Create a new leave type
      */
-    public function create(string $leaveType, int $maxPerYear, bool $paid, int $organizationId, int $paidDays = 3): LeaveType
+    public function create(string $leaveType, bool $paid, int $organizationId): LeaveType
     {
         $leaveType = trim($leaveType);
         if ($leaveType === '') {
@@ -56,9 +56,7 @@ class LeaveTypeService
             id: null,
             organizationId: $organizationId,
             leaveType: $leaveType,
-            maxPerYear: $maxPerYear,
             paid: $paid,
-            paidDays: $paidDays
         );
 
         return $this->typeRepo->save($type);
@@ -67,7 +65,7 @@ class LeaveTypeService
     /**
      * Update an existing leave type
      */
-    public function update(int $id, string $leaveType, int $maxPerYear, bool $paid, int $organizationId, int $paidDays = 3): LeaveType
+    public function update(int $id, string $leaveType, bool $paid, int $organizationId): LeaveType
     {
         $type = $this->getById($id, $organizationId);
         $leaveType = trim($leaveType);
@@ -84,9 +82,7 @@ class LeaveTypeService
             id: $type->id,
             organizationId: $type->organizationId,
             leaveType: $leaveType,
-            maxPerYear: $maxPerYear,
             paid: $paid,
-            paidDays: $paidDays,
             createdAt: $type->createdAt,
             updatedAt: null
         );

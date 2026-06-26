@@ -77,9 +77,7 @@ $listingConfig = [
     ],
 ];
 
-ob_start();
-include('admin_elements/hr_navbar.php');
-$listingConfig['extra_header'] = ob_get_clean();
+
 
 include('admin_elements/listing_template.php');
 include('admin_elements/admin_footer.php');

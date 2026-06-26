@@ -49,8 +49,9 @@ class UserRepository
     public function find(int $id): ?User
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
-                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
-                       department_id, last_login, photo, created_at, updated_at, created_by 
+                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob,
+                       date_of_joining,
+                       department_id, designation_id, last_login, photo, created_at, updated_at, created_by 
                 FROM DB::USERS 
                 WHERE id = :id";
 
@@ -68,8 +69,9 @@ class UserRepository
     public function findByEmail(string $email): ?User
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
-                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
-                       department_id, last_login, photo, created_at, updated_at, created_by 
+                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob,
+                       date_of_joining,
+                       department_id, designation_id, last_login, photo, created_at, updated_at, created_by 
                 FROM DB::USERS 
                 WHERE email = :email";
 
@@ -114,12 +116,14 @@ class UserRepository
     {
         $sql = "INSERT INTO DB::USERS (
                     can_access_system, is_active, role_id, email, password, 
-                    full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
-                    department_id, photo, created_by, created_at
+                    full_name, first_name, last_name, mobile, contact1, contact2, address, dob,
+                    date_of_joining,
+                    department_id, designation_id, photo, created_by, created_at
                 ) VALUES (
                     :can_access_system, :is_active, :role_id, :email, :password, 
-                    :full_name, :first_name, :last_name, :mobile, :contact1, :contact2, :address, :dob, 
-                    :department_id, :photo, :created_by, NOW()
+                    :full_name, :first_name, :last_name, :mobile, :contact1, :contact2, :address, :dob,
+                    :date_of_joining,
+                    :department_id, :designation_id, :photo, :created_by, NOW()
                 )";
 
         $params = [
@@ -136,7 +140,9 @@ class UserRepository
             'contact2' => $user->contact2,
             'address' => $user->address,
             'dob' => $user->dob,
+            'date_of_joining' => $user->dateOfJoining,
             'department_id' => $user->departmentId,
+            'designation_id' => $user->designationId,
             'photo' => $user->photo,
             'created_by' => $user->createdBy,
         ];
@@ -167,7 +173,9 @@ class UserRepository
                     contact2 = :contact2, 
                     address = :address, 
                     dob = :dob, 
+                    date_of_joining = :date_of_joining, 
                     department_id = :department_id, 
+                    designation_id = :designation_id, 
                     photo = :photo, 
                     updated_at = NOW()
                 WHERE id = :id";
@@ -186,7 +194,9 @@ class UserRepository
             'contact2' => $user->contact2,
             'address' => $user->address,
             'dob' => $user->dob,
+            'date_of_joining' => $user->dateOfJoining,
             'department_id' => $user->departmentId,
+            'designation_id' => $user->designationId,
             'photo' => $user->photo,
             'id' => $user->id,
         ];
@@ -207,8 +217,9 @@ class UserRepository
     public function findAll(): array
     {
         $sql = "SELECT id, can_access_system, is_active, role_id, email, password, 
-                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob, 
-                       department_id, last_login, photo, created_at, updated_at, created_by 
+                       full_name, first_name, last_name, mobile, contact1, contact2, address, dob,
+                       date_of_joining,
+                       department_id, designation_id, last_login, photo, created_at, updated_at, created_by 
                 FROM DB::USERS 
                 ORDER BY full_name ASC";
         $rows = $this->db->fetchAll($sql);
@@ -249,7 +260,9 @@ class UserRepository
             contact2: $row['contact2'] !== null ? (string)$row['contact2'] : null,
             address: $row['address'] !== null ? (string)$row['address'] : null,
             dob: $row['dob'] !== null ? (string)$row['dob'] : null,
+            dateOfJoining: $row['date_of_joining'] !== null ? (string)$row['date_of_joining'] : null,
             departmentId: $row['department_id'] !== null ? (int)$row['department_id'] : null,
+            designationId: $row['designation_id'] !== null ? (int)$row['designation_id'] : null,
             lastLogin: $row['last_login'] !== null ? (string)$row['last_login'] : null,
             photo: $row['photo'] !== null ? (string)$row['photo'] : null,
             publish: (bool)($row['publish'] ?? false),

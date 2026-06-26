@@ -46,15 +46,15 @@ $listingConfig = [
     'thead' => '
         <th width="50">ID</th>
         <th>Leave Type</th>
-        <th>Max Days/Year</th>
         <th>Paid</th>
+        <th>Rule</th>
         <th width="100" class="col-center">Action</th>
     ',
     'columns' => [
         ['data' => 0],
         ['data' => 1],
         ['data' => 2],
-        ['data' => 3],
+        ['data' => 3, 'orderable' => false, 'searchable' => false],
         ['data' => 4, 'orderable' => false, 'searchable' => false, 'className' => 'col-center text-center'],
     ],
     'order' => [[0, 'desc']], // order by id desc
@@ -65,9 +65,7 @@ $listingConfig = [
     ]
 ];
 
-ob_start();
-include('admin_elements/hr_navbar.php');
-$listingConfig['extra_header'] = ob_get_clean();
+
 
 include('admin_elements/listing_template.php');
 include('admin_elements/admin_footer.php');

@@ -12,30 +12,38 @@ class LeaveTypesDataTable extends BaseDataTable
 {
     protected $table = DB::LEAVE_TYPES;
     protected $searchFields = ['leave_type'];
-    protected $sortableColumns = [0 => 'id', 1 => 'leave_type', 2 => 'max_per_year', 3 => 'paid', 4 => 'id'];
+    protected $sortableColumns = [0 => 'id', 1 => 'leave_type', 2 => 'paid', 3 => 'id'];
 
     protected function getOrgIdWhereClause(): string
     {
-        return '';
+        if ($this->organizationId === null) {
+            return '';
+        }
+        $this->params['leave_types_org_id'] = $this->organizationId;
+        return " AND organization_id = :leave_types_org_id";
     }
 
     protected function formatRow($row, $requestData = [])
     {
-        $id      = (int)($row['id'] ?? 0);
-        $type    = (string)($row['leave_type'] ?? '');
-        $max     = (int)($row['max_per_year'] ?? 0);
-        $paid    = (int)($row['paid'] ?? 0);
+        $id       = (int)($row['id'] ?? 0);
+        $type     = (string)($row['leave_type'] ?? '');
+        $paid     = (int)($row['paid'] ?? 0);
 
-        $maxText = $max == 0 ? 'Unlimited' : (string)$max;
         $paidHtml = $paid == 1 
             ? '<span class="badge bg-success">Yes</span>' 
             : '<span class="badge bg-secondary">No</span>';
 
+        $rules = [
+            'Annual Leave' => '12 months DOJ, 1 month paid + ticket',
+            'Sick Leave'   => 'Paid per medical certificate',
+            'Urgent Leave' => '3 days paid, 1x/year from DOJ',
+        ];
+
         return [
             $this->rowNumber,
             htmlspecialchars($type),
-            htmlspecialchars($maxText),
             $paidHtml,
+            '<span class="text-muted small">' . htmlspecialchars($rules[$type] ?? '') . '</span>',
             $this->getActionButtons($id, 'leave_types'),
         ];
     }

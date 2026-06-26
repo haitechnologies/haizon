@@ -10,36 +10,50 @@ use App\Helper\ActionButtonHelper;
 class SalaryStructuresDataTable extends BaseDataTable
 {
     protected $table = DB::SALARY_STRUCTURES;
-    protected $searchFields = []; // Can add if needed
+    protected $searchFields = [];
     protected $sortableColumns = [
-        0 => 'id',
-        1 => 'employee_id',
-        2 => 'component_id',
-        3 => 'amount',
-        4 => 'effective_from',
-        5 => 'effective_to',
-        6 => 'id'
+        0 => 'ss.id',
+        1 => 'u.full_name',
+        2 => 'pc.component_name',
+        3 => 'ss.amount',
+        4 => 'ss.effective_from',
+        5 => 'ss.effective_to',
+        6 => 'ss.id'
     ];
+
+    protected function buildBaseQuery($requestData)
+    {
+        return "SELECT ss.*, u.full_name, pc.component_name, pc.component_type
+                FROM `" . DB::SALARY_STRUCTURES . "` ss
+                LEFT JOIN `" . DB::USERS . "` u ON u.id = ss.employee_id
+                LEFT JOIN `" . DB::PAYROLL_COMPONENTS . "` pc ON pc.id = ss.component_id
+                WHERE ss.id > 0" . $this->getOrgIdWhereClause();
+    }
 
     protected function getOrgIdWhereClause(): string
     {
-        return '';
+        if ($this->organizationId === null) {
+            return '';
+        }
+        $this->params['ss_org_id'] = (int)$this->organizationId;
+        return " AND ss.organization_id = :ss_org_id";
     }
 
     protected function formatRow($row, $requestData = [])
     {
         $id = (int)$row['id'];
-        $effFrom = ($row['effective_from']) ? processDateYtoD($row['effective_from']) : '-';
-        $effTo = ($row['effective_to']) ? processDateYtoD($row['effective_to']) : '-';
+        $empId = (int)$row['employee_id'];
+        $effFrom = !empty($row['effective_from']) ? date('d-m-Y', strtotime($row['effective_from'])) : '-';
+        $effTo = !empty($row['effective_to']) ? date('d-m-Y', strtotime($row['effective_to'])) : '-';
 
         return [
             $this->rowNumber,
-            getTableAttr('full_name', DB::USERS, $row['employee_id']),
-            getTableAttr('component_name', DB::PAYROLL_COMPONENTS, $row['component_id']),
-            number_format((float)$row['amount'], 2),
+            htmlspecialchars((string)($row['full_name'] ?? '')),
+            htmlspecialchars((string)($row['component_name'] ?? '')),
+            'AED ' . number_format((float)$row['amount'], 2),
             $effFrom,
             $effTo,
-            $this->getActionButtons($id, 'salary_structures'),
+            $this->getActionButtons($empId, 'salary_structures'),
         ];
     }
 
@@ -48,9 +62,6 @@ class SalaryStructuresDataTable extends BaseDataTable
         $a = '';
         if ($this->isGranted('edit', $module)) {
             $a .= ActionButtonHelper::editButton((int)$id, 'salary_structures.php', $module, 'Edit', false);
-        }
-        if ($this->isGranted('delete', $module)) {
-            $a .= ' ' . ActionButtonHelper::deleteButton((int)$id, $module);
         }
         return $a;
     }

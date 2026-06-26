@@ -59,22 +59,22 @@ $listingConfig = [
     'thead' => '
         <th width="40">SR.</th>
         <th>DESIGNATION</th>
+        <th>EMPLOYEES</th>
         <th width="90">CREATED AT</th>
         <th width="90" class="col-center">ACTIONS</th>
     ',
     'columns' => [
         ['data' => 0, 'orderable' => false, 'searchable' => false],
         ['data' => 1],
-        ['data' => 2],
-        ['data' => 3, 'orderable' => false, 'searchable' => false, 'className' => 'col-center'],
+        ['data' => 2, 'orderable' => false, 'searchable' => false],
+        ['data' => 3],
+        ['data' => 4, 'orderable' => false, 'searchable' => false, 'className' => 'col-center'],
     ],
     'order' => [[0, 'asc']],
     'page_length' => 25,
 ];
 
-ob_start();
-include('admin_elements/hr_navbar.php');
-$listingConfig['extra_header'] = ob_get_clean();
+
 
 include('admin_elements/listing_template.php');
 include('admin_elements/admin_footer.php');

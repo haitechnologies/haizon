@@ -27,7 +27,7 @@ class PayrollRunController extends BaseController
 
     public function __invoke(Request $request): Response
     {
-        $this->requiresModule('period_starts', 'Payroll Run');
+        $this->requiresModule('payroll_runs', 'Payroll Run');
 
         if (!$this->canView()) {
             return new Response('Forbidden', 403);

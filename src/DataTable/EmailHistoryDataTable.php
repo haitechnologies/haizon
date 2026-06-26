@@ -20,20 +20,14 @@ class EmailHistoryDataTable extends BaseDataTable
     protected $table = DB::EMAIL_HISTORY;
     protected $searchFields = ['recipient_email', 'status', 'from_name', 'from_email', 'subject'];
     protected $sortableColumns = [
-        0 => 'id', 1 => 'campaign_id', 2 => 'source_label', 3 => 'recipient_email', 4 => 'status',
-        5 => 'sent_at', 6 => 'opened_at', 7 => 'clicked_at', 8 => 'created_at'
+        0 => 'id', 1 => 'recipient_email', 2 => 'status',
+        3 => 'sent_at', 4 => 'created_at'
     ];
 
     protected function buildBaseQuery($requestData)
     {
-        return "SELECT 
-                    eh.*,
-                    CASE
-                        WHEN du.id IS NOT NULL THEN 'Dashboard'
-                        ELSE 'Website'
-                    END AS source_label
+        return "SELECT eh.*
                 FROM `" . $this->table . "` eh
-                LEFT JOIN `" . DB::USERS . "` du ON du.id = eh.user_id
                 WHERE eh.id > 0";
     }
 
@@ -44,19 +38,11 @@ class EmailHistoryDataTable extends BaseDataTable
 
     protected function formatRow($row, $requestData = [])
     {
-
-
         $id = (int)$row['id'];
-        $campaignId = (int)$row['campaign_id'];
         $recipientEmail = $this->sanitize($row['recipient_email'] ?? '');
         $status = $this->sanitize($row['status'] ?? '');
-        $sourceLabel = (string)($row['source_label'] ?? 'Website');
         $sentAt = $row['sent_at'] ?? '';
-        $openedAt = $row['opened_at'] ?? '';
-        $clickedAt = $row['clicked_at'] ?? '';
         $createdAt = $row['created_at'] ?? '';
-
-        $campaignName = '-';
 
         $statusBadge = match ($status) {
             'queued' => '<span class="badge bg-secondary bg-opacity-20 text-secondary">Queued</span>',
@@ -67,22 +53,11 @@ class EmailHistoryDataTable extends BaseDataTable
             default => '<span class="badge bg-secondary bg-opacity-20 text-secondary">' . ucfirst($status) . '</span>'
         };
 
-        $openedIcon = !empty($openedAt) ? '<i class="ph-check text-success"></i>' : '-';
-        $clickedIcon = !empty($clickedAt) ? '<i class="ph-check text-success"></i>' : '-';
-
-        $sourceBadge = $sourceLabel === 'Dashboard'
-            ? '<span class="badge bg-primary bg-opacity-20 text-primary">Dashboard</span>'
-            : '<span class="badge bg-info bg-opacity-20 text-info">Website</span>';
-
         return [
             $id,
-            htmlspecialchars($campaignName),
-            $sourceBadge,
             '<a href="mailto:' . htmlspecialchars($recipientEmail) . '">' . htmlspecialchars($recipientEmail) . '</a>',
             $statusBadge,
             !empty($sentAt) ? $this->formatTimeAgo($sentAt) : '-',
-            $openedIcon,
-            $clickedIcon,
             $this->formatTimeAgo($createdAt)
         ];
     }

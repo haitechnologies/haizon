@@ -387,6 +387,7 @@ $container->register(\App\Http\Controller\UserController::class, function (\App\
         Session::orgId(),
         $c->get(\App\Service\UserService::class),
         $c->get(\App\Service\UserDocumentService::class),
+        $c->get(\App\Service\AirTicketService::class),
         $GLOBALS['project_pre'],
     );
 });

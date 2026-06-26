@@ -15,14 +15,13 @@ declare(strict_types=1);
  * @var bool $canCreate
  * @var array $users
  * @var array $leaveTypes
- * @var bool $medicalReportProvided
  * @var string|null $medicalReportFile
  * @var string $uploadPath
  */
 include 'admin_elements/admin_header.php';
 ?>
 <div class="content-wrapper">
-    <?php include 'admin_elements/hr_navbar.php'; ?>
+    <?php  ?>
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
             <div class="my-1">
@@ -47,81 +46,98 @@ include 'admin_elements/admin_header.php';
                 <?php } else { ?>
                     <input type="hidden" name="action" value="add_leave_requests">
                 <?php } ?>
-                <div class="card col-lg-8">
-                    <div class="content clearfix">
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Employee:*</span></label>
-                            <div class="col-lg-9">
-                                <select required name="employee_id" class="form-select">
-                                    <option value="0">Please select</option>
-                                    <?php foreach ($users as $user) { ?>
-                                        <option value="<?php echo $user->id; ?>" <?php echo $user->id === $employeeId ? 'selected' : ''; ?>><?php echo htmlspecialchars($user->fullName); ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Leave Type:*</span></label>
-                            <div class="col-lg-9">
-                                <select required name="leave_type_id" class="form-select">
-                                    <option value="0">Please select</option>
-                                    <?php foreach ($leaveTypes as $lt) { ?>
-                                        <option value="<?php echo $lt->id; ?>" <?php echo $lt->id === $leaveTypeId ? 'selected' : ''; ?>><?php echo htmlspecialchars($lt->leaveType); ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Start Date:*</span></label>
-                            <div class="col-lg-9">
-                                <input required type="date" name="start_date" value="<?php echo $startDate; ?>" class="form-control">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">End Date:*</span></label>
-                            <div class="col-lg-9">
-                                <input required type="date" name="end_date" value="<?php echo $endDate; ?>" class="form-control">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Total Days:*</span></label>
-                            <div class="col-lg-9">
-                                <input required type="number" step="0.5" name="total_days" id="total_days" value="<?php echo $totalDays; ?>" class="form-control" min="0.5" readonly>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label">Reason:</label>
-                            <div class="col-lg-9">
-                                <textarea name="reason" class="form-control" rows="3"><?php echo $reason; ?></textarea>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label">Medical Report:</label>
-                            <div class="col-lg-9">
-                                <div class="form-check form-switch mb-2">
-                                    <input type="checkbox" class="form-check-input form-check-input-info" name="medical_report_provided" id="medical_report_provided" value="1" <?php echo $medicalReportProvided ? 'checked' : ''; ?>>
-                                    <label class="form-check-label" for="medical_report_provided">Medical Report Provided</label>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label"><span class="text-danger">Employee:*</span></label>
+                                    <div class="col-lg-8">
+                                        <select required name="employee_id" class="form-select">
+                                            <option value="0">Please select</option>
+                                            <?php foreach ($users as $user) { ?>
+                                                <option value="<?php echo $user->id; ?>" <?php echo $user->id === $employeeId ? 'selected' : ''; ?>><?php echo htmlspecialchars($user->fullName); ?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div id="medical_report_upload_section" class="<?php echo $medicalReportProvided ? '' : 'd-none'; ?>">
-                                    <input type="file" name="medical_report_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                    <?php if (!empty($medicalReportFile) && file_exists(dirname(__DIR__, 3) . '/uploads/leave_requests/' . $medicalReportFile)): ?>
-                                        <div class="mt-2">
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label"><span class="text-danger">Leave Type:*</span></label>
+                                    <div class="col-lg-8">
+                                        <select required name="leave_type_id" id="leave_type_id" class="form-select">
+                                            <option value="0">Please select</option>
+                                            <?php foreach ($leaveTypes as $lt) { ?>
+                                                <option value="<?php echo $lt->id; ?>" <?php echo $lt->id === $leaveTypeId ? 'selected' : ''; ?>><?php echo htmlspecialchars($lt->leaveType); ?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label"><span class="text-danger">Start Date:*</span></label>
+                                    <div class="col-lg-8">
+                                        <input required type="text" name="start_date" id="start_date" value="<?php echo $startDate; ?>" class="form-control datepicker-basic" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label"><span class="text-danger">End Date:*</span></label>
+                                    <div class="col-lg-8">
+                                        <input required type="text" name="end_date" id="end_date" value="<?php echo $endDate; ?>" class="form-control datepicker-basic" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label"><span class="text-danger">Total Days:*</span></label>
+                                    <div class="col-lg-8">
+                                        <input required type="number" step="0.5" name="total_days" id="total_days" value="<?php echo $totalDays; ?>" class="form-control" min="0.5" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label">Reason:</label>
+                                    <div class="col-lg-8">
+                                        <textarea name="reason" class="form-control" rows="3"><?php echo $reason; ?></textarea>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-lg-4 col-form-label">Status:</label>
+                                    <div class="col-lg-8">
+                                        <select name="status" class="form-select">
+                                            <option value="pending" <?php echo $status === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                            <option value="approved" <?php echo $status === 'approved' ? 'selected' : ''; ?>>Approved</option>
+                                            <option value="rejected" <?php echo $status === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="ph-file-plus me-2"></i>Medical Certificate <span class="text-danger" id="med-required-star">*</span><span class="text-muted small fw-normal ms-1" id="med-hint">(required for Sick Leave)</span></h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Upload Medical Certificate <span class="text-danger" id="med-label-star">*</span></label>
+                                    <input type="file" name="medical_report_file" id="medical_report_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                    <div class="form-text">Accepted formats: PDF, DOC, DOCX, JPG, PNG</div>
+                                </div>
+                                <?php if (!empty($medicalReportFile) && file_exists(dirname(__DIR__, 3) . '/uploads/leave_requests/' . $medicalReportFile)): ?>
+                                    <div class="mb-3">
+                                        <label class="form-label">Existing File:</label>
+                                        <div class="d-flex gap-2">
                                             <a href="<?php echo $uploadPath . htmlspecialchars($medicalReportFile); ?>" target="_blank" class="btn btn-sm btn-outline-info">
                                                 <i class="ph-file"></i> View Uploaded Report
                                             </a>
+                                            <form method="post" action="leave_requests.php" style="display:inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                                                <input type="hidden" name="action" value="delete_medical_report">
+                                                <input type="hidden" name="id" value="<?php echo $id; ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this medical certificate?')">
+                                                    <i class="ph-trash"></i> Delete
+                                                </button>
+                                            </form>
                                         </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label">Status:</label>
-                            <div class="col-lg-9">
-                                <select name="status" class="form-select">
-                                    <option value="pending" <?php echo $status === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                    <option value="approved" <?php echo $status === 'approved' ? 'selected' : ''; ?>>Approved</option>
-                                    <option value="rejected" <?php echo $status === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
-                                </select>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -133,32 +149,65 @@ include 'admin_elements/admin_header.php';
 </div>
 <script>
 (function() {
-    var startEl = document.querySelector('input[name="start_date"]');
-    var endEl = document.querySelector('input[name="end_date"]');
+    var startEl = document.getElementById('start_date');
+    var endEl = document.getElementById('end_date');
     var totalEl = document.getElementById('total_days');
 
+    function parseDDMMYY(val) {
+        if (!val) return null;
+        var parts = val.split('-');
+        if (parts.length !== 3) return null;
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
     function calcTotalDays() {
-        var start = startEl.value;
-        var end = endEl.value;
-        if (start && end) {
-            var startDt = new Date(start);
-            var endDt = new Date(end);
-            if (startDt <= endDt) {
-                var diff = (endDt - startDt) / (1000 * 60 * 60 * 24) + 1;
-                totalEl.value = diff;
-            }
+        var startDt = parseDDMMYY(startEl.value);
+        var endDt = parseDDMMYY(endEl.value);
+        if (startDt && endDt && startDt <= endDt) {
+            var diff = (endDt - startDt) / (1000 * 60 * 60 * 24) + 1;
+            totalEl.value = diff;
         }
     }
 
-    startEl.addEventListener('change', calcTotalDays);
-    endEl.addEventListener('change', calcTotalDays);
+    $(startEl).datepicker({
+        dateFormat: 'dd-mm-yy',
+        changeMonth: true,
+        changeYear: true,
+        onSelect: calcTotalDays
+    });
 
-    var medCheckbox = document.getElementById('medical_report_provided');
-    var medUploadSection = document.getElementById('medical_report_upload_section');
-    if (medCheckbox && medUploadSection) {
-        medCheckbox.addEventListener('change', function() {
-            medUploadSection.classList.toggle('d-none', !this.checked);
-        });
+    $(endEl).datepicker({
+        dateFormat: 'dd-mm-yy',
+        changeMonth: true,
+        changeYear: true,
+        onSelect: calcTotalDays
+    });
+
+    var sickLeaveId = <?php echo $sickLeaveTypeId; ?>;
+    var leaveTypeEl = document.getElementById('leave_type_id');
+    var fileEl = document.getElementById('medical_report_file');
+    var medStar = document.getElementById('med-required-star');
+    var medLabelStar = document.getElementById('med-label-star');
+    var medHint = document.getElementById('med-hint');
+
+    function toggleMedRequired() {
+        var isSick = leaveTypeEl.value == sickLeaveId;
+        if (isSick) {
+            fileEl.setAttribute('required', '');
+            if (medStar) medStar.style.display = '';
+            if (medLabelStar) medLabelStar.style.display = '';
+            if (medHint) medHint.textContent = '(required for Sick Leave)';
+        } else {
+            fileEl.removeAttribute('required');
+            if (medStar) medStar.style.display = 'none';
+            if (medLabelStar) medLabelStar.style.display = 'none';
+            if (medHint) medHint.textContent = '(optional)';
+        }
+    }
+
+    if (leaveTypeEl) {
+        leaveTypeEl.addEventListener('change', toggleMedRequired);
+        toggleMedRequired();
     }
 })();
 </script>

@@ -58,7 +58,9 @@ use App\Security\Roles;
                 'report_hr' => 'hr',
                 'hr_guide' => 'hr',
                 'air_tickets' => 'hr',
+                'document_categories' => 'hr',
                 'gratuity_settlements' => 'hr',
+                'email_history' => 'hr',
 
                 // Shipping
                 'shipping_advices' => 'shipping',

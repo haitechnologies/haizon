@@ -76,6 +76,9 @@ class AirTicketService
             status: $data['status'] ?? 'pending',
             eligibilityDate: $data['eligibility_date'] ?? null,
             paidDate: $data['paid_date'] ?? null,
+            departureDate: $data['departure_date'] ?? null,
+            arrivalDate: $data['arrival_date'] ?? null,
+            ticketFile: $data['ticket_file'] ?? null,
             paymentReference: (string)($data['payment_reference'] ?? ''),
             notes: (string)($data['notes'] ?? ''),
             createdBy: $createdBy,
@@ -95,7 +98,7 @@ class AirTicketService
         $this->getById($id, $organizationId);
 
         // Only allow specific fields to be updated
-        $allowedFields = ['status', 'paid_date', 'payment_reference', 'notes'];
+        $allowedFields = ['status', 'paid_date', 'payment_reference', 'notes', 'departure_date', 'arrival_date', 'ticket_file'];
         $updateData = [];
         foreach ($allowedFields as $field) {
             if (array_key_exists($field, $data)) {

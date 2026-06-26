@@ -282,7 +282,6 @@ class Registry
         // HR & Payroll listings
         $this->register('listing_gratuity_settlements', GratuitySettlementsDataTable::class);
         $this->register('listing_air_tickets', AirTicketsDataTable::class);
-        $this->register('listing_hr_todo_tasks', HrTodoTasksDataTable::class);
         $this->register('listing_annual_leave_entitlements', AnnualLeaveEntitlementsDataTable::class);
     }
 

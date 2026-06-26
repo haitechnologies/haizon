@@ -156,7 +156,7 @@ class UserDocumentController extends BaseController
         } catch (\Throwable $e) {
         }
         try {
-            $documentCategories = $this->db->fetchAll("SELECT id, document_category FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active=1 AND document_category_type='employees' ORDER BY document_category");
+            $documentCategories = $this->db->fetchAll("SELECT id, document_category FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active=1 AND document_category_type='employees' ORDER BY CASE document_category WHEN 'Emirates ID' THEN 1 WHEN 'Visa' THEN 2 WHEN 'Labor Card' THEN 3 WHEN 'Passport' THEN 4 WHEN 'Photo' THEN 5 WHEN 'Contract' THEN 6 ELSE 7 END, document_category");
         } catch (\Throwable $e) {
         }
 

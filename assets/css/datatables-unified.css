@@ -184,6 +184,21 @@
 	opacity: 0.65 !important;
 }
 
+/* DataTables stat chips — override Bootstrap .badge default white text */
+.dt-stat-chip {
+	color: #1f4e8a !important;
+	background: #eaf1fb !important;
+	font-weight: 500 !important;
+	font-size: 0.82rem !important;
+	padding: 4px 10px !important;
+	border-radius: 20px !important;
+	border: 1px solid #d0e1f7 !important;
+}
+
+.dt-stat-chip + .dt-stat-chip {
+	margin-left: 6px !important;
+}
+
 @media (max-width: 575.98px) {
 	.dataTables_wrapper .dt-footer {
 		justify-content: center !important;

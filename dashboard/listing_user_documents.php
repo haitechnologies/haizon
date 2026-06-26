@@ -49,7 +49,7 @@ $expiryTabsHtml = '
 </div>';
 
 $categoryBadgesHtml = '<div class="row mb-2 mt-2"><div class="col-lg-12">';
-$result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active=1 AND document_category_type='employees' ORDER BY document_category LIMIT 50");
+$result = $mysqli->query("SELECT * FROM `" . DB::DOCUMENT_CATEGORIES . "` WHERE is_active=1 AND document_category_type='employees' ORDER BY CASE document_category WHEN 'Emirates ID' THEN 1 WHEN 'Visa' THEN 2 WHEN 'Labor Card' THEN 3 WHEN 'Passport' THEN 4 WHEN 'Photo' THEN 5 WHEN 'Contract' THEN 6 ELSE 7 END, document_category LIMIT 50");
 while ($rows = $result->fetch_array()) {
     $document_category = $rows['id'];
     $rs = $mysqli->query("SELECT id FROM `" . DB::USER_DOCUMENTS . "` WHERE attachable_type = 'UserDoc' AND document_category=$document_category");
@@ -60,16 +60,16 @@ $categoryBadgesHtml .= '</div></div>';
 $listingConfig = [
     'module' => $module,
     'module_caption' => 'Employee Documents',
+    'hide_add_button' => true,
     'thead' => '
         <th width="40">SR.</th>
-        <th>DOCUMENT NAME</th>
         <th>CATEGORY</th>
         <th>EMPLOYEE NAME</th>
         <th>DOCUMENT</th>
         <th>ISSUE DATE</th>
         <th>EXPIRY DATE</th>
+        <th width="90">STATUS</th>
         <th width="90">CREATED AT</th>
-        <th width="90">ACTIONS</th>
     ',
     'columns' => [
         ['data' => 0, 'orderable' => false],
@@ -80,17 +80,22 @@ $listingConfig = [
         ['data' => 5],
         ['data' => 6],
         ['data' => 7],
-        ['data' => 8, 'className' => 'text-center'],
     ],
     'order' => [[7, 'desc']],
     'page_length' => 25,
     'search_placeholder' => 'Search documents...',
     'before_table' => $expiryTabsHtml . $categoryBadgesHtml,
+    'extra_js' => "
+        $('#grid-user_documents tbody').on('click', 'tr', function() {
+            var employeeId = $(this).find('[data-employee-id]').data('employee-id');
+            if (employeeId) {
+                window.location.href = 'users.php?id=' + employeeId;
+            }
+        });
+    ",
 ];
 
-ob_start();
-include('admin_elements/hr_navbar.php');
-$listingConfig['extra_header'] = ob_get_clean();
+
 
 include('admin_elements/listing_template.php');
 include('admin_elements/admin_footer.php');

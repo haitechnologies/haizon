@@ -18,7 +18,7 @@ declare(strict_types=1);
 include 'admin_elements/admin_header.php';
 ?>
 <div class="content-wrapper">
-    <?php include 'admin_elements/hr_navbar.php'; ?>
+    <?php  ?>
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
             <div class="my-1 d-flex align-items-center gap-2">
@@ -27,7 +27,7 @@ include 'admin_elements/admin_header.php';
             <div class="my-1">
                 <?php if ($canCreate || $canEdit) { ?>
                     <button type="submit" form="frmhr_todo_tasks" class="btn btn-primary btn-sm me-2">Save</button>
-                    <a href="listing_hr_todo_tasks.php" class="btn btn-light btn-sm">Cancel</a>
+                    <a href="hr_todo_tasks.php" class="btn btn-light btn-sm">Cancel</a>
                 <?php } ?>
             </div>
         </div>

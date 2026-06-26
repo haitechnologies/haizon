@@ -147,16 +147,16 @@ class AnnualLeaveEntitlementController extends BaseController
         );
 
         $departments = $this->db->fetchAll(
-            "SELECT id, name FROM " . \App\Core\DB::DEPARTMENTS . "
-             WHERE organization_id = :org_id AND is_active = 1
-             ORDER BY name ASC",
+            "SELECT id, department AS name FROM " . \App\Core\DB::DEPARTMENTS . "
+             WHERE organization_id = :org_id AND publish = 1
+             ORDER BY department ASC",
             ['org_id' => $this->orgId]
         );
 
         $designations = $this->db->fetchAll(
-            "SELECT id, name FROM " . \App\Core\DB::DESIGNATIONS . "
-             WHERE organization_id = :org_id AND is_active = 1
-             ORDER BY name ASC",
+            "SELECT id, designation AS name FROM " . \App\Core\DB::DESIGNATIONS . "
+             WHERE organization_id = :org_id AND publish = 1
+             ORDER BY designation ASC",
             ['org_id' => $this->orgId]
         );
 

@@ -25,7 +25,7 @@ declare(strict_types=1);
 include 'admin_elements/admin_header.php';
 ?>
 <div class="content-wrapper">
-    <?php include 'admin_elements/hr_navbar.php'; ?>
+    <?php  ?>
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
             <div class="my-1 d-flex align-items-center gap-2">

@@ -843,6 +843,13 @@ if (!function_exists('renderEmailQuickbar')) {
 				changeYear: true,
 				yearRange: '1950:2005'
 			});
+
+			$("#date_of_joining").datepicker({
+				dateFormat: 'dd-mm-yy',
+				changeMonth: true,
+				changeYear: true,
+				yearRange: '2020:2035'
+			});
 		});
 	</script>
 
@@ -1465,6 +1472,12 @@ if (!function_exists('renderEmailQuickbar')) {
 						</a>
 					</li>
 				<?php endif; ?>
+
+				<li class="nav-item ms-lg-2">
+					<a href="email_history.php" class="navbar-nav-link navbar-nav-link-icon rounded-pill position-relative d-inline-flex align-items-center" title="Email History">
+						<i class="ph-envelope-simple"></i>
+					</a>
+				</li>
 
 				<li class="nav-item dropdown ms-lg-2">
 					<a href="#" class="navbar-nav-link d-flex align-items-center rounded-pill p-1 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Account">

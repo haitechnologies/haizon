@@ -28,7 +28,7 @@ class LeaveTypeRepository
      */
     public function find(int $id, int $organizationId): ?LeaveType
     {
-        $sql = "SELECT id, organization_id, leave_type, max_per_year, paid, paid_days, created_at, updated_at 
+        $sql = "SELECT id, organization_id, leave_type, paid, created_at, updated_at 
                 FROM DB::LEAVE_TYPES 
                 WHERE id = :id AND organization_id = :organization_id";
 
@@ -51,7 +51,7 @@ class LeaveTypeRepository
      */
     public function findAll(int $organizationId): array
     {
-        $sql = "SELECT id, organization_id, leave_type, max_per_year, paid, paid_days, created_at, updated_at 
+        $sql = "SELECT id, organization_id, leave_type, paid, created_at, updated_at 
                 FROM DB::LEAVE_TYPES 
                 WHERE organization_id = :organization_id 
                 ORDER BY leave_type ASC";
@@ -106,15 +106,13 @@ class LeaveTypeRepository
 
     private function insert(LeaveType $type): LeaveType
     {
-        $sql = "INSERT INTO DB::LEAVE_TYPES (organization_id, leave_type, max_per_year, paid, paid_days) 
-                VALUES (:organization_id, :leave_type, :max_per_year, :paid, :paid_days)";
+        $sql = "INSERT INTO DB::LEAVE_TYPES (organization_id, leave_type, paid) 
+                VALUES (:organization_id, :leave_type, :paid)";
 
         $params = [
             'organization_id' => $type->organizationId,
             'leave_type' => $type->leaveType,
-            'max_per_year' => $type->maxPerYear,
             'paid' => $type->paid ? 1 : 0,
-            'paid_days' => $type->paidDays,
         ];
 
         $insertId = (int)$this->db->insert($sql, $params);
@@ -125,16 +123,12 @@ class LeaveTypeRepository
     {
         $sql = "UPDATE DB::LEAVE_TYPES 
                 SET leave_type = :leave_type, 
-                    max_per_year = :max_per_year, 
-                    paid = :paid, 
-                    paid_days = :paid_days 
+                    paid = :paid 
                 WHERE id = :id AND organization_id = :organization_id";
 
         $params = [
             'leave_type' => $type->leaveType,
-            'max_per_year' => $type->maxPerYear,
             'paid' => $type->paid ? 1 : 0,
-            'paid_days' => $type->paidDays,
             'id' => $type->id,
             'organization_id' => $type->organizationId,
         ];
@@ -165,9 +159,7 @@ class LeaveTypeRepository
             id: (int)$row['id'],
             organizationId: $row['organization_id'] !== null ? (int)$row['organization_id'] : null,
             leaveType: (string)$row['leave_type'],
-            maxPerYear: (int)$row['max_per_year'],
             paid: (bool)$row['paid'],
-            paidDays: (int)($row['paid_days'] ?? 3),
             createdAt: (string)($row['created_at'] ?? ''),
             updatedAt: (string)($row['updated_at'] ?? '')
         );

@@ -72,6 +72,8 @@ class UserService
             $dob = $this->convertDateToDb($data['dob']);
         }
 
+        $dateOfJoining = !empty($data['date_of_joining']) ? $this->convertDateToDb($data['date_of_joining']) : null;
+
         $firstName = trim($data['first_name'] ?? '');
         $lastName = trim($data['last_name'] ?? '');
 
@@ -90,7 +92,9 @@ class UserService
             contact2: !empty($data['contact2']) ? trim($data['contact2']) : null,
             address: !empty($data['address']) ? trim($data['address']) : null,
             dob: $dob,
+            dateOfJoining: $dateOfJoining,
             departmentId: !empty($data['department_id']) ? (int)$data['department_id'] : null,
+            designationId: !empty($data['designation_id']) ? (int)$data['designation_id'] : null,
             lastLogin: null,
             photo: !empty($data['photo']) ? trim($data['photo']) : null,
             publish: (bool)($data['publish'] ?? true),
@@ -136,6 +140,8 @@ class UserService
             $dob = $this->convertDateToDb($data['dob']);
         }
 
+        $dateOfJoining = isset($data['date_of_joining']) ? (!empty($data['date_of_joining']) ? $this->convertDateToDb($data['date_of_joining']) : null) : $user->dateOfJoining;
+
         $firstName = trim($data['first_name'] ?? $user->firstName ?? '');
         $lastName = trim($data['last_name'] ?? $user->lastName ?? '');
 
@@ -154,7 +160,9 @@ class UserService
             contact2: !empty($data['contact2']) ? trim($data['contact2']) : null,
             address: !empty($data['address']) ? trim($data['address']) : null,
             dob: $dob,
+            dateOfJoining: $dateOfJoining,
             departmentId: !empty($data['department_id']) ? (int)$data['department_id'] : $user->departmentId,
+            designationId: isset($data['designation_id']) ? (!empty($data['designation_id']) ? (int)$data['designation_id'] : null) : $user->designationId,
             lastLogin: $user->lastLogin,
             photo: isset($data['photo']) ? (!empty($data['photo']) ? trim($data['photo']) : null) : $user->photo,
             publish: (bool)($data['publish'] ?? $user->publish),
@@ -239,9 +247,29 @@ class UserService
             $errors['password'] = 'Password length must be between 6 - 20 chars.';
         }
 
+        $dateOfJoining = trim($data['date_of_joining'] ?? '');
+        if ($dateOfJoining === '') {
+            $errors['date_of_joining'] = 'Date of Joining is mandatory.';
+        }
+
+        $departmentId = (int)($data['department_id'] ?? 0);
+        if ($departmentId <= 0) {
+            $errors['department_id'] = 'Department is mandatory.';
+        }
+
+        $designationId = (int)($data['designation_id'] ?? 0);
+        if ($designationId <= 0) {
+            $errors['designation_id'] = 'Designation is mandatory.';
+        }
+
         $contact1 = trim($data['contact1'] ?? '');
         if ($contact1 === '') {
-            $errors['contact1'] = 'Contact 1 is mandatory.';
+            $errors['contact1'] = 'Contact (UAE) is mandatory.';
+        }
+
+        $contact2 = trim($data['contact2'] ?? '');
+        if ($contact2 === '') {
+            $errors['contact2'] = 'Contact (PAK) is mandatory.';
         }
 
         if (!empty($errors)) {

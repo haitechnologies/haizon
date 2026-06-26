@@ -3,13 +3,13 @@
 declare(strict_types=1);
 /**
  * @var int $id
- * @var string $categoryName
- * @var string $description
- * @var int $publish
+ * @var string $documentCategory
+ * @var string $documentCategoryType
  * @var string $moduleCaption
  * @var string $module
  * @var bool $canCreate
  * @var bool $canEdit
+ * @var bool $isFullAccess
  */
 include 'admin_elements/admin_header.php';
 ?>
@@ -18,13 +18,6 @@ include 'admin_elements/admin_header.php';
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
             <div class="my-1 d-flex align-items-center gap-2">
                 <h5 class="mb-0"><?php echo $id > 0 ? 'Edit' : 'New'; ?> <?php echo $moduleCaption; ?></h5>
-                <span class="text-muted small">(<?php echo $publish ? 'Active' : 'InActive'; ?>)</span>
-            </div>
-            <div class="my-1 d-inline-flex align-items-center me-2">
-                <div class="form-check form-check-inline form-switch mb-0">
-                    <input type="checkbox" class="form-check-input form-check-input-success" name="is_active" id="is_active" <?php echo $publish ? 'checked="checked"' : ''; ?> form="frm<?php echo $module; ?>">
-                    <label class="form-check-label" for="is_active">Active</label>
-                </div>
             </div>
             <div class="my-1">
                 <?php if ($id > 0 ? $canEdit : $canCreate) { ?>
@@ -50,13 +43,21 @@ include 'admin_elements/admin_header.php';
                         <div class="row mb-3">
                             <label class="col-lg-3 col-form-label"><span class="text-danger">Document Category:*</span></label>
                             <div class="col-lg-9">
-                                <input required type="text" name="category_name" value="<?php echo htmlspecialchars($categoryName); ?>" class="form-control">
+                                <input required type="text" name="document_category" value="<?php echo htmlspecialchars($documentCategory); ?>" class="form-control">
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label">Description:</label>
+                            <label class="col-lg-3 col-form-label">Type:</label>
                             <div class="col-lg-9">
-                                <textarea class="form-control" name="description" style="field-sizing: content;"><?php echo htmlspecialchars($description); ?></textarea>
+                                <?php if ($isFullAccess): ?>
+                                <select name="document_category_type" class="form-control">
+                                    <option value="employees" <?php echo $documentCategoryType === 'employees' ? 'selected' : ''; ?>>Employees</option>
+                                    <option value="company" <?php echo $documentCategoryType === 'company' ? 'selected' : ''; ?>>Company</option>
+                                </select>
+                                <?php else: ?>
+                                <input type="hidden" name="document_category_type" value="employees">
+                                <span class="form-control-plaintext">Employees</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

@@ -15,7 +15,7 @@ $container = Container::getInstance();
 $userService = $container->get(UserService::class);
 
 $module = 'users';
-$module_caption = 'Users';
+$module_caption = 'Employees';
 $tbl_name = DB::USERS;
 $error_message = '';
 $success_message = '';
@@ -55,28 +55,26 @@ $listingConfig = [
     'module' => $module,
     'module_caption' => $module_caption,
     'thead' => '
-        <th width="60" class="col-center">ID</th>
+        <th width="50" class="col-center">#</th>
         <th>NAME</th>
-        <th>EMAIL</th>
-        <th>CONTACT</th>
+        <th width="110">DATE JOINED</th>
         <th>ROLE</th>
-        <th width="140">LAST LOGIN</th>
         <th width="80" class="col-center">STATUS</th>
+        <th width="120">AIR TICKET</th>
         <th width="90" class="col-center">ACTIONS</th>
     ',
     'columns' => [
-        ['data' => 0],
+        ['data' => 0, 'orderable' => false, 'searchable' => false],
         ['data' => 1],
-        ['data' => 2],
+        ['data' => 2, 'orderable' => true, 'searchable' => false],
         ['data' => 3],
         ['data' => 4],
-        ['data' => 5],
-        ['data' => 6],
-        ['data' => 7, 'orderable' => false, 'searchable' => false],
+        ['data' => 5, 'orderable' => true, 'searchable' => false],
+        ['data' => 6, 'orderable' => false, 'searchable' => false],
     ],
-    'order' => [[0, 'desc']],
+    'order' => [[1, 'asc']],
     'page_length' => 10,
-    'search_placeholder' => 'Search users...',
+    'search_placeholder' => 'Search employees...',
     'extra_js' => "
         $(document).on('click', '[data-action=\"delete_record\"]', function(e) {
             e.preventDefault();
@@ -93,9 +91,7 @@ $listingConfig = [
     ",
 ];
 
-ob_start();
-include('admin_elements/hr_navbar.php');
-$listingConfig['extra_header'] = ob_get_clean();
+
 
 include('admin_elements/listing_template.php');
 include('admin_elements/admin_footer.php');

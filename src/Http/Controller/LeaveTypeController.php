@@ -54,12 +54,10 @@ class LeaveTypeController extends BaseController
     private function handleUpdate(Request $request, int $id): Response
     {
         $leaveType = $request->getString('leave_type');
-        $maxPerYear = $request->getInt('max_per_year');
         $paid = $request->get('paid') ? true : false;
-        $paidDays = $request->getInt('paid_days', 3);
 
         try {
-            $this->leaveTypeService->update($id, $leaveType, $maxPerYear, $paid, $this->orgId, $paidDays);
+            $this->leaveTypeService->update($id, $leaveType, $paid, $this->orgId);
             flash_success('The Leave Type has been updated successfully.');
             return Response::redirect('listing_leave_types.php');
         } catch (ValidationException $e) {
@@ -78,12 +76,15 @@ class LeaveTypeController extends BaseController
     private function handleCreate(Request $request): Response
     {
         $leaveType = $request->getString('leave_type');
-        $maxPerYear = $request->getInt('max_per_year');
-        $paid = $request->get('paid') ? true : false;
-        $paidDays = $request->getInt('paid_days', 3);
+        $allowed = ['Annual Leave', 'Sick Leave', 'Urgent Leave'];
+        if (!in_array($leaveType, $allowed, true)) {
+            flash_error('Invalid leave type selected.');
+            return Response::redirect("leave_types.php");
+        }
+        $paid = (bool)$request->get('paid', '0');
 
         try {
-            $this->leaveTypeService->create($leaveType, $maxPerYear, $paid, $this->orgId, $paidDays);
+            $this->leaveTypeService->create($leaveType, $paid, $this->orgId);
             flash_success('The Leave Type has been saved successfully.');
             return Response::redirect('listing_leave_types.php');
         } catch (ValidationException $e) {
@@ -99,9 +100,7 @@ class LeaveTypeController extends BaseController
     private function showForm(int $id): Response
     {
         $leaveType = '';
-        $maxPerYear = 0;
         $paid = 1;
-        $paidDays = 3;
         $error_message = '';
         $moduleCaption = $this->moduleCaption;
         $module = 'leave_types';
@@ -114,9 +113,7 @@ class LeaveTypeController extends BaseController
             try {
                 $type = $this->leaveTypeService->getById($id, $this->orgId);
                 $leaveType = $type->leaveType;
-                $maxPerYear = $type->maxPerYear;
                 $paid = $type->paid ? 1 : 0;
-                $paidDays = $type->paidDays;
                 $publish = 1;
             } catch (NotFoundException $e) {
                 $error_message = $e->getMessage();
@@ -126,9 +123,7 @@ class LeaveTypeController extends BaseController
         return Response::html($this->view->render('leave_types/form.php', [
             'id' => $id,
             'leaveType' => $leaveType,
-            'maxPerYear' => $maxPerYear,
             'paid' => $paid,
-            'paidDays' => $paidDays,
             'publish' => $publish,
             'error_message' => $error_message,
             'moduleCaption' => $moduleCaption,

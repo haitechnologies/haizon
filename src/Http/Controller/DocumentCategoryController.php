@@ -9,6 +9,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Service\DocumentCategoryService;
 use App\Exception\ValidationException;
+use App\Security\Roles;
 
 class DocumentCategoryController extends BaseController
 {
@@ -27,7 +28,7 @@ class DocumentCategoryController extends BaseController
 
     public function __invoke(Request $request): Response
     {
-        $this->requiresModule('category_names', 'Document Category');
+        $this->requiresModule('document_categories', 'Document Category');
 
         if (!$this->canView()) {
             return new Response('Forbidden', 403);
@@ -35,16 +36,16 @@ class DocumentCategoryController extends BaseController
 
         if ($request->isPost() && !$this->validateCsrf($request)) {
             flash_error('Invalid security token.');
-            return Response::redirect('category_names.php');
+            return Response::redirect('document_categories.php');
         }
 
         $id = $request->getInt('id');
         $action = $request->getString('action');
 
         return match (true) {
-            $request->isPost() && $action === 'update_category_names' && $id > 0 && $this->canEdit()
+            $request->isPost() && $action === 'update_document_categories' && $id > 0 && $this->canEdit()
             => $this->handleUpdate($request, $id),
-            $request->isPost() && $action === 'add_category_names' && $this->canCreate()
+            $request->isPost() && $action === 'add_document_categories' && $this->canCreate()
             => $this->handleCreate($request),
             default => $this->showForm($id),
         };
@@ -54,19 +55,18 @@ class DocumentCategoryController extends BaseController
     {
         try {
             $this->service->update($id, [
-                'category_name' => $request->post('category_name', ''),
-                'description' => $request->post('description', ''),
-                'is_active' => $request->has('is_active') ? 1 : 0,
+                'document_category' => $request->post('document_category', ''),
+                'document_category_type' => $request->post('document_category_type', 'employees'),
             ], $this->userId);
             flash_success('The Document Category has been updated successfully.');
-            return Response::redirect('listing_category_names.php');
+            return Response::redirect('listing_document_categories.php');
         } catch (ValidationException $e) {
             $error = current($e->getErrors());
             flash_error($error);
-            return Response::redirect("category_names.php?id=$id&action=edit_category_names");
+            return Response::redirect("document_categories.php?id=$id&action=edit_document_categories");
         } catch (\Throwable) {
             flash_error('The Document Category could not be updated.');
-            return Response::redirect("category_names.php?id=$id&action=edit_category_names");
+            return Response::redirect("document_categories.php?id=$id&action=edit_document_categories");
         }
     }
 
@@ -74,48 +74,47 @@ class DocumentCategoryController extends BaseController
     {
         try {
             $this->service->create([
-                'category_name' => $request->post('category_name', ''),
-                'description' => $request->post('description', ''),
-                'is_active' => $request->has('is_active') ? 1 : 0,
+                'document_category' => $request->post('document_category', ''),
+                'document_category_type' => $request->post('document_category_type', 'employees'),
             ], $this->userId);
             flash_success('The Document Category has been saved successfully.');
-            return Response::redirect('listing_category_names.php');
+            return Response::redirect('listing_document_categories.php');
         } catch (ValidationException $e) {
             $error = current($e->getErrors());
             flash_error($error);
-            return Response::redirect("category_names.php");
+            return Response::redirect("document_categories.php");
         } catch (\Throwable) {
             flash_error('The Document Category could not be saved.');
-            return Response::redirect("category_names.php");
+            return Response::redirect("document_categories.php");
         }
     }
 
     private function showForm(int $id): Response
     {
-        $categoryName = '';
-        $description = '';
-        $publish = 1;
+        $documentCategory = '';
+        $documentCategoryType = 'employees';
 
         if ($id > 0) {
             $item = $this->service->getById($id);
             if ($item === null) {
                 flash_error('Record not found.');
-                return Response::redirect('listing_category_names.php');
+                return Response::redirect('listing_document_categories.php');
             }
-            $categoryName = $item->categoryName;
-            $description = $item->description;
-            $publish = $item->isActive ? 1 : 0;
+            $documentCategory = $item->documentCategory;
+            $documentCategoryType = $item->documentCategoryType;
         }
+
+        $isFullAccess = Roles::hasFullAccess($this->roleId);
 
         return Response::html($this->view->render('document_categories/form.php', [
             'id' => $id,
-            'categoryName' => $categoryName,
-            'description' => $description,
-            'publish' => $publish,
+            'documentCategory' => $documentCategory,
+            'documentCategoryType' => $documentCategoryType,
             'moduleCaption' => $this->moduleCaption,
-            'module' => 'category_names',
+            'module' => 'document_categories',
             'canCreate' => $this->canCreate(),
             'canEdit' => $this->canEdit(),
+            'isFullAccess' => $isFullAccess,
         ]));
     }
 }

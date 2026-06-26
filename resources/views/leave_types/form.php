@@ -4,7 +4,6 @@ declare(strict_types=1);
 /**
  * @var int $id
  * @var string $leaveType
- * @var int $maxPerYear
  * @var int $paid
  * @var int $publish
  * @var string $moduleCaption
@@ -12,9 +11,15 @@ declare(strict_types=1);
  * @var bool $canCreate
  */
 include 'admin_elements/admin_header.php';
+
+$leaveTypesMap = [
+    'Annual Leave' => ['paid' => 1, 'desc' => 'Eligible after 12 months from date of joining. 1 month paid leave with air ticket.'],
+    'Sick Leave'   => ['paid' => 1, 'desc' => 'Paid sick leave as per medical certificate.'],
+    'Urgent Leave' => ['paid' => 1, 'desc' => '3 days paid leave, once per year from date of joining. Resets annually.'],
+];
 ?>
 <div class="content-wrapper">
-    <?php include 'admin_elements/hr_navbar.php'; ?>
+    <?php  ?>
     <div class="page-header page-header-light shadow carriers-page-header">
         <div class="page-header-content border-top py-2 px-3 carriers-page-header-content">
             <div class="my-1 d-flex align-items-center gap-2">
@@ -39,34 +44,40 @@ include 'admin_elements/admin_header.php';
                 <?php } else { ?>
                     <input type="hidden" name="action" value="add_leave_types">
                 <?php } ?>
-                <div class="card col-lg-6">
-                    <div class="content clearfix">
+                <div class="card col-lg-8">
+                    <div class="card-body">
                         <div class="row mb-3">
                             <label class="col-lg-3 col-form-label"><span class="text-danger">Leave Type:*</span></label>
                             <div class="col-lg-9">
-                                <input required type="text" name="leave_type" value="<?php echo $leaveType; ?>" class="form-control">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Max Per Year:*</span></label>
-                            <div class="col-lg-9">
-                                <input required type="number" name="max_per_year" value="<?php echo $maxPerYear; ?>" class="form-control" min="0">
+                                <?php if ($id > 0): ?>
+                                    <input type="hidden" name="leave_type" value="<?php echo htmlspecialchars($leaveType); ?>">
+                                    <span class="form-control-plaintext fw-bold"><?php echo htmlspecialchars($leaveType); ?></span>
+                                <?php else: ?>
+                                    <select required name="leave_type" id="leave_type" class="form-select">
+                                        <option value="">Select Leave Type</option>
+                                        <?php foreach (array_keys($leaveTypesMap) as $key): ?>
+                                            <option value="<?php echo $key; ?>" <?php echo $leaveType === $key ? 'selected' : ''; ?> data-paid="<?php echo $leaveTypesMap[$key]['paid']; ?>"><?php echo $key; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="row mb-3">
                             <label class="col-lg-3 col-form-label">Paid Leave:</label>
-                            <div class="col-lg-9">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="paid" id="paid" value="1" <?php echo $paid ? 'checked' : ''; ?>>
-                                    <label class="form-check-label" for="paid">Paid</label>
-                                </div>
+                            <div class="col-lg-9 pt-2">
+                                <input type="hidden" name="paid" id="paid" value="<?php echo $paid ? 1 : 0; ?>">
+                                <span class="badge bg-success bg-opacity-20 text-success fs-6" id="paid-badge"><?php echo $paid ? 'Yes — Fully Paid' : 'No'; ?></span>
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">Paid Days:*</span></label>
+                            <label class="col-lg-3 col-form-label">Rule:</label>
                             <div class="col-lg-9">
-                                <input required type="number" name="paid_days" value="<?php echo $paidDays; ?>" class="form-control" min="0">
-                                <div class="form-text text-muted">First N days are paid; days beyond this limit are unpaid. Default: 3</div>
+                                <div class="alert alert-info mb-0 py-2 px-3" id="rule-desc">
+                                    <?php
+                                    $desc = $leaveTypesMap[$leaveType]['desc'] ?? 'Select a leave type to see its rules.';
+                                    echo htmlspecialchars($desc);
+                                    ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -76,5 +87,16 @@ include 'admin_elements/admin_header.php';
         <?php include 'admin_elements/copyright.php'; ?>
     </div>
 </div>
+<script>
+document.getElementById('leave_type')?.addEventListener('change', function() {
+    var opt = this.options[this.selectedIndex];
+    if (opt.value) {
+        document.getElementById('paid').value = opt.getAttribute('data-paid');
+        document.getElementById('paid-badge').textContent = opt.getAttribute('data-paid') === '1' ? 'Yes — Fully Paid' : 'No';
+        var descs = <?php echo json_encode(array_combine(array_keys($leaveTypesMap), array_column($leaveTypesMap, 'desc'))); ?>;
+        document.getElementById('rule-desc').textContent = descs[opt.value] || '';
+    }
+});
+</script>
 <?php
 include 'admin_elements/admin_footer.php';

@@ -19,7 +19,7 @@ class DocumentCategoryRepository
 
     public function find(int $id): ?DocumentCategory
     {
-        $sql = "SELECT id, category_name, description, is_active, created_by, created_at
+        $sql = "SELECT id, document_category, document_category_type, is_active, is_mandatory, created_by, updated_by, created_at, updated_at
                 FROM `{DB::DOCUMENT_CATEGORIES}` WHERE id = :id";
         $row = $this->db->fetchOne($sql, ['id' => $id]);
         return $row === null ? null : $this->mapRowToDto($row);
@@ -27,28 +27,29 @@ class DocumentCategoryRepository
 
     public function findAll(): array
     {
-        $sql = "SELECT id, category_name, description, is_active, created_by, created_at
-                FROM `{DB::DOCUMENT_CATEGORIES}` ORDER BY category_name ASC";
+        $sql = "SELECT id, document_category, document_category_type, is_active, is_mandatory, created_by, updated_by, created_at, updated_at
+                FROM `{DB::DOCUMENT_CATEGORIES}` ORDER BY document_category_type DESC, document_category ASC";
         return array_map($this->mapRowToDto(...), $this->db->fetchAll($sql));
     }
 
     public function exists(string $name, ?int $excludeId = null): bool
     {
         $sql = $excludeId !== null
-            ? "SELECT id FROM `{DB::DOCUMENT_CATEGORIES}` WHERE category_name = :name AND id != :exclude_id LIMIT 1"
-            : "SELECT id FROM `{DB::DOCUMENT_CATEGORIES}` WHERE category_name = :name LIMIT 1";
+            ? "SELECT id FROM `{DB::DOCUMENT_CATEGORIES}` WHERE document_category = :name AND id != :exclude_id LIMIT 1"
+            : "SELECT id FROM `{DB::DOCUMENT_CATEGORIES}` WHERE document_category = :name LIMIT 1";
         $params = $excludeId !== null ? ['name' => $name, 'exclude_id' => $excludeId] : ['name' => $name];
         return $this->db->fetchOne($sql, $params) !== null;
     }
 
     public function insert(DocumentCategory $item): int
     {
-        $sql = "INSERT INTO `{DB::DOCUMENT_CATEGORIES}` (category_name, description, is_active, created_by)
-                VALUES (:category_name, :description, :is_active, :created_by)";
+        $sql = "INSERT INTO `{DB::DOCUMENT_CATEGORIES}` (document_category, document_category_type, is_active, is_mandatory, created_by)
+                VALUES (:document_category, :document_category_type, :is_active, :is_mandatory, :created_by)";
         return (int)$this->db->insert($sql, [
-            'category_name' => $item->categoryName,
-            'description' => $item->description,
+            'document_category' => $item->documentCategory,
+            'document_category_type' => $item->documentCategoryType,
             'is_active' => $item->isActive ? 1 : 0,
+            'is_mandatory' => $item->isMandatory ? 1 : 0,
             'created_by' => $item->createdBy,
         ]);
     }
@@ -83,11 +84,14 @@ class DocumentCategoryRepository
     {
         return new DocumentCategory(
             id: (int)$row['id'],
-            categoryName: (string)($row['category_name'] ?? ''),
-            description: (string)($row['description'] ?? ''),
+            documentCategory: (string)($row['document_category'] ?? ''),
+            documentCategoryType: (string)($row['document_category_type'] ?? ''),
             isActive: (bool)($row['is_active'] ?? true),
+            isMandatory: (bool)($row['is_mandatory'] ?? false),
             createdBy: (int)($row['created_by'] ?? 0),
+            updatedBy: (int)($row['updated_by'] ?? 0),
             createdAt: (string)($row['created_at'] ?? ''),
+            updatedAt: (string)($row['updated_at'] ?? ''),
         );
     }
 }

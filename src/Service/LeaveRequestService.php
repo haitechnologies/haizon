@@ -71,7 +71,7 @@ class LeaveRequestService
             paidDays: $paidDays,
             reason: !empty($data['reason']) ? trim((string)$data['reason']) : null,
             status: trim((string)($data['status'] ?? 'pending')),
-            medicalReportProvided: !empty($data['medical_report_provided']),
+            medicalReportProvided: !empty($data['medical_report_file']),
             medicalReportFile: !empty($data['medical_report_file']) ? trim((string)$data['medical_report_file']) : null,
             approvedBy: !empty($data['approved_by']) ? (int)$data['approved_by'] : null
         );
@@ -107,7 +107,7 @@ class LeaveRequestService
             paidDays: $paidDays,
             reason: !empty($data['reason']) ? trim((string)$data['reason']) : null,
             status: trim((string)($data['status'] ?? $request->status)),
-            medicalReportProvided: !empty($data['medical_report_provided']),
+            medicalReportProvided: $request->medicalReportProvided || !empty($data['medical_report_file']),
             medicalReportFile: !empty($data['medical_report_file']) ? trim((string)$data['medical_report_file']) : $request->medicalReportFile,
             approvedBy: !empty($data['approved_by']) ? (int)$data['approved_by'] : null,
             createdAt: $request->createdAt,
@@ -191,10 +191,10 @@ class LeaveRequestService
     {
         try {
             $leaveType = $this->typeRepo->find($leaveTypeId, $organizationId);
-            if ($leaveType === null) {
+            if ($leaveType === null || !$leaveType->paid) {
                 return 0;
             }
-            return min((float)$leaveType->paidDays, $totalDays);
+            return $totalDays;
         } catch (\Throwable $e) {
             return 0;
         }

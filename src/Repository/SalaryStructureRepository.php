@@ -17,37 +17,56 @@ class SalaryStructureRepository
         $this->db = $db;
     }
 
-    public function find(int $id): ?SalaryStructure
+    public function find(int $id, int $orgId): ?SalaryStructure
     {
-        $sql = "SELECT id, effective_from, description, created_by, created_at
-                FROM `{DB::SALARY_STRUCTURES}` WHERE id = :id";
-        $row = $this->db->fetchOne($sql, ['id' => $id]);
+        $sql = "SELECT id, organization_id, employee_id, component_id, amount, effective_from, effective_to, is_basic, created_by, created_at
+                FROM `{DB::SALARY_STRUCTURES}` WHERE id = :id AND organization_id = :org_id";
+        $row = $this->db->fetchOne($sql, ['id' => $id, 'org_id' => $orgId]);
         return $row === null ? null : $this->mapRowToDto($row);
     }
 
-    public function findAll(): array
+    public function findByEmployee(int $employeeId, int $orgId): array
     {
-        $sql = "SELECT id, effective_from, description, created_by, created_at
-                FROM `{DB::SALARY_STRUCTURES}` ORDER BY effective_from ASC";
-        return array_map($this->mapRowToDto(...), $this->db->fetchAll($sql));
+        $sql = "SELECT id, organization_id, employee_id, component_id, amount, effective_from, effective_to, is_basic, created_by, created_at
+                FROM `{DB::SALARY_STRUCTURES}` WHERE employee_id = :employee_id AND organization_id = :org_id
+                ORDER BY is_basic DESC, effective_from DESC";
+        return array_map($this->mapRowToDto(...), $this->db->fetchAll($sql, ['employee_id' => $employeeId, 'org_id' => $orgId]));
     }
 
-    public function exists(string $name, ?int $excludeId = null): bool
+    public function findByEmployeeIndexed(int $employeeId, int $orgId): array
     {
-        $sql = $excludeId !== null
-            ? "SELECT id FROM `{DB::SALARY_STRUCTURES}` WHERE effective_from = :name AND id != :exclude_id LIMIT 1"
-            : "SELECT id FROM `{DB::SALARY_STRUCTURES}` WHERE effective_from = :name LIMIT 1";
-        $params = $excludeId !== null ? ['name' => $name, 'exclude_id' => $excludeId] : ['name' => $name];
-        return $this->db->fetchOne($sql, $params) !== null;
+        $rows = $this->db->fetchAll(
+            "SELECT id, organization_id, employee_id, component_id, amount, effective_from, effective_to, is_basic, created_by, created_at
+             FROM `{DB::SALARY_STRUCTURES}` WHERE employee_id = :employee_id AND organization_id = :org_id
+             ORDER BY is_basic DESC, effective_from DESC",
+            ['employee_id' => $employeeId, 'org_id' => $orgId]
+        );
+        $indexed = [];
+        foreach ($rows as $row) {
+            $indexed[(int)$row['component_id']] = $this->mapRowToDto($row);
+        }
+        return $indexed;
+    }
+
+    public function findAll(int $orgId): array
+    {
+        $sql = "SELECT id, organization_id, employee_id, component_id, amount, effective_from, effective_to, is_basic, created_by, created_at
+                FROM `{DB::SALARY_STRUCTURES}` WHERE organization_id = :org_id ORDER BY employee_id, is_basic DESC, effective_from DESC";
+        return array_map($this->mapRowToDto(...), $this->db->fetchAll($sql, ['org_id' => $orgId]));
     }
 
     public function insert(SalaryStructure $item): int
     {
-        $sql = "INSERT INTO `{DB::SALARY_STRUCTURES}` (effective_from, description, created_by)
-                VALUES (:effective_from, :description, :created_by)";
+        $sql = "INSERT INTO `{DB::SALARY_STRUCTURES}` (organization_id, employee_id, component_id, amount, effective_from, effective_to, is_basic, created_by)
+                VALUES (:org_id, :employee_id, :component_id, :amount, :effective_from, :effective_to, :is_basic, :created_by)";
         return (int)$this->db->insert($sql, [
+            'org_id' => $item->organizationId,
+            'employee_id' => $item->employeeId,
+            'component_id' => $item->componentId,
+            'amount' => $item->amount,
             'effective_from' => $item->effectiveFrom,
-            'description' => $item->description,
+            'effective_to' => $item->effectiveTo,
+            'is_basic' => $item->isBasic ? 1 : 0,
             'created_by' => $item->createdBy,
         ]);
     }
@@ -72,9 +91,17 @@ class SalaryStructureRepository
         }
     }
 
-    public function delete(int $id): bool
+    public function deleteByEmployee(int $employeeId, int $orgId): void
     {
-        $this->db->execute("DELETE FROM `{DB::SALARY_STRUCTURES}` WHERE id = :id", ['id' => $id]);
+        $this->db->execute(
+            "DELETE FROM `{DB::SALARY_STRUCTURES}` WHERE employee_id = :employee_id AND organization_id = :org_id",
+            ['employee_id' => $employeeId, 'org_id' => $orgId]
+        );
+    }
+
+    public function delete(int $id, int $orgId): bool
+    {
+        $this->db->execute("DELETE FROM `{DB::SALARY_STRUCTURES}` WHERE id = :id AND organization_id = :org_id", ['id' => $id, 'org_id' => $orgId]);
         return true;
     }
 
@@ -82,10 +109,15 @@ class SalaryStructureRepository
     {
         return new SalaryStructure(
             id: (int)$row['id'],
-            effectiveFrom: (string)($row['effective_from'] ?? ''),
-            description: (string)($row['description'] ?? ''),
+            organizationId: (int)$row['organization_id'],
+            employeeId: (int)$row['employee_id'],
+            componentId: (int)$row['component_id'],
+            amount: (float)$row['amount'],
+            effectiveFrom: $row['effective_from'] !== null ? (string)$row['effective_from'] : null,
+            effectiveTo: $row['effective_to'] !== null ? (string)$row['effective_to'] : null,
+            isBasic: !empty($row['is_basic']),
             createdBy: (int)($row['created_by'] ?? 0),
-            createdAt: (string)($row['created_at'] ?? ''),
+            createdAt: $row['created_at'] ?? null,
         );
     }
 }
